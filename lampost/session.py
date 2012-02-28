@@ -22,7 +22,7 @@ class SessionManager():
         self.nature = nature;
         self.next_session_id = 0
         self.session_map = {}
-        self.player_list_dto = {}
+        self.player_list_dto = RootDTO()
         self.dispatcher.register("refresh_link_status", self.refresh_link_status)
         self.dispatcher.dispatch_p(PulseEvent("refresh_link_status", 20, repeat=True))                      
  

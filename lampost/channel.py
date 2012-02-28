@@ -8,10 +8,10 @@ from dto.display import DisplayLine, Display
 
 class Channel(Action):
     def __init__(self, verb, color=0x000000):
-        self.verbs = set([verb])
+        self.build_verbs(verb)
         self.color = color
     
-    def invoke(self, player, command):
+    def invoke(self, player, verb, command):
         message =  player.name + ": " + command[command.find(" "):]
         self.broadcast(player, message)
         return Display(message, self.color)

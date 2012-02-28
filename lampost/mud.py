@@ -29,10 +29,13 @@ class Emotes(Action):
         self.channel = channel
         self.verbMap = {"dance": "gyrates obscenely!",
                         "blink": "blinks rapidly in surprise."}
-        self.verbs = self.verbMap.keys()
+        self.build_verbs(self.verbMap.keys())
+     
+    def filter_predicate(self, predicate):
+        return len(predicate) 
         
-    def invoke(self, player, command):
-        message = player.name + " " + self.verbMap[command]
+    def invoke(self, player, verb, command):
+        message = player.name + " " + self.verbMap[verb[0]]
         self.channel.broadcast(player, message);
         return Display(message, self.channel.color)
         

@@ -9,22 +9,29 @@ class Action():
     def dispatch(event_type, data):
         Action.dispatcher.dispatch(event_type, data)             
     
+    def build_verbs(self, verbs):
+        self.verbs = set()
+        if isinstance(verbs, basestring):
+            self.add_verb(verbs)
+        else:
+            for verb in verbs:
+                self.add_verb(verb)
+               
+    def add_verb(self, verb):
+        self.verbs.add(tuple(verb.split(" ")))    
+            
     def filter_predicate(self, predicate):
         return True
                 
-    def match(self, command):
-        if not command:
-            return False
-        words = command.split()
-        if words[0] not in self.verbs:
-            return False
-       
-        return self.filter_predicate(words[:1])
+    def match(self, words):
+        for verb in self.verbs:
+            if words[:len(verb)] == verb:
+                return verb
     
         
+class Examine(Action):
+    pass
         
-        
-    
         
     
         

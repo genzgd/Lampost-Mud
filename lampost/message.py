@@ -4,6 +4,9 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 
+TARGET_SELF = 0
+TARGET_ENV = 1
+
 #MESSAGE_CONTENT
 
 #temporal

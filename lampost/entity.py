@@ -7,3 +7,10 @@ Created on Feb 26, 2012
 #  generators
 #  responders
 #  state
+
+class Entity():
+    def __init__(self):
+        self.env = None
+        self.inven = None
+        
+    
