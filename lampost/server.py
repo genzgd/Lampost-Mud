@@ -90,6 +90,8 @@ class ActionResource(Resource):
             return LinkError(ERROR_NOT_LOGGED_IN).json
         
         action = cgi.escape(request.args[ARG_ACTION][0]).strip()
+        if not action:
+            return;
         if action in ["quit", "logout"]:
             player.detach()
             session.player = None
