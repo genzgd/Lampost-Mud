@@ -9,7 +9,7 @@ from dto.rootdto import RootDTO
 class Player():   
     @staticmethod
     def register(event_type, callback):
-        Player.dispatcher.register(event_type, callback)
+        return Player.dispatcher.register(event_type, callback)
     
     def __init__(self, name, session):
         self.session = session
