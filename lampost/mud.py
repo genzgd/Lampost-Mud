@@ -33,7 +33,7 @@ class Emotes(Action):
         
     def invoke(self, player, command):
         message = player.name + " " + self.verbMap[command]
-        self.channel.broadcast(message);
+        self.channel.broadcast(player, message);
         return Display(message, self.channel.color)
         
 
