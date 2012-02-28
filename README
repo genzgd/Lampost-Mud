@@ -1,20 +1,11 @@
-Lampost-Mud is a Python based server and HTML/JavaScript client for multiuser virtual worlds.  It
-is in its very early stages.  The authors are working toward a Diku style MUD as the first
-full fledged Lampost-Mud application
-
+Lampost-Mud is a Python based server and HTML/JavaScript client for multiuser virtual worlds.  It is in its very early stages.  The authors are working toward a Diku style MUD as the first full fledged Lampost-Mud application.
 
 Lampost-Mud License:
 
-Permission is hereby granted by the authors of Lampost-Mud to copy and use the source code for any
-non-commercial purpose.  Any use of the source code for direct or indirect monetary gain is
-prohibited.
+Permission is hereby granted by the authors of Lampost-Mud to copy and use the source code for any non-commercial purpose.  Any use of the source code for direct or indirect monetary gain is prohibited.
 
-Redistribution of the Lampost-Mud source code must include a copy of this license at the top level
-of any archive used for redistribution.  
+Redistribution of the Lampost-Mud source code must include a copy of this license at the top level of any archive used for redistribution.  
 
-If the Lampost-Mud source code is to be utilized in any software product accessible to the general
-public you must notify the Geoffrey Genz at genzgd@gmail.com of the proposed use.  "Accessible to
-the general public" includes any URL on the public Internet which allows anonymous access or the
-creation of an account by any person without additional authorization. 
+If the Lampost-Mud source code is to be utilized in any software product accessible to the general public you must notify the Geoffrey Genz at genzgd@gmail.com of the proposed use.  "Accessible to the general public" includes any URL on the public Internet which allows anonymous access or the creation of an account by any person without additional authorization. 
 
 Please contact Geoffrey Genz (genzgd@gmail.com) if you wish to obtain a commercial license.
