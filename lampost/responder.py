@@ -17,8 +17,8 @@ Created on Feb 26, 2012
 
 class Responder():
     
-    def accepts(self, subject, msg_class):
-        return True
+    def accepts(self, lmessage):
+        return self.msg_class == lmessage.msg_class
     
     def target_list(self):
         return set() 

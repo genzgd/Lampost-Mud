@@ -8,6 +8,15 @@ CLASS_COMM_GENERAL = 1
 CLASS_SENSE_GLANCE = 2
 CLASS_SENSE_EXAMINE = 3
 
+class LMessage():
+
+    def __init__(self, source, msg_class, payload):
+        self.source = source
+        self.msg_class = msg_class
+        self.payload = payload
+        
+    
+
 #MESSAGE_CONTENT
 
 #temporal
