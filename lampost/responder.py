@@ -16,5 +16,10 @@ Created on Feb 26, 2012
 #  includes generator triggered by message
 
 class Responder():
-    pass
+    
+    def accepts(self, subject, msg_class):
+        return True
+    
+    def target_list(self):
+        return set() 
     

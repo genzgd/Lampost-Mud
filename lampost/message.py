@@ -3,9 +3,10 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-
-TARGET_SELF = 0
-TARGET_ENV = 1
+CLASS_OUT_OF_CHAR = 0
+CLASS_COMM_GENERAL = 1
+CLASS_SENSE_GLANCE = 2
+CLASS_SENSE_EXAMINE = 3
 
 #MESSAGE_CONTENT
 
@@ -53,13 +54,5 @@ TARGET_ENV = 1
 #    'special'
 #  response:  state change
 
-class Message():
-    pass
 
-class MessageClass():
-    pass
-
-
-class SightMC(Message):
-    pass
     

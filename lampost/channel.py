@@ -5,20 +5,24 @@ Created on Feb 15, 2012
 '''
 from action import Action
 from dto.display import DisplayLine, Display
+from responder import Responder
 
-class Channel(Action):
+import message
+
+class Channel(Action, Responder):
     def __init__(self, verb, color=0x000000):
-        self.build_verbs(verb)
+        Action.__init__(self, verb, message.CLASS_OUT_OF_CHAR)
         self.color = color
     
-    def invoke(self, player, verb, command):
-        message =  player.name + ": " + command[command.find(" "):]
-        self.broadcast(player, message)
-        return Display(message, self.color)
-        
-    def broadcast(self, originator, message):
+    def create_message(self, player, verb, subject):
+        return player.name + ": " + " ".join(subject)
+    
+    def accepts(self, action, subject):
+        return action == self and subject
+         
+    def receive(self, originator, message):
         self.dispatch(self, ChannelMessage(originator, message, self.color));
-        
+        return Display(message, self.color)
         
 class ChannelMessage():
     def __init__(self, originator, message, color):

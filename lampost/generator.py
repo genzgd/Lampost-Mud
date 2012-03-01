@@ -17,5 +17,12 @@ Created on Feb 26, 2012
 #    attributes
 #    
 class Generator():
-    def __init__(self, triggers):
-        pass
+    def __init__(self):
+        self.actions = set()
+        self.children = set()
+        
+    def action_list(self):
+        return self.actions
+    
+    def children(self):
+        return self.children

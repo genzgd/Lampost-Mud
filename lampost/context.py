@@ -21,6 +21,7 @@ class Context():
         self.sm = SessionManager(self.dispatcher, nature)
         self.site = Site(LampostResource(self.sm))
         self.port = port
+        self.nature.create()
         
         pulse = task.LoopingCall(self.dispatcher.pulse)
         pulse.start(nature.pulse_interval)
