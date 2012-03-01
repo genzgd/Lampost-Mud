@@ -5,9 +5,9 @@ function LMWeb() {
 	var imports = {};
 	var moduleMap = {};
 	var nextModuleId = 0;
-		
+	
 	this.loadImport = function(name, moduleRoot, moduleId) {
-			console.log("Importing " + name + " javascript");
+			lmdp.log("Importing " + name + " javascript");
 			if (!imports[name]) {
 				var importScript = $('<script src="comp/' + name + '.js" >//@ sourceURL=createOrder.js</script>');
 				imports[name] = importScript;
@@ -24,7 +24,7 @@ function LMWeb() {
 
 	this.loadModule = function(name, root) {
 			var moduleId = ++nextModuleId;	
-			console.log("Loading comp/" + name + ".html  root:" + root.attr("id"));
+			lmdp.log("Loading comp/" + name + ".html  root:" + root.attr("id"));
 			root.load("comp/" + name + ".html?version=" + version, null, function(response, status, request) {
 				if (status == "success") {
 					self.loadImport(name, root, moduleId);

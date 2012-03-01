@@ -25,7 +25,7 @@ function LMRemote() {
 	}
 		
 	function stopLink(status) {
-		console.log("Link stopped: " + status);
+		lmdp.log("Link stopped: " + status);
 		lmdp.dispatch("link_failure", status);
 	}
 		

@@ -10,7 +10,7 @@ function LMDispatch() {
 				listeners = {};
 				listenerMap[type] = listeners;
 			}
-			console.log("Registering " + type);
+			self.log("Registering " + type);
 			var regId = nextRegId++;
 			var reg = new LMDispatch.Reg(regId, type, callback, once);
 			listeners[regId] = reg;
@@ -34,12 +34,18 @@ function LMDispatch() {
 						delete listeners[regId];
 					}
 				}
-				console.log("Event dispatched: " + type + " data: " +  data);
+				self.log("Event dispatched: " + type + " data: " +  data);
 			}
 		};
 		
 	this.dispatchEvent = function (event) {
 			self.dispatch(event.eventType, event, event.once);
+		};
+		
+	this.log = function(msg) {
+			if (window.console) {
+				window.console.log(msg);
+			}
 		};
 }
 

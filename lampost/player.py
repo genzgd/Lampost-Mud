@@ -5,37 +5,41 @@ Created on Feb 16, 2012
 '''
 from dto.display import Display
 from dto.rootdto import RootDTO
+from entity import Entity
 
-class Player():   
+class Player(Entity):   
     @staticmethod
     def register(event_type, callback):
         return Player.dispatcher.register(event_type, callback)
     
     def __init__(self, name, session):
-        self.session = session
-        self.registrations = set()
+        self.session = session     
         self.name = name
-        self.soul = set()
-        self.world = set()
-        self.env = None
-        self.providers = [self.soul, self.world]
         
-    def parse(self, command):
+    def baptise(self, soul, inven, env):
+        Entity.__init__(self, soul, inven, env)
+        
+    def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
         matches = list(self.parse_actions(words))
+        if not matches:
+            if not retry:
+                return self.parse("say " + command, True)
+            return Display("What?") 
         if len(matches) == 1:
-            feedback = matches[0][0].invoke(self, matches[0][1], command)
-            if feedback:
-                return feedback
-            return RootDTO(silent=True)
-        return Display("What?") 
+            action, responder, verb, subject = matches[0]
+            message = action.create_message(self, verb, subject)
+            feedback = responder.receive(self, message)
+            return feedback if feedback else RootDTO(silent=True)
+        return Display("Ambiguous Command")
     
     def parse_actions(self, words):
-        for provider in self.providers:
-            for action in provider:
-                verb = action.match(words)
-                if verb:
-                    yield(action, verb)
+        for action in self.providers:
+            verb, subject = action.match(words)
+            if verb:
+                for target in self.targets:
+                    if target.accepts(action, subject):
+                        yield(action, target, verb, subject)
     
     def display_channel(self, message):
         if (message.originator != self):
@@ -45,14 +49,8 @@ class Player():
         self.registrations.add(self.register(channel, self.display_channel))
     
     def detach(self):
-        for registration in self.registrations:
-            registration.detach()         
+        Entity.detach(self)   
         self.session = None
-        
-        
-class Soul():
-    def __init__(self):
-        self.env_generators = {}
         
         
     
