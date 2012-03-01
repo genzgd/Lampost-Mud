@@ -16,11 +16,12 @@ class Room():
     def get_children(self):
         return self.contents.union(self.items)
     
-    def accepts(self, subject, msg_class):
-        if (subject):
+    def accepts(self, lmessage):
+        if lmessage.msg_class not in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE):
             return False
-        return msg_class in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE)
-    
+        if not lmessage.payload:
+            return True
+            
     def get_targets(self):
         return self
     

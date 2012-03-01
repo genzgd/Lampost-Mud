@@ -21,28 +21,32 @@ class Player(Entity):
         
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
-        matches = list(self.parse_actions(words))
+        matches = list(self.parse_actions(words, command))
         if not matches:
             if not retry:
                 return self.parse("say " + command, True)
-            return Display("What?") 
-        if len(matches) == 1:
-            action, responder, verb, subject = matches[0]
-            message = action.create_message(self, verb, subject)
-            feedback = responder.receive(self, message)
-            return feedback if feedback else RootDTO(silent=True)
-        return Display("Ambiguous Command")
+            feedback = "What?" 
+        elif len(matches) == 1:
+            message, target = matches[0]
+            feedback = target.receive(message)
+            if not feedback:
+                return RootDTO(silent=True)
+            if isinstance(feedback, RootDTO):
+                return feedback
+        else:
+            feedback = "Ambiguous Command"
+        return Display(feedback)
     
-    def parse_actions(self, words):
+    def parse_actions(self, words, command):
         for action in self.providers:
-            verb, subject = action.match(words)
-            if verb:
+            message = action.match(self, words, command)
+            if message:
                 for target in self.targets:
-                    if target.accepts(action, subject):
-                        yield(action, target, verb, subject)
+                    if target.accepts(message):
+                        yield(message, target)
     
     def display_channel(self, message):
-        if (message.originator != self):
+        if (message.source != self):
             self.session.display_line(message.display_line)
     
     def register_channel(self, channel):
