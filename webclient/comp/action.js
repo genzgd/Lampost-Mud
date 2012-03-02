@@ -1,6 +1,6 @@
 function ActionLMModule (root) {
 	
-	actionInput = root.find("#actionInput");
+	var actionInput = root.find("#actionInput");
 	actionInput.focus();
 	actionInput.keypress(function (event) {
 		if (event.which == 13) {
