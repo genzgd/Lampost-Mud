@@ -4,12 +4,12 @@ Created on Feb 12, 2012
 @author: Geoff
 '''
 from datetime import datetime, timedelta
-
-from dto.display import Display, DisplayLine
+from dto.display import Display
 from dto.link import LinkCancel, LinkGood
 from dto.rootdto import RootDTO
-from player import Player
 from event import PulseEvent
+from player import Player
+
 
 LINK_DEAD_INTERVAL = timedelta(seconds=5)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
@@ -65,9 +65,8 @@ class SessionManager():
         session = self.session_map.get(session_id)
         player = Player(user_id, session)
         session.player = player
-        self.nature.baptise(player)
-        session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
-        #self.player_list_dto.
+        welcome = self.nature.baptise(player)
+        session.append(welcome)
         return RootDTO(login="good")
     
         

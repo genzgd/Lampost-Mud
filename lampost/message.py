@@ -8,6 +8,8 @@ CLASS_COMM_GENERAL = 1
 CLASS_SENSE_GLANCE = 2
 CLASS_SENSE_EXAMINE = 3
 
+CLASS_MOVEMENT = 100
+
 class LMessage():
 
     def __init__(self, source, msg_class, payload):

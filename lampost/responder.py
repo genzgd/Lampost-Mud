@@ -20,6 +20,6 @@ class Responder():
     def accepts(self, lmessage):
         return self.msg_class == lmessage.msg_class
     
-    def target_list(self):
-        return set() 
+    def get_targets(self):
+        return self
     

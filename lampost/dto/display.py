@@ -11,7 +11,11 @@ class Display(RootDTO):
         self.display.lines = []
         if text is not None:
             self.append(DisplayLine(text, color))
-        
+
+    def merge(self, other):
+        for line in other.display.lines:
+            self.append(line)
+ 
     def append(self, line):
         self.display.lines.append(line)
         

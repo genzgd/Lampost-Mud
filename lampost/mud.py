@@ -9,6 +9,8 @@ from avezel import Avezel
 from entity import Soul
 
 from message import LMessage, CLASS_SENSE_EXAMINE
+from dto.display import Display
+from movement import Directions
 
 class MudNature():
     
@@ -26,12 +28,18 @@ class MudNature():
     def baptise(self, player):
         player.baptise(self.basic_soul, set(), self.area.rooms[0])
         player.register_channel(self.shout_channel)
+        welcome = Display("Welcome " + player.name,  0x002288)
+        welcome.merge(player.parse("look"))
+        return welcome
+        
 
 class MudSoul(Soul):
     def __init__(self):
         Soul.__init__(self)
-        self.actions.add(Action("look", CLASS_SENSE_EXAMINE))
-                                        
+        self.actions.add(Action(("look", "l"), CLASS_SENSE_EXAMINE))
+        self.actions.update(Directions().get_actions())
+
+                                      
 class Emotes(Action):
     def __init__(self, msg_class):
         self.verbMap = {"dance": "gyrates obscenely!",
