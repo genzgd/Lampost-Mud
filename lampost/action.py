@@ -33,8 +33,8 @@ class Action():
     def create_message(self, source, verb, subject, command):
         return LMessage(source, self.msg_class, subject)
               
-class Examine(Action):
-    pass
+
+        
         
         
     

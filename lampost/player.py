@@ -6,6 +6,7 @@ Created on Feb 16, 2012
 from dto.display import Display
 from dto.rootdto import RootDTO
 from entity import Entity
+from message import CLASS_MOVEMENT
 
 class Player(Entity):   
     @staticmethod
@@ -51,7 +52,12 @@ class Player(Entity):
     
     def register_channel(self, channel):
         self.registrations.add(self.register(channel, self.display_channel))
-    
+        
+    def receive(self, lmessage):
+        if (lmessage.msg_class == CLASS_MOVEMENT):
+            self.env = lmessage.payload
+            self.update_state()
+            
     def detach(self):
         Entity.detach(self)   
         self.session = None
