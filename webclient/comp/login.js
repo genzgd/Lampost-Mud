@@ -13,6 +13,11 @@ function LoginLMModule (root) {
 			return true;
 		});
 	
+	function refocus() {
+		nameInput.focus();
+	}
+	
+	this.register("link_reconnected", refocus);
 }
 
 LoginLMModule.prototype = LMWeb.BaseModule;

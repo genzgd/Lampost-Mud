@@ -68,6 +68,7 @@ class Entity():
         self.update_state()
             
     def detach(self):
+        self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self))
         for registration in self.registrations:
             registration.detach()
 

@@ -11,5 +11,9 @@ html, body {
 	height: 100%;
 }
 
+td {
+	overflow: hidden;
+}
+
 .no-close .ui-dialog-titlebar-close {display: none }
 .no-close .ui-dialog-buttonpane .ui-dialog-buttonset { text-align: center; float: none; } 
