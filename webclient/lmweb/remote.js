@@ -79,7 +79,6 @@ function LMRemote() {
 			reconnectDialog = null;
 			lmdp.dispatch("link_reconnected");
 		}
-		
 		if (status == "good") {		
 			link();
 		} else if (status == "no_session") {

@@ -51,6 +51,8 @@ class SessionManager():
         for session_id, session in self.session_map.items():
             if session.ld_time:
                 if now - session.ld_time > LINK_DEAD_PRUNE:
+                    if session.player:
+                        session.player.detach()
                     del self.session_map[session_id]
                     continue
             elif session.request:
@@ -86,7 +88,6 @@ class UserSession():
     def player_status(self, now):
         if self.ld_time:
             return "Link Dead"
-        
         idle = (now - self.activity_time).seconds;
         if idle < 60:
             return "Active";
