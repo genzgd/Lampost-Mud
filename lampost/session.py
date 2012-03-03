@@ -12,7 +12,6 @@ from player import Player
 from os import urandom;
 from base64 import b64encode
 
-
 LINK_DEAD_INTERVAL = timedelta(seconds=5)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
 LINK_IDLE_REFRESH = timedelta(seconds=45)

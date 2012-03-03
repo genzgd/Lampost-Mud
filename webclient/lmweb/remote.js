@@ -77,6 +77,7 @@ function LMRemote() {
 		if (reconnectDialog) {
 			reconnectDialog.dialog("close");
 			reconnectDialog = null;
+			lmdp.dispatch("link_reconnected");
 		}
 		
 		if (status == "good") {		

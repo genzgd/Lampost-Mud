@@ -3,12 +3,16 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
+from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM
+
+
 class Entity():
     def __init__(self, soul, inven, env):
         self.registrations = set()
         self.soul = soul
         self.inven = inven
         self.env = env
+        self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self))
         self.update_state()
         
     def update_state(self):
@@ -56,10 +60,17 @@ class Entity():
                 pass
             except AttributeError:
                 pass
+    
+    def change_env(self, new_env):
+        self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self))
+        self.env = new_env
+        self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self))
+        self.update_state()
             
     def detach(self):
         for registration in self.registrations:
             registration.detach()
+
             
 class Soul():
     def __init__(self):

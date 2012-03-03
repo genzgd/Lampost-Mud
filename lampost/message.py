@@ -9,14 +9,16 @@ CLASS_SENSE_GLANCE = 2
 CLASS_SENSE_EXAMINE = 3
 
 CLASS_MOVEMENT = 100
+CLASS_ENTER_ROOM = 101
+CLASS_LEAVE_ROOM = 102
 
 class LMessage():
 
-    def __init__(self, source, msg_class, payload):
+    def __init__(self, source, msg_class, payload, to_self=False):
         self.source = source
         self.msg_class = msg_class
         self.payload = payload
-        
+        self.to_self = to_self 
     
 
 #MESSAGE_CONTENT
