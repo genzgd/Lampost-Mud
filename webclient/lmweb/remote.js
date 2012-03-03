@@ -1,6 +1,11 @@
 function LMRemote() {
 
 	var sessionId = 0;
+	var reconnectDialog = null;
+	var sessionErrorDialog = null;
+	var timerValue = null;
+	var timerText = null;
+	var reconnectTimer = -1;
 	
 	function request(event) {
 		event.args.session_id = sessionId;
@@ -15,7 +20,7 @@ function LMRemote() {
 				},
 			success: serverResult,
 			error: function(jqXHR, textStatus, errorThrown) {
-				stopLink(textStatus + " " + errorThrown);
+				linkFailure(textStatus + " " + errorThrown);
 				}
 			});
 		};
@@ -23,18 +28,72 @@ function LMRemote() {
 	function link(data) {
 		request(new LMRemote.Request("link"));
 	}
-		
-	function stopLink(status) {
+	
+	function reconnectNow() {
+		if (reconnectTimer != -1) {
+			clearTimeout(reconnectTimer);
+			reconnectTimer = -1;
+		}
+		if (sessionId == 0) {
+			request(new LMRemote.Request("connect"));
+		} else {
+			link();
+		}
+	}
+	
+	function updateReconnectTimer() {
+		timerValue--;
+		if (timerValue <= 0) {
+			reconnectNow();
+		} else {
+			reconnectTimer = setTimeout(updateReconnectTimer, 1000);
+		}
+		timerText.text(timerValue);
+	}
+			
+	function linkFailure(status) {
 		lmdp.log("Link stopped: " + status);
-		lmdp.dispatch("link_failure", status);
+		if (reconnectDialog) {
+			timerText.text("15");
+		} else {
+			reconnectDialog = $("<div style='font-size: 10;' title='Reconnecting to Server'>" +
+					"<p align='center'>Connection lost.  Error: " + status +
+					"  Reconnecting in <span id='timespan'>15</span>" +
+					" seconds.</p>");
+			reconnectDialog.dialog(
+					{dialogClass: "no-close",
+					 closeOnEscape: false,
+						buttons: [
+					           {text: "Reconnect Now",
+					        	   click: reconnectNow}],
+					 modal: true});
+		}
+		timerValue = 15;
+		timerText = reconnectDialog.find("#timespan");
+		reconnectTimer = setTimeout(updateReconnectTimer, 1000);
 	}
 		
 	function linkUpdate(status) {
-		if (status == "good") {
-			link();
-		} else {
-			stopLink(status);
+		if (reconnectDialog) {
+			reconnectDialog.dialog("close");
+			reconnectDialog = null;
 		}
+		
+		if (status == "good") {		
+			link();
+		} else if (status == "no_session") {
+			lmdp.dispatch("logout");
+			sessionId = 0;
+			reconnectNow();
+		} else if (status == "no_login") {
+			if (!sessionErrorDialog) {
+				sessionErrorDialog = $("<div style='font-size: 10;' title='Session Expired'>" +
+						"<p align='center'>Your Session Has Expired</p>");
+				sessionErrorDialog.dialog(
+						{modal: true});
+			}
+			lmdp.dispatch("logout");
+		}	
 	}
 		
 	function serverResult(eventMap) {

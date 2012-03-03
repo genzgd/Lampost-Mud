@@ -9,6 +9,8 @@ from dto.link import LinkCancel, LinkGood
 from dto.rootdto import RootDTO
 from event import PulseEvent
 from player import Player
+from os import urandom;
+from base64 import b64encode
 
 
 LINK_DEAD_INTERVAL = timedelta(seconds=5)
@@ -20,15 +22,16 @@ class SessionManager():
     def __init__(self, dispatcher, nature):
         self.dispatcher = dispatcher
         self.nature = nature;
-        self.next_session_id = 0
         self.session_map = {}
         self.player_list_dto = RootDTO()
         self.dispatcher.register("refresh_link_status", self.refresh_link_status)
         self.dispatcher.dispatch_p(PulseEvent("refresh_link_status", 20, repeat=True))                      
  
     def get_next_id(self):
-        self.next_session_id = self.next_session_id + 1 
-        return str(self.next_session_id)
+        usession_id = b64encode(str(urandom(16)))
+        while self.get_session(usession_id):
+            usession_id = b64encode(str(urandom(16)))
+        return usession_id
     
     def get_session(self, session_id):
         return self.session_map.get(session_id)   
@@ -57,7 +60,7 @@ class SessionManager():
             elif now - session.attach_time > LINK_DEAD_INTERVAL:
                 session.link_failed("Timeout")
             if session.player:
-                player_list[session.player.name] = session.player_status()
+                player_list[session.player.name] = session.player_status(now)
         self.player_list_dto = RootDTO(player_list=player_list)
         self.display_players()
                  
@@ -81,10 +84,14 @@ class UserSession():
         self.request = None
         self.pulse_reg = None
         
-    def player_status(self):
+    def player_status(self, now):
         if self.ld_time:
             return "Link Dead"
-        return "Active"
+        
+        idle = (now - self.activity_time).seconds;
+        if idle < 60:
+            return "Active";
+        return "Idle: " + str(idle / 60) + "m";
     
     def attach(self, request):
         if self.request:
