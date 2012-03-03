@@ -8,8 +8,8 @@ function ActionLMModule (root) {
 		};
 	});
 	
-	function close(data) {
-		root.remove();
+	function refocus(data) {
+		actionInput.focus();
 	};
 
 	function sendAction(event) {
@@ -22,6 +22,8 @@ function ActionLMModule (root) {
 		}
 		return false;
 	}
+	
+	this.register("link_reconnected", refocus);
 }
 
 ActionLMModule.prototype = LMWeb.BaseModule;

@@ -4,7 +4,7 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
-    LMessage
+    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM, CLASS_COMM_GENERAL
 from responder import Responder
 from dto.display import Display, DisplayLine
 
@@ -12,6 +12,7 @@ class Room():
     ROOM_COLOR = 0xAD419A
     ROOM_SEP = "-=" * 30
     EXIT_COLOR = 0x808000
+    ITEM_COLOR = 0x7092BE
     
     def __init__(self, room_id, title, desc):
         self.room_id = room_id;
@@ -25,6 +26,8 @@ class Room():
         return self.contents.union(self.items, self.exits)
     
     def accepts(self, lmessage):
+        if lmessage.msg_class == CLASS_COMM_GENERAL:
+            return True
         if lmessage.msg_class not in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE):
             return False
         if not lmessage.payload:
@@ -33,21 +36,40 @@ class Room():
     def get_targets(self):
         return self
     
-    def receive(self, message):
-        if message.msg_class == CLASS_SENSE_GLANCE:
+    def receive(self, lmessage):
+        if lmessage.msg_class == CLASS_SENSE_GLANCE:
             return Display(self.title, Room.ROOM_COLOR)
-        if message.msg_class == CLASS_SENSE_EXAMINE:
-            longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
-            longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
-            longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
-            if self.exits:
-                exitline = "Obvious exits are "
-                for ex in self.exits:
-                    exitline = exitline + ex.dirdesc()
+        if lmessage.msg_class == CLASS_SENSE_EXAMINE:
+            return self.long_desc(lmessage.source)
+        if lmessage.msg_class == CLASS_ENTER_ROOM:           
+            self.contents.add(lmessage.payload)
+        if lmessage.msg_class == CLASS_LEAVE_ROOM:
+            self.contents.remove(lmessage.payload)
+        self.tell_contents(lmessage)
+    
+    def long_desc(self, observer):
+        longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
+        longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
+        longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
+        if self.exits:
+            exitline = "Obvious exits are "
+            for ex in self.exits:
+                exitline = exitline + ex.dirdesc()
                 longdesc.append(DisplayLine(exitline, Room.EXIT_COLOR))
-            return longdesc
+        for obj in self.contents:
+            if obj != observer:
+                longdesc.append(DisplayLine(obj.short_desc(), Room.ITEM_COLOR))
+        return longdesc
+    
+    def tell_contents(self, lmessage):
+        try:
+            for receiver in self.contents.union(self.items):
+                if lmessage.source != receiver:
+                    receiver.receive(lmessage)
+        except Exception:
+            pass
         
-
+        
 class Exit(Responder):
     def __init__(self, direction, destination):
         self.msg_class = direction
