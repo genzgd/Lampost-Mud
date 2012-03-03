@@ -60,14 +60,3 @@ class Exit(Responder):
         message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
         return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE, None))
         
-    
-        
-        
-        
-        
-        
-        
-    
-    
-        
-    
