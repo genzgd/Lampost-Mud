@@ -1,7 +1,7 @@
 function LMWeb() {
 
 	var self = this;
-	var version = "0.038";
+	var version = "0.042";
 	var imports = {};
 	var moduleMap = {};
 	var nextModuleId = 0;
@@ -40,6 +40,7 @@ function LMWeb() {
 			var module = moduleMap[moduleId];
 			module.unload();
 			delete moduleMap[moduleId];
+			delete module;
 		};
 
 }

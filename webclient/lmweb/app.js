@@ -19,12 +19,15 @@ function LMApp() {
 	
 	function startLogin(data) {
 		// Capture all the display output here until the main display is ready
-		displayReg = lmdp.register("display", updateDisplay);
-		loginModuleId = lmweb.loadModule("login", mainDiv.find("#displayPane"));
+		if (loginModuleId == -1) {
+			displayReg = lmdp.register("display", updateDisplay);
+			loginModuleId = lmweb.loadModule("login", mainDiv.find("#displayPane"));
+		}
 	}
 	
 	function login(data) {
 		lmweb.unloadModule(loginModuleId);
+		loginModuleId = -1;
 		displayModuleId = lmweb.loadModule("display", mainDiv.find("#displayPane"));
 		actionModuleId = lmweb.loadModule("action", mainDiv.find("#actionPane"));
 	}

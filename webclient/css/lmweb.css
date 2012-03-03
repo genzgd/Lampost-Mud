@@ -10,3 +10,6 @@ html, body {
 .wrapper {
 	height: 100%;
 }
+
+.no-close .ui-dialog-titlebar-close {display: none }
+.no-close .ui-dialog-buttonpane .ui-dialog-buttonset { text-align: center; float: none; } 
