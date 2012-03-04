@@ -4,12 +4,15 @@ function PlayerlistLMModule (root) {
 	
 	function display(players) {
 		tableBody.empty();
+		var count = 0;
 		for (var name in players) {
 			info = players[name];
 			var row = $("<tr><td>" + name + "</td><td>" + info.status + "</td><td>" +
 					info.loc + "</td></tr>");
 			tableBody.append(row);
+			count++;
 		}
+		$("title").text("(" + count.toString() + ") Lampost Skunkwords");
 	};
 			
 	this.register("player_list", display);

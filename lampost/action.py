@@ -4,12 +4,17 @@ Created on Feb 17, 2012
 @author: Geoff
 '''
 from message import LMessage, CLASS_COMM_GENERAL
+from responder import Responder
 
 class Action():
             
     @staticmethod 
     def dispatch(event_type, data):
-        Action.dispatcher.dispatch(event_type, data)             
+        Action.dispatcher.dispatch(event_type, data) 
+        
+    @staticmethod
+    def save_object(obj):
+        Action.datastore.save_object(obj)            
     
     def __init__(self, verbs, msg_class):
         self.verbs = set()
@@ -34,6 +39,13 @@ class Action():
         return LMessage(source, self.msg_class, subject)
 
 
+class Gesture(Action, Responder):
+    
+    def __init__(self, verbs):
+        Action.__init__(self, verbs, self)
+  
+        
+
 class Emotes(Action):
     def __init__(self):
         self.verbMap = {"dance": ("gyrate obscenely!", "gyrates obscenely!"),
@@ -41,7 +53,7 @@ class Emotes(Action):
                                    "blinks rapidly in surprise")}
         Action.__init__(self, self.verbMap.keys(), CLASS_COMM_GENERAL)
              
-    def create_message(self, source, verb, subject, command):
+    def create_message(self, source, verb, subject):
         if subject:
             return None
         opts = self.verbMap[verb[0]]

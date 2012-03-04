@@ -17,7 +17,7 @@ function LoginLMModule (root) {
 		nameInput.focus();
 	}
 	
-	this.register("link_reconnected", refocus);
+	this.register("refocus", refocus);
 }
 
 LoginLMModule.prototype = LMWeb.BaseModule;
