@@ -52,7 +52,7 @@ class Room():
         longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
         longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
         if self.exits:
-            exitline = "Obvious exits are "
+            exitline = "Obvious exits are: "
             for ex in self.exits:
                 exitline = exitline + ex.dirdesc()
                 longdesc.append(DisplayLine(exitline, Room.EXIT_COLOR))
