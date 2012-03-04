@@ -47,6 +47,7 @@ class Emotes(Action):
         opts = self.verbMap[verb[0]]
         payload = CommPayload("You " + opts[0], source.name + " " + opts[1])
         return LMessage(source, self.msg_class, payload, True)
+
  
 class SayAction(Action):
     def __init__(self):
