@@ -5,7 +5,9 @@ function PlayerlistLMModule (root) {
 	function display(players) {
 		tableBody.empty();
 		for (var name in players) {
-			var row = $("<tr><td>" + name + "</td><td>" + players[name] + "</td><td></td></tr>");
+			info = players[name];
+			var row = $("<tr><td>" + name + "</td><td>" + info.status + "</td><td>" +
+					info.loc + "</td></tr>");
 			tableBody.append(row);
 		}
 	};

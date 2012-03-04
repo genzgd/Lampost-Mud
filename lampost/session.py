@@ -61,7 +61,7 @@ class SessionManager():
             elif now - session.attach_time > LINK_DEAD_INTERVAL:
                 session.link_failed("Timeout")
             if session.player:
-                player_list[session.player.name] = session.player_status(now)
+                player_list[session.player.name] = session.player_info(now)
         self.player_list_dto = RootDTO(player_list=player_list)
         self.display_players()
                  
@@ -85,14 +85,19 @@ class UserSession():
         self.request = None
         self.pulse_reg = None
         
-    def player_status(self, now):
+    def player_info(self, now):
         if self.ld_time:
-            return "Link Dead"
-        idle = (now - self.activity_time).seconds;
-        if idle < 60:
-            return "Active";
-        return "Idle: " + str(idle / 60) + "m";
-    
+            status = "Link Dead"
+        else:
+            idle = (now - self.activity_time).seconds;
+            if idle < 60:
+                status = "Active"
+            else:
+                status =  "Idle: " + str(idle / 60) + "m"
+        info = RootDTO(status=status)
+        info.loc = self.player.env.title
+        return info
+        
     def attach(self, request):
         if self.request:
             self.push(LinkCancel())
