@@ -80,7 +80,4 @@ class Player(Entity):
         Entity.detach(self)   
         self.session = None
         
-        
     
-           
-            

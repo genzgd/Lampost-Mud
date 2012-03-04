@@ -44,8 +44,12 @@ function LMApp() {
 	}
 	
 	function logout(data) {
-		lmweb.unloadModule(actionModuleId);
-		lmweb.unloadModule(displayModuleId);
+		if (actionModuleId != -1) {
+			lmweb.unloadModule(actionModuleId);
+			lmweb.unloadModule(displayModuleId);
+			actionModuleId = -1;
+			displayModuleId = -1;
+		}
 		startLogin();
 	}
 	
