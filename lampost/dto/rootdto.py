@@ -21,10 +21,19 @@ class RootDTO():
             
     def merge_dict(self, dictionary):
         for key, value in dictionary.iteritems():
-            if isinstance(getattr(self, key, None), list):
-                self.getattr(key).append(value)
+            peer = getattr(self, key, None)
+            if peer:
+                try:
+                    if isinstance(peer, list):
+                        peer.extend(value)
+                    elif isinstance(value, dict):
+                        peer.merge_dict(value)
+                    else:
+                        peer.merge(value)
+                except AttributeError:
+                    peer[key] = value
             else:
-                setattr(self, key, value)
+                setattr(self, key, value)              
         return self
      
     def get_json(self):

@@ -10,19 +10,24 @@ from event import Dispatcher
 from session import SessionManager
 from server import LampostResource
 from action import Action
-from player import Player
+from entity import Entity
+from datastore.dbconn import RedisStore
 
 class Context():
     def __init__(self, nature, port=2500):
         self.nature = nature;
         self.dispatcher = Dispatcher()
         Action.dispatcher = self.dispatcher
-        Player.dispatcher = self.dispatcher
+        Entity.dispatcher = self.dispatcher
+        self.datastore = RedisStore(self.dispatcher)
+        Action.datastore = self.datastore
+        Entity.datastore = self.datastore
         self.sm = SessionManager(self.dispatcher, nature)
         self.site = Site(LampostResource(self.sm))
         self.port = port
         self.nature.create()
         
+      
         pulse = task.LoopingCall(self.dispatcher.pulse)
         pulse.start(nature.pulse_interval)
         

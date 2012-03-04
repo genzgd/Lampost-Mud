@@ -11,6 +11,7 @@ from entity import Soul
 from message import CLASS_SENSE_EXAMINE
 from dto.display import Display
 from movement import Directions
+from immortal import CreateUser
 
 class MudNature():
     
@@ -26,8 +27,15 @@ class MudNature():
         new_soul = MudSoul()
         new_soul.actions.add(self.shout_channel)
         new_soul.targets.add(self.shout_channel)
+        
+        create_user = CreateUser()
+        new_soul.actions.add(create_user)
+        new_soul.targets.add(create_user)
+        
         player.baptise(new_soul, set(), self.area.rooms[0])
         player.register_channel(self.shout_channel)
+        player.register("db_log", player.display_line)
+  
         welcome = Display("Welcome " + player.name,  0x002288)
         welcome.merge(player.parse("look"))
         return welcome

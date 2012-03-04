@@ -23,7 +23,7 @@ function ActionLMModule (root) {
 		return false;
 	}
 	
-	this.register("link_reconnected", refocus);
+	this.register("refocus", refocus);
 }
 
 ActionLMModule.prototype = LMWeb.BaseModule;

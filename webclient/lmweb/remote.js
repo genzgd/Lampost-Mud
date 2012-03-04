@@ -2,7 +2,6 @@ function LMRemote() {
 
 	var sessionId = 0;
 	var reconnectDialog = null;
-	var sessionErrorDialog = null;
 	var timerValue = null;
 	var timerText = null;
 	var reconnectTimer = -1;
@@ -77,24 +76,19 @@ function LMRemote() {
 		if (reconnectDialog) {
 			reconnectDialog.dialog("close");
 			reconnectDialog = null;
-			lmdp.dispatch("link_reconnected");
+			lmdp.dispatch("refocus");
 		}
 		if (status == "good") {		
 			link();
 		} else if (status == "no_session") {
-			lmdp.dispatch("logout");
+			lmdp.dispatch("logout", "invalid_session");
 			sessionId = 0;
 			reconnectNow();
 		} else if (status == "no_login") {
-			if (!sessionErrorDialog) {
-				sessionErrorDialog = $("<div style='font-size: 10;' title='Session Expired'>" +
-						"<p align='center'>Your Session Has Expired</p>");
-				sessionErrorDialog.dialog(
-						{modal: true});
-			}
-			lmdp.dispatch("logout");
+			lmdp.dispatch("logout", "invalid_session");
 		}	
 	}
+	
 		
 	function serverResult(eventMap) {
 		for (var key in eventMap) {

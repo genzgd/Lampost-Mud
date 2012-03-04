@@ -10,10 +10,7 @@ from message import CLASS_MOVEMENT, CLASS_LEAVE_ROOM, CLASS_ENTER_ROOM,\
     CLASS_COMM_GENERAL
 
 class Player(Entity):   
-    @staticmethod
-    def register(event_type, callback):
-        return Player.dispatcher.register(event_type, callback)
-    
+     
     def __init__(self, name, session):
         self.session = session     
         self.name = name
@@ -44,7 +41,7 @@ class Player(Entity):
     
     def match_actions(self, words, command):
         for action in self.providers:
-            message = action.match(self, words, command)
+            message = action.match(self, words, command=command)
             if message:
                 yield(message)
     

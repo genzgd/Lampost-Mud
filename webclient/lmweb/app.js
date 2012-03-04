@@ -6,6 +6,8 @@ function LMApp() {
 	var actionModuleId = -1;
 	var displayModuleId = -1;
 	var displayReg = null;
+	var sessionErrorDialog = null;
+
 	
 	function init() {
 		mainDiv = $("#mainDiv");
@@ -49,6 +51,16 @@ function LMApp() {
 			lmweb.unloadModule(displayModuleId);
 			actionModuleId = -1;
 			displayModuleId = -1;
+			if (data == "invalid_session" && !sessionErrorDialog) {
+				sessionErrorDialog = $("<div style='font-size: 10;' title='Session Expired'>" +
+					"<p align='center'>Your Session Has Expired</p>");
+					sessionErrorDialog.dialog(
+						{modal: true,
+						 close: function() {
+							 sessionErrorDialog = null;
+							 lmdp.dispatch("refocus");
+						 }});
+			}
 		}
 		startLogin();
 	}
