@@ -63,7 +63,7 @@ class Player(Creature):
         self.session.display_line(DisplayLine(text))
     
     def register_channel(self, channel):
-        self.registrations.add(self.register(channel, self.display_channel))
+        self.register(channel, self.display_channel)
         
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_MOVEMENT:

@@ -4,6 +4,7 @@ Created on Feb 15, 2012
 @author: Geoff
 '''
 import cgi
+import traceback
 
 from twisted.web.resource import Resource
 from twisted.web.util import Redirect
@@ -14,6 +15,7 @@ from datetime import datetime
 
 from dto.link import LinkError, ERROR_SESSION_NOT_FOUND, ERROR_NOT_LOGGED_IN
 from dto.rootdto import RootDTO
+from dto.display import Display, DisplayLine
 
 FILE_WEB_CLIENT = "webclient"
 
@@ -81,22 +83,28 @@ class ActionResource(Resource):
         self.sm = sm
     
     def render_POST(self, request):
-        session_id = request.args[ARG_SESSION_ID][0]
-        session = self.sm.get_session(session_id)
-        if not session:
-            return LinkError(ERROR_SESSION_NOT_FOUND).json
-        player = session.player  
-        if not player:
-            return LinkError(ERROR_NOT_LOGGED_IN).json
-        
-        action = cgi.escape(request.args[ARG_ACTION][0]).strip()
-        if not action:
-            return;
-        if action in ["quit", "logout"]:
-            player.detach()
-            session.player = None
-            return RootDTO(logout="logout").json
-        
-        session.activity_time = datetime.now()
-        return player.parse(action).json
+        try:
+            session_id = request.args[ARG_SESSION_ID][0]
+            session = self.sm.get_session(session_id)
+            if not session:
+                return LinkError(ERROR_SESSION_NOT_FOUND).json
+            player = session.player  
+            if not player:
+                return LinkError(ERROR_NOT_LOGGED_IN).json
+            
+            action = cgi.escape(request.args[ARG_ACTION][0]).strip()
+            if not action:
+                return;
+            if action in ["quit", "logout"]:
+                player.detach()
+                session.player = None
+                return RootDTO(logout="logout").json
+            
+            session.activity_time = datetime.now()
+            return player.parse(action).json
+        except:
+            display = Display()
+            display.append(DisplayLine(traceback.format_exc(), 0xff0000))
+            return display.json
+            
     
