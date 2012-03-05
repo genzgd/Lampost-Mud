@@ -8,12 +8,16 @@ from dto.rootdto import RootDTO
 from entity import Entity
 from message import CLASS_MOVEMENT, CLASS_LEAVE_ROOM, CLASS_ENTER_ROOM,\
     CLASS_COMM_GENERAL
+from creature import Creature
 
-class Player(Entity):   
+class Player(Creature):   
+    dbo_key_type = "player"
+    dbo_set_key = "players"
+    dbo_fields = Creature.dbo_fields + ("imm_level",)
      
-    def __init__(self, name, session):
-        self.session = session     
-        self.name = name
+    def __init__(self, name):
+        self.dbo_id = name.lower()
+        self.name = name.capitalize()
         
     def baptise(self, soul, inven, env):
         Entity.__init__(self, soul, inven, env)

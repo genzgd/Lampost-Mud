@@ -18,8 +18,9 @@ LINK_IDLE_REFRESH = timedelta(seconds=45)
 
 
 class SessionManager():
-    def __init__(self, dispatcher, nature):
+    def __init__(self, dispatcher, datastore, nature):
         self.dispatcher = dispatcher
+        self.datastore = datastore
         self.nature = nature;
         self.session_map = {}
         self.player_list_dto = RootDTO()
@@ -67,7 +68,10 @@ class SessionManager():
                  
     def login(self, session_id, user_id):
         session = self.session_map.get(session_id)
-        player = Player(user_id, session)
+        player = Player(user_id)
+        if not self.datastore.load_object(player):
+            return RootDTO(login_error="no_such_user")
+        player.session = session
         session.player = player
         welcome = self.nature.baptise(player)
         session.append(welcome)

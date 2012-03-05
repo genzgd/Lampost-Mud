@@ -11,7 +11,7 @@ from entity import Soul
 from message import CLASS_SENSE_EXAMINE
 from dto.display import Display
 from movement import Directions
-from immortal import CreateUser
+from immortal import CreatePlayer
 
 class MudNature():
     
@@ -28,9 +28,9 @@ class MudNature():
         new_soul.actions.add(self.shout_channel)
         new_soul.targets.add(self.shout_channel)
         
-        create_user = CreateUser()
-        new_soul.actions.add(create_user)
-        new_soul.targets.add(create_user)
+        create_player = CreatePlayer()
+        new_soul.actions.add(create_player)
+        new_soul.targets.add(create_player)
         
         player.baptise(new_soul, set(), self.area.rooms[0])
         player.register_channel(self.shout_channel)

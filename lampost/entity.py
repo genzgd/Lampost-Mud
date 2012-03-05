@@ -3,10 +3,11 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
+from datastore.dbo import RootDBO
+
 from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM
 
-
-class Entity():
+class Entity(RootDBO):
     
     @staticmethod
     def register(event_type, callback):

@@ -3,18 +3,30 @@ Created on Mar 4, 2012
 
 @author: Geoffrey
 '''
-class DBODef():
-    def __init__(self, key_type, fields=None, collections=None):
-        self.key_type = key_type
-        if fields is None:
-            fields = ()
-        if collections is None:
-            collections = ()
-        self.fields = set(fields)
-        self.collections = set(collections)
+class RootDBO():    
+    dbo_key_type = "global"
+    dbo_set_type = None
+    dbo_set_id = None
+    dbo_fields = ()
+    dbo_collections = ()
+    dbo_loaded = False
+    
+    def on_loaded(self):
+        self.dbo_loaded = True 
+    
+    def get_dbo_key(self):
+        return self.dbo_key_type + ":" + self.dbo_id
+    
+    def get_dbo_set_key(self):
+        if self.dbo_set_type:
+            return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
+    
+    dbo_key = property(get_dbo_key)
+    dbo_set_key = property(get_dbo_set_key)
         
 class DBOCollection():
-    def __init__(self, name, cascade=False):
-        self.name = name
+    def __init__(self, field_name, field_class, cascade=True):
+        self.field_name = field_name
+        self.field_class = field_class
         self.cascade = cascade
         

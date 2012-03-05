@@ -3,22 +3,17 @@ Created on Feb 15, 2012
 
 @author: Geoff
 '''
-from datastore.dbo import DBODef
+from datastore.dbo import RootDBO
 
-IMM_LEVEL_NONE = 0
-IMM_LEVEL_CREATOR = 1000
-IMM_LEVEL_ADMIN = 10000
-IMM_LEVEL_SUPREME = 100000
 
-class User():
-    DBODef = DBODef("user", ("name", "imm_level", "level"))
+class User(RootDBO):
+    dbo_key_type = "user"
+    dbo_fields = ("email")
+    dbo_set_key = "users"
     
-    def __init__(self, name):
-        self.name = name
-        self.dbo_id = name.lower()
-        self.imm_level = IMM_LEVEL_NONE
-        self.level = 1
-        
+    def __init__(self, email):
+        self.email = email
+            
         
     
     
