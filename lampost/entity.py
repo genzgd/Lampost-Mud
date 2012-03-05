@@ -9,10 +9,9 @@ from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM
 
 class Entity(RootDBO):
     
-    @staticmethod
-    def register(event_type, callback):
-        return Entity.dispatcher.register(event_type, callback)
- 
+    def register(self, event_type, callback):
+        self.registrations.add(Entity.dispatcher.register(event_type, callback))
+  
     def __init__(self, soul, inven, env):
         self.registrations = set()
         self.soul = soul
