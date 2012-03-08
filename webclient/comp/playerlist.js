@@ -12,7 +12,9 @@ function PlayerlistLMModule (root) {
 			tableBody.append(row);
 			count++;
 		}
-		$("title").text("(" + count.toString() + ") Lampost Skunkwords");
+		if (!lmapp.logged_in) {
+			$("title").text("(" + count.toString() + ") Lampost Skunkwords");
+		}
 	};
 			
 	this.register("player_list", display);

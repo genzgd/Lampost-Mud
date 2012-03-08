@@ -7,7 +7,8 @@ from dto.display import Display, DisplayLine
 from dto.rootdto import RootDTO
 from entity import Entity
 from message import CLASS_MOVEMENT, CLASS_LEAVE_ROOM, CLASS_ENTER_ROOM,\
-    CLASS_COMM_GENERAL
+    BC_ACTOR_NOTARG, BC_ENV_NOTARG, BC_ACTOR_WTARG, BC_ENV_WTARG, BC_TARG,\
+    BC_ACTOR_SELFTARG, BC_ENV_SELFTARG
 from creature import Creature
 
 class Player(Creature):   
@@ -18,6 +19,7 @@ class Player(Creature):
     def __init__(self, name):
         self.dbo_id = name.lower()
         self.name = name.capitalize()
+        self.target_id = (name.lower(),)
         
     def baptise(self, soul, inven, env):
         Entity.__init__(self, soul, inven, env)
@@ -33,8 +35,9 @@ class Player(Creature):
         elif len(matches) == 1:
             message, target = matches[0]
             feedback = target.receive(message)
-            if message.to_self:
-                feedback = self.receive(message)
+            if message.broadcast:
+                self.env.broadcast(self, target, message.broadcast)
+                feedback = self.translate_broadcast(self, target, message.broadcast)   
             if not feedback:
                 return RootDTO(silent=True)
             if isinstance(feedback, RootDTO):
@@ -45,7 +48,7 @@ class Player(Creature):
     
     def match_actions(self, words, command):
         for action in self.providers:
-            message = action.match(self, words, command=command)
+            message = action.match(self, words, command)
             if message:
                 yield(message)
     
@@ -74,10 +77,31 @@ class Player(Creature):
         elif lmessage.msg_class == CLASS_ENTER_ROOM:
             if lmessage.source != self:
                 self.display_line(lmessage.source.name + " arrives.")
-        elif lmessage.msg_class == CLASS_COMM_GENERAL:
-            if lmessage.source == self:
-                return Display(lmessage.payload.self_text())
-            self.display_line(lmessage.payload.other_text())
+    
+    def receive_broadcast(self, source, target, broadcast):
+        self.display_line(self.translate_broadcast(source, target, broadcast))
+    
+    def translate_broadcast(self, source, target, broadcast):
+        pname = source.name
+        if len(broadcast) < 3:
+            if source == self:
+                version = BC_ACTOR_NOTARG
+            else:
+                version = BC_ENV_NOTARG
+            return broadcast[version].format(p=pname)
+
+        tname = target.name 
+        if source == self and target != self:
+            version = BC_ACTOR_WTARG
+        elif source != self and target != self:
+            version = BC_ENV_WTARG
+        elif source != self and target == self:
+            version = BC_TARG
+        elif source == self and target == self:
+            version = BC_ACTOR_SELFTARG
+        elif source == self and target == source:
+            version = BC_ENV_SELFTARG  
+        return broadcast[version].format(p=pname, t=tname, pself="themself")    
                 
     def short_desc(self):
         return self.name

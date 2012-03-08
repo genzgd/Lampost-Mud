@@ -4,7 +4,7 @@ Created on Feb 25, 2012
 @author: Geoff
 '''
 from channel import Channel
-from action import Action, SayAction, Emotes
+from action import Action, SayAction
 from avezel import Avezel
 from entity import Soul
 
@@ -12,6 +12,7 @@ from message import CLASS_SENSE_EXAMINE
 from dto.display import Display
 from movement import Directions
 from immortal import CreatePlayer
+from emote import Emotes
 
 class MudNature():
     

@@ -4,7 +4,7 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
-    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM, CLASS_COMM_GENERAL
+    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from responder import Responder
 from dto.display import Display, DisplayLine
 
@@ -26,8 +26,6 @@ class Room():
         return self.contents.union(self.items, self.exits)
     
     def accepts(self, lmessage):
-        if lmessage.msg_class == CLASS_COMM_GENERAL:
-            return True
         if lmessage.msg_class not in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE):
             return False
         if not lmessage.payload:
@@ -45,8 +43,7 @@ class Room():
             self.contents.add(lmessage.payload)
         if lmessage.msg_class == CLASS_LEAVE_ROOM:
             self.contents.remove(lmessage.payload)
-        self.tell_contents(lmessage)
-    
+     
     def long_desc(self, observer):
         longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
         longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
@@ -61,15 +58,15 @@ class Room():
                 longdesc.append(DisplayLine(obj.short_desc(), Room.ITEM_COLOR))
         return longdesc
     
-    def tell_contents(self, lmessage):
-        try:
-            for receiver in self.contents.union(self.items):
-                if lmessage.source != receiver:
-                    receiver.receive(lmessage)
-        except Exception:
-            pass
+    def broadcast(self, source, target, broadcast):
+        #try:
+            for receiver in self.contents:
+                if receiver != source:
+                    receiver.receive_broadcast(source, target, broadcast)
+        #except Exception:
+            #pass
         
-        
+             
 class Exit(Responder):
     def __init__(self, direction, destination):
         self.msg_class = direction

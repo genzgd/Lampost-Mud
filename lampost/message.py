@@ -3,23 +3,34 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
+
 CLASS_OUT_OF_CHAR = 0
 CLASS_COMM_GENERAL = 1
-CLASS_SENSE_GLANCE = 2
-CLASS_SENSE_EXAMINE = 3
+CLASS_SENSE_GLANCE = 10
+CLASS_SENSE_EXAMINE = 11
 
 CLASS_MOVEMENT = 100
 CLASS_ENTER_ROOM = 101
 CLASS_LEAVE_ROOM = 102
 
+BC_ACTOR_NOTARG= 0
+BC_ENV_NOTARG = 1
+BC_ACTOR_WTARG = 2
+BC_ENV_WTARG = 3
+BC_TARG = 4
+BC_ACTOR_SELFTARG = 5
+BC_ENV_SELFTARG = 6
+
+
 class LMessage():
 
-    def __init__(self, source, msg_class, payload, to_self=False):
+    def __init__(self, source, msg_class, payload, broadcast=None):
         self.source = source
         self.msg_class = msg_class
         self.payload = payload
-        self.to_self = to_self 
+        self.broadcast = broadcast        
     
+
 
 #MESSAGE_CONTENT
 
