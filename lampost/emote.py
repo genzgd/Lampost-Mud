@@ -17,8 +17,8 @@ EMOTES =  {"dance": ("You gyrate lewdly!",
            
            "blink": ("You blink rapidly in surprise.",
                      "{p} blinks rapidly in surprise",
-                     "You blink rapidly at {t}.",
-                     "{p} blinks rapidly at {t}.",
+                     "You blink rapidly at {t} in surprise.",
+                     "{p} blinks rapidly at {t} in surprise.",
                      "{p} blinks rapidly at you in surprise.",
                      "You blink at yourself, but see nothing.",
                      "{p} blinks in confusion.")

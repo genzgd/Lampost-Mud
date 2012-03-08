@@ -43,6 +43,7 @@ class Room():
             self.contents.add(lmessage.payload)
         if lmessage.msg_class == CLASS_LEAVE_ROOM:
             self.contents.remove(lmessage.payload)
+        self.tell_contents(lmessage)    
      
     def long_desc(self, observer):
         longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
@@ -58,13 +59,21 @@ class Room():
                 longdesc.append(DisplayLine(obj.short_desc(), Room.ITEM_COLOR))
         return longdesc
     
+    def tell_contents(self, lmessage):
+        try:
+            for receiver in self.contents.union(self.items):
+                if lmessage.source != receiver:
+                    receiver.receive(lmessage)
+        except Exception:
+            pass
+    
     def broadcast(self, source, target, broadcast):
-        #try:
+        try:
             for receiver in self.contents:
                 if receiver != source:
                     receiver.receive_broadcast(source, target, broadcast)
-        #except Exception:
-            #pass
+        except Exception:
+            pass
         
              
 class Exit(Responder):
