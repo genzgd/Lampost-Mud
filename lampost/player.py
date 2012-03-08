@@ -74,9 +74,11 @@ class Player(Creature):
         elif lmessage.msg_class == CLASS_LEAVE_ROOM:
             if lmessage.source != self:
                 self.display_line(lmessage.source.name + " leaves.")
+                self.update_state()
         elif lmessage.msg_class == CLASS_ENTER_ROOM:
             if lmessage.source != self:
                 self.display_line(lmessage.source.name + " arrives.")
+                self.update_state()
     
     def receive_broadcast(self, source, target, broadcast):
         self.display_line(self.translate_broadcast(source, target, broadcast))
@@ -91,16 +93,18 @@ class Player(Creature):
             return broadcast[version].format(p=pname)
 
         tname = target.name 
-        if source == self and target != self:
-            version = BC_ACTOR_WTARG
-        elif source != self and target != self:
-            version = BC_ENV_WTARG
-        elif source != self and target == self:
+        if source == self:
+            if target == self:
+                version = BC_ACTOR_SELFTARG
+            else:
+                version = BC_ACTOR_WTARG
+        elif target == self:
             version = BC_TARG
-        elif source == self and target == self:
-            version = BC_ACTOR_SELFTARG
-        elif source == self and target == source:
-            version = BC_ENV_SELFTARG  
+        elif target != source:
+            version = BC_ENV_WTARG
+        else:
+            version = BC_ENV_SELFTARG
+       
         return broadcast[version].format(p=pname, t=tname, pself="themself")    
                 
     def short_desc(self):
