@@ -1,5 +1,6 @@
 function LMApp() {
 
+	var self = this;
 	var mainDiv = null;
 	var currentDisplay = {};
 	var loginModuleId = -1;
@@ -7,8 +8,9 @@ function LMApp() {
 	var displayModuleId = -1;
 	var displayReg = null;
 	var sessionErrorDialog = null;
-
 	
+	this.logged_in = false;
+
 	function init() {
 		mainDiv = $("#mainDiv");
 		currentDisplay.lines = [];
@@ -43,6 +45,7 @@ function LMApp() {
 		lmdp.unregister(displayReg);
 		lmdp.dispatch("display", currentDisplay);
 		currentDisplay.lines = [];
+		self.logged_in = true;
 	}
 	
 	function logout(data) {
@@ -62,6 +65,7 @@ function LMApp() {
 						 }});
 			}
 		}
+		self.logged_in = false;
 		startLogin();
 	}
 	

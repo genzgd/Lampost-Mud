@@ -15,6 +15,7 @@ function DisplayLMModule (root) {
 		htmlline.attr("style", "color: #" + color);
 		textWindow.append(htmlline);
 		textWindow.append($("<br />"));
+		$("title").text("LS: " + line.text);
 	};
 
 	function scroll () {

@@ -5,7 +5,8 @@ Created on Feb 26, 2012
 '''
 from datastore.dbo import RootDBO
 
-from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM
+from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
+    CLASS_COMM_GENERAL
 
 class Entity(RootDBO):
     
@@ -19,6 +20,13 @@ class Entity(RootDBO):
         self.env = env
         self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self))
         self.update_state()
+    
+    def accepts(self, lmessage):
+        if lmessage.msg_class == CLASS_COMM_GENERAL:
+            if lmessage.payload == self.target_id:
+                return True
+            if not lmessage.payload and lmessage.source == self:           
+                return True
         
     def update_state(self):
         self.providers = set()
@@ -65,6 +73,9 @@ class Entity(RootDBO):
                 pass
             except AttributeError:
                 pass
+    
+    def get_targets(self):
+        return self
     
     def change_env(self, new_env):
         self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self))
