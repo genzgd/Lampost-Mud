@@ -6,7 +6,7 @@ Created on Feb 26, 2012
 from datastore.dbo import RootDBO
 
 from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
-    CLASS_COMM_GENERAL
+    CLASS_COMM_GENERAL, CLASS_SENSE_EXAMINE
 
 class Entity(RootDBO):
     
@@ -22,10 +22,13 @@ class Entity(RootDBO):
         self.update_state()
     
     def accepts(self, lmessage):
+        if lmessage.target_id and lmessage.target_id != self.target_id:
+            return False
         if lmessage.msg_class == CLASS_COMM_GENERAL:
-            if lmessage.payload == self.target_id:
+            if lmessage.target_id:
                 return True
-            if not lmessage.payload and lmessage.source == self:           
+        if lmessage.msg_class == CLASS_SENSE_EXAMINE:
+            if lmessage.target_id:
                 return True
         
     def update_state(self):

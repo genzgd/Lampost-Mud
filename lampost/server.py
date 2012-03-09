@@ -23,6 +23,7 @@ URL_WEB_CLIENT = "webclient"
 URL_LOGIN = "login"
 URL_ACTION = "action"
 URL_LINK = "link"
+URL_DIALOG = "dialog"
 URL_CONNECT = "connect"
 URL_START = "/" + URL_WEB_CLIENT + "/start.html"
 
@@ -41,6 +42,7 @@ class LampostResource(Resource):
         self.putChild(URL_LINK, LinkResource(sm))
         self.putChild(URL_ACTION, ActionResource(sm))
         self.putChild(URL_CONNECT, ConnectResource(sm))
+        self.putChild(URL_DIALOG, DialogResource(sm))
         
         
 class LoginResource(Resource):
@@ -77,6 +79,19 @@ class LinkResource(Resource):
         return LinkError(ERROR_SESSION_NOT_FOUND).json
 
 
+class DialogResource(Resource):
+    IsLeaf = True
+    def __init__(self, sm):
+        self.sm = sm
+
+    def render_POST(self, request):
+        session_id = request.args[ARG_SESSION_ID[0]]
+        session = self.sm.get_session(session_id)
+        if not session:
+            return  LinkError(ERROR_SESSION_NOT_FOUND).json
+        return session.dialog_response(request.content.getValue())
+        
+
 class ActionResource(Resource):
     IsLeaf = True
     def __init__(self, sm):
@@ -96,9 +111,7 @@ class ActionResource(Resource):
             if not action:
                 return;
             if action in ["quit", "logout"]:
-                player.detach()
-                session.player = None
-                return RootDTO(logout="logout").json
+                return self.sm.logout(session).json
             
             session.activity_time = datetime.now()
             return player.parse(action).json
@@ -107,4 +120,3 @@ class ActionResource(Resource):
             display.append(DisplayLine(traceback.format_exc(), 0xff0000))
             return display.json
             
-    

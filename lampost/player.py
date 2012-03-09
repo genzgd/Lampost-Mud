@@ -8,7 +8,7 @@ from dto.rootdto import RootDTO
 from entity import Entity
 from message import CLASS_MOVEMENT, CLASS_LEAVE_ROOM, CLASS_ENTER_ROOM,\
     BC_ACTOR_NOTARG, BC_ENV_NOTARG, BC_ACTOR_WTARG, BC_ENV_WTARG, BC_TARG,\
-    BC_ACTOR_SELFTARG, BC_ENV_SELFTARG
+    BC_ACTOR_SELFTARG, BC_ENV_SELFTARG, CLASS_SENSE_EXAMINE
 from creature import Creature
 
 class Player(Creature):   
@@ -79,6 +79,8 @@ class Player(Creature):
             if lmessage.source != self:
                 self.display_line(lmessage.source.name + " arrives.")
                 self.update_state()
+        elif lmessage.msg_class == CLASS_SENSE_EXAMINE:
+            return self.short_desc() + ", a raceless, sexless, classless player."
     
     def receive_broadcast(self, source, target, broadcast):
         self.display_line(self.translate_broadcast(source, target, broadcast))

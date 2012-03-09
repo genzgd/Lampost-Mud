@@ -4,7 +4,7 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
-    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
+    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM, CLASS_COMM_GENERAL
 from responder import Responder
 from dto.display import Display, DisplayLine
 
@@ -26,9 +26,10 @@ class Room():
         return self.contents.union(self.items, self.exits)
     
     def accepts(self, lmessage):
-        if lmessage.msg_class not in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE):
+        if lmessage.msg_class not in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE,
+            CLASS_COMM_GENERAL):
             return False
-        if not lmessage.payload:
+        if not lmessage.target_id:
             return True
             
     def get_targets(self):

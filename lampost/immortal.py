@@ -26,3 +26,13 @@ class CreatePlayer(Gesture):
         player.imm_level = imm_level
         self.save_object(player)
         
+class DeletePlayer(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "delete_player")
+        
+    def receive(self, lmessage):
+        if not len(lmessage.payload):
+            return "Name not specified"
+        
+    
+        

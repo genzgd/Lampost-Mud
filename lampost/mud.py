@@ -43,7 +43,7 @@ class MudNature():
         
 
 class MudSoul(Soul):
-    look_action = Action(("look", "l"), CLASS_SENSE_EXAMINE)
+    look_action = Action(("look", "l", "exa", "examine"), CLASS_SENSE_EXAMINE)
     say_action = SayAction()
     emotes = Emotes()
     def __init__(self):
@@ -51,6 +51,3 @@ class MudSoul(Soul):
         self.actions.update((MudSoul.look_action, MudSoul.say_action, MudSoul.emotes))
         self.actions.update(Directions().actions)
       
-                                      
-         
-

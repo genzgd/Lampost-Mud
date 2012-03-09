@@ -33,4 +33,4 @@ class Emotes(Action):
         broadcast = EMOTES[verb[0]]
         if not subject:
             broadcast = broadcast[:2]
-        return LMessage(source, self.msg_class, subject, broadcast)
+        return LMessage(source, self.msg_class, None, subject, broadcast)
