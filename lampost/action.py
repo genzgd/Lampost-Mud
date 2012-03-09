@@ -36,13 +36,14 @@ class Action():
         return None
     
     def create_message(self, source, verb, subject, command):
-        return LMessage(source, self.msg_class, subject)
+        return LMessage(source, self.msg_class, subject, subject)
 
 
 class Gesture(Action, Responder):
     
     def __init__(self, verbs):
         Action.__init__(self, verbs, self)
+  
   
 class SayAction(Action):
     def __init__(self):
@@ -51,12 +52,11 @@ class SayAction(Action):
     def create_message(self, source, verb, subject, command):
         if not subject:
             return None
-        
         statement = command[command.find(" ") + 1:]
         broadcast = "You say `" + statement + "'", source.name + " says, `" + statement + "'"
-        return LMessage(source, self.msg_class, None, broadcast)  
+        return LMessage(source, self.msg_class, None, None, broadcast)
+        
+class ConfirmAction(Action, Responder):
+    pass
 
-    
-
-    
     

@@ -23,7 +23,9 @@ class SessionManager():
         self.datastore = datastore
         self.nature = nature;
         self.session_map = {}
+        self.player_map = {}
         self.player_list_dto = RootDTO()
+        self.player_list_dto.player_list = self.player_map
         self.dispatcher.register("refresh_link_status", self.refresh_link_status)
         self.dispatcher.dispatch_p(PulseEvent("refresh_link_status", 20, repeat=True))                      
  
@@ -47,13 +49,12 @@ class SessionManager():
             session.append(self.player_list_dto)
 
     def refresh_link_status(self, *args):
-        player_list = {};
         now = datetime.now()
         for session_id, session in self.session_map.items():
             if session.ld_time:
                 if now - session.ld_time > LINK_DEAD_PRUNE:
                     if session.player:
-                        session.player.detach()
+                        self.logout(session)
                     del self.session_map[session_id]
                     continue
             elif session.request:
@@ -62,8 +63,7 @@ class SessionManager():
             elif now - session.attach_time > LINK_DEAD_INTERVAL:
                 session.link_failed("Timeout")
             if session.player:
-                player_list[session.player.name] = session.player_info(now)
-        self.player_list_dto = RootDTO(player_list=player_list)
+                self.player_map[session.player.name] = session.player_info(now)
         self.display_players()
                  
     def login(self, session_id, user_id):
@@ -71,23 +71,36 @@ class SessionManager():
         player = Player(user_id)
         if not self.datastore.load_object(player):
             return RootDTO(login_error="no_such_user")
-        player.session = session
-        session.player = player
+        
         welcome = self.nature.baptise(player)
         session.append(welcome)
-        return RootDTO(login="good")
-    
+        self.player_map[player.name] = session.login(player);
+        return RootDTO(login="good").merge(self.player_list_dto)
+        
+    def logout(self, session):
+        player = session.player
+        player.detach();
+        session.player = None
+        del self.player_map[player.name]
+        return RootDTO(logout="logout").merge(self.player_list_dto)
+        
         
 class UserSession():
     def __init__(self, dispatcher):
         self.dispatcher = dispatcher
         self.output = RootDTO()
         self.player = None;  
-        self.activity_time = datetime.now()
         self.attach_time = datetime.now()
         self.ld_time = None
         self.request = None
         self.pulse_reg = None
+        self.dialog = None
+        
+    def login(self, player):
+        self.player = player
+        player.session = self
+        self.activity_time = datetime.now()
+        return self.player_info(self.activity_time)
         
     def player_info(self, now):
         if self.ld_time:

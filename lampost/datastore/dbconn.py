@@ -10,9 +10,9 @@ from json import JSONEncoder
 from json.decoder import JSONDecoder
 
 class RedisStore():
-    def __init__(self, dispatcher, db_num):
+    def __init__(self, dispatcher, db_host, db_port, db_num):
         self.dispatcher = dispatcher
-        pool = ConnectionPool(max_connections=2, db=db_num)
+        pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port)
         self.redis = StrictRedis(connection_pool=pool)
         dispatcher.register("save_object", self.save_object)
         dispatcher.register("load_object", self.load_object)
