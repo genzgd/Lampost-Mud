@@ -24,8 +24,6 @@ class SessionManager():
         self.nature = nature;
         self.session_map = {}
         self.player_map = {}
-        self.player_list_dto = RootDTO()
-        self.player_list_dto.player_list = self.player_map
         self.dispatcher.register("refresh_link_status", self.refresh_link_status)
         self.dispatcher.dispatch_p(PulseEvent("refresh_link_status", 20, repeat=True))                      
  
@@ -38,15 +36,19 @@ class SessionManager():
     def get_session(self, session_id):
         return self.session_map.get(session_id)   
         
+    def respond(self, rootDto):
+        return rootDto.merge(RootDTO(player_list=self.player_map))
+        
     def start_session(self):
         session_id = self.get_next_id()
         session = UserSession(self.dispatcher)
         self.session_map[session_id] = session
-        return RootDTO(connect=session_id).merge(self.player_list_dto)
+        return self.respond(RootDTO(connect=session_id))
                     
     def display_players(self):
+        player_list_dto = RootDTO(player_list=self.player_map)
         for session in self.session_map.itervalues():
-            session.append(self.player_list_dto)
+            session.append(player_list_dto)
 
     def refresh_link_status(self, *args):
         now = datetime.now()
@@ -75,14 +77,14 @@ class SessionManager():
         welcome = self.nature.baptise(player)
         session.append(welcome)
         self.player_map[player.name] = session.login(player);
-        return RootDTO(login="good").merge(self.player_list_dto)
+        return self.respond(RootDTO(login="good"))
         
     def logout(self, session):
         player = session.player
         player.detach();
         session.player = None
         del self.player_map[player.name]
-        return RootDTO(logout="logout").merge(self.player_list_dto)
+        return self.respond(RootDTO(logout="logout"))
         
         
 class UserSession():
