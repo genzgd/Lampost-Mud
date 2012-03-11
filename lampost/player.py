@@ -19,7 +19,6 @@ class Player(Creature):
         self.target_class = TARGET_PLAYER
         self.dbo_id = name.lower()
         self.name = name.capitalize()
-        self.target_id = name.lower(),
         
     def baptise(self, soul, inven, env):
         Entity.__init__(self, soul, inven, env)
@@ -59,7 +58,9 @@ class Player(Creature):
             verb = words[:verb_size]
             action_set = self.actions.get(verb)
             if action_set:
-                matching_actions.extend([(action, verb, words[verb_size:]) for action in action_set])
+                for action in action_set:
+                    target_id = action.msg_class if action.target_class == TARGET_MSG_CLASS else words[verb_size:]
+                    matching_actions.append((action, verb, target_id))
         return matching_actions
         
     def match_targets(self, matching_actions):
@@ -67,18 +68,17 @@ class Player(Creature):
         for action, verb, target_id in matching_actions:
             if action.target_class == TARGET_ACTION:
                 matches.append((action, verb, target_id))
-            elif action.target_class == TARGET_MSG_CLASS:
-                target = self.target_ids.get(action.msg_class)
-                if target:
-                    matches.append((action, verb, target))
             elif action.target_class == TARGET_ENV:
                 matches.append((action, verb, self.env))
             elif action.target_class & TARGET_ENV and not target_id:
                 matches.append((action, verb, self.env))
             else:
-                target = self.target_ids.get(target_id)
-                if target and target.target_class & action.target_class:
-                    matches.append(action, verb, target)
+                key_values = self.target_key_map.get(target_id)
+                if not key_values:
+                    continue
+                for target in key_values:
+                    if target and target.target_class & action.target_class:
+                        matches.append((action, verb, target))
         return matches;
                      
     def match_messages(self, messages):
