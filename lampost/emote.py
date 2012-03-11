@@ -3,8 +3,8 @@ Created on Mar 6, 2012
 
 @author: Geoffrey
 '''
-from action import Action
-from message import CLASS_COMM_GENERAL, LMessage
+from action import Action, TARGET_GENERAL
+from message import LMessage, CLASS_BROADCAST
 
 
 EMOTES =  {"dance": ("You gyrate lewdly!",
@@ -27,10 +27,11 @@ EMOTES =  {"dance": ("You gyrate lewdly!",
 
 class Emotes(Action):
     def __init__(self):
-        Action.__init__(self, EMOTES.keys(), CLASS_COMM_GENERAL)
+        Action.__init__(self, EMOTES.keys(), CLASS_BROADCAST, TARGET_GENERAL)
              
-    def create_message(self, source, verb, subject, command):
+    def create_message(self, source, verb, target, command):
         broadcast = EMOTES[verb[0]]
-        if not subject:
+        if not target:
             broadcast = broadcast[:2]
-        return LMessage(source, self.msg_class, None, subject, broadcast)
+        return LMessage(source, self.msg_class, target, broadcast)
+        

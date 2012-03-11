@@ -6,11 +6,9 @@ Created on Feb 16, 2012
 from dto.display import Display, DisplayLine
 from dto.rootdto import RootDTO
 from entity import Entity
-from message import CLASS_MOVEMENT, CLASS_LEAVE_ROOM, CLASS_ENTER_ROOM,\
-    BC_ACTOR_NOTARG, BC_ENV_NOTARG, BC_ACTOR_WTARG, BC_ENV_WTARG, BC_TARG,\
-    BC_ACTOR_SELFTARG, BC_ENV_SELFTARG, CLASS_SENSE_EXAMINE
 from creature import Creature
 from dialog import DialogDTO
+from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV
 
 class Player(Creature):   
     dbo_key_type = "player"
@@ -18,6 +16,7 @@ class Player(Creature):
     dbo_fields = Creature.dbo_fields + ("imm_level",)
      
     def __init__(self, name):
+        self.target_class = TARGET_PLAYER
         self.dbo_id = name.lower()
         self.name = name.capitalize()
         self.target_id = name.lower(),
@@ -27,19 +26,23 @@ class Player(Creature):
         
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
-        messages = list(self.match_actions(words, command))
-        if not len(messages) and not retry:
+        matching_actions = self.match_actions(words)
+        if not matching_actions and not retry:
             return self.parse("say " + command, True)   
-        matches = list(self.match_messages(messages))
+        matches = self.match_targets(matching_actions)
         if not matches:
             feedback = "What?" 
         elif len(matches) == 1:
-            message, target = matches[0]
-            feedback = target.receive(message)
+            action, verb, target = matches[0]
+            message = action.create_message(self, verb, target, command)
+            if not message.msg_class:
+                feedback = message.payload
+            else:
+                feedback = target.receive(message)
             if message.broadcast:
                 self.env.broadcast(self, target, message.broadcast)
                 feedback = self.translate_broadcast(self, target, message.broadcast)
-            elif message.dialog:
+            if message.dialog:
                 self.session.dialog = message.dialog
                 feedback = DialogDTO(message.dialog)
             if not feedback:
@@ -50,12 +53,34 @@ class Player(Creature):
             feedback = "Ambiguous Command"
         return Display(feedback)
     
-    def match_actions(self, words, command):
-        for action in self.providers:
-            message = action.match(self, words, command)
-            if message:
-                yield(message)
-    
+    def match_actions(self, words):
+        matching_actions = []
+        for verb_size in range(1, len(words) + 1):
+            verb = words[:verb_size]
+            action_set = self.actions.get(verb)
+            if action_set:
+                matching_actions.extend([(action, verb, words[verb_size:]) for action in action_set])
+        return matching_actions
+        
+    def match_targets(self, matching_actions):
+        matches = []
+        for action, verb, target_id in matching_actions:
+            if action.target_class == TARGET_ACTION:
+                matches.append((action, verb, target_id))
+            elif action.target_class == TARGET_MSG_CLASS:
+                target = self.target_ids.get(action.msg_class)
+                if target:
+                    matches.append((action, verb, target))
+            elif action.target_class == TARGET_ENV:
+                matches.append((action, verb, self.env))
+            elif action.target_class & TARGET_ENV and not target_id:
+                matches.append((action, verb, self.env))
+            else:
+                target = self.target_ids.get(target_id)
+                if target and target.target_class & action.target_class:
+                    matches.append(action, verb, target)
+        return matches;
+                     
     def match_messages(self, messages):
         for message in messages:
             for target in self.targets:
@@ -72,47 +97,9 @@ class Player(Creature):
     def register_channel(self, channel):
         self.register(channel, self.display_channel)
         
-    def receive(self, lmessage):
-        if lmessage.msg_class == CLASS_MOVEMENT:
-            self.change_env(lmessage.payload)
-        elif lmessage.msg_class == CLASS_LEAVE_ROOM:
-            if lmessage.source != self:
-                self.display_line(lmessage.source.name + " leaves.")
-                self.update_state()
-        elif lmessage.msg_class == CLASS_ENTER_ROOM:
-            if lmessage.source != self:
-                self.display_line(lmessage.source.name + " arrives.")
-                self.update_state()
-        elif lmessage.msg_class == CLASS_SENSE_EXAMINE:
-            return self.short_desc() + ", a raceless, sexless, classless player."
-    
     def receive_broadcast(self, source, target, broadcast):
         self.display_line(self.translate_broadcast(source, target, broadcast))
-    
-    def translate_broadcast(self, source, target, broadcast):
-        pname = source.name
-        if len(broadcast) < 3:
-            if source == self:
-                version = BC_ACTOR_NOTARG
-            else:
-                version = BC_ENV_NOTARG
-            return broadcast[version].format(p=pname)
-
-        tname = target.name 
-        if source == self:
-            if target == self:
-                version = BC_ACTOR_SELFTARG
-            else:
-                version = BC_ACTOR_WTARG
-        elif target == self:
-            version = BC_TARG
-        elif target != source:
-            version = BC_ENV_WTARG
-        else:
-            version = BC_ENV_SELFTARG
-       
-        return broadcast[version].format(p=pname, t=tname, pself="themself")    
-                
+                  
     def short_desc(self):
         return self.name
             

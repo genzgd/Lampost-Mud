@@ -6,7 +6,10 @@ Created on Feb 26, 2012
 from datastore.dbo import RootDBO
 
 from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
-    CLASS_COMM_GENERAL, CLASS_SENSE_EXAMINE
+    CLASS_SENSE_EXAMINE, CLASS_MOVEMENT, BC_ACTOR_NOTARG,\
+    BC_ENV_NOTARG, BC_ACTOR_SELFTARG, BC_ACTOR_WTARG, BC_TARG, BC_ENV_WTARG,\
+    BC_ENV_SELFTARG
+from action import TARGET_MSG_CLASS
 
 class Entity(RootDBO):
     
@@ -17,88 +20,135 @@ class Entity(RootDBO):
         self.registrations = set()
         self.soul = soul
         self.inven = inven
-        self.env = env
-        self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self))
-        self.update_state()
+        self.target_ids = {}
+        self.base_targets = {}
+        self.actions = {}
+        self.add_target(self)
+        for action in soul | inven:
+            self.add_action(action)
+        for target in inven:
+            self.add_target(target, self)     
+        self.enter_env(env)
+
+    def receive(self, lmessage):
+        if lmessage.msg_class == CLASS_MOVEMENT:
+            self.change_env(lmessage.payload)
+        elif lmessage.msg_class == CLASS_LEAVE_ROOM:
+            self.remove_target(lmessage.payload)
+            self.remove_action(lmessage.payload)      
+        elif lmessage.msg_class == CLASS_ENTER_ROOM:
+            self.add_target(lmessage.payload, self.env)
+            self.add_actions(lmessage.payload)
+        elif lmessage.msg_class == CLASS_SENSE_EXAMINE:
+            return self.short_desc() + ", a raceless, sexless, classless player."
     
-    def accepts(self, lmessage):
-        if lmessage.target_id and lmessage.target_id != self.target_id:
-            return False
-        if lmessage.msg_class == CLASS_COMM_GENERAL:
-            if lmessage.target_id:
-                return True
-        if lmessage.msg_class == CLASS_SENSE_EXAMINE:
-            if lmessage.target_id:
-                return True
-        
-    def update_state(self):
-        self.providers = set()
-        self.add_providers((self.soul, self.inven, self.env))
-        self.targets = set()
-        self.add_targets((self.soul, self.inven, self.env))
-        
-    def add_providers(self, providers):
-        for provider in providers:
-            try:
-                self.providers.update(provider.get_actions())
-            except TypeError:
-                try:
-                    self.providers.add(provider.get_actions())
-                except AttributeError:
-                    pass
-                except TypeError:
-                    pass
-            except AttributeError:
-                pass
-            try:    
-                self.add_providers(provider.get_chidren())
-            except TypeError:
-                pass
-            except AttributeError:
-                pass
+    def add_targets(self, target, parent=None):
+        self.add_target(target, parent)
+        for child_target in target.get_children():
+            self.add_target(child_target, target)
+    
+    def add_target(self, target, parent=None):
+        try:
+            target_class = target.target_class
+            target_ids = []
+            if target_class == TARGET_MSG_CLASS:
+                self.target_ids[target.msg_class] = target
+                target_ids.append(target.msg_class)
+            else:
+                pass  
+            self.base_targets[target] = target_ids    
+        except AttributeError:
+            pass
             
-    def add_targets(self, targets):
-        for target in targets:
-            try:
-                self.targets.update(target.get_targets())
-            except TypeError:
-                try:
-                    self.targets.add(target.get_targets())
-                except AttributeError:
-                    pass
-                except TypeError:
-                    pass
-            except AttributeError:
-                pass
-            try:    
-                self.add_targets(target.get_children())
-            except TypeError:
-                pass
-            except AttributeError:
-                pass
+    def remove_targets(self, target):
+        self.remove_target(target)
+        for child_target in target.get_children():
+            if child_target != self:
+                self.remove_target(child_target)
+                
+    def remove_target(self, target):
+        target_ids = self.base_targets[target]
+        for target_id in target_ids:
+            del self.target_ids[target_id]
+        del self.base_targets[target]
     
-    def get_targets(self):
-        return self
+    def add_actions(self, provider):
+        self.add_action(provider)
+        try:
+            for child_provider in provider.get_children():
+                self.add_actions(child_provider)
+        except AttributeError:
+            pass
     
+    def add_action(self, provider):
+        try:
+            for verb in provider.verbs:
+                bucket = self.actions.get(verb)
+                if not bucket:
+                    bucket = set()
+                    self.actions[verb] = bucket
+                bucket.add(provider)
+        except AttributeError:
+            pass
+           
+    def remove_actions(self, provider):
+        self.remove_action(provider)
+        try:
+            for child_provider in provider.get_children():
+                self.remove_action(child_provider)
+        except AttributeError:
+            pass
+            
+    def remove_action(self, provider):
+        try:
+            for verb in provider.verbs:
+                bucket = self.actions.get(verb)
+                bucket.remove(provider)
+                if len(set) == 0:
+                    del self.actions[verb]
+        except AttributeError:
+            pass
+        
     def change_env(self, new_env):
-        self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self))
+        self.remove_actions(self.env)
+        self.remove_targets(self.env)
+        self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self, "{p} leaves."))
+        self.enter_env(new_env)
+        
+    def enter_env(self, new_env):
         self.env = new_env
-        self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self))
-        self.update_state()
+        self.add_actions(new_env)      
+        self.add_targets(new_env)
+        self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self, "{p} arrives."))
             
     def detach(self):
         self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self))
         for registration in self.registrations:
             registration.detach()
-
             
-class Soul():
-    def __init__(self):
-        self.actions = set()
-        self.targets = set()
+    def translate_broadcast(self, source, target, broadcast):
         
-    def get_actions(self):
-        return self.actions
-    
-    def get_targets(self):
-        return self.targets
+        pname = source.name
+        if isinstance(broadcast, basestring):
+            return broadcast.format(p=pname) 
+        if len(broadcast) < 3:
+            if source == self:
+                version = BC_ACTOR_NOTARG
+            else:
+                version = BC_ENV_NOTARG
+            return broadcast[version].format(p=pname)
+
+        tname = target.name 
+        if source == self:
+            if target == self:
+                version = BC_ACTOR_SELFTARG
+            else:
+                version = BC_ACTOR_WTARG
+        elif target == self:
+            version = BC_TARG
+        elif target != source:
+            version = BC_ENV_WTARG
+        else:
+            version = BC_ENV_SELFTARG
+       
+        return broadcast[version].format(p=pname, t=tname, pself="themself")

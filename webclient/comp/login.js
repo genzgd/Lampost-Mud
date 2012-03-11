@@ -12,6 +12,7 @@ function LoginLMModule (root) {
 				event.stopPropagation();
 				event.stopImmediatePropagation();
 				lmdp.dispatchEvent(new LMRemote.Request("login", {"user_id" : input.val()}));
+				input.val("");
 				return false;
 			}
 			return true;
