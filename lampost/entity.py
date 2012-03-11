@@ -9,7 +9,8 @@ from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
     CLASS_SENSE_EXAMINE, CLASS_MOVEMENT, BC_ACTOR_NOTARG,\
     BC_ENV_NOTARG, BC_ACTOR_SELFTARG, BC_ACTOR_WTARG, BC_TARG, BC_ENV_WTARG,\
     BC_ENV_SELFTARG
-from action import TARGET_MSG_CLASS
+
+import math
 
 class Entity(RootDBO):
     
@@ -17,11 +18,14 @@ class Entity(RootDBO):
         self.registrations.add(Entity.dispatcher.register(event_type, callback))
   
     def __init__(self, soul, inven, env):
+        self.env = env
         self.registrations = set()
         self.soul = soul
         self.inven = inven
-        self.target_ids = {}
-        self.base_targets = {}
+        self.prefixes = ["red", "short"]
+        self.suffix = None
+        self.target_map = {}
+        self.target_key_map = {}
         self.actions = {}
         self.add_target(self)
         for action in soul | inven:
@@ -49,28 +53,61 @@ class Entity(RootDBO):
     
     def add_target(self, target, parent=None):
         try:
-            target_class = target.target_class
-            target_ids = []
-            if target_class == TARGET_MSG_CLASS:
-                self.target_ids[target.msg_class] = target
-                target_ids.append(target.msg_class)
+            target_id = target.name
+            prefixes = list(target.prefixes)
+            if isinstance(target_id, basestring):
+                target_id = target_id.lower()
+                if parent == self.env:
+                    prefixes.insert(0, "the")
+                elif parent == self.inven:
+                    prefixes.insert(0, "my")
+                target_keys = list(self.gen_ids(prefixes, target_id))
+                add_numbers = True
             else:
-                pass  
-            self.base_targets[target] = target_ids    
+                target_keys = [target.name]
+                add_numbers = False
+            final_keys = self.add_target_keys(target_keys, target, add_numbers)
+            self.target_map[target] = final_keys    
         except AttributeError:
             pass
+    
+    def add_target_keys(self, target_keys, target, add_numbers):
+        final_keys = []
+        for target_key in target_keys:
+            final_keys.append(target_key)
+            key_values = self.target_key_map.get(target_key)
+            if key_values:
+                if add_numbers:
+                    numbered_key = target_key + (str(len(key_values) + 1),)
+                    final_keys.append(numbered_key)
+            else:
+                key_values = []
+                self.target_key_map[target_key] = key_values
+            key_values.append(target)
+        return final_keys
+    
+    def gen_ids(self, prefixes, target_id):
+        pcnt = len(prefixes)
+        for x in range(0, int(math.pow(2, pcnt))):
+            next_prefix = []
+            for y in range(0, pcnt):
+                if int(math.pow(2, y)) & x:
+                    next_prefix.append(prefixes[y])
+            yield tuple(next_prefix) + (target_id,)
             
     def remove_targets(self, target):
-        self.remove_target(target)
         for child_target in target.get_children():
             if child_target != self:
                 self.remove_target(child_target)
                 
     def remove_target(self, target):
-        target_ids = self.base_targets[target]
-        for target_id in target_ids:
-            del self.target_ids[target_id]
-        del self.base_targets[target]
+        target_keys = self.target_map[target]
+        for target_key in target_keys:
+            key_values = self.target_key_map[target_key]
+            key_values.remove(target)
+            if not key_values:
+                del self.target_key_map[target_key]
+        del self.target_map[target]
     
     def add_actions(self, provider):
         self.add_action(provider)

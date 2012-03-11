@@ -7,6 +7,7 @@ from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
     LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from dto.display import Display, DisplayLine
 from action import TARGET_MSG_CLASS, TARGET_ENV
+from item import BaseItem
 
 class Room():
     ROOM_COLOR = 0xAD419A
@@ -20,6 +21,7 @@ class Room():
         self.desc = desc;
         self.contents = []
         self.exits = []
+        self.qualifiers = []
         self.target_class = TARGET_ENV
         
     def get_children(self):
@@ -69,14 +71,15 @@ class Room():
             pass
         
              
-class Exit():
+class Exit(BaseItem):
     def __init__(self, direction, destination):
-        self.msg_class = direction
+        BaseItem.__init__(self)
+        self.name = direction
         self.destination = destination
         self.target_class = TARGET_MSG_CLASS
         
     def dirdesc(self):
-        return self.msg_class.desc
+        return self.name.desc
         
     def receive(self, message):
         message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
