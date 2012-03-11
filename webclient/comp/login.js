@@ -1,12 +1,16 @@
 function LoginLMModule (root) {
 
 	var nameInput = root.find("#nameInput");
-	nameInput.focus();
+	if (lmapp.dialogCount == 0) {
+		nameInput.focus();
+	}
 	
 	nameInput.keypress(function (event) {	
 			var input = $(this);
 			if (event.which == 13 && input.val()) {
 				event.preventDefault();
+				event.stopPropagation();
+				event.stopImmediatePropagation();
 				lmdp.dispatchEvent(new LMRemote.Request("login", {"user_id" : input.val()}));
 				return false;
 			}
@@ -16,6 +20,7 @@ function LoginLMModule (root) {
 	function refocus() {
 		nameInput.focus();
 	}
+	
 	
 	this.register("refocus", refocus);
 }

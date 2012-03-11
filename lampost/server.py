@@ -14,8 +14,8 @@ from twisted.web.server import NOT_DONE_YET
 from datetime import datetime
 
 from dto.link import LinkError, ERROR_SESSION_NOT_FOUND, ERROR_NOT_LOGGED_IN
-from dto.rootdto import RootDTO
 from dto.display import Display, DisplayLine
+from json.decoder import JSONDecoder
 
 FILE_WEB_CLIENT = "webclient"
 
@@ -30,6 +30,7 @@ URL_START = "/" + URL_WEB_CLIENT + "/start.html"
 ARG_SESSION_ID = "session_id"
 ARG_USER_ID = "user_id"
 ARG_ACTION = "action"
+ARG_DIALOG_RESPONSE = "response"
 
 
 class LampostResource(Resource):
@@ -83,15 +84,22 @@ class DialogResource(Resource):
     IsLeaf = True
     def __init__(self, sm):
         self.sm = sm
+        self.decoder = JSONDecoder()
 
     def render_POST(self, request):
-        session_id = request.args[ARG_SESSION_ID[0]]
-        session = self.sm.get_session(session_id)
-        if not session:
-            return  LinkError(ERROR_SESSION_NOT_FOUND).json
-        return session.dialog_response(request.content.getValue())
-        
-
+        try:
+            session_id = request.args[ARG_SESSION_ID][0]
+            session = self.sm.get_session(session_id)
+            if not session:
+                return  LinkError(ERROR_SESSION_NOT_FOUND).json
+            response = request.args[ARG_DIALOG_RESPONSE][0]
+            return session.dialog_response(self.decoder.decode(response)).json
+        except:
+            display = Display()
+            display.append(DisplayLine(traceback.format_exc(), 0xff0000))
+            return display.json
+            
+            
 class ActionResource(Resource):
     IsLeaf = True
     def __init__(self, sm):
