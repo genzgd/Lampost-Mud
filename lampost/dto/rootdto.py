@@ -11,7 +11,7 @@ class DTOEncoder(JSONEncoder):
             return o.raw
         return JSONEncoder.default(self, o)
 
-class RootDTO():
+class RootDTO(): 
     def __init__(self, **kw):
         self.merge_dict(kw);
         
@@ -23,15 +23,10 @@ class RootDTO():
         for key, value in dictionary.iteritems():
             peer = getattr(self, key, None)
             if peer:
-                try:
-                    if isinstance(peer, list):
-                        peer.extend(value)
-                    elif isinstance(value, dict):
-                        peer.merge_dict(value)
-                    else:
-                        peer.merge(value)
-                except AttributeError:
-                    peer[key] = value
+                if isinstance(peer, list):
+                    peer.extend(value)
+                elif isinstance(peer, RootDTO):
+                    peer.merge(value)
             else:
                 setattr(self, key, value)              
         return self
@@ -40,8 +35,11 @@ class RootDTO():
         return RootDTO.__encoder__.encode(self)
     
     def get_dict(self):
-        return dict((key, value) for key, value in self.__dict__.iteritems()
-                if not callable(value) and not key.startswith('__'))
+        raw = {}
+        for key, value in self.__dict__.iteritems():
+            raw[key] = value
+        return raw
+       
    
     __encoder__ = DTOEncoder()     
     json = property(get_json)

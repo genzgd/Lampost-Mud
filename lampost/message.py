@@ -29,7 +29,8 @@ class LMessage():
         self.msg_class = msg_class
         self.payload = payload
         self.target_id = target_id
-        self.broadcast = broadcast        
+        self.broadcast = broadcast 
+        self.dialog = None       
     
 
 #MESSAGE_CONTENT

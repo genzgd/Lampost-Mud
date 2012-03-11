@@ -1,11 +1,18 @@
 function ActionLMModule (root) {
 	
 	var actionInput = root.find("#actionInput");
-	actionInput.focus();
-	actionInput.keypress(function (event) {
+	if (lmapp.dialogCount == 0) {
+		actionInput.focus();
+	}
+	actionInput.keydown(function (event) {
 		if (event.which == 13) {
-			return sendAction(event);
-		};
+			event.preventDefault();
+			event.stopPropagation();
+			event.stopImmediatePropagation();
+			sendAction(event);
+			return false;
+		}
+		return true;
 	});
 	
 	function refocus(data) {
@@ -15,7 +22,6 @@ function ActionLMModule (root) {
 	function sendAction(event) {
 		var action = actionInput.val();
 		if (action) {
-			event.preventDefault();
 			lmdp.dispatch("default_line", ">" + action);
 			lmdp.dispatchEvent(new LMRemote.Request("action", {action: action}));
 			actionInput.val("");

@@ -10,6 +10,7 @@ from message import CLASS_MOVEMENT, CLASS_LEAVE_ROOM, CLASS_ENTER_ROOM,\
     BC_ACTOR_NOTARG, BC_ENV_NOTARG, BC_ACTOR_WTARG, BC_ENV_WTARG, BC_TARG,\
     BC_ACTOR_SELFTARG, BC_ENV_SELFTARG, CLASS_SENSE_EXAMINE
 from creature import Creature
+from dialog import DialogDTO
 
 class Player(Creature):   
     dbo_key_type = "player"
@@ -19,7 +20,7 @@ class Player(Creature):
     def __init__(self, name):
         self.dbo_id = name.lower()
         self.name = name.capitalize()
-        self.target_id = (name.lower(),)
+        self.target_id = name.lower(),
         
     def baptise(self, soul, inven, env):
         Entity.__init__(self, soul, inven, env)
@@ -37,7 +38,10 @@ class Player(Creature):
             feedback = target.receive(message)
             if message.broadcast:
                 self.env.broadcast(self, target, message.broadcast)
-                feedback = self.translate_broadcast(self, target, message.broadcast)   
+                feedback = self.translate_broadcast(self, target, message.broadcast)
+            elif message.dialog:
+                self.session.dialog = message.dialog
+                feedback = DialogDTO(message.dialog)
             if not feedback:
                 return RootDTO(silent=True)
             if isinstance(feedback, RootDTO):
@@ -116,4 +120,3 @@ class Player(Creature):
         Entity.detach(self)   
         self.session = None
         
-    

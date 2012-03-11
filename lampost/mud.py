@@ -3,16 +3,15 @@ Created on Feb 25, 2012
 
 @author: Geoff
 '''
-from channel import Channel
 from action import Action, SayAction
 from avezel import Avezel
-from entity import Soul
-
-from message import CLASS_SENSE_EXAMINE
-from dto.display import Display
-from movement import Directions
-from immortal import CreatePlayer
+from channel import Channel
 from emote import Emotes
+from entity import Soul
+from immortal import CreatePlayer, DeletePlayer
+from message import CLASS_SENSE_EXAMINE
+from movement import Directions
+
 
 class MudNature():
     
@@ -30,16 +29,15 @@ class MudNature():
         new_soul.targets.add(self.shout_channel)
         
         create_player = CreatePlayer()
+        delete_player = DeletePlayer()
         new_soul.actions.add(create_player)
         new_soul.targets.add(create_player)
+        new_soul.actions.add(delete_player)
+        new_soul.targets.add(delete_player)
         
         player.baptise(new_soul, set(), self.area.rooms[0])
         player.register_channel(self.shout_channel)
         player.register("db_log", player.display_line)
-  
-        welcome = Display("Welcome " + player.name,  0x002288)
-        welcome.merge(player.parse("look"))
-        return welcome
         
 
 class MudSoul(Soul):

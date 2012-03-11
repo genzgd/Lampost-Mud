@@ -7,14 +7,22 @@ from message import LMessage, CLASS_COMM_GENERAL
 from responder import Responder
 
 class Action():
-            
+
     @staticmethod 
     def dispatch(event_type, data):
         Action.dispatcher.dispatch(event_type, data) 
         
     @staticmethod
     def save_object(obj):
-        Action.datastore.save_object(obj)            
+        return Action.datastore.save_object(obj)
+        
+    @staticmethod
+    def load_object(obj):
+        return Action.datastore.load_object(obj)
+        
+    @staticmethod
+    def delete_object(obj):
+        return Action.datastore.delete_object(obj)          
     
     def __init__(self, verbs, msg_class=None):
         self.verbs = set()

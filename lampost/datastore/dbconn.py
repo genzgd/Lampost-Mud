@@ -34,6 +34,7 @@ class RedisStore():
             self.redis.sadd(dbo.dbo_set_key, key)
         dbo.dbo_loaded = True
         self.dispatcher.dispatch("db_log", "object saved: " + key)
+        return True
     
     def load_object(self, dbo):
         json_str = self.redis.get(dbo.dbo_key)
@@ -53,5 +54,16 @@ class RedisStore():
         dbo.on_loaded()
         return True
                     
-    def del_object(self, dbo):
-        pass
+    def delete_object(self, dbo):
+        key = dbo.dbo_key
+        self.redis.delete(key)
+        if dbo.dbo_set_key:
+            self.redis.srem(dbo.dbo_set_key, key)
+        for dbo_col in dbo.dbo_collections:
+            if not dbo_col.cascade:
+                continue
+            coll = getattr(dbo, dbo_col.field_name, set())
+            for child_dbo in coll:
+                self.delete_object(child_dbo)
+        self.dispatcher.dispatch("db_log", "object deleted: " + key)
+        return True

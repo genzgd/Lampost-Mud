@@ -14,6 +14,8 @@ from entity import Entity
 from datastore.dbconn import RedisStore
 
 class Context():
+    instance = None
+     
     def __init__(self, nature, port=2500, db_host="localhost", db_port=6379, db_num=0):
         self.nature = nature;
         self.dispatcher = Dispatcher()
@@ -23,13 +25,16 @@ class Context():
         Action.datastore = self.datastore
         Entity.datastore = self.datastore
         self.sm = SessionManager(self.dispatcher, self.datastore, nature)
+      
         self.site = Site(LampostResource(self.sm))
         self.port = port
         self.nature.create()
+        Context.instance = self
+        
         
         pulse = task.LoopingCall(self.dispatcher.pulse)
         pulse.start(nature.pulse_interval)
         
     def start(self):
         reactor.listenTCP(self.port, self.site) #@UndefinedVariable
-        reactor.run() #@UndefinedVariable   
+        reactor.run() #@UndefinedVariable

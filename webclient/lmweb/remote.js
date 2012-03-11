@@ -55,12 +55,15 @@ function LMRemote() {
 		if (reconnectDialog) {
 			timerText.text("15");
 		} else {
+			posx = (window.innerWidth - 300) / 2;
+			pos = [posx, 150];
 			reconnectDialog = $("<div style='font-size: 10;' title='Reconnecting to Server'>" +
 					"<p align='center'>Connection lost.  Error: " + status +
 					"  Reconnecting in <span id='timespan'>15</span>" +
 					" seconds.</p>");
 			reconnectDialog.dialog(
-					{dialogClass: "no-close",
+					{position: pos,
+					 dialogClass: "no-close",
 					 closeOnEscape: false,
 						buttons: [
 					           {text: "Reconnect Now",

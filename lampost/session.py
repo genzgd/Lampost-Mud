@@ -4,13 +4,14 @@ Created on Feb 12, 2012
 @author: Geoff
 '''
 from datetime import datetime, timedelta
-from dto.display import Display
+from dto.display import Display, DisplayLine
 from dto.link import LinkCancel, LinkGood
 from dto.rootdto import RootDTO
 from event import PulseEvent
 from player import Player
 from os import urandom;
 from base64 import b64encode
+from dialog import DIALOG_TYPE_OK, Dialog, DialogDTO
 
 LINK_DEAD_INTERVAL = timedelta(seconds=5)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
@@ -24,6 +25,7 @@ class SessionManager():
         self.nature = nature;
         self.session_map = {}
         self.player_map = {}
+        self.player_session_map = {}
         self.dispatcher.register("refresh_link_status", self.refresh_link_status)
         self.dispatcher.dispatch_p(PulseEvent("refresh_link_status", 20, repeat=True))                      
  
@@ -65,25 +67,41 @@ class SessionManager():
             elif now - session.attach_time > LINK_DEAD_INTERVAL:
                 session.link_failed("Timeout")
             if session.player:
-                self.player_map[session.player.name] = session.player_info(now)
+                self.player_map[session.player.dbo_id] = session.player_info(now)
         self.display_players()
                  
     def login(self, session_id, user_id):
+        old_session = self.player_session_map.get(user_id);
+        if old_session:
+            player = old_session.player
+            old_session.player = None
+            del self.player_session_map[user_id]
+            kill_message = RootDTO(logout="logout")
+            kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Session Closed");
+            kill_message.merge(DialogDTO(kill_dialog))
+            old_session.append(kill_message)
+        else:
+            player = Player(user_id)
+            self.nature.baptise(player)
+            if not self.datastore.load_object(player):
+                return RootDTO(login_error="no_such_user")
+            
         session = self.session_map.get(session_id)
-        player = Player(user_id)
-        if not self.datastore.load_object(player):
-            return RootDTO(login_error="no_such_user")
-        
-        welcome = self.nature.baptise(player)
-        session.append(welcome)
-        self.player_map[player.name] = session.login(player);
+        if old_session:
+            session.display_line(DisplayLine("Existing Session Closed", 0x002288))
+        else:  
+            session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
+        session.append(player.parse("look"))
+        self.player_map[player.dbo_id] = session.login(player)
+        self.player_session_map[player.dbo_id] = session
         return self.respond(RootDTO(login="good"))
         
     def logout(self, session):
         player = session.player
-        player.detach();
+        player.detach()
         session.player = None
-        del self.player_map[player.name]
+        del self.player_map[player.dbo_id]
+        del self.player_session_map[player.dbo_id]
         return self.respond(RootDTO(logout="logout"))
         
         
@@ -114,6 +132,7 @@ class UserSession():
             else:
                 status =  "Idle: " + str(idle / 60) + "m"
         info = RootDTO(status=status)
+        info.name = self.player.name
         info.loc = self.player.env.title
         return info
         
@@ -138,7 +157,15 @@ class UserSession():
         display = Display()
         display.append(display_line)
         self.append(display)
-        
+
+    def dialog_response(self, data):
+        dialog = self.dialog
+        if not dialog:
+            return Display("Dialog Error", 0xff0000)
+        self.dialog = None
+        dialog.data = data
+        return dialog.callback(dialog)
+ 
     def push_output(self):
         if self.request:
             self.push(self.output.merge(LinkGood()))
@@ -147,6 +174,6 @@ class UserSession():
             self.pulse_reg = None
             
     def push(self, output):
-        self.request.write(self.output.json)
-        self.request.finish()
-        self.request = None
+            self.request.write(output.json)
+            self.request.finish()
+            self.request = None
