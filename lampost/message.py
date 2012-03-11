@@ -4,8 +4,9 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 
-CLASS_OUT_OF_CHAR = 0
-CLASS_COMM_GENERAL = 1
+CLASS_NULL = 0
+CLASS_OUT_OF_BAND = 1
+CLASS_BROADCAST = 2
 CLASS_SENSE_GLANCE = 10
 CLASS_SENSE_EXAMINE = 11
 
@@ -24,14 +25,20 @@ BC_ENV_SELFTARG = 6
 
 class LMessage():
 
-    def __init__(self, source, msg_class, payload, target_id=None, broadcast=None):
+    def __init__(self, source, msg_class, payload, broadcast=None):
         self.source = source
         self.msg_class = msg_class
         self.payload = payload
-        self.target_id = target_id
         self.broadcast = broadcast 
-        self.dialog = None       
-    
+        self.dialog = None
+            
+class DialogMessage():
+    def __init__(self, dialog):
+        self.source = None
+        self.msg_class = None
+        self.payload = None
+        self.broadcast = None
+        self.dialog = dialog 
 
 #MESSAGE_CONTENT
 

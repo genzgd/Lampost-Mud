@@ -3,15 +3,14 @@ Created on Mar 1, 2012
 
 @author: Geoffrey
 '''
-from action import Action
+from action import Action, TARGET_MSG_CLASS
 
 class Direction(Action):
     def __init__(self, verbs):
-        Action.__init__(self, verbs, self)
+        Action.__init__(self, verbs, self, TARGET_MSG_CLASS)
         self.desc = verbs[1]
     
    
-        
 NORTH = Direction(('n', 'north'))
 SOUTH = Direction(('s', 'south'))
 EAST = Direction(('e', 'east'))
@@ -24,9 +23,5 @@ UP = Direction(('u', 'up'))
 DOWN = Direction(('d', 'down'))
 
 class Directions():
-    def __init__(self):
-        self.actions = set((NORTH, SOUTH, EAST, WEST, NE, SE,
+    actions = set((NORTH, SOUTH, EAST, WEST, NE, SE,
                            NW, NE, UP, DOWN))
-        
-    def get_actions(self):
-        return self.actions

@@ -1,7 +1,7 @@
 function LMWeb() {
 
 	var self = this;
-	var version = "0.056";
+	var version = "0.057";
 	var imports = {};
 	var moduleMap = {};
 	var nextModuleId = 0;

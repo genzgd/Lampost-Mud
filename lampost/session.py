@@ -77,18 +77,19 @@ class SessionManager():
             old_session.player = None
             del self.player_session_map[user_id]
             kill_message = RootDTO(logout="logout")
-            kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Session Closed");
+            kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Logged Out");
             kill_message.merge(DialogDTO(kill_dialog))
             old_session.append(kill_message)
         else:
             player = Player(user_id)
-            self.nature.baptise(player)
             if not self.datastore.load_object(player):
-                return RootDTO(login_error="no_such_user")
-            
+                noplayer_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player");
+                return DialogDTO(noplayer_dialog)
+            self.nature.baptise(player)
+          
         session = self.session_map.get(session_id)
         if old_session:
-            session.display_line(DisplayLine("Existing Session Closed", 0x002288))
+            session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
         else:  
             session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
         session.append(player.parse("look"))

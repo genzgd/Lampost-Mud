@@ -4,9 +4,9 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
-    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM, CLASS_COMM_GENERAL
-from responder import Responder
+    LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from dto.display import Display, DisplayLine
+from action import TARGET_MSG_CLASS, TARGET_ENV
 
 class Room():
     ROOM_COLOR = 0xAD419A
@@ -18,22 +18,12 @@ class Room():
         self.room_id = room_id;
         self.title = title;
         self.desc = desc;
-        self.contents = set()
-        self.items = set()
-        self.exits = set()
+        self.contents = []
+        self.exits = []
+        self.target_class = TARGET_ENV
         
     def get_children(self):
-        return self.contents.union(self.items, self.exits)
-    
-    def accepts(self, lmessage):
-        if lmessage.msg_class not in (CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE,
-            CLASS_COMM_GENERAL):
-            return False
-        if not lmessage.target_id:
-            return True
-            
-    def get_targets(self):
-        return self
+        return self.contents + self.exits
     
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_SENSE_GLANCE:
@@ -41,10 +31,12 @@ class Room():
         if lmessage.msg_class == CLASS_SENSE_EXAMINE:
             return self.long_desc(lmessage.source)
         if lmessage.msg_class == CLASS_ENTER_ROOM:           
-            self.contents.add(lmessage.payload)
+            self.contents.append(lmessage.payload)
         if lmessage.msg_class == CLASS_LEAVE_ROOM:
             self.contents.remove(lmessage.payload)
-        self.tell_contents(lmessage)    
+        self.tell_contents(lmessage) 
+        if lmessage.broadcast:
+            self.broadcast(lmessage.source, lmessage.payload, lmessage.broadcast)   
      
     def long_desc(self, observer):
         longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
@@ -62,7 +54,7 @@ class Room():
     
     def tell_contents(self, lmessage):
         try:
-            for receiver in self.contents.union(self.items):
+            for receiver in self.contents:
                 if lmessage.source != receiver:
                     receiver.receive(lmessage)
         except Exception:
@@ -77,10 +69,11 @@ class Room():
             pass
         
              
-class Exit(Responder):
+class Exit():
     def __init__(self, direction, destination):
         self.msg_class = direction
         self.destination = destination
+        self.target_class = TARGET_MSG_CLASS
         
     def dirdesc(self):
         return self.msg_class.desc
