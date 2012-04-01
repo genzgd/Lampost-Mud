@@ -73,8 +73,7 @@ class Room():
              
 class Exit(BaseItem):
     def __init__(self, direction, destination):
-        BaseItem.__init__(self)
-        self.name = direction
+        BaseItem.__init__(self, direction)
         self.destination = destination
         self.target_class = TARGET_MSG_CLASS
         
