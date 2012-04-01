@@ -5,12 +5,13 @@ Created on Feb 17, 2012
 '''
 from message import LMessage, CLASS_BROADCAST
 
-TARGET_ACTION = 1
-TARGET_MSG_CLASS = 2
-TARGET_ENV = 4
-TARGET_ITEM = 8
-TARGET_PLAYER = 16
-TARGET_MONSTER = 32
+TARGET_SELF = 1
+TARGET_ACTION = 2
+TARGET_MSG_CLASS = 4
+TARGET_ENV = 8
+TARGET_ITEM = 16
+TARGET_PLAYER = 32
+TARGET_MONSTER = 64
 
 TARGET_GENERAL = TARGET_ENV | TARGET_ITEM | TARGET_PLAYER | TARGET_MONSTER
 TARGET_LIVING = TARGET_PLAYER | TARGET_MONSTER
@@ -33,7 +34,7 @@ class Action():
     def delete_object(obj):
         return Action.datastore.delete_object(obj)          
     
-    def __init__(self, verbs, msg_class, target_class):
+    def __init__(self, verbs, msg_class, action_class):
         self.verbs = set()
         if isinstance(verbs, basestring):
             self.add_verb(verbs)
@@ -41,7 +42,7 @@ class Action():
             for verb in verbs:
                 self.add_verb(verb)
         self.msg_class = msg_class
-        self.target_class = target_class
+        self.action_class = action_class
                 
     def add_verb(self, verb):
         self.verbs.add(tuple(verb.split(" ")))    
@@ -54,7 +55,7 @@ class Gesture(Action):
         self.verbs = set()
         self.add_verb(verb)
         self.msg_class = None
-        self.target_class = TARGET_ACTION
+        self.action_class = TARGET_ACTION
   
 class SayAction(Action):
     def __init__(self):

@@ -5,6 +5,9 @@ Created on Feb 26, 2012
 '''
 from room import Room, Exit
 from movement import UP, DOWN
+from item import BaseItem
+from action import Action, TARGET_ENV, TARGET_ACTION, TARGET_SELF
+from message import CLASS_BROADCAST, LMessage
 
 
 class Avezel():
@@ -16,3 +19,15 @@ class Avezel():
         sphere.exits.append(Exit(DOWN, cube))
         self.rooms[0] = cube
         self.rooms[1] = sphere
+        sphere.contents.append(MusicBox())
+        sphere.contents.append(MusicBox())
+        sphere.contents.append(MusicBox())
+        
+class MusicBox(BaseItem, Action):
+    def __init__(self):
+        BaseItem.__init__(self, "box", "music")
+        Action.__init__(self, ["play", "wind"], CLASS_BROADCAST, TARGET_SELF)
+        
+    def create_message(self, source, verb, target, command):
+        return LMessage(source, self.msg_class, target, "The music box plays an eerie atonal tune")
+        
