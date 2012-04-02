@@ -8,15 +8,18 @@ from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
 from dto.display import Display, DisplayLine
 from action import TARGET_MSG_CLASS, TARGET_ENV
 from item import BaseItem
+from datastore.dbo import RootDBO
 
-class Room():
+class Room(RootDBO):
     ROOM_COLOR = 0xAD419A
     ROOM_SEP = "-=" * 30
     EXIT_COLOR = 0x808000
     ITEM_COLOR = 0x7092BE
     
-    def __init__(self, room_id, title, desc):
-        self.room_id = room_id;
+    dbo_key_type = "room"
+    
+    def __init__(self, dbo_id, title, desc):
+        self.dbo_id = dbo_id;
         self.title = title;
         self.desc = desc;
         self.contents = []

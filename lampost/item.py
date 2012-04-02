@@ -38,7 +38,7 @@ class BaseItem(RootDBO):
             return self.long_desc()
         
 class Container(BaseItem):
-    def __init__(self, suffix):
-        BaseItem.__init__(self)
+    def __init__(self, name, suffix, prefixes=None):
+        BaseItem.__init__(self, name, prefixes)
         self.contents = []
         self.suffix = suffix

@@ -4,13 +4,16 @@ Created on Feb 25, 2012
 @author: Geoff
 '''
 from action import Action, SayAction, TARGET_GENERAL
-from avezel import Avezel
+from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
-from immortal import CreatePlayer, DeletePlayer
+from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
+    IMM_LEVELS
 from message import CLASS_SENSE_EXAMINE
 from movement import Directions
+from area import Area
 
+IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea()
 
 class MudNature():
     
@@ -19,19 +22,21 @@ class MudNature():
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
         
-    def create(self):
-        self.area = Avezel()
+    def create(self, datastore):
+        self.mud = Mud(datastore)
+        self.citadel = ImmortalCitadel()
 
     def baptise(self, player):
         new_soul = MudSoul.mud_soul
         new_soul.add(self.shout_channel)
-        
-        new_soul.add(CreatePlayer())
-        new_soul.add(DeletePlayer())
-        
-        player.baptise(new_soul, set(), self.area.rooms[0])
+        for cmd in IMM_COMMANDS:
+            if player.imm_level >= cmd.imm_level:
+                new_soul.add(cmd)
+   
+        player.baptise(new_soul, set(), self.citadel.rooms[0])
         player.register_channel(self.shout_channel)
-        player.register("db_log", player.display_line)
+        if player.imm_level >= IMM_LEVELS["admin"]:
+            player.register("db_log", player.display_line)
         
 
 class MudSoul():
@@ -39,3 +44,15 @@ class MudSoul():
     say_action = SayAction()
     emotes = Emotes()
     mud_soul = set((look_action, say_action, emotes)) | Directions.actions
+    
+
+class Mud():
+    def __init__(self, datastore):
+        self.area_map = {}
+        area_keys = datastore.fetch_set_keys("areas")
+        for area_key in area_keys:
+            area_id = ":".split(area_key)[0]
+            self.add_area(Area(area_id))
+    
+    def add_area(self, area):
+        self.area_map[area.dbo_id] = area

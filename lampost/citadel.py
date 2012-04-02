@@ -6,22 +6,25 @@ Created on Feb 26, 2012
 from room import Room, Exit
 from movement import UP, DOWN
 from item import BaseItem
-from action import Action, TARGET_ENV, TARGET_ACTION, TARGET_SELF
+from action import Action, TARGET_SELF
 from message import CLASS_BROADCAST, LMessage
+from area import Area
 
-
-class Avezel():
+class ImmortalCitadel(Area):
     def __init__(self):
-        self.rooms = {}
-        cube = Room(0, "A White Cube", "A perfect white cube, about 30 feet on a side")
-        sphere = Room(1, "A Silver Sphere", "A perfect silver sphere, with a radius of about 30 feet")
+        Area.__init__(self, "immortal_citadel")
+        self.name = "Immortal Citadel"
+        cube = Room("immortal_citadel:cube", "A White Cube", "A perfect white cube, about 30 feet on a side")
+        sphere = Room("immortal_citadel:sphere", "A Silver Sphere", "A perfect silver sphere, with a radius of about 30 feet")
         cube.exits.append(Exit(UP, sphere))
         sphere.exits.append(Exit(DOWN, cube))
-        self.rooms[0] = cube
-        self.rooms[1] = sphere
+        self.rooms.append(cube)
+        self.rooms.append(sphere)
+        self.dbo_loaded = True
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
+
         
 class MusicBox(BaseItem, Action):
     def __init__(self):
