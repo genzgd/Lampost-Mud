@@ -11,8 +11,9 @@ from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from context import Context
 from dto.rootdto import RootDTO
 from dto.display import Display
-from message import DialogMessage
+from message import DialogMessage, CLASS_MOVEMENT, LMessage, CLASS_SENSE_EXAMINE
 from area import Area
+from room import Room
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
 
@@ -78,7 +79,10 @@ class CreateArea(Gesture):
             return "That area already exists"
         area_name = " ".join(target)
         area.name = string.capwords(area_name)
+        room = Room(area_id + ":0", "The Beginning", "The Initial Room in " + area.name + " Area")
+        area.rooms.append(room)
         self.save_object(area)
+        self.mud.add_area(area)
 
 
 class DeleteArea(Gesture):
@@ -90,7 +94,7 @@ class DeleteArea(Gesture):
         if not len(target):
             return "Area name not specified"
         area_id = target[0].lower()
-        confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove area" + area_id, "Confirm Delete", self.finish_delete)
+        confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove area: " + area_id, "Confirm Delete", self.finish_delete)
         confirm_dialog.area_id = area_id
         return DialogMessage(confirm_dialog)
          
@@ -103,14 +107,31 @@ class DeleteArea(Gesture):
             return Display(dialog.area_id + " deleted.")
         return Display("Area " + dialog.area_id + " does not exist.")
 
-     
+
 class GoToArea(Gesture):
     def __init__(self):
         Gesture.__init__(self, "goto area")
         self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target):
-        pass
+        if not len(target):
+            return "Area name not specified"
+        area = self.mud.get_area(" ".join(target))
+        if not area:
+            return "Area does not exist"
+        dest = area.rooms[0]
+        source.receive(LMessage(self, CLASS_MOVEMENT, dest))
+        return dest.receive(LMessage(source, CLASS_SENSE_EXAMINE))
+
+    
+class Citadel(GoToArea):
+    def __init__(self):
+        Gesture.__init__(self, "citadel")
+        self.imm_level = IMM_LEVELS["creator"]
+     
+    def execute(self, source, target):
+        return GoToArea.execute(self, source, ("immortal", "citadel"))
+
         
     
                 

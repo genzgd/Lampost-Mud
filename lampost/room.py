@@ -17,8 +17,9 @@ class Room(RootDBO):
     ITEM_COLOR = 0x7092BE
     
     dbo_key_type = "room"
+    dbo_fields = "title", "desc" 
     
-    def __init__(self, dbo_id, title, desc):
+    def __init__(self, dbo_id, title=None, desc=None):
         self.dbo_id = dbo_id;
         self.title = title;
         self.desc = desc;
@@ -85,5 +86,5 @@ class Exit(BaseItem):
         
     def receive(self, message):
         message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
-        return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE, None))
+        return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE))
         

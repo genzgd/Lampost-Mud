@@ -8,12 +8,12 @@ from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
 from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
-    IMM_LEVELS
+    IMM_LEVELS, GoToArea, Citadel
 from message import CLASS_SENSE_EXAMINE
 from movement import Directions
 from area import Area
 
-IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea()
+IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel()
 
 class MudNature():
     
@@ -24,8 +24,10 @@ class MudNature():
         
     def create(self, datastore):
         self.mud = Mud(datastore)
+        Action.mud = self.mud
         self.citadel = ImmortalCitadel()
-
+        self.mud.add_area(self.citadel)
+        
     def baptise(self, player):
         new_soul = MudSoul.mud_soul
         new_soul.add(self.shout_channel)
@@ -51,8 +53,16 @@ class Mud():
         self.area_map = {}
         area_keys = datastore.fetch_set_keys("areas")
         for area_key in area_keys:
-            area_id = ":".split(area_key)[0]
-            self.add_area(Area(area_id))
+            area_id = area_key.split(":")[1]
+            area = Area(area_id)
+            datastore.hydrate_object(area)
+            self.add_area(area)
     
     def add_area(self, area):
         self.area_map[area.dbo_id] = area
+        
+    def get_area(self, area_id):
+        area_id = area_id.lower().split(" ")
+        area_id = "_".join(area_id)
+        return self.area_map.get(area_id)
+        
