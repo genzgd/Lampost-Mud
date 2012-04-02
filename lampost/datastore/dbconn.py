@@ -18,7 +18,8 @@ class RedisStore():
         dispatcher.register("load_object", self.load_object)
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
-       
+        self.class_map = {}
+    
     def save_object(self, dbo):
         json_obj = {}
         for field_name in dbo.dbo_fields:
@@ -35,21 +36,46 @@ class RedisStore():
         dbo.dbo_loaded = True
         self.dispatcher.dispatch("db_log", "object saved: " + key)
         return True
+
+    def load_by_key(self, key):
+        json_str = self.redis.get(key)
+        json_obj = self.decoder.decode(json_str)
+        class_path = json_obj.get("class_name")
+        clazz = self.class_map[class_path]
+        if not clazz:
+            clazz = self.register_class(class_path)
+        dbo = clazz.__new__(key)
+        self.load_object(self, dbo, json_obj)
+        return dbo
+        
+    def register_class(self, class_path):
+        split_path = ".".split(class_path)
+        module_name = ".".join(split_path[:-1])
+        class_name = split_path[-1]
+        module = __import__(module_name, globals(), locals(), [class_name])
+        clazz = getattr(module, class_name)
+        self.class_map[class_path] = clazz
+        return clazz 
     
-    def load_object(self, dbo):
+    def hydrate_object(self, dbo):
         json_str = self.redis.get(dbo.dbo_key)
         if not json_str:
             return False
         json_obj = self.decoder.decode(json_str)
-        for field_name in dbo.dbo_fields:
-            setattr(dbo, field_name, json_obj[field_name])
+        return self.load_object(dbo, json_obj)
+    
+    def load_object(self, dbo, json_obj):
+        try:
+            for field_name in dbo.dbo_fields:
+                setattr(dbo, field_name, json_obj[field_name])
+        except KeyError:
+            pass
         for dbo_col in dbo.dbo_collections:
             if not dbo_col.cascade:
                 continue
             coll = getattr(dbo, dbo_col.field_name, set())
             for dbo_id in json_obj[dbo_col.field_name]:
-                child_dbo = dbo_col.field_class.__new__(dbo_id)
-                self.load_object(child_dbo)
+                child_dbo = self.load_by_key(dbo_id)
                 coll.append(child_dbo)
         dbo.on_loaded()
         return True
@@ -67,3 +93,6 @@ class RedisStore():
                 self.delete_object(child_dbo)
         self.dispatcher.dispatch("db_log", "object deleted: " + key)
         return True
+        
+    def fetch_set_keys(self, set_key):
+        return self.redis.smembers(set_key)

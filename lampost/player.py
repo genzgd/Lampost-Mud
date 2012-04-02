@@ -8,21 +8,19 @@ from dto.rootdto import RootDTO
 from entity import Entity
 from creature import Creature
 from dialog import DialogDTO
-from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV
+from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV,\
+    TARGET_SELF
 
 class Player(Creature):   
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level",)
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id")
      
     def __init__(self, name):
         self.target_class = TARGET_PLAYER
         self.dbo_id = name.lower()
         self.name = name.capitalize()
-        
-    def baptise(self, soul, inven, env):
-        Entity.__init__(self, soul, inven, env)
-        
+              
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
         matching_actions = self.match_actions(words)
@@ -34,6 +32,7 @@ class Player(Creature):
         elif len(matches) == 1:
             action, verb, target = matches[0]
             message = action.create_message(self, verb, target, command)
+
             if not message.msg_class:
                 feedback = message.payload
             else:
@@ -59,25 +58,25 @@ class Player(Creature):
             action_set = self.actions.get(verb)
             if action_set:
                 for action in action_set:
-                    target_id = action.msg_class if action.target_class == TARGET_MSG_CLASS else words[verb_size:]
+                    target_id = action.msg_class if action.action_class == TARGET_MSG_CLASS else words[verb_size:]
                     matching_actions.append((action, verb, target_id))
         return matching_actions
         
     def match_targets(self, matching_actions):
         matches = []
         for action, verb, target_id in matching_actions:
-            if action.target_class == TARGET_ACTION:
+            if action.action_class == TARGET_ACTION:
                 matches.append((action, verb, target_id))
-            elif action.target_class == TARGET_ENV:
+            elif action.action_class == TARGET_ENV:
                 matches.append((action, verb, self.env))
-            elif action.target_class & TARGET_ENV and not target_id:
+            elif action.action_class & TARGET_ENV and not target_id:
                 matches.append((action, verb, self.env))
             else:
-                key_values = self.target_key_map.get(target_id)
-                if not key_values:
+                key_data = self.target_key_map.get(target_id)
+                if not key_data:
                     continue
-                for target in key_values:
-                    if target and target.target_class & action.target_class:
+                for target in key_data.values:
+                    if  (action.action_class == TARGET_SELF and target == action) or (target.target_class & action.action_class):
                         matches.append((action, verb, target))
         return matches;
                      
