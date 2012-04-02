@@ -74,7 +74,8 @@ class Room(RootDBO):
         except Exception:
             pass
         
-             
+Room.dbo_base_class = Room  
+                   
 class Exit(BaseItem):
     def __init__(self, direction, destination):
         BaseItem.__init__(self, direction)

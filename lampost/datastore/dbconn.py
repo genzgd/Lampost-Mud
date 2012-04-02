@@ -19,6 +19,13 @@ class RedisStore():
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         self.class_map = {}
+        self.object_map = None
+        
+    def start_session(self):
+        self.object_map = {}
+        
+    def end_session(self):
+        self.object_map = None
     
     def save_object(self, dbo):
         json_obj = self.build_json(dbo)
@@ -32,7 +39,8 @@ class RedisStore():
     
     def build_json(self, dbo):
         json_obj = {}
-        json_obj["class_name"] = dbo.__module__ + "." + dbo.__class__.__name__
+        if dbo.__class__ != dbo.dbo_base_class:
+            json_obj["class_name"] = dbo.__module__ + "." + dbo.__class__.__name__
         for field_name in dbo.dbo_fields:
             json_obj[field_name] = getattr(dbo, field_name)
         for dbo_col in dbo.dbo_collections:
@@ -47,15 +55,17 @@ class RedisStore():
             json_obj[dbo_col.field_name] = coll_list
         return json_obj
                 
-    def load_by_key(self, key_type, key):
+    def load_by_key(self, key_type, key, base_class):
         json_str = self.redis.get(key_type + ":" + key)
         json_obj = self.decoder.decode(json_str)
-        dbo = self.load_class(json_obj)(key)
+        dbo = self.load_class(json_obj, base_class)(key)
         self.load_object(dbo, json_obj)
         return dbo
         
-    def load_class(self, json_obj):
+    def load_class(self, json_obj, base_class):
         class_path = json_obj.get("class_name")
+        if not class_path:
+            return base_class
         clazz = self.class_map.get(class_path)
         if clazz:
             return clazz
@@ -86,9 +96,9 @@ class RedisStore():
             coll = getattr(dbo, dbo_col.field_name, set())
             for child_json in json_obj[dbo_col.field_name]:
                 if dbo_col.key_type:
-                    child_dbo = self.load_by_key(dbo_col.key_type, child_json)
+                    child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
                 else:
-                    child_dbo = self.load_class()
+                    child_dbo = self.load_class(dbo_col.base_class)
                 coll.append(child_dbo)
         dbo.on_loaded()
         return True
