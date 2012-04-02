@@ -26,7 +26,7 @@ class RootDBO():
 
         
 class DBOCollection():
-    def __init__(self, field_name, key_type, cascade=True):
+    def __init__(self, field_name, key_type=None, cascade=True):
         self.field_name = field_name
         self.key_type = key_type
         self.cascade = cascade
