@@ -28,9 +28,8 @@ class Context():
       
         self.site = Site(LampostResource(self.sm))
         self.port = port
-        self.nature.create()
+        self.nature.create(self.datastore)
         Context.instance = self
-        
         
         pulse = task.LoopingCall(self.dispatcher.pulse)
         pulse.start(nature.pulse_interval)

@@ -24,20 +24,16 @@ BC_ENV_SELFTARG = 6
 
 
 class LMessage():
-
-    def __init__(self, source, msg_class, payload, broadcast=None):
+    def __init__(self, source=None, msg_class=None, payload=None, broadcast=None):
         self.source = source
         self.msg_class = msg_class
         self.payload = payload
         self.broadcast = broadcast 
         self.dialog = None
             
-class DialogMessage():
+class DialogMessage(LMessage):
     def __init__(self, dialog):
-        self.source = None
-        self.msg_class = None
-        self.payload = None
-        self.broadcast = None
+        LMessage.__init__(self)
         self.dialog = dialog 
 
 #MESSAGE_CONTENT

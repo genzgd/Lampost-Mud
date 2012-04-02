@@ -82,7 +82,7 @@ class SessionManager():
             old_session.append(kill_message)
         else:
             player = Player(user_id)
-            if not self.datastore.load_object(player):
+            if not self.datastore.hydrate_object(player):
                 noplayer_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player");
                 return DialogDTO(noplayer_dialog)
             self.nature.baptise(player)

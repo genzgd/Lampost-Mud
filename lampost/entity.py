@@ -11,13 +11,11 @@ from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
     BC_ENV_SELFTARG
 
 import math
+from parse import KeyData
 
 class Entity(RootDBO):
-    
-    def register(self, event_type, callback):
-        self.registrations.add(Entity.dispatcher.register(event_type, callback))
-  
-    def __init__(self, soul, inven, env):
+      
+    def baptise(self, soul, inven, env):
         self.env = env
         self.registrations = set()
         self.soul = soul
@@ -33,6 +31,9 @@ class Entity(RootDBO):
         for target in inven:
             self.add_target(target, self)     
         self.enter_env(env)
+
+    def register(self, event_type, callback):
+        self.registrations.add(Entity.dispatcher.register(event_type, callback))
 
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_MOVEMENT:
@@ -66,25 +67,27 @@ class Entity(RootDBO):
             else:
                 target_keys = [target.name]
                 add_numbers = False
-            final_keys = self.add_target_keys(target_keys, target, add_numbers)
-            self.target_map[target] = final_keys    
+            self.add_target_keys(target_keys, target, add_numbers)
         except AttributeError:
             pass
     
     def add_target_keys(self, target_keys, target, add_numbers):
-        final_keys = []
+        self.target_map[target] = []
         for target_key in target_keys:
-            final_keys.append(target_key)
-            key_values = self.target_key_map.get(target_key)
-            if key_values:
+            self.target_map[target].append(target_key)
+            key_data = self.target_key_map.get(target_key)
+            if key_data:
                 if add_numbers:
-                    numbered_key = target_key + (str(len(key_values) + 1),)
-                    final_keys.append(numbered_key)
+                    new_count = key_data.count + 1
+                    if new_count == 2:
+                        self.target_key_map[target_key + ("1",)] = KeyData(key_data.values[0])
+                    key_data.count = new_count
+                    self.target_key_map[target_key + (str(new_count),)] = KeyData(target);
             else:
-                key_values = []
-                self.target_key_map[target_key] = key_values
-            key_values.append(target)
-        return final_keys
+                key_data = KeyData()
+                self.target_key_map[target_key] = key_data
+            key_data.values.append(target)
+   
     
     def gen_ids(self, prefixes, target_id):
         pcnt = len(prefixes)
@@ -103,11 +106,26 @@ class Entity(RootDBO):
     def remove_target(self, target):
         target_keys = self.target_map[target]
         for target_key in target_keys:
-            key_values = self.target_key_map[target_key]
-            key_values.remove(target)
-            if not key_values:
+            key_data = self.target_key_map[target_key]
+            if key_data.count == 1:
                 del self.target_key_map[target_key]
+            else:
+                target_loc = key_data.values.index(target)
+                key_data.values.pop(target_loc)
+                self.renumber_keys(target_key, key_data)
         del self.target_map[target]
+    
+    def renumber_keys(self, target_key, key_data):
+        for ix in range(0, key_data.count):
+            number_key = target_key + (str(ix + 1),)
+            del self.target_key_map[number_key]
+        key_data.count = len(key_data.values)  
+        if key_data.count < 2:
+            return
+        for ix in range(0, key_data.count):
+            number_key = target_key + (str(ix + 1),)
+            self.target_key_map[number_key] = KeyData(key_data.values[ix])
+            
     
     def add_actions(self, provider):
         self.add_action(provider)
@@ -141,7 +159,7 @@ class Entity(RootDBO):
             for verb in provider.verbs:
                 bucket = self.actions.get(verb)
                 bucket.remove(provider)
-                if len(set) == 0:
+                if len(bucket) == 0:
                     del self.actions[verb]
         except AttributeError:
             pass
@@ -154,6 +172,7 @@ class Entity(RootDBO):
         
     def enter_env(self, new_env):
         self.env = new_env
+        self.room_id = new_env.dbo_id
         self.add_actions(new_env)      
         self.add_targets(new_env)
         self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self, "{p} arrives."))
