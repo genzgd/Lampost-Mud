@@ -14,16 +14,13 @@ import math
 from parse import KeyData
 
 class Entity(RootDBO):
-    
-    def register(self, event_type, callback):
-        self.registrations.add(Entity.dispatcher.register(event_type, callback))
-  
-    def __init__(self, soul, inven, env):
+      
+    def baptise(self, soul, inven, env):
         self.env = env
         self.registrations = set()
         self.soul = soul
         self.inven = inven
-        self.prefixes = ["red", "short"]
+        self.prefixes = []
         self.suffix = None
         self.target_map = {}
         self.target_key_map = {}
@@ -34,6 +31,9 @@ class Entity(RootDBO):
         for target in inven:
             self.add_target(target, self)     
         self.enter_env(env)
+
+    def register(self, event_type, callback):
+        self.registrations.add(Entity.dispatcher.register(event_type, callback))
 
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_MOVEMENT:
@@ -172,6 +172,7 @@ class Entity(RootDBO):
         
     def enter_env(self, new_env):
         self.env = new_env
+        self.room_id = new_env.dbo_id
         self.add_actions(new_env)      
         self.add_targets(new_env)
         self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self, "{p} arrives."))

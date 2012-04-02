@@ -27,8 +27,8 @@ class Action():
         return Action.datastore.save_object(obj)
         
     @staticmethod
-    def load_object(obj):
-        return Action.datastore.load_object(obj)
+    def hydrate_object(obj):
+        return Action.datastore.hydrate_object(obj)
         
     @staticmethod
     def delete_object(obj):
@@ -50,12 +50,20 @@ class Action():
     def create_message(self, source, verb, target, command):
         return LMessage(source, self.msg_class, target)
 
+
 class Gesture(Action): 
     def __init__(self, verb):
         self.verbs = set()
         self.add_verb(verb)
         self.msg_class = None
         self.action_class = TARGET_ACTION
+        
+    def create_message(self, source, verb, target, command):
+        message = self.execute(source, target)
+        if not isinstance(message, LMessage):
+            message = LMessage(payload=message)
+        return message
+
   
 class SayAction(Action):
     def __init__(self):

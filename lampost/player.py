@@ -14,16 +14,13 @@ from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV,\
 class Player(Creature):   
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level",)
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id")
      
     def __init__(self, name):
         self.target_class = TARGET_PLAYER
         self.dbo_id = name.lower()
         self.name = name.capitalize()
-        
-    def baptise(self, soul, inven, env):
-        Entity.__init__(self, soul, inven, env)
-        
+              
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
         matching_actions = self.match_actions(words)
@@ -35,6 +32,7 @@ class Player(Creature):
         elif len(matches) == 1:
             action, verb, target = matches[0]
             message = action.create_message(self, verb, target, command)
+
             if not message.msg_class:
                 feedback = message.payload
             else:
