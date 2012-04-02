@@ -106,3 +106,5 @@ class Player(Creature):
         Entity.detach(self)   
         self.session = None
         
+Player.dbo_base_class = Player
+        

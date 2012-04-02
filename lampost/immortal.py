@@ -37,6 +37,7 @@ class CreatePlayer(Gesture):
         else:
             imm_level = 0
         player.imm_level = imm_level
+        player.room_id = None
         self.save_object(player)
         
                 
@@ -59,7 +60,7 @@ class DeletePlayer(Gesture):
         if dialog.data["response"] == "no":
             return RootDTO(silent=True)
         todie = Player(dialog.player_id)
-        if self.hydate_object(todie):
+        if self.hydrate_object(todie):
             self.delete_object(todie)
             return Display(dialog.player_id + " deleted.")
         return Display("Player " + dialog.player_id + " does not exist.")

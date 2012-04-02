@@ -9,7 +9,7 @@ class RootDBO():
     dbo_set_id = None
     dbo_fields = ()
     dbo_collections = ()
-    dbo_class_name = None
+    dbo_base_class = None
     
     def on_loaded(self):
         self.dbo_loaded = True 
@@ -26,8 +26,9 @@ class RootDBO():
 
         
 class DBOCollection():
-    def __init__(self, field_name, key_type=None, cascade=True):
+    def __init__(self, field_name, base_class, key_type=None, cascade=True):
         self.field_name = field_name
+        self.base_class = base_class
         self.key_type = key_type
         self.cascade = cascade
         
