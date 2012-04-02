@@ -22,7 +22,7 @@ class Entity(RootDBO):
         self.registrations = set()
         self.soul = soul
         self.inven = inven
-        self.prefixes = ["red", "short"]
+        self.prefixes = []
         self.suffix = None
         self.target_map = {}
         self.target_key_map = {}
@@ -164,7 +164,6 @@ class Entity(RootDBO):
             registration.detach()
             
     def translate_broadcast(self, source, target, broadcast):
-        
         pname = source.name
         if isinstance(broadcast, basestring):
             return broadcast.format(p=pname) 
