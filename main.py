@@ -37,4 +37,4 @@ try:
 except ValueError:
     print "Invalid argument format: " + arg
     sys.exit(2)
-Context(MudNature(), port, db_host, db_port, db_num).start()
+Context(MudNature(), port, db_host, db_port, db_num, db_pw).start()
