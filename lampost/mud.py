@@ -8,12 +8,13 @@ from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
 from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
-    IMM_LEVELS, GoToArea, Citadel
+    GoToArea, Citadel, RegisterDisplay, UnregisterDisplay
 from message import CLASS_SENSE_EXAMINE
 from movement import Directions
 from area import Area
 
-IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel()
+IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
+    RegisterDisplay(), UnregisterDisplay()
 
 class MudNature():
     
@@ -34,12 +35,12 @@ class MudNature():
         for cmd in IMM_COMMANDS:
             if player.imm_level >= cmd.imm_level:
                 new_soul.add(cmd)
+                
+        if player.imm_level > 0:
+            new_soul.add(self.imm_channel)
    
         player.baptise(new_soul, set(), self.citadel.rooms[0])
-        player.register_channel(self.shout_channel)
-        if player.imm_level >= IMM_LEVELS["admin"]:
-            player.register("db_log", player.display_line)
-        
+        player.register_channel(self.shout_channel)  
 
 class MudSoul():
     look_action = Action(("look", "l", "exa", "examine"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)

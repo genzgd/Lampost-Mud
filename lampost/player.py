@@ -38,7 +38,8 @@ class Player(Creature):
             else:
                 feedback = target.receive(message)
             if message.broadcast:
-                self.env.broadcast(self, target, message.broadcast)
+                if target != self.env:
+                    self.env.broadcast(self, target, message.broadcast)
                 feedback = self.translate_broadcast(self, target, message.broadcast)
             if message.dialog:
                 self.session.dialog = message.dialog
