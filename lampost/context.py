@@ -16,12 +16,12 @@ from datastore.dbconn import RedisStore
 class Context():
     instance = None
      
-    def __init__(self, nature, port=2500, db_host="localhost", db_port=6379, db_num=0):
+    def __init__(self, nature, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None):
         self.nature = nature;
         self.dispatcher = Dispatcher()
         Action.dispatcher = self.dispatcher
         Entity.dispatcher = self.dispatcher
-        self.datastore = RedisStore(self.dispatcher, db_host, db_port, db_num)
+        self.datastore = RedisStore(self.dispatcher, db_host, db_port, db_num, db_pw)
         Action.datastore = self.datastore
         Entity.datastore = self.datastore
         self.sm = SessionManager(self.dispatcher, self.datastore, nature)
