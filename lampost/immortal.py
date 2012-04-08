@@ -20,7 +20,7 @@ IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000}
 class CreatePlayer(Gesture):
     def __init__(self):
         Gesture.__init__(self, "create player")
-        self.imm_level = IMM_LEVELS["supreme"]
+        self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target):
         if not len(target):
@@ -32,19 +32,45 @@ class CreatePlayer(Gesture):
             imm_level = IMM_LEVELS.get(target[1])
             if not imm_level:
                 return "Invalid Immortal Level"
-            if imm_level > source.imm_level:
-                return "Cannot create player with a higher level than yourself"
+            title = target[1]
+            if imm_level >= source.imm_level:
+                return "Cannot create player with a higher level or the same level as yourself"
         else:
             imm_level = 0
+            title = "player"
         player.imm_level = imm_level
         player.room_id = None
         self.save_object(player)
         
-                
+        return title + " " + player.name + " created."
+    
+        
+class RegisterDisplay(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "register display")
+        self.imm_level = IMM_LEVELS["creator"]
+    
+    def execute(self, source, target):
+        if not len(target):
+            return "No event specified"
+        source.register(target[0], source.display_line)
+        
+
+class UnregisterDisplay(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "unregister display")
+        self.imm_level = IMM_LEVELS["creator"]
+    
+    def execute(self, source, target):
+        for reg in source.registrations:
+            if reg.event_type == target[0] and reg.callback == source.display_line:
+                reg.detach()
+        
+                   
 class DeletePlayer(Gesture):
     def __init__(self):
         Gesture.__init__(self, "delete player")
-        self.imm_level = IMM_LEVELS["supreme"]
+        self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target):
         if not len(target):
@@ -52,19 +78,23 @@ class DeletePlayer(Gesture):
         player_id = target[0].lower()
         if Context.instance.sm.player_session_map.get(player_id): #@UndefinedVariable
             return "Player " + player_id + " logged in, cannot delete."
-        confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove " + player_id, "Confirm Delete", self.finish_delete)
-        confirm_dialog.player_id = player_id
-        return DialogMessage(confirm_dialog)
+        todie = Player(player_id)
+        if self.hydrate_object(todie):
+            if todie.imm_level >= source.imm_level:
+                return "Cannot delete player of same or lower level."
+            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove " + todie.name, "Confirm Delete", self.finish_delete)
+            confirm_dialog.player_id = player_id
+            return DialogMessage(confirm_dialog)
+        return "Player " + player_id + " does not exist."
         
     def finish_delete(self, dialog):
         if dialog.data["response"] == "no":
             return RootDTO(silent=True)
         todie = Player(dialog.player_id)
-        if self.hydrate_object(todie):
+        if self.hydrate_object(todie):        
             self.delete_object(todie)
             return Display(dialog.player_id + " deleted.")
-        return Display("Player " + dialog.player_id + " does not exist.")
-
+      
 
 class CreateArea(Gesture):
     def __init__(self):
