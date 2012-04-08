@@ -38,7 +38,8 @@ class Player(Creature):
             else:
                 feedback = target.receive(message)
             if message.broadcast:
-                self.env.broadcast(self, target, message.broadcast)
+                if target != self.env:
+                    self.env.broadcast(self, target, message.broadcast)
                 feedback = self.translate_broadcast(self, target, message.broadcast)
             if message.dialog:
                 self.session.dialog = message.dialog
@@ -90,8 +91,8 @@ class Player(Creature):
         if message.source != self:
             self.session.display_line(message.display_line)
             
-    def display_line(self, text):
-        self.session.display_line(DisplayLine(text))
+    def display_line(self, text, color=0x000000):
+        self.session.display_line(DisplayLine(text, color))
     
     def register_channel(self, channel):
         self.register(channel, self.display_channel)

@@ -8,12 +8,14 @@ from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
 from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
-    IMM_LEVELS, GoToArea, Citadel
+    GoToArea, Citadel, RegisterDisplay, UnregisterDisplay
 from message import CLASS_SENSE_EXAMINE
 from movement import Directions
 from area import Area
+from chat import TellAction
 
-IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel()
+IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
+    RegisterDisplay(), UnregisterDisplay()
 
 class MudNature():
     
@@ -31,18 +33,23 @@ class MudNature():
     def baptise(self, player):
         new_soul = MudSoul.mud_soul
         new_soul.add(self.shout_channel)
+        new_soul.add(TellAction())
+        
         for cmd in IMM_COMMANDS:
             if player.imm_level >= cmd.imm_level:
                 new_soul.add(cmd)
-   
+                
+        if player.imm_level:
+            new_soul.add(self.imm_channel)
+          
         player.baptise(new_soul, set(), self.citadel.rooms[0])
-        player.register_channel(self.shout_channel)
-        if player.imm_level >= IMM_LEVELS["admin"]:
-            player.register("db_log", player.display_line)
         
+        if player.imm_level:
+            player.register_channel(self.shout_channel)
+            player.register_channel(self.imm_channel)  
 
 class MudSoul():
-    look_action = Action(("look", "l", "exa", "examine"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)
+    look_action = Action(("look", "l", "exa", "examine", "look at"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)
     say_action = SayAction()
     emotes = Emotes()
     mud_soul = set((look_action, say_action, emotes)) | Directions.actions
