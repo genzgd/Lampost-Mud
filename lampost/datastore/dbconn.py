@@ -19,14 +19,8 @@ class RedisStore():
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         self.class_map = {}
-        self.object_map = None
-        
-    def start_session(self):
         self.object_map = {}
-        
-    def end_session(self):
-        self.object_map = None
-    
+            
     def save_object(self, dbo):
         json_obj = self.build_json(dbo)
         key = dbo.dbo_key
@@ -35,6 +29,7 @@ class RedisStore():
             self.redis.sadd(dbo.dbo_set_key, key)
         dbo.dbo_loaded = True
         self.dispatcher.dispatch("db_log", "object saved: " + key)
+        self.object_map[dbo.dbo_key] = dbo;
         return True
     
     def build_json(self, dbo):
@@ -56,7 +51,11 @@ class RedisStore():
         return json_obj
                 
     def load_by_key(self, key_type, key, base_class):
-        json_str = self.redis.get(key_type + ":" + key)
+        dbo_key = key_type + ":" + key
+        cached_dbo = self.object_map.get(dbo_key)
+        if cached_dbo:
+            return cached_dbo
+        json_str = self.redis.get(dbo_key)
         json_obj = self.decoder.decode(json_str)
         dbo = self.load_class(json_obj, base_class)(key)
         self.load_object(dbo, json_obj)
@@ -82,9 +81,9 @@ class RedisStore():
         if not json_str:
             return False
         json_obj = self.decoder.decode(json_str)
-        return self.load_object(dbo, json_obj)
+        return self.load_json(dbo, json_obj)
     
-    def load_object(self, dbo, json_obj):
+    def load_json(self, dbo, json_obj):
         try:
             for field_name in dbo.dbo_fields:
                 setattr(dbo, field_name, json_obj[field_name])
@@ -101,6 +100,7 @@ class RedisStore():
                     child_dbo = self.load_class(dbo_col.base_class)
                 coll.append(child_dbo)
         dbo.on_loaded()
+        self.object_map[dbo.dbo_key] = dbo
         return True
                     
     def delete_object(self, dbo):
@@ -114,6 +114,8 @@ class RedisStore():
                 for child_dbo in coll:
                     self.delete_object(child_dbo)
         self.dispatcher.dispatch("db_log", "object deleted: " + key)
+        if self.object_map.get(dbo.dbo_key):
+            del self.object_map[dbo.dbo_key]
         return True
         
     def fetch_set_keys(self, set_key):

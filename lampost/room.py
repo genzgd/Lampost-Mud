@@ -8,7 +8,26 @@ from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
 from dto.display import Display, DisplayLine
 from action import TARGET_MSG_CLASS, TARGET_ENV
 from item import BaseItem
-from datastore.dbo import RootDBO
+from datastore.dbo import RootDBO, DBOCollection
+
+
+class Exit(BaseItem):
+    dbo_fields = "title", "desc"
+    def __init__(self, direction, destination):
+        BaseItem.__init__(self, direction)
+        self.destination = destination
+        self.target_class = TARGET_MSG_CLASS
+        
+    def dirdesc(self):
+        return self.name.desc
+    
+        
+    def receive(self, message):
+        message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
+        return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE))
+    
+
+Exit.dbo_base_class = Exit
 
 class Room(RootDBO):
     ROOM_COLOR = 0xAD419A
@@ -17,7 +36,8 @@ class Room(RootDBO):
     ITEM_COLOR = 0x7092BE
     
     dbo_key_type = "room"
-    dbo_fields = "title", "desc" 
+    dbo_fields = "title", "desc"
+    dbo_collections = DBOCollection("exits", Exit) 
     
     def __init__(self, dbo_id, title=None, desc=None):
         self.dbo_id = dbo_id;
@@ -76,16 +96,5 @@ class Room(RootDBO):
         
 Room.dbo_base_class = Room  
                    
-class Exit(BaseItem):
-    def __init__(self, direction, destination):
-        BaseItem.__init__(self, direction)
-        self.destination = destination
-        self.target_class = TARGET_MSG_CLASS
-        
-    def dirdesc(self):
-        return self.name.desc
-        
-    def receive(self, message):
-        message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
-        return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE))
+
         
