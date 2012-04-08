@@ -12,6 +12,7 @@ from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
 from message import CLASS_SENSE_EXAMINE
 from movement import Directions
 from area import Area
+from chat import TellAction
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay()
@@ -32,6 +33,8 @@ class MudNature():
     def baptise(self, player):
         new_soul = MudSoul.mud_soul
         new_soul.add(self.shout_channel)
+        new_soul.add(TellAction())
+        
         for cmd in IMM_COMMANDS:
             if player.imm_level >= cmd.imm_level:
                 new_soul.add(cmd)

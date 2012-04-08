@@ -91,8 +91,8 @@ class Player(Creature):
         if message.source != self:
             self.session.display_line(message.display_line)
             
-    def display_line(self, text):
-        self.session.display_line(DisplayLine(text))
+    def display_line(self, text, color=0x000000):
+        self.session.display_line(DisplayLine(text, color))
     
     def register_channel(self, channel):
         self.register(channel, self.display_channel)
