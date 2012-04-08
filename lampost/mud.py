@@ -36,14 +36,17 @@ class MudNature():
             if player.imm_level >= cmd.imm_level:
                 new_soul.add(cmd)
                 
-        if player.imm_level > 0:
+        if player.imm_level:
             new_soul.add(self.imm_channel)
-   
+          
         player.baptise(new_soul, set(), self.citadel.rooms[0])
-        player.register_channel(self.shout_channel)  
+        
+        if player.imm_level:
+            player.register_channel(self.shout_channel)
+            player.register_channel(self.imm_channel)  
 
 class MudSoul():
-    look_action = Action(("look", "l", "exa", "examine"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)
+    look_action = Action(("look", "l", "exa", "examine", "look at"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)
     say_action = SayAction()
     emotes = Emotes()
     mud_soul = set((look_action, say_action, emotes)) | Directions.actions
