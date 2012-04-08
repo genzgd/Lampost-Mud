@@ -3,7 +3,7 @@ Created on Feb 17, 2012
 
 @author: Geoff
 '''
-from message import LMessage, CLASS_BROADCAST
+from message import LMessage, CLASS_BROADCAST, Feedback
 
 TARGET_SELF = 1
 TARGET_ACTION = 2
@@ -34,6 +34,7 @@ class Action():
     def delete_object(obj):
         return Action.datastore.delete_object(obj)          
     
+    
     def __init__(self, verbs, msg_class, action_class):
         self.verbs = set()
         if isinstance(verbs, basestring):
@@ -49,7 +50,7 @@ class Action():
                   
     def create_message(self, source, verb, target, command):
         return LMessage(source, self.msg_class, target)
-
+   
 
 class Gesture(Action): 
     def __init__(self, verb):
@@ -72,8 +73,8 @@ class SayAction(Action):
     def create_message(self, source, verb, target, command):
         space_ix = command.find(" ")
         if space_ix == -1:
-            return LMessage(source, None, "Say what?")
+            return Feedback("Say what?")
         statement = command[space_ix + 1:]
         broadcast = "You say `" + statement + "'", source.name + " says, `" + statement + "'"
         return LMessage(source, self.msg_class, target, broadcast)
-    
+ 
