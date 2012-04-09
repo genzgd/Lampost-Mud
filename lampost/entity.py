@@ -54,17 +54,17 @@ class Entity(RootDBO):
     
     def add_target(self, target, parent=None):
         try:
-            target_id = target.name
-            prefixes = list(target.prefixes)
-            if isinstance(target_id, basestring):
+            target_id = target.name       
+            try:
                 target_id = target_id.lower()
+                prefixes = list(target.prefixes)
                 if parent == self.env:
                     prefixes.insert(0, "the")
                 elif parent == self.inven:
                     prefixes.insert(0, "my")
                 target_keys = list(self.gen_ids(prefixes, target_id))
                 add_numbers = True
-            else:
+            except:
                 target_keys = [target.name]
                 add_numbers = False
             self.add_target_keys(target_keys, target, add_numbers)
@@ -184,8 +184,10 @@ class Entity(RootDBO):
             
     def translate_broadcast(self, source, target, broadcast):
         pname = source.name
-        if isinstance(broadcast, basestring):
-            return broadcast.format(p=pname) 
+        try:
+            return broadcast.format(p=pname)
+        except:
+            pass
         if len(broadcast) < 3:
             if source == self:
                 version = BC_ACTOR_NOTARG

@@ -3,8 +3,7 @@ Created on Feb 16, 2012
 
 @author: Geoff
 '''
-from dto.display import Display, DisplayLine
-from dto.rootdto import RootDTO
+from dto.display import DisplayLine
 from entity import Entity
 from creature import Creature
 from dialog import DialogDTO
@@ -20,6 +19,7 @@ class Player(Creature):
         self.target_class = TARGET_PLAYER
         self.dbo_id = name.lower()
         self.name = name.capitalize()
+        self.last_tell = None
               
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
@@ -28,30 +28,31 @@ class Player(Creature):
             return self.parse("say " + command, True)   
         matches = self.match_targets(matching_actions)
         if not matches:
-            feedback = "What?" 
-        elif len(matches) == 1:
-            action, verb, target = matches[0]
-            message = action.create_message(self, verb, target, command)
-
-            if not message.msg_class:
-                feedback = message.payload
-            else:
-                feedback = target.receive(message)
+            return "What?"
+        if len(matches) > 1:
+            return "Ambiguous command."
+         
+        action, verb, target = matches[0]
+        message = action.create_message(self, verb, target, command)
+        try:
+            feedback = target.receive(message)
+        except:
+            feedback = message
+        try:
             if message.broadcast:
                 if target != self.env:
                     self.env.broadcast(self, target, message.broadcast)
                 feedback = self.translate_broadcast(self, target, message.broadcast)
+        except:
+            pass
+        try:
             if message.dialog:
                 self.session.dialog = message.dialog
                 feedback = DialogDTO(message.dialog)
-            if not feedback:
-                return RootDTO(silent=True)
-            if isinstance(feedback, RootDTO):
-                return feedback
-        else:
-            feedback = "Ambiguous Command"
-        return Display(feedback)
-    
+        except:
+            pass
+        return feedback
+     
     def match_actions(self, words):
         matching_actions = []
         for verb_size in range(1, len(words) + 1):

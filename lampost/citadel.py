@@ -4,7 +4,6 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 from room import Room, Exit
-from movement import UP, DOWN
 from item import BaseItem
 from action import Action, TARGET_SELF
 from message import CLASS_BROADCAST, LMessage
@@ -16,8 +15,8 @@ class ImmortalCitadel(Area):
         self.name = "Immortal Citadel"
         cube = Room("immortal_citadel:cube", "A White Cube", "A perfect white cube, about 30 feet on a side")
         sphere = Room("immortal_citadel:sphere", "A Silver Sphere", "A perfect silver sphere, with a radius of about 30 feet")
-        cube.exits.append(Exit(UP, sphere))
-        sphere.exits.append(Exit(DOWN, cube))
+        cube.exits.append(Exit("u", sphere))
+        sphere.exits.append(Exit("d", cube))
         self.rooms.append(cube)
         self.rooms.append(sphere)
         self.dbo_loaded = True

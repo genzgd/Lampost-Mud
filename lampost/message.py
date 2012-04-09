@@ -36,9 +36,6 @@ class DialogMessage(LMessage):
         LMessage.__init__(self)
         self.dialog = dialog 
         
-class Feedback(LMessage):
-    def __init__(self, msg):
-        LMessage.__init__(self, payload=msg)
 
 #MESSAGE_CONTENT
 
