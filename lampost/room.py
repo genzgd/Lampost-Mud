@@ -3,6 +3,8 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
+import traceback
+
 from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
     LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from dto.display import Display, DisplayLine
@@ -69,7 +71,7 @@ class Room(RootDBO):
             self.contents.append(lmessage.payload)
         if lmessage.msg_class == CLASS_LEAVE_ROOM:
             self.contents.remove(lmessage.payload)
-        self.tell_contents(lmessage) 
+        self.tell_contents(lmessage)
         if lmessage.broadcast:
             self.broadcast(lmessage.source, lmessage.payload, lmessage.broadcast)   
      
@@ -96,12 +98,12 @@ class Room(RootDBO):
             pass
     
     def broadcast(self, source, target, broadcast):
-        try:
-            for receiver in self.contents:
-                if receiver != source:
+        for receiver in self.contents:
+            if receiver != source:
+                try:
                     receiver.receive_broadcast(source, target, broadcast)
-        except Exception:
-            pass
+                except AttributeError:
+                    pass
         
 Room.dbo_base_class = Room
 Exit.dbo_refs = DBORef("destination", Room, "room"),
