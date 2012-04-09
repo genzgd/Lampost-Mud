@@ -3,7 +3,7 @@ Created on Feb 19, 2012
 
 @author: Geoff
 '''
-from rootdto import RootDTO
+from dto.rootdto import RootDTO
 
 class Display(RootDTO):
     def __init__(self, text=None, color=0x000000):

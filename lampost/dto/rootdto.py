@@ -7,28 +7,29 @@ from json import JSONEncoder
 
 class DTOEncoder(JSONEncoder):
     def default(self, o):
-        if isinstance(o, RootDTO):
-            return o.raw
-        return JSONEncoder.default(self, o)
+        try:
+            return o.get_dict()
+        except:
+            return JSONEncoder.default(self, o)
 
 class RootDTO(): 
     def __init__(self, **kw):
         self.merge_dict(kw);
         
     def merge(self, other):
-        self.merge_dict(other.raw)
+        self.merge_dict(other.get_dict())
         return self
             
     def merge_dict(self, dictionary):
         for key, value in dictionary.iteritems():
             peer = getattr(self, key, None)
-            if peer:
-                if isinstance(peer, list):
-                    peer.extend(value)
-                elif isinstance(peer, RootDTO):
+            try:
+                peer.extend(value)
+            except:
+                try:
                     peer.merge(value)
-            else:
-                setattr(self, key, value)              
+                except:
+                    setattr(self, key, value)            
         return self
      
     def get_json(self):
@@ -40,9 +41,7 @@ class RootDTO():
             raw[key] = value
         return raw
        
-   
     __encoder__ = DTOEncoder()     
     json = property(get_json)
-    raw = property(get_dict)
 
     

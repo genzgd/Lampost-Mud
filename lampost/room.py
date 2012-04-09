@@ -7,24 +7,33 @@ from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
     LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from dto.display import Display, DisplayLine
 from action import TARGET_MSG_CLASS, TARGET_ENV
-from item import BaseItem
-from datastore.dbo import RootDBO, DBOCollection
+from datastore.dbo import RootDBO, DBOCollection, DBORef
+from movement import Direction
 
 
-class Exit(BaseItem):
-    dbo_fields = "title", "desc"
-    def __init__(self, direction, destination):
-        BaseItem.__init__(self, direction)
+class Exit(RootDBO):
+    dbo_fields = "dir"
+    def __init__(self, dir_name=None, destination=None):
+        if dir_name:
+            self.set_dirname(dir_name)
         self.destination = destination
         self.target_class = TARGET_MSG_CLASS
         
     def dirdesc(self):
-        return self.name.desc
-    
-        
+        return self.direction.desc
+
     def receive(self, message):
         message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
         return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE))
+    
+    def get_dirname(self):
+        return self.direction.key
+    
+    def set_dirname(self, key):
+        self.direction = Direction.ref_map[key]
+        self.name = self.direction
+        
+    dir_name = property(get_dirname, set_dirname)
     
 
 Exit.dbo_base_class = Exit
@@ -37,7 +46,7 @@ class Room(RootDBO):
     
     dbo_key_type = "room"
     dbo_fields = "title", "desc"
-    dbo_collections = DBOCollection("exits", Exit) 
+    dbo_collections = DBOCollection("exits", Exit), 
     
     def __init__(self, dbo_id, title=None, desc=None):
         self.dbo_id = dbo_id;
@@ -94,7 +103,9 @@ class Room(RootDBO):
         except Exception:
             pass
         
-Room.dbo_base_class = Room  
+Room.dbo_base_class = Room
+Exit.dbo_refs = DBORef("destination", Room, "room"),
+  
                    
 
         

@@ -94,7 +94,21 @@ class DeletePlayer(Gesture):
         if self.hydrate_object(todie):        
             self.delete_object(todie)
             return Display(dialog.player_id + " deleted.")
-      
+
+class Describe(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "describe")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, target):
+        if not len(target):
+            target = source.env
+        else:
+            target = self.datastore.load_cached(target(0))
+        if not target:
+            return "No object with that key found"
+        display = target.describe()
+        return display
 
 class CreateArea(Gesture):
     def __init__(self):
@@ -110,6 +124,7 @@ class CreateArea(Gesture):
             return "That area already exists"
         area_name = " ".join(target)
         area.name = string.capwords(area_name)
+        area.next_room_id = 1
         room = Room(area_id + ":0", "The Beginning", "The Initial Room in " + area.name + " Area")
         area.rooms.append(room)
         self.save_object(area)

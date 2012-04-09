@@ -14,8 +14,6 @@ class RedisStore():
         self.dispatcher = dispatcher
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
         self.redis = StrictRedis(connection_pool=pool)
-        dispatcher.register("save_object", self.save_object)
-        dispatcher.register("load_object", self.load_object)
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         self.class_map = {}
@@ -49,6 +47,9 @@ class RedisStore():
                     coll_list.append(self.build_json(child_dbo))
             json_obj[dbo_col.field_name] = coll_list
         return json_obj
+    
+    def load_cached(self, key):
+        return self.object_map.get(key)
                 
     def load_by_key(self, key_type, key, base_class):
         dbo_key = key_type + ":" + key
@@ -58,7 +59,7 @@ class RedisStore():
         json_str = self.redis.get(dbo_key)
         json_obj = self.decoder.decode(json_str)
         dbo = self.load_class(json_obj, base_class)(key)
-        self.load_object(dbo, json_obj)
+        self.load_json(dbo, json_obj)
         return dbo
         
     def load_class(self, json_obj, base_class):
@@ -93,12 +94,15 @@ class RedisStore():
             if not dbo_col.cascade:
                 continue
             coll = getattr(dbo, dbo_col.field_name, set())
-            for child_json in json_obj[dbo_col.field_name]:
-                if dbo_col.key_type:
-                    child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
-                else:
-                    child_dbo = self.load_class(dbo_col.base_class)
-                coll.append(child_dbo)
+            try:
+                for child_json in json_obj[dbo_col.field_name]:
+                    if dbo_col.key_type:
+                        child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
+                    else:
+                        child_dbo = self.load_class(dbo_col.base_class)
+                    coll.append(child_dbo)
+            except Exception:
+                pass
         dbo.on_loaded()
         self.object_map[dbo.dbo_key] = dbo
         return True

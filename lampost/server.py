@@ -16,6 +16,7 @@ from datetime import datetime
 from dto.link import LinkError, ERROR_SESSION_NOT_FOUND, ERROR_NOT_LOGGED_IN
 from dto.display import Display, DisplayLine
 from json.decoder import JSONDecoder
+from dto.rootdto import RootDTO
 
 FILE_WEB_CLIENT = "webclient"
 
@@ -122,7 +123,13 @@ class ActionResource(Resource):
                 return self.sm.logout(session).json
             
             session.activity_time = datetime.now()
-            return player.parse(action).json
+            feedback = player.parse(action)
+            if not feedback:
+                return RootDTO(silent=True)
+            try:
+                return feedback.json
+            except:
+                return Display(feedback).json
         except:
             display = Display()
             display.append(DisplayLine(traceback.format_exc(), 0xff0000))
