@@ -35,15 +35,18 @@ class Player(Creature):
         action, verb, target = matches[0]
         message = action.create_message(self, verb, target, command)
         try:
-            feedback = target.receive(message)
-        except:
+            if message.msg_class:
+                feedback = target.receive(message)
+            else:
+                feedback = message
+        except AttributeError:
             feedback = message
         try:
             if message.broadcast:
-                if target != self.env:
+                if message.msg_class and target != self.env:
                     self.env.broadcast(self, target, message.broadcast)
                 feedback = self.translate_broadcast(self, target, message.broadcast)
-        except:
+        except AttributeError:
             pass
         try:
             if message.dialog:
