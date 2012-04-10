@@ -3,8 +3,6 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-import traceback
-
 from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
     LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from dto.display import Display, DisplayLine
@@ -14,7 +12,7 @@ from movement import Direction
 
 
 class Exit(RootDBO):
-    dbo_fields = "dir"
+    dbo_fields = "dir_name",
     def __init__(self, dir_name=None, destination=None):
         if dir_name:
             self.set_dirname(dir_name)
@@ -104,6 +102,10 @@ class Room(RootDBO):
                     receiver.receive_broadcast(source, target, broadcast)
                 except AttributeError:
                     pass
+                
+    @property
+    def area_id(self):
+        return self.dbo_id.split(":")[0]
         
 Room.dbo_base_class = Room
 Exit.dbo_refs = DBORef("destination", Room, "room"),

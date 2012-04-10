@@ -10,7 +10,7 @@ from player import Player
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from context import Context
 from dto.rootdto import RootDTO
-from dto.display import Display
+from dto.display import Display, DisplayLine
 from message import DialogMessage, CLASS_MOVEMENT, LMessage, CLASS_SENSE_EXAMINE
 from area import Area
 from room import Room
@@ -107,7 +107,9 @@ class Describe(Gesture):
             target = self.datastore.load_cached(target(0))
         if not target:
             return "No object with that key found"
-        display = target.describe()
+        display = Display("&nbsp")
+        for line in target.describe():
+            display.append(DisplayLine(line))
         return display
 
 class CreateArea(Gesture):
