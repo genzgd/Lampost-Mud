@@ -9,7 +9,7 @@ ERROR_NOT_LOGGED_IN = "no_login"
 LINK_GOOD = "good"
 LINK_CANCEL = "cancel"
 
-from dto.rootdto import RootDTO
+from rootdto import RootDTO
         
 class LinkGood(RootDTO):
     def __init__(self):

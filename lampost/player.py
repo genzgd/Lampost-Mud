@@ -52,7 +52,7 @@ class Player(Creature):
             if message.dialog:
                 self.session.dialog = message.dialog
                 feedback = DialogDTO(message.dialog)
-        except:
+        except AttributeError:
             pass
         return feedback
      
