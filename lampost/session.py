@@ -81,8 +81,8 @@ class SessionManager():
             kill_message.merge(DialogDTO(kill_dialog))
             old_session.append(kill_message)
         else:
-            player = Player(user_id)
-            if not self.datastore.hydrate_object(player):
+            player = self.datastore.load_object(Player, user_id)
+            if not player:
                 noplayer_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player");
                 return DialogDTO(noplayer_dialog)
             self.nature.baptise(player)
@@ -102,6 +102,7 @@ class SessionManager():
         player.detach()
         session.player = None
         del self.player_map[player.dbo_id]
+        self.datastore.evict(player)
         del self.player_session_map[player.dbo_id]
         return self.respond(RootDTO(logout="logout"))
         

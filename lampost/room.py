@@ -14,8 +14,7 @@ from movement import Direction
 class Exit(RootDBO):
     dbo_fields = "dir_name",
     def __init__(self, dir_name=None, destination=None):
-        if dir_name:
-            self.set_dirname(dir_name)
+        self.dir_name = dir_name
         self.destination = destination
         self.target_class = TARGET_MSG_CLASS
         
@@ -26,14 +25,13 @@ class Exit(RootDBO):
         message.source.receive(LMessage(self, CLASS_MOVEMENT, self.destination))
         return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE))
     
-    def get_dirname(self):
-        return self.direction.key
+    @property
+    def name(self):
+        return Direction.ref_map[self.dir_name]
     
-    def set_dirname(self, key):
-        self.direction = Direction.ref_map[key]
-        self.name = self.direction
-        
-    dir_name = property(get_dirname, set_dirname)
+    @property
+    def direction(self):
+        return Direction.ref_map[self.dir_name]
     
 
 Exit.dbo_base_class = Exit
@@ -79,9 +77,8 @@ class Room(RootDBO):
         longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
         if self.exits:
             exitline = "Obvious exits are: "
-            for ex in self.exits:
-                exitline = exitline + ex.dirdesc()
-                longdesc.append(DisplayLine(exitline, Room.EXIT_COLOR))
+            exitline = exitline + ", ".join([ex.dirdesc() for ex in self.exits])
+            longdesc.append(DisplayLine(exitline, Room.EXIT_COLOR))
         for obj in self.contents:
             if obj != observer:
                 longdesc.append(DisplayLine(obj.short_desc(), Room.ITEM_COLOR))

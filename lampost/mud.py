@@ -13,9 +13,10 @@ from message import CLASS_SENSE_EXAMINE
 from area import Area
 from chat import TellAction, ReplyAction
 from movement import Direction
+from builder import Dig
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
-    RegisterDisplay(), UnregisterDisplay(), Describe()
+    RegisterDisplay(), UnregisterDisplay(), Describe(), Dig()
 
 class MudNature():
     
@@ -62,8 +63,7 @@ class Mud():
         area_keys = datastore.fetch_set_keys("areas")
         for area_key in area_keys:
             area_id = area_key.split(":")[1]
-            area = Area(area_id)
-            datastore.hydrate_object(area)
+            area = datastore.load_object(Area, area_id)
             self.add_area(area)
     
     def add_area(self, area):

@@ -25,8 +25,7 @@ class CreatePlayer(Gesture):
     def execute(self, source, target):
         if not len(target):
             return "Name not specified"
-        player = Player(target[0])
-        if self.hydrate_object(player):
+        if self.load_object(Player, target[0]):
             return "That player already exists"
         if len(target) > 1:
             imm_level = IMM_LEVELS.get(target[1])
@@ -38,6 +37,7 @@ class CreatePlayer(Gesture):
         else:
             imm_level = 0
             title = "player"
+        player = Player(target[0])
         player.imm_level = imm_level
         player.room_id = None
         self.save_object(player)
@@ -78,8 +78,8 @@ class DeletePlayer(Gesture):
         player_id = target[0].lower()
         if Context.instance.sm.player_session_map.get(player_id): #@UndefinedVariable
             return "Player " + player_id + " logged in, cannot delete."
-        todie = Player(player_id)
-        if self.hydrate_object(todie):
+        todie = self.load_object(Player, player_id)
+        if todie:
             if todie.imm_level >= source.imm_level:
                 return "Cannot delete player of same or lower level."
             confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove " + todie.name, "Confirm Delete", self.finish_delete)
@@ -90,10 +90,11 @@ class DeletePlayer(Gesture):
     def finish_delete(self, dialog):
         if dialog.data["response"] == "no":
             return RootDTO(silent=True)
-        todie = Player(dialog.player_id)
-        if self.hydrate_object(todie):        
+        todie = self.load_object(Player, dialog.player_id)
+        if todie:      
             self.delete_object(todie)
             return Display(dialog.player_id + " deleted.")
+
 
 class Describe(Gesture):
     def __init__(self):
@@ -112,6 +113,7 @@ class Describe(Gesture):
             display.append(DisplayLine(line))
         return display
 
+
 class CreateArea(Gesture):
     def __init__(self):
         Gesture.__init__(self, "create area")
@@ -121,14 +123,15 @@ class CreateArea(Gesture):
         if not len(target):
             return "Area name not specified"
         area_id = "_".join(target).lower()
-        area = Area(area_id)
-        if self.hydrate_object(area):
+        if self.load_object(Area, area_id):
             return "That area already exists"
+        area = Area(area_id)
         area_name = " ".join(target)
         area.name = string.capwords(area_name)
         area.next_room_id = 1
         room = Room(area_id + ":0", "The Beginning", "The Initial Room in " + area.name + " Area")
         area.rooms.append(room)
+        area.owner_id = source.dbo_id
         self.save_object(area)
         self.mud.add_area(area)
 
@@ -149,9 +152,10 @@ class DeleteArea(Gesture):
     def finish_delete(self, dialog):
         if dialog.data["response"] == "no":
             return RootDTO(silent=True)
-        area = Area(dialog.area_id)
-        if self.hydrate_object(area):
+        area = self.load_object(Area, dialog.area_id)
+        if area:
             self.delete_object(area)
+            del self.mud.area_map[dialog.area_id]
             return Display(dialog.area_id + " deleted.")
         return Display("Area " + dialog.area_id + " does not exist.")
 

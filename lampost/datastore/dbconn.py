@@ -46,19 +46,33 @@ class RedisStore():
                 else:
                     coll_list.append(self.build_json(child_dbo))
             json_obj[dbo_col.field_name] = coll_list
+        for dbo_ref in dbo.dbo_refs:
+            ref = getattr(dbo, dbo_ref.field_name, None)
+            if ref:
+                json_obj[dbo_ref.field_name] = ref.dbo_id   
         return json_obj
     
     def load_cached(self, key):
         return self.object_map.get(key)
+    
+    def evict(self, dbo):
+        try:
+            del self.object_map[dbo.dbo_key]
+        except:
+            self.dispatcher.dispatch("db_log", "Failed to evict " + dbo.dbo_key + " from db cache")
                 
-    def load_by_key(self, key_type, key, base_class):
+    def load_by_key(self, key_type, key, base_class=None):
         dbo_key = key_type + ":" + key
         cached_dbo = self.object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
         json_str = self.redis.get(dbo_key)
+        if not json_str:
+            return None
         json_obj = self.decoder.decode(json_str)
         dbo = self.load_class(json_obj, base_class)(key)
+        if dbo.dbo_key_type:
+            self.object_map[dbo.dbo_key] = dbo
         self.load_json(dbo, json_obj)
         return dbo
         
@@ -77,12 +91,8 @@ class RedisStore():
         self.class_map[class_path] = clazz
         return clazz 
     
-    def hydrate_object(self, dbo):
-        json_str = self.redis.get(dbo.dbo_key)
-        if not json_str:
-            return False
-        json_obj = self.decoder.decode(json_str)
-        return self.load_json(dbo, json_obj)
+    def load_object(self, dbo_class, key):
+        return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
     
     def load_json(self, dbo, json_obj):
         try:
@@ -94,17 +104,23 @@ class RedisStore():
             if not dbo_col.cascade:
                 continue
             coll = getattr(dbo, dbo_col.field_name, set())
+            for child_json in json_obj[dbo_col.field_name]:
+                if dbo_col.key_type:
+                    child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
+                else:
+                    child_dbo = self.load_class(child_json, dbo_col.base_class)()
+                    self.load_json(child_dbo, child_json)
+                coll.append(child_dbo)
+        
+        for dbo_ref in dbo.dbo_refs:
             try:
-                for child_json in json_obj[dbo_col.field_name]:
-                    if dbo_col.key_type:
-                        child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
-                    else:
-                        child_dbo = self.load_class(dbo_col.base_class)
-                    coll.append(child_dbo)
-            except Exception:
+                ref_key = json_obj[dbo_ref.field_name]
+                ref_obj = self.load_by_key(dbo_ref.key_type, ref_key, dbo_ref.base_class)
+                setattr(dbo, dbo_ref.field_name, ref_obj)    
+            except:
                 pass
+            
         dbo.on_loaded()
-        self.object_map[dbo.dbo_key] = dbo
         return True
                     
     def delete_object(self, dbo):
