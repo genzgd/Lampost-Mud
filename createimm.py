@@ -43,10 +43,12 @@ if not imm_name:
     sys.exit(2)
     
 redis = RedisStore(Dispatcher(), db_host, db_port, db_num, db_pw)
+if redis.load_object(Player, imm_name):
+    print "That player already exists"
+    sys.exit(2)
 player = Player(imm_name)
 player.imm_level = IMM_LEVELS["supreme"]
-player.room_id = "immortal_citadel:cube"
-if not redis.hydrate_object(player):
-     redis.save_object(player)
+player.room_id = "immortal_citadel:0"
+redis.save_object(player)
  
      

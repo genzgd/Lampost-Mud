@@ -16,7 +16,6 @@ from datetime import datetime
 from dto.link import LinkError, ERROR_SESSION_NOT_FOUND, ERROR_NOT_LOGGED_IN
 from dto.display import Display, DisplayLine
 from json.decoder import JSONDecoder
-from dto.rootdto import RootDTO
 
 FILE_WEB_CLIENT = "webclient"
 
@@ -125,7 +124,7 @@ class ActionResource(Resource):
             session.activity_time = datetime.now()
             feedback = player.parse(action)
             if not feedback:
-                return RootDTO(silent=True)
+                return Display("Nothing appears to happen.").json
             try:
                 return feedback.json
             except:

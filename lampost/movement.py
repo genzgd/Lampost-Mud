@@ -27,6 +27,6 @@ SE = Direction('se', 'southeast', 'nw')
 NW = Direction('nw', 'northwest', 'se')
 SW = Direction('sw', 'northeast', 'ne')
 UP = Direction('u', 'up', "d")
-DOWN = Direction('d', 'down', "us")
+DOWN = Direction('d', 'down', "u")
 
 

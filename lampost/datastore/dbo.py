@@ -5,7 +5,7 @@ Created on Mar 4, 2012
 '''
 
 class RootDBO():    
-    dbo_key_type = "global"
+    dbo_key_type = None
     dbo_set_type = None
     dbo_set_id = None
     dbo_fields = ()

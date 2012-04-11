@@ -9,7 +9,7 @@ from room import Room
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
-    dbo_fields = ("name", "next_room_id")
+    dbo_fields = ("name", "next_room_id", "owner_id")
     dbo_collections = DBOCollection("rooms", Room, "room"),
     
     def __init__(self, dbo_id):

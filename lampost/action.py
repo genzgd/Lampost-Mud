@@ -27,8 +27,8 @@ class Action():
         return Action.datastore.save_object(obj)
         
     @staticmethod
-    def hydrate_object(obj):
-        return Action.datastore.hydrate_object(obj)
+    def load_object(obj_class, key):
+        return Action.datastore.load_object(obj_class, key)
         
     @staticmethod
     def delete_object(obj):
