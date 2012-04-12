@@ -42,24 +42,41 @@ class AreaList(Gesture):
 
 class SetHome(Gesture):
     def __init__(self):
-        Gesture.__init__(self, "goto room")
+        Gesture.__init__(self, "sethome")
         self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target):
-        source.home = source.env.dbo_id
+        source.home_room = source.env.dbo_id
+
     
 class GotoRoom(Gesture):
     def __init__(self):
         Gesture.__init__(self, "goto room")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
-        room_id = ":".join(target)
-        room = self.datastore.load_cached("room:" + room_id)
-        if not room:
+    def execute(self, player, target):
+        return self.goto_room(player, ":".join(target))
+        
+    def goto_room(self, player, room_id):
+        try:
+            area_id = room_id.split(":")[0]
+            area = self.mud.get_area(area_id)
+            room = area.get_room(room_id)
+            if not room:
+                return "No such room in " + area.name
+        except:
             return "Cannot find room " + room_id
-        source.change_env(room)
-        return source.parse("look")
+        player.change_env(room)
+        return player.parse("look")
+   
+        
+class GoHome(GotoRoom):
+    def __init__(self):
+        Gesture.__init__(self, "home")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, player, target):
+        return self.goto_room(player, player.home_room)
 
 
 class CreatePlayer(Gesture):

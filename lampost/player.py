@@ -14,6 +14,8 @@ class Player(Creature):
     dbo_key_type = "player"
     dbo_set_key = "players"
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id")
+    
+    home_room = "immortal_citadel:0"
      
     def __init__(self, name):
         self.target_class = TARGET_PLAYER
@@ -38,7 +40,7 @@ class Player(Creature):
             if message.msg_class:
                 feedback = target.receive(message)
             else:
-                feedback = message
+                feedback = message.payload
         except AttributeError:
             feedback = message
         try:

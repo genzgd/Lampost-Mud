@@ -20,11 +20,10 @@ class ImmortalCitadel(Area):
         sphere.exits.append(Exit("d", cube))
         self.rooms.append(cube)
         self.rooms.append(sphere)
-        self.dbo_loaded = True
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
-
+   
         
 class MusicBox(BaseItem, Action):
     def __init__(self):

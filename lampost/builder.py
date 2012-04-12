@@ -107,6 +107,7 @@ class Dig(DirectionAction):
         
         area.rooms.append(new_room)
         area.next_room_id = area.next_room_id + 1
+        builder.change_env(new_room)
         self.save_object(area)
 
     
@@ -127,12 +128,49 @@ class UnDig(DirectionAction):
         if other_exit:
             other_room.exits.remove(other_exit)
         
-            if other_room.rev == 0 and other_room.exits.size() == 0:
+            if not other_room.rev and not other_room.exits:
                 self.delete_object(other_room)
                 area.rooms.remove(other_room)
                 self.save_object(area)
             else:
                 self.save_object(other_room)
+      
+                
+class SetDesc(BuildAction):
+    def __init__(self):
+        Gesture.__init__(self, "setdesc")
+    
+    def create_message(self, builder, verb, target, command):
+        try:
+            self.check_area(builder, builder.env)
+            if not target:
+                return "Set description to what?"
+            builder.env.desc = command.partition(" ")[2]
+            self.save_object(builder.env)
+        except BuildError as exp:
+            return exp.msg
+        return builder.parse("look")
+ 
+        
+class SetTitle(BuildAction):
+    def __init__(self):
+        Gesture.__init__(self, "settitle")
+    
+    def create_message(self, builder, verb, target, command):
+        try:
+            self.check_area(builder, builder.env)
+            if not target:
+                return "Set title to what?"
+            builder.env.title = command.partition(" ")[2]
+            self.save_object(builder.env)
+        except BuildError as exp:
+            return exp.msg
+        return builder.parse("look")
+        
+        
+        
+            
+    
                 
 
             
