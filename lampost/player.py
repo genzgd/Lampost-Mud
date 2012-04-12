@@ -84,6 +84,7 @@ class Player(Creature):
                     if  (action.action_class == TARGET_SELF and target == action) or (target.target_class & action.action_class):
                         matches.append((action, verb, target))
         return matches;
+           
                      
     def match_messages(self, messages):
         for message in messages:

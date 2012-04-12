@@ -8,15 +8,17 @@ from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
 from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
-    GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe
+    GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
+    ListCommands, AreaList, GotoRoom
 from message import CLASS_SENSE_EXAMINE
 from area import Area
 from chat import TellAction, ReplyAction
 from movement import Direction
-from builder import Dig
+from builder import Dig, RoomList, UnDig
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
-    RegisterDisplay(), UnregisterDisplay(), Describe(), Dig()
+    RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
+    AreaList(), GotoRoom(), UnDig()
 
 class MudNature():
     

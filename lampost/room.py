@@ -27,11 +27,11 @@ class Exit(RootDBO):
     
     @property
     def name(self):
-        return Direction.ref_map[self.dir_name]
+        return Direction.ref_map.get(self.dir_name)
     
     @property
     def direction(self):
-        return Direction.ref_map[self.dir_name]
+        return Direction.ref_map.get(self.dir_name)
     
 
 Exit.dbo_base_class = Exit
@@ -43,8 +43,10 @@ class Room(RootDBO):
     ITEM_COLOR = 0x7092BE
     
     dbo_key_type = "room"
-    dbo_fields = "title", "desc"
-    dbo_collections = DBOCollection("exits", Exit), 
+    dbo_fields = "title", "desc", "rev"
+    dbo_collections = DBOCollection("exits", Exit),
+    
+    rev = 0 
     
     def __init__(self, dbo_id, title=None, desc=None):
         self.dbo_id = dbo_id;
@@ -76,14 +78,20 @@ class Room(RootDBO):
         longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
         longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
         if self.exits:
-            exitline = "Obvious exits are: "
-            exitline = exitline + ", ".join([ex.dirdesc() for ex in self.exits])
-            longdesc.append(DisplayLine(exitline, Room.EXIT_COLOR))
+            longdesc.append(DisplayLine("Obvious exits are: " + self.short_exits(),  Room.EXIT_COLOR))
         for obj in self.contents:
             if obj != observer:
                 longdesc.append(DisplayLine(obj.short_desc(), Room.ITEM_COLOR))
         return longdesc
     
+    def short_exits(self):
+        return ", ".join([ex.dirdesc() for ex in self.exits])
+    
+    def find_exit(self, exit_dir):
+        for my_exit in self.exits:
+            if my_exit.direction == exit_dir:
+                return my_exit;
+            
     def tell_contents(self, lmessage):
         try:
             for receiver in self.contents:

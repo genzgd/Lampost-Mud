@@ -95,22 +95,26 @@ class RedisStore():
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
     
     def load_json(self, dbo, json_obj):
-        try:
-            for field_name in dbo.dbo_fields:
+        
+        for field_name in dbo.dbo_fields:
+            try:
                 setattr(dbo, field_name, json_obj[field_name])
-        except KeyError:
-            pass
+            except KeyError:
+                self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing field " + field_name)
         for dbo_col in dbo.dbo_collections:
             if not dbo_col.cascade:
                 continue
-            coll = getattr(dbo, dbo_col.field_name, set())
-            for child_json in json_obj[dbo_col.field_name]:
-                if dbo_col.key_type:
-                    child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
-                else:
-                    child_dbo = self.load_class(child_json, dbo_col.base_class)()
-                    self.load_json(child_dbo, child_json)
-                coll.append(child_dbo)
+            coll = getattr(dbo, dbo_col.field_name, [])
+            try:
+                for child_json in json_obj[dbo_col.field_name]:
+                    if dbo_col.key_type:
+                        child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
+                    else:
+                        child_dbo = self.load_class(child_json, dbo_col.base_class)()
+                        self.load_json(child_dbo, child_json)
+                    coll.append(child_dbo)
+            except KeyError:
+                self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing collection " + dbo_col.field_name)
         
         for dbo_ref in dbo.dbo_refs:
             try:
@@ -118,7 +122,7 @@ class RedisStore():
                 ref_obj = self.load_by_key(dbo_ref.key_type, ref_key, dbo_ref.base_class)
                 setattr(dbo, dbo_ref.field_name, ref_obj)    
             except:
-                pass
+                self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing ref " + dbo_ref.field_name)
             
         dbo.on_loaded()
         return True
