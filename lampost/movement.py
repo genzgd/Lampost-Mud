@@ -29,7 +29,7 @@ WEST = Direction('w', 'west', 'e')
 NE = Direction('ne', 'northeast', 'sw')
 SE = Direction('se', 'southeast', 'nw')
 NW = Direction('nw', 'northwest', 'se')
-SW = Direction('sw', 'northeast', 'ne')
+SW = Direction('sw', 'southwest', 'ne')
 UP = Direction('u', 'up', "d")
 DOWN = Direction('d', 'down', "u")
 

@@ -52,6 +52,9 @@ class RedisStore():
                 json_obj[dbo_ref.field_name] = ref.dbo_id   
         return json_obj
     
+    def cache_object(self, dbo):
+        self.object_map[dbo.dbo_key]
+    
     def load_cached(self, key):
         return self.object_map.get(key)
     

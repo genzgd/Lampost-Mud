@@ -15,5 +15,10 @@ class Area(RootDBO):
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id
         self.rooms = []
+        
+    def get_room(self, room_id):
+        for room in self.rooms:
+            if room.dbo_id == room_id:
+                return room;
 
 Area.dbo_base_class = Area

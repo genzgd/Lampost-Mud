@@ -17,8 +17,8 @@ class TellAction(Action):
     def create_message(self, source, verb, target, command):
         if not len(target):
             return "Tell who?"
-        ix = command.find(target[0]) + len(target[0]) + 1
-        return self.tell_message(source, target[0], command[ix:])
+        
+        return self.tell_message(source, target[0], command.partition(target[0])[2][1:])
         
     def tell_message(self, source, player_id, statement):
         session = Context.instance.sm.player_session_map.get(player_id) #@UndefinedVariable
