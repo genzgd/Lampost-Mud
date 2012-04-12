@@ -9,13 +9,17 @@ class Direction(Action):
     actions = set()
     ref_map = {}
     
-    def __init__(self, key, desc, rev):
+    def __init__(self, key, desc, rev_key):
         Action.__init__(self, (key, desc), self, TARGET_MSG_CLASS)
         self.key = key
         self.desc = desc
-        self.rev = rev
+        self.rev_key = rev_key
         Direction.actions.add(self)
         Direction.ref_map[key] = self
+        
+    @property
+    def rev_dir(self):
+        return Direction.ref_map[self.rev_key]
        
        
 NORTH = Direction('n', 'north', 's')

@@ -17,6 +17,7 @@ TARGET_GENERAL = TARGET_ENV | TARGET_ITEM | TARGET_PLAYER | TARGET_MONSTER
 TARGET_LIVING = TARGET_PLAYER | TARGET_MONSTER
 
 class Action():
+    imm_level = 0
 
     @staticmethod 
     def dispatch(event_type, data):

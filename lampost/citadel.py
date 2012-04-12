@@ -13,6 +13,7 @@ class ImmortalCitadel(Area):
     def __init__(self):
         Area.__init__(self, "immortal_citadel")
         self.name = "Immortal Citadel"
+        self.owner_id = "MUD"
         cube = Room("immortal_citadel:0", "A White Cube", "A perfect white cube, about 30 feet on a side")
         sphere = Room("immortal_citadel:1", "A Silver Sphere", "A perfect silver sphere, with a radius of about 30 feet")
         cube.exits.append(Exit("u", sphere))

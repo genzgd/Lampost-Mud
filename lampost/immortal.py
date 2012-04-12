@@ -14,8 +14,53 @@ from dto.display import Display, DisplayLine
 from message import DialogMessage, CLASS_MOVEMENT, LMessage, CLASS_SENSE_EXAMINE
 from area import Area
 from room import Room
+from lmutil import ljust
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
+
+class ListCommands(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "cmds")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, target):
+        soul_actions = [action for action in source.soul if action.imm_level]
+        verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in soul_actions]
+        return ", ".join(sorted(verb_lists))
+ 
+class AreaList(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "arealist")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, target):
+        display = Display()
+        for area in sorted(self.mud.area_map.itervalues()):
+            display.append(DisplayLine(ljust(area.name, 20) + ljust(area.owner_id, 20) + str(len(area.rooms)) + " rooms"))
+        return display
+
+
+class SetHome(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "goto room")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, target):
+        source.home = source.env.dbo_id
+    
+class GotoRoom(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "goto room")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, target):
+        room_id = ":".join(target)
+        room = self.datastore.load_cached("room:" + room_id)
+        if not room:
+            return "Cannot find room " + room_id
+        source.change_env(room)
+        return source.parse("look")
+
 
 class CreatePlayer(Gesture):
     def __init__(self):
@@ -117,7 +162,7 @@ class Describe(Gesture):
 class CreateArea(Gesture):
     def __init__(self):
         Gesture.__init__(self, "create area")
-        self.imm_level = IMM_LEVELS["supreme"]
+        self.imm_level = IMM_LEVELS["admin"]
     
     def execute(self, source, target):
         if not len(target):
@@ -129,17 +174,18 @@ class CreateArea(Gesture):
         area_name = " ".join(target)
         area.name = string.capwords(area_name)
         area.next_room_id = 1
-        room = Room(area_id + ":0", "The Beginning", "The Initial Room in " + area.name + " Area")
+        room = Room(area_id + ":0", "Area " + area.name + " Start", "The Initial Room in " + area.name + " Area")
         area.rooms.append(room)
         area.owner_id = source.dbo_id
         self.save_object(area)
         self.mud.add_area(area)
+        source.parse("goto room " + room.dbo_id)
 
 
 class DeleteArea(Gesture):
     def __init__(self):
         Gesture.__init__(self, "delete area")
-        self.imm_level = IMM_LEVELS["supreme"]
+        self.imm_level = IMM_LEVELS["admin"]
     
     def execute(self, source, target):
         if not len(target):
