@@ -167,7 +167,7 @@ class Describe(Gesture):
         if not len(target):
             target = source.env
         else:
-            target = self.datastore.load_cached(target(0))
+            target = self.datastore.load_cached(target[0])
         if not target:
             return "No object with that key found"
         display = Display("&nbsp")

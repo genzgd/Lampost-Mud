@@ -28,7 +28,7 @@ try:
         elif name == "db_port":
             db_port = int(value)
         elif name == "db_num":
-            db_num = int(db_num)
+            db_num = int(value)
         elif name == "db_pw":
             db_pw = value
         else:

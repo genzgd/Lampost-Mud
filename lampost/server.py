@@ -118,16 +118,16 @@ class ActionResource(Resource):
             action = cgi.escape(request.args[ARG_ACTION][0]).strip()
             if not action:
                 return;
-            if action in ["quit", "logout"]:
+            if action in ["quit", "logout", "log out"]:
                 return self.sm.logout(session).json
             
             session.activity_time = datetime.now()
             feedback = player.parse(action)
             if not feedback:
                 return Display("Nothing appears to happen.").json
-            try:
+            if getattr(feedback, "json", None):
                 return feedback.json
-            except:
+            else:
                 return Display(feedback).json
         except:
             display = Display()

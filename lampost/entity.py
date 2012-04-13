@@ -165,10 +165,14 @@ class Entity(RootDBO):
             pass
         
     def change_env(self, new_env):
-        self.remove_actions(self.env)
-        self.remove_targets(self.env)
-        self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self, "{p} leaves."))
+        self.leave_env()
         self.enter_env(new_env)
+        
+    def leave_env(self):
+        if self.env:
+            self.remove_actions(self.env)
+            self.remove_targets(self.env)
+            self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self, "{p} leaves."))
         
     def enter_env(self, new_env):
         self.env = new_env
@@ -178,7 +182,6 @@ class Entity(RootDBO):
         self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self, "{p} arrives."))
             
     def detach(self):
-        self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self))
         for registration in self.registrations:
             registration.detach()
             

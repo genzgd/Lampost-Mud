@@ -99,6 +99,7 @@ class SessionManager():
         
     def logout(self, session):
         player = session.player
+        player.leave_env()
         player.detach()
         session.player = None
         del self.player_map[player.dbo_id]
@@ -166,6 +167,7 @@ class UserSession():
             return Display("Dialog Error", 0xff0000)
         self.dialog = None
         dialog.data = data
+        dialog.player = self.player
         return dialog.callback(dialog)
  
     def push_output(self):

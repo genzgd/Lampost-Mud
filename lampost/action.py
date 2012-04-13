@@ -18,14 +18,15 @@ TARGET_LIVING = TARGET_PLAYER | TARGET_MONSTER
 
 class Action():
     imm_level = 0
+    mud = None
 
     @staticmethod 
     def dispatch(event_type, data):
         Action.dispatcher.dispatch(event_type, data) 
         
     @staticmethod
-    def save_object(obj):
-        return Action.datastore.save_object(obj)
+    def save_object(obj, update_rev=False):
+        return Action.datastore.save_object(obj, update_rev)
         
     @staticmethod
     def load_object(obj_class, key):
