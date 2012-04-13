@@ -74,8 +74,15 @@ class Room(RootDBO):
             self.contents.remove(lmessage.payload)
         self.tell_contents(lmessage)
         if lmessage.broadcast:
-            self.broadcast(lmessage.source, lmessage.payload, lmessage.broadcast)   
-     
+            self.broadcast(lmessage.source, lmessage.payload, lmessage.broadcast)
+                      
+    def refresh(self):
+        for entity in self.contents:
+            try:
+                entity.refresh_env()
+            except AttributeError:
+                pass
+                   
     def long_desc(self, observer):
         bmode = getattr(observer, "buildmode", False) 
         longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)

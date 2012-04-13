@@ -135,7 +135,7 @@ class DeletePlayer(Gesture):
         self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target):
-        if not len(target):
+        if not target:
             return "Player name not specified"
         player_id = target[0].lower()
         if Context.instance.sm.player_session_map.get(player_id): #@UndefinedVariable
@@ -234,6 +234,8 @@ class GoToArea(Gesture):
         area = self.mud.get_area(" ".join(target))
         if not area:
             return "Area does not exist"
+        if not area.rooms:
+            return "Area has no rooms!"
         dest = area.rooms[0]
         source.receive(LMessage(self, CLASS_MOVEMENT, dest))
         return dest.receive(LMessage(source, CLASS_SENSE_EXAMINE))

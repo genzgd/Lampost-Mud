@@ -164,6 +164,9 @@ class Entity(RootDBO):
         except AttributeError:
             pass
         
+    def refresh_env(self):
+        self.change_env(self.env)    
+        
     def change_env(self, new_env):
         self.leave_env()
         self.enter_env(new_env)
