@@ -34,6 +34,9 @@ class Entity(RootDBO):
 
     def register(self, event_type, callback):
         self.registrations.add(Entity.dispatcher.register(event_type, callback))
+        
+    def register_p(self, freq, callback):
+        self.registrations.add(Entity.dispatcher.register_p(freq, callback))
 
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_MOVEMENT:

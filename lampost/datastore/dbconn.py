@@ -129,7 +129,6 @@ class RedisStore():
             except:
                 self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing ref " + dbo_ref.field_name)
             
-        dbo.on_loaded()
         return True
                     
     def delete_object(self, dbo):

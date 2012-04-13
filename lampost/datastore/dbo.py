@@ -13,16 +13,16 @@ class RootDBO():
     dbo_refs = ()
     dbo_base_class = None
     dbo_id = None
-    
-    def on_loaded(self):
-        self.dbo_loaded = True 
-    
+        
     def get_dbo_key(self):
         return self.dbo_key_type + ":" + self.dbo_id
     
     def get_dbo_set_key(self):
         if self.dbo_set_type:
             return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
+            
+    def auto_save(self):
+        self.datastore.save_object(self);
         
     def describe(self, level=0, follow_refs=True):
         display = []
