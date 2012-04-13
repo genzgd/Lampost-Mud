@@ -10,8 +10,8 @@ from player import Player
 from room import Room, Exit
 from lmutil import ljust
 from dto.display import Display, DisplayLine
-from Dialog import Dialog
-from dialog import DIALOG_TYPE_CONFIRM
+from dialog import Dialog, DIALOG_TYPE_CONFIRM
+from message import DialogMessage
 
 BUILD_ROOM = Room("buildroom")
 
@@ -118,12 +118,12 @@ class DelRoom(Gesture):
             area, room = find_room(builder, args, builder.env.area_id)
         except BuildError as exp:
             return exp.msg
-            
+
         if room.dbo_rev:
-            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room" + room.short_desc(builder), "Confirm Delete", self.confirm_delete)
+            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.short_desc(builder), "Confirm Delete", self.confirm_delete)
             confirm_dialog.area = area
             confirm_dialog.room = room
-            return confirm_dialog
+            return DialogMessage(confirm_dialog)
         else:
             return self.del_room(builder, area,  room)
             
@@ -139,10 +139,12 @@ class DelRoom(Gesture):
                 if other_exit.destination == room:
                     other_room.exits.remove(other_exit)
                     self.save_object(other_room)
+                    other_room.refresh()
         self.delete_object(room)
         area.rooms.remove(room)
         self.save_object(area)
         display = Display("Room " + room.dbo_id + " deleted")
+
         if builder.env == room:
             display.merge(builder.parse("home"))
         return display
@@ -175,10 +177,12 @@ class Dig(DirectionAction):
         
         this_exit = Exit(new_dir.key, new_room)
         room.exits.append(this_exit)
+        room.refresh()
         self.save_object(room)
         
         other_exit = Exit(new_dir.rev_key, room)
         new_room.exits.append(other_exit)
+        new_room.refresh()
         self.save_object(new_room)
         
         new_area.rooms.append(new_room)
@@ -188,10 +192,11 @@ class Dig(DirectionAction):
 
     
 class UnDig(DirectionAction):
+    remove_other_exit = True
+    remove_other_room = True
+    
     def __init__(self):
         Gesture.__init__(self, "undig")
-        self.remove_other_exit = True
-        self.remove_other_room = True
         
     def build(self, builder, room, area, target_dir, args):
   
@@ -199,6 +204,7 @@ class UnDig(DirectionAction):
         other_room = my_exit.destination
        
         room.exits.remove(my_exit)
+        room.refresh()
         self.save_object(room)
         
         if not self.remove_other_exit:
@@ -217,6 +223,7 @@ class UnDig(DirectionAction):
             self.save_object(area)
         else:
             self.save_object(other_room)
+            other_room.refresh()
             
 
 class FTH(UnDig):
