@@ -41,7 +41,7 @@ class Action():
         self.verbs = set()
         try:
             self.add_verb(verbs)
-        except:
+        except AttributeError:
             for verb in verbs:
                 self.add_verb(verb)
         self.msg_class = msg_class
@@ -55,9 +55,13 @@ class Action():
    
 
 class Gesture(Action): 
-    def __init__(self, verb):
+    def __init__(self, verbs):
         self.verbs = set()
-        self.add_verb(verb)
+        try:
+            self.add_verb(verbs)
+        except AttributeError:
+            for verb in verbs:
+                self.add_verb(verb)
         self.msg_class = None
         self.action_class = TARGET_ACTION
         

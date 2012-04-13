@@ -13,7 +13,7 @@ from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV,\
 class Player(Creature):   
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id")
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room")
     
     home_room = "immortal_citadel:0"
      
@@ -22,6 +22,9 @@ class Player(Creature):
         self.dbo_id = name.lower()
         self.name = name.capitalize()
         self.last_tell = None
+        
+    def start(self):
+        self.register_p(80, self.auto_save)
               
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
@@ -107,7 +110,7 @@ class Player(Creature):
     def receive_broadcast(self, source, target, broadcast):
         self.display_line(self.translate_broadcast(source, target, broadcast))
                   
-    def short_desc(self):
+    def short_desc(self, observer):
         return self.name
             
     def detach(self):

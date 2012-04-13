@@ -12,6 +12,7 @@ from server import LampostResource
 from action import Action
 from entity import Entity
 from datastore.dbconn import RedisStore
+from datastore.dbo import RootDBO
 
 class Context():
     instance = None
@@ -24,13 +25,15 @@ class Context():
         self.datastore = RedisStore(self.dispatcher, db_host, db_port, db_num, db_pw)
         Action.datastore = self.datastore
         Entity.datastore = self.datastore
+        RootDBO.datastore = self.datastore
+
         self.sm = SessionManager(self.dispatcher, self.datastore, nature)
       
         self.site = Site(LampostResource(self.sm))
         self.port = port
         self.nature.create(self.datastore)
         Context.instance = self
-        
+               
         pulse = task.LoopingCall(self.dispatcher.pulse)
         pulse.start(nature.pulse_interval)
         

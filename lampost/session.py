@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from dto.display import Display, DisplayLine
 from dto.link import LinkCancel, LinkGood
 from dto.rootdto import RootDTO
-from event import PulseEvent
 from player import Player
 from os import urandom;
 from base64 import b64encode
@@ -26,8 +25,7 @@ class SessionManager():
         self.session_map = {}
         self.player_map = {}
         self.player_session_map = {}
-        self.dispatcher.register("refresh_link_status", self.refresh_link_status)
-        self.dispatcher.dispatch_p(PulseEvent("refresh_link_status", 20, repeat=True))                      
+        self.dispatcher.register_p(20, self.refresh_link_status)                    
  
     def get_next_id(self):
         usession_id = b64encode(str(urandom(16)))
@@ -86,7 +84,7 @@ class SessionManager():
                 noplayer_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player");
                 return DialogDTO(noplayer_dialog)
             self.nature.baptise(player)
-          
+            
         session = self.session_map.get(session_id)
         if old_session:
             session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
@@ -95,6 +93,7 @@ class SessionManager():
         session.append(player.parse("look"))
         self.player_map[player.dbo_id] = session.login(player)
         self.player_session_map[player.dbo_id] = session
+        player.start()
         return self.respond(RootDTO(login="good"))
         
     def logout(self, session):
@@ -103,6 +102,7 @@ class SessionManager():
         player.detach()
         session.player = None
         del self.player_map[player.dbo_id]
+        self.datastore.save_object(player)
         self.datastore.evict(player)
         del self.player_session_map[player.dbo_id]
         return self.respond(RootDTO(logout="logout"))

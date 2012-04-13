@@ -240,7 +240,7 @@ class BackFill(UnDig):
                         
 class SetDesc(BuildAction):
     def __init__(self):
-        Gesture.__init__(self, "setdesc")
+        Gesture.__init__(self, ("rdesc",  "setdesc"))
     
     def create_message(self, builder, verb, target, command):
         try:
@@ -256,7 +256,7 @@ class SetDesc(BuildAction):
         
 class SetTitle(BuildAction):
     def __init__(self):
-        Gesture.__init__(self, "settitle")
+        Gesture.__init__(self, ("rname", "settitle"))
     
     def create_message(self, builder, verb, target, command):
         try:
