@@ -14,11 +14,13 @@ from message import CLASS_SENSE_EXAMINE
 from area import Area
 from chat import TellAction, ReplyAction
 from movement import Direction
-from builder import Dig, RoomList, UnDig, SetDesc, SetTitle
+from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
+    FTH, DelRoom
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
-    AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle()
+    AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
+    BuildMode(), FTH(), DelRoom()
 
 class MudNature():
     

@@ -22,7 +22,7 @@ class BaseItem(RootDBO):
         self.name = name
         self.target_class = TARGET_ITEM
         
-    def short_desc(self):
+    def short_desc(self, observer):
         desc = " ".join(self.prefixes + [self.name]) + '.'
         if desc[0] in VOWELS:
             desc = "An " + desc
@@ -30,7 +30,7 @@ class BaseItem(RootDBO):
             desc = "A " + desc
         return desc
         
-    def long_desc(self):
+    def long_desc(self, observer):
         return self.short_desc()
         
     def receive(self, lmessage):

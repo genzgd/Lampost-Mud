@@ -19,7 +19,9 @@ class RedisStore():
         self.class_map = {}
         self.object_map = {}
             
-    def save_object(self, dbo):
+    def save_object(self, dbo, update_rev=False):
+        if update_rev:
+            dbo.dbo_rev = getattr(dbo, "dbo_rev", 0) + 1
         json_obj = self.build_json(dbo)
         key = dbo.dbo_key
         self.redis.set(key, self.encoder.encode(json_obj))
