@@ -3,11 +3,11 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-from room import Room, Exit
-from item import BaseItem
 from action import Action, TARGET_SELF
-from message import CLASS_BROADCAST, LMessage
 from area import Area
+from article import Article
+from message import CLASS_BROADCAST, LMessage
+from room import Room, Exit
 
 class ImmortalCitadel(Area):
     def __init__(self):
@@ -25,11 +25,13 @@ class ImmortalCitadel(Area):
         sphere.contents.append(MusicBox())
    
         
-class MusicBox(BaseItem, Action):
+class MusicBox(Article, Action):
     def __init__(self):
-        BaseItem.__init__(self, "box", "music")
+        self.title = "music box"
+        self.desc = "An translucent music box.  It doesn't seem quite all here."
+        self.config_targets()
         Action.__init__(self, ["play", "wind"], CLASS_BROADCAST, TARGET_SELF)
         
     def create_message(self, source, verb, target, command):
-        return LMessage(source, self.msg_class, target, "The music box plays an eerie atonal tune")
+        return LMessage(source, self.msg_class, target, "The music box plays an eerie atonal tune.")
         

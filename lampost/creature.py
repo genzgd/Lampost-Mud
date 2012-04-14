@@ -6,4 +6,6 @@ Created on Mar 4, 2012
 from entity import Entity
 
 class Creature(Entity):
-    pass
+    dbo_fields = Entity.dbo_fields + ("level",)
+    
+    level = 1

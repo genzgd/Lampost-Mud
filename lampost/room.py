@@ -13,10 +13,10 @@ from movement import Direction
 
 class Exit(RootDBO):
     dbo_fields = "dir_name",
+    target_class = TARGET_MSG_CLASS
     def __init__(self, dir_name=None, destination=None):
         self.dir_name = dir_name
         self.destination = destination
-        self.target_class = TARGET_MSG_CLASS
         
     def short_desc(self, observer=None):
         if observer and getattr(observer, "buildmode", False):
@@ -29,7 +29,7 @@ class Exit(RootDBO):
         return self.destination.receive(LMessage(message.source, CLASS_SENSE_EXAMINE))
     
     @property
-    def name(self):
+    def target_id(self):
         return Direction.ref_map.get(self.dir_name)
     
     @property

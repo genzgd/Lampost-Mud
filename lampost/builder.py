@@ -174,6 +174,7 @@ class Dig(DirectionAction):
         else:
             new_room = Room(area.dbo_id + ":" + str(area.next_room_id), desc, desc)
             new_area = area
+            new_area.rooms.append(new_room)
         
         this_exit = Exit(new_dir.key, new_room)
         room.exits.append(this_exit)
@@ -185,7 +186,7 @@ class Dig(DirectionAction):
         new_room.refresh()
         self.save_object(new_room)
         
-        new_area.rooms.append(new_room)
+        
         area.next_room_id = area.next_room_id + 1
         builder.change_env(new_room)
         self.save_object(area)

@@ -67,7 +67,7 @@ class SessionManager():
             if session.player:
                 self.player_map[session.player.dbo_id] = session.player_info(now)
         self.display_players()
-                 
+           
     def login(self, session_id, user_id):
         old_session = self.player_session_map.get(user_id);
         if old_session:
@@ -90,12 +90,12 @@ class SessionManager():
             session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
         else:  
             session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
-        session.append(player.parse("look"))
         self.player_map[player.dbo_id] = session.login(player)
         self.player_session_map[player.dbo_id] = session
         player.start()
+        session.append(player.parse("look"))
         return self.respond(RootDTO(login="good"))
-        
+     
     def logout(self, session):
         player = session.player
         player.leave_env()

@@ -124,10 +124,7 @@ class UnregisterDisplay(Gesture):
         self.imm_level = IMM_LEVELS["creator"]
     
     def execute(self, source, target):
-        for reg in source.registrations:
-            if reg.event_type == target[0] and reg.callback == source.display_line:
-                reg.detach()
-        
+        source.unregister(target[0], source.display_line)
                    
 class DeletePlayer(Gesture):
     def __init__(self):
@@ -190,7 +187,6 @@ class CreateArea(Gesture):
         area = Area(area_id)
         area_name = " ".join(target)
         area.name = string.capwords(area_name)
-        area.next_room_id = 1
         room = Room(area_id + ":0", "Area " + area.name + " Start", "The Initial Room in " + area.name + " Area")
         area.rooms.append(room)
         area.owner_id = source.dbo_id

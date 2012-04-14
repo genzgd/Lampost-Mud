@@ -4,7 +4,7 @@ Created on Mar 4, 2012
 @author: Geoffrey
 '''
 
-class RootDBO():    
+class RootDBO(object):    
     dbo_key_type = None
     dbo_set_type = None
     dbo_set_id = None
@@ -13,16 +13,25 @@ class RootDBO():
     dbo_refs = ()
     dbo_base_class = None
     dbo_id = None
-        
-    def get_dbo_key(self):
+       
+    @property    
+    def dbo_key(self):
         return self.dbo_key_type + ":" + self.dbo_id
     
-    def get_dbo_set_key(self):
+    @property
+    def dbo_set_key(self):
         if self.dbo_set_type:
             return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
             
+    def on_loaded(self):
+        pass
+         
     def auto_save(self):
         self.datastore.save_object(self);
+        
+    def apply_template(self, instance):
+        for field in self.dbo_fields:
+            setattr(instance, getattr(self, field, "None"))
         
     def describe(self, level=0, follow_refs=True):
         display = []
@@ -59,9 +68,6 @@ class RootDBO():
                 append(col.field_name, "None")
         return display
     
-    dbo_key = property(get_dbo_key)
-    dbo_set_key = property(get_dbo_set_key)
-
         
 class DBORef():
     def __init__(self, field_name, base_class, key_type, cascade=False):

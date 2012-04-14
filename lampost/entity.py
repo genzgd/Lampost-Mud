@@ -3,25 +3,22 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-from datastore.dbo import RootDBO
 
 from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
-    CLASS_SENSE_EXAMINE, CLASS_MOVEMENT, BC_ACTOR_NOTARG,\
-    BC_ENV_NOTARG, BC_ACTOR_SELFTARG, BC_ACTOR_WTARG, BC_TARG, BC_ENV_WTARG,\
-    BC_ENV_SELFTARG
+    CLASS_MOVEMENT, BC_ACTOR_NOTARG, BC_ENV_NOTARG, BC_ACTOR_SELFTARG,\
+    BC_ACTOR_WTARG, BC_TARG, BC_ENV_WTARG, BC_ENV_SELFTARG
 
 import math
 from parse import KeyData
+from item import BaseItem
 
-class Entity(RootDBO):
+class Entity(BaseItem):
       
     def baptise(self, soul, inven, env):
         self.env = env
         self.registrations = set()
         self.soul = soul
         self.inven = inven
-        self.prefixes = []
-        self.suffix = None
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
@@ -32,12 +29,6 @@ class Entity(RootDBO):
             self.add_target(target, self)     
         self.enter_env(env)
 
-    def register(self, event_type, callback):
-        self.registrations.add(Entity.dispatcher.register(event_type, callback))
-        
-    def register_p(self, freq, callback):
-        self.registrations.add(Entity.dispatcher.register_p(freq, callback))
-
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_MOVEMENT:
             self.change_env(lmessage.payload)
@@ -47,8 +38,8 @@ class Entity(RootDBO):
         elif lmessage.msg_class == CLASS_ENTER_ROOM:
             self.add_target(lmessage.payload, self.env)
             self.add_actions(lmessage.payload)
-        elif lmessage.msg_class == CLASS_SENSE_EXAMINE:
-            return self.short_desc() + ", a raceless, sexless, classless player."
+        else:
+            return super(Entity, self).receive(lmessage)
     
     def add_targets(self, target, parent=None):
         self.add_target(target, parent)
@@ -57,7 +48,7 @@ class Entity(RootDBO):
     
     def add_target(self, target, parent=None):
         try:
-            target_id = target.name       
+            target_id = target.target_id       
             try:
                 target_id = target_id.lower()
                 prefixes = list(target.prefixes)
@@ -68,7 +59,7 @@ class Entity(RootDBO):
                 target_keys = list(self.gen_ids(prefixes, target_id))
                 add_numbers = True
             except:
-                target_keys = [target.name]
+                target_keys = [target.target_id]
                 add_numbers = False
             self.add_target_keys(target_keys, target, add_numbers)
         except AttributeError:
