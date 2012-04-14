@@ -19,7 +19,7 @@ class RedisStore():
         self.class_map = {}
         self.object_map = {}
             
-    def save_object(self, dbo, update_rev=False):
+    def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:
             dbo.dbo_rev = getattr(dbo, "dbo_rev", 0) + 1
         json_obj = self.build_json(dbo)
@@ -27,12 +27,12 @@ class RedisStore():
         self.redis.set(key, self.encoder.encode(json_obj))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, key)
-        dbo.dbo_loaded = True
-        self.dispatcher.dispatch("db_log", "object saved: " + key)
+        self.dispatcher.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
         self.object_map[dbo.dbo_key] = dbo;
         return True
     
     def build_json(self, dbo):
+        dbo.before_save()
         json_obj = {}
         if dbo.__class__ != dbo.dbo_base_class:
             json_obj["class_name"] = dbo.__module__ + "." + dbo.__class__.__name__
@@ -43,8 +43,6 @@ class RedisStore():
             for child_dbo in getattr(dbo, dbo_col.field_name):
                 if dbo_col.key_type:
                     coll_list.append(child_dbo.dbo_id)
-                    if dbo_col.cascade:
-                        self.save_object(child_dbo)    
                 else:
                     coll_list.append(self.build_json(child_dbo))
             json_obj[dbo_col.field_name] = coll_list
@@ -107,8 +105,6 @@ class RedisStore():
             except KeyError:
                 self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing field " + field_name)
         for dbo_col in dbo.dbo_collections:
-            if not dbo_col.cascade:
-                continue
             coll = getattr(dbo, dbo_col.field_name, [])
             try:
                 for child_json in json_obj[dbo_col.field_name]:
@@ -137,7 +133,7 @@ class RedisStore():
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, key)
         for dbo_col in dbo.dbo_collections:
-            if dbo_col.cascade and dbo_col.key_type:
+            if dbo_col.key_type:
                 coll = getattr(dbo, dbo_col.field_name, set())
                 for child_dbo in coll:
                     self.delete_object(child_dbo)

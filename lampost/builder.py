@@ -152,7 +152,7 @@ class DelRoom(Gesture):
 
 class DirectionAction(BuildAction):
     def find_target(self, builder, args):
-        direction = Direction.ref_map.get(args[0])
+        direction = Direction.find_dir(args[0])
         if direction:
             return direction
         raise BuildError("No direction specified")
@@ -176,12 +176,12 @@ class Dig(DirectionAction):
             new_area = area
             new_area.rooms.append(new_room)
         
-        this_exit = Exit(new_dir.key, new_room)
+        this_exit = Exit(new_dir, new_room)
         room.exits.append(this_exit)
         room.refresh()
         self.save_object(room)
         
-        other_exit = Exit(new_dir.rev_key, room)
+        other_exit = Exit(new_dir.rev_dir, room)
         new_room.exits.append(other_exit)
         new_room.refresh()
         self.save_object(new_room)
@@ -269,6 +269,4 @@ class SetTitle(BuildAction):
         except BuildError as exp:
             return exp.msg
         return builder.parse("look")
-        
-
             
