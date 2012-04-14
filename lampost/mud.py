@@ -15,12 +15,12 @@ from area import Area
 from chat import TellAction, ReplyAction
 from movement import Direction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
-    FTH, DelRoom
+    FTH, DelRoom, MobList
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
-    BuildMode(), FTH(), DelRoom()
+    BuildMode(), FTH(), DelRoom(), MobList()
 
 class MudNature():
     
@@ -31,10 +31,11 @@ class MudNature():
         self.basic_soul = MudSoul.mud_soul.copy()
         
     def create(self, datastore):
-        self.mud = Mud(datastore)
+        self.mud = Mud(datastore, self.dispatcher)
         Action.mud = self.mud
         self.citadel = ImmortalCitadel()
         self.mud.add_area(self.citadel)
+        self.citadel.on_loaded()
         self.basic_soul.add(self.shout_channel)
         
     def baptise(self, player):
@@ -47,7 +48,9 @@ class MudNature():
         if player.imm_level:
             new_soul.add(self.imm_channel)
           
-        player.baptise(new_soul, set(), self.citadel.rooms[0])
+        player.baptise(new_soul)
+        player.equip(set())
+        player.enter_env(self.citadel.first_room)
         
         if player.imm_level:
             player.register_channel(self.shout_channel)
@@ -64,7 +67,8 @@ class MudSoul():
     
 
 class Mud():
-    def __init__(self, datastore):
+    def __init__(self, datastore, dispatcher):
+        Area.dispatcher = dispatcher
         self.area_map = {}
         area_keys = datastore.fetch_set_keys("areas")
         for area_key in area_keys:

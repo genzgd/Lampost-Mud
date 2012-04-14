@@ -22,6 +22,7 @@ class Context():
         self.dispatcher = Dispatcher()
         Action.dispatcher = self.dispatcher
         BaseItem.dispatcher = self.dispatcher
+        nature.dispatcher = self.dispatcher
         self.datastore = RedisStore(self.dispatcher, db_host, db_port, db_num, db_pw)
         Action.datastore = self.datastore
         RootDBO.datastore = self.datastore

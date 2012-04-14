@@ -15,8 +15,8 @@ class Player(Creature, RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room")
-    
-    home_room = "immortal_citadel:0" 
+   
+    imm_level = 0 
       
     def __init__(self, dbo_id):
         self.target_class = TARGET_PLAYER
@@ -127,6 +127,5 @@ class Player(Creature, RootDBO):
     def detach(self):
         Entity.detach(self)   
         self.session = None
-        
-Player.dbo_base_class = Player
+
         

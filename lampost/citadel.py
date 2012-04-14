@@ -9,6 +9,7 @@ from article import Article
 from message import CLASS_BROADCAST, LMessage
 from room import Room, Exit
 from movement import UP, DOWN
+from mobile import MobileTemplate, MobileReset
 
 class ImmortalCitadel(Area):
     def __init__(self):
@@ -24,6 +25,9 @@ class ImmortalCitadel(Area):
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
+        
+        self.mobiles.append(MobileTemplate("immortal_citadel:guard", "Citadel Guard", "The impassive, immaculate citadel guard"))
+        cube.mobile_resets.append(MobileReset("immortal_citadel:guard", 0, 7))
    
         
 class MusicBox(Article, Action):

@@ -17,7 +17,7 @@ class BaseItem(RootDBO):
         self.config_targets()
         
     def config_targets(self):
-        parts = self.title.split(" ")
+        parts = self.title.lower().split(" ")
         self.prefixes = parts[:-1]
         self.target_id = parts[-1] 
         
