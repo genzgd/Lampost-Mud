@@ -3,6 +3,7 @@ Created on Feb 17, 2012
 
 @author: Geoff
 '''
+from random import randint
 MAX_PULSE_QUEUE = 100;
 PULSE_TIME = .25;
 
@@ -83,8 +84,10 @@ class Dispatcher:
         if self.pulse_loc == MAX_PULSE_QUEUE:
             self.pulse_loc = 0;
                 
-    def register_p(self, freq, callback):
-        next_loc = (self.pulse_loc + freq) % MAX_PULSE_QUEUE;
+    def register_p(self, freq, callback, randomize=0):
+        if randomize:
+            randomize = randint(0, randomize)
+        next_loc = (self.pulse_loc + freq + randomize) % MAX_PULSE_QUEUE;
         pulse_key = PulseKey(freq, next_loc)
         pulse_event = self.pulse_events.get(pulse_key)
         if not pulse_event:

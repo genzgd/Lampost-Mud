@@ -14,20 +14,23 @@ from item import BaseItem
 
 class Entity(BaseItem):
       
-    def baptise(self, soul, inven, env):
-        self.env = env
+    def baptise(self, soul):
         self.registrations = set()
         self.soul = soul
-        self.inven = inven
+        
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
         self.add_target(self)
-        for action in soul | inven:
+        for action in soul:
+            self.add_action(action)
+        
+    def equip(self, inven):
+        self.inven = inven
+        for action in inven:
             self.add_action(action)
         for target in inven:
             self.add_target(target, self)     
-        self.enter_env(env)
 
     def receive(self, lmessage):
         if lmessage.msg_class == CLASS_MOVEMENT:
@@ -159,7 +162,7 @@ class Entity(BaseItem):
             pass
         
     def refresh_env(self):
-        self.change_env(self.env)    
+        self.change_env(self.env)
         
     def change_env(self, new_env):
         self.leave_env()

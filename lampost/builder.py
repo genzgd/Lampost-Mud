@@ -28,7 +28,6 @@ class BuildMode(Gesture):
 class RoomList(Gesture):
     def __init__(self):
         Gesture.__init__(self, "roomlist")
-        self.imm_level = IMM_LEVELS["creator"]
      
     def execute(self, builder, args):
         if args:
@@ -41,6 +40,25 @@ class RoomList(Gesture):
         display = Display()
         for room in area.rooms:
             display.append(DisplayLine(ljust(room.dbo_id, 20) + ljust(room.title, 20) + room.short_exits()))
+        return display
+
+class MobList(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "moblist")
+     
+    def execute(self, builder, args):
+        if args:
+            area_id = args[0]
+        else:
+            area_id = builder.env.area_id
+        area = self.mud.get_area(area_id)
+        if not area:
+            return "Invalid area"
+        if not area.mobiles:
+            return "No mobiles defined"
+        display = Display()
+        for mobile in area.mobiles:
+            display.append(DisplayLine(ljust(mobile.dbo_id, 20) + ljust(mobile.title, 20) + mobile.level))
         return display
 
 
@@ -100,12 +118,12 @@ class BuildAction(Gesture):
         if feedback:
             return feedback
         return builder.parse("look")
-     
-    
+         
     def find_target(self, builder, args):
         key_data = builder.target_key_map.get(args)
         if key_data and len(key_data) == 1:
             return key_data[0]  
+
 
 class DelRoom(Gesture):
     def __init__(self):
@@ -186,9 +204,7 @@ class Dig(DirectionAction):
         new_room.refresh()
         self.save_object(new_room)
         
-        
         area.next_room_id = area.next_room_id + 1
-        builder.change_env(new_room)
         self.save_object(area)
 
     
@@ -237,8 +253,7 @@ class BackFill(UnDig):
     def __init__(self):
         Gesture.__init__(self, "backfill")
         self.remove_other_exit = False
-                
-                        
+                                      
 class SetDesc(BuildAction):
     def __init__(self):
         Gesture.__init__(self, ("rdesc",  "setdesc"))

@@ -4,16 +4,27 @@ Created on Mar 4, 2012
 @author: Geoffrey
 '''
 
-class RootDBO(object):    
+class RootDBOMeta(type):
+    def __new__(meta, class_name, bases, new_attrs): #@NoSelf
+        cls = type.__new__(meta, class_name, bases, new_attrs)
+        if "RootDBO" in [base.__name__ for base in bases]:
+            cls.dbo_base_class = cls
+        return cls
+
+class DBODict(dict):
+    def append(self, dbo):
+        self[dbo.dbo_id] = dbo   
+
+class RootDBO(object): 
+    __metaclass__ = RootDBOMeta   
     dbo_key_type = None
     dbo_set_type = None
     dbo_set_id = None
     dbo_fields = ()
     dbo_collections = ()
     dbo_refs = ()
-    dbo_base_class = None
     dbo_id = None
-       
+    
     @property    
     def dbo_key(self):
         return self.dbo_key_type + ":" + self.dbo_id
@@ -32,21 +43,20 @@ class RootDBO(object):
     def autosave(self):
         self.datastore.save_object(self, autosave=True);
         
-    def apply_template(self, instance):
-        for field in self.dbo_fields:
-            setattr(instance, getattr(self, field, "None"))
-        
+         
     def describe(self, level=0, follow_refs=True):
         display = []
         def append(key, value):
             display.append(3 * level * "&nbsp" + key + ":" + (16 - len(key)) * "&nbsp"  + str(value))
         if self.dbo_id:
-            append("key", self.get_dbo_key())
-        append("class", self.__class__.__module__ + "." + self.__class__.__name__)
-        if self.get_dbo_set_key():
-            append("set_key", self.get_dbo_set_key())
-        if self.dbo_base_class:
-            append("base_class", self.dbo_base_class.__module__ + "." + self.dbo_base_class.__name__)
+            append("key", self.dbo_key)
+        class_name =  self.__class__.__module__ + "." + self.__class__.__name__
+        base_class_name = self.dbo_base_class.__module__ + "." + self.dbo_base_class.__name__
+        if base_class_name != class_name:
+            append("class", class_name)
+        if self.dbo_set_key:
+            append("set_key", self.dbo_set_key)
+
         for field in self.dbo_fields:
             append(field, getattr(self, field, "None"))
         for ref in self.dbo_refs:

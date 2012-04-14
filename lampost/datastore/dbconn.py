@@ -37,7 +37,8 @@ class RedisStore():
         if dbo.__class__ != dbo.dbo_base_class:
             json_obj["class_name"] = dbo.__module__ + "." + dbo.__class__.__name__
         for field_name in dbo.dbo_fields:
-            json_obj[field_name] = getattr(dbo, field_name)
+            if field_name in dbo.__dict__:
+                json_obj[field_name] = getattr(dbo, field_name)
         for dbo_col in dbo.dbo_collections:
             coll_list = list()
             for child_dbo in getattr(dbo, dbo_col.field_name):

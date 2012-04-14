@@ -90,8 +90,10 @@ class CreatePlayer(Gesture):
     def execute(self, source, target):
         if not len(target):
             return "Name not specified"
+            
         if self.load_object(Player, target[0]):
             return "That player already exists"
+        player = Player(target[0])
         if len(target) > 1:
             imm_level = IMM_LEVELS.get(target[1])
             if not imm_level:
@@ -99,14 +101,11 @@ class CreatePlayer(Gesture):
             title = target[1]
             if imm_level >= source.imm_level:
                 return "Cannot create player with a higher level or the same level as yourself"
+            player.imm_level = imm_level
         else:
-            imm_level = 0
             title = "player"
-        player = Player(target[0])
-        player.imm_level = imm_level
-        player.room_id = None
-        self.save_object(player)
-        
+            
+        self.save_object(player)    
         return title + " " + player.name + " created."
     
         
@@ -220,7 +219,6 @@ class DeleteArea(Gesture):
             del self.mud.area_map[dialog.area_id]
             return Display(dialog.area_id + " deleted.")
         return Display("Area " + dialog.area_id + " does not exist.")
-
 
 class GoToArea(Gesture):
     def __init__(self):

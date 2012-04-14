@@ -9,6 +9,7 @@ from dto.display import Display, DisplayLine
 from action import TARGET_MSG_CLASS, TARGET_ENV
 from datastore.dbo import RootDBO, DBORef
 from movement import Direction
+from mobile import MobileReset
 
 
 class Exit(RootDBO):
@@ -19,12 +20,14 @@ class Exit(RootDBO):
         self.direction = direction
         self.destination = destination
     
-    def on_loaded(self):
-        self.direction = Direction.ref_map.get(self.dir_name)
-        
-    def before_save(self):
-        self.dir_name = self.direction.key
-        
+    @property
+    def dir_name(self):
+        return self.direction.key
+    
+    @dir_name.setter
+    def dir_name(self, value):
+        self.direction = Direction.ref_map[value]
+              
     def short_desc(self, observer=None):
         if observer and getattr(observer, "buildmode", False):
             return "{0}   {1}".format(self.direction.desc, self.destination.dbo_id)
@@ -38,8 +41,7 @@ class Exit(RootDBO):
     @property
     def target_id(self):
         return self.direction
-    
-Exit.dbo_base_class = Exit
+
 
 class Room(RootDBO):
     ROOM_COLOR = 0xAD419A
@@ -49,9 +51,11 @@ class Room(RootDBO):
     
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev"
-    dbo_collections = DBORef("exits", Exit),
+    dbo_collections = DBORef("exits", Exit), DBORef("mobile_resets", MobileReset)
     
     dbo_rev = 0 
+    
+    target_class = TARGET_ENV
     
     def __init__(self, dbo_id, title=None, desc=None):
         self.dbo_id = dbo_id;
@@ -59,8 +63,7 @@ class Room(RootDBO):
         self.desc = desc;
         self.contents = []
         self.exits = []
-        self.qualifiers = []
-        self.target_class = TARGET_ENV
+        self.mobile_resets = []
         
     def get_children(self):
         return self.contents + self.exits
@@ -135,10 +138,17 @@ class Room(RootDBO):
                     receiver.receive_broadcast(source, target, broadcast)
                 except AttributeError:
                     pass
-                
+                    
+    def reset(self, area):
+        for mreset in self.mobile_resets:
+            curr_count = len([inhabitent for inhabitent in self.contents if getattr(inhabitent, "mobile_id", None) == mreset.mobile_id])
+            for unused in range(mreset.mob_count - curr_count):
+                area.create_mob(mreset.mobile_id, self)
+            if curr_count + 1 < mreset.mob_max:
+                area.create_mob(mreset.mobile_id, self)
+                                   
     @property
     def area_id(self):
         return self.dbo_id.split(":")[0]
         
-Room.dbo_base_class = Room
 Exit.dbo_refs = DBORef("destination", Room, "room"),
