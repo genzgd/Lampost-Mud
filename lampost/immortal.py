@@ -58,8 +58,11 @@ class GotoRoom(Gesture):
         return self.goto_room(player, ":".join(target))
         
     def goto_room(self, player, room_id):
+        if not ":" in room_id:
+            room_id = ":".join([player.env.area_id, room_id])
+        area_id = room_id.split(":")[0]
+
         try:
-            area_id = room_id.split(":")[0]
             area = self.mud.get_area(area_id)
             room = area.get_room(room_id)
             if not room:

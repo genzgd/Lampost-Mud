@@ -7,16 +7,23 @@ from message import CLASS_SENSE_GLANCE, CLASS_SENSE_EXAMINE, CLASS_MOVEMENT,\
     LMessage, CLASS_ENTER_ROOM, CLASS_LEAVE_ROOM
 from dto.display import Display, DisplayLine
 from action import TARGET_MSG_CLASS, TARGET_ENV
-from datastore.dbo import RootDBO, DBOCollection, DBORef
+from datastore.dbo import RootDBO, DBORef
 from movement import Direction
 
 
 class Exit(RootDBO):
     dbo_fields = "dir_name",
     target_class = TARGET_MSG_CLASS
-    def __init__(self, dir_name=None, destination=None):
-        self.dir_name = dir_name
+    
+    def __init__(self, direction=None, destination=None):
+        self.direction = direction
         self.destination = destination
+    
+    def on_loaded(self):
+        self.direction = Direction.ref_map.get(self.dir_name)
+        
+    def before_save(self):
+        self.dir_name = self.direction.key
         
     def short_desc(self, observer=None):
         if observer and getattr(observer, "buildmode", False):
@@ -30,13 +37,8 @@ class Exit(RootDBO):
     
     @property
     def target_id(self):
-        return Direction.ref_map.get(self.dir_name)
+        return self.direction
     
-    @property
-    def direction(self):
-        return Direction.ref_map.get(self.dir_name)
-    
-
 Exit.dbo_base_class = Exit
 
 class Room(RootDBO):
@@ -47,7 +49,7 @@ class Room(RootDBO):
     
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev"
-    dbo_collections = DBOCollection("exits", Exit),
+    dbo_collections = DBORef("exits", Exit),
     
     dbo_rev = 0 
     

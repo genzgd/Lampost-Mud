@@ -8,6 +8,7 @@ from area import Area
 from article import Article
 from message import CLASS_BROADCAST, LMessage
 from room import Room, Exit
+from movement import UP, DOWN
 
 class ImmortalCitadel(Area):
     def __init__(self):
@@ -16,8 +17,8 @@ class ImmortalCitadel(Area):
         self.owner_id = "MUD"
         cube = Room("immortal_citadel:0", "A White Cube", "A perfect white cube, about 30 feet on a side")
         sphere = Room("immortal_citadel:1", "A Silver Sphere", "A perfect silver sphere, with a radius of about 30 feet")
-        cube.exits.append(Exit("u", sphere))
-        sphere.exits.append(Exit("d", cube))
+        cube.exits.append(Exit(UP, sphere))
+        sphere.exits.append(Exit(DOWN, cube))
         self.rooms.append(cube)
         self.rooms.append(sphere)
         sphere.contents.append(MusicBox())

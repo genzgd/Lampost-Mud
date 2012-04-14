@@ -25,9 +25,12 @@ class RootDBO(object):
             
     def on_loaded(self):
         pass
+        
+    def before_save(self):
+        pass
          
-    def auto_save(self):
-        self.datastore.save_object(self);
+    def autosave(self):
+        self.datastore.save_object(self, autosave=True);
         
     def apply_template(self, instance):
         for field in self.dbo_fields:
@@ -68,18 +71,10 @@ class RootDBO(object):
                 append(col.field_name, "None")
         return display
     
-        
+            
 class DBORef():
-    def __init__(self, field_name, base_class, key_type, cascade=False):
+    def __init__(self, field_name, base_class, key_type=None):
         self.field_name = field_name
         self.base_class = base_class
         self.key_type = key_type
-        self.cascade = cascade
-        
-            
-class DBOCollection(DBORef):
-    def __init__(self, field_name, base_class, key_type=None, cascade=True):
-        DBORef.__init__(self, field_name, base_class, key_type, cascade)
-        
-
         

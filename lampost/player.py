@@ -29,7 +29,7 @@ class Player(Creature, RootDBO):
         pass
         
     def start(self):
-        self.register_p(80, self.auto_save)
+        self.register_p(80, self.autosave)
             
     def long_desc(self, observer):
         if self.desc:

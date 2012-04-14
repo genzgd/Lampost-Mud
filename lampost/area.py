@@ -3,7 +3,7 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-from datastore.dbo import RootDBO, DBOCollection
+from datastore.dbo import RootDBO, DBORef
 from room import Room
 from mobile import MobileTemplate
 
@@ -21,8 +21,7 @@ class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
     dbo_fields = ("name", "next_room_id", "next_mob_id", "owner_id")
-    dbo_collections = DBOCollection("rooms", Room, "room"), DBOCollection("resets", Reset),\
-        DBOCollection("mobiles", MobileTemplate, "mobile"), 
+    dbo_collections = DBORef("rooms", Room, "room"), DBORef("resets", Reset), DBORef("mobiles", MobileTemplate, "mobile")
     
     next_room_id = 1
     next_mob_id = 1

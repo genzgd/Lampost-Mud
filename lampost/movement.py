@@ -9,6 +9,12 @@ class Direction(Action):
     actions = set()
     ref_map = {}
     
+    @classmethod
+    def find_dir(cls, name):
+        for key, value in cls.ref_map.iteritems():
+            if name == key or name == value.desc:
+                return value
+    
     def __init__(self, key, desc, rev_key):
         Action.__init__(self, (key, desc), self, TARGET_MSG_CLASS)
         self.key = key
