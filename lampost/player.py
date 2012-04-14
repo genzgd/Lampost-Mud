@@ -9,23 +9,36 @@ from creature import Creature
 from dialog import DialogDTO
 from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV,\
     TARGET_SELF
+from datastore.dbo import RootDBO
 
-class Player(Creature):   
+class Player(Creature, RootDBO):   
     dbo_key_type = "player"
     dbo_set_key = "players"
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room")
     
-    home_room = "immortal_citadel:0"
-     
-    def __init__(self, name):
+    home_room = "immortal_citadel:0" 
+      
+    def __init__(self, dbo_id):
         self.target_class = TARGET_PLAYER
-        self.dbo_id = name.lower()
-        self.name = name.capitalize()
+        self.dbo_id = dbo_id.lower()
+        self.target_id = self.dbo_id
+        self.name = dbo_id.capitalize()
         self.last_tell = None
+        
+    def on_loaded(self):
+        pass
         
     def start(self):
         self.register_p(80, self.auto_save)
-              
+            
+    def long_desc(self, observer):
+        if self.desc:
+            return self.desc
+        return "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
+        
+    def short_desc(self, observer):
+        return "{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player")
+             
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
         matching_actions = self.match_actions(words)
@@ -110,9 +123,7 @@ class Player(Creature):
     def receive_broadcast(self, source, target, broadcast):
         self.display_line(self.translate_broadcast(source, target, broadcast))
                   
-    def short_desc(self, observer):
-        return self.name
-            
+             
     def detach(self):
         Entity.detach(self)   
         self.session = None

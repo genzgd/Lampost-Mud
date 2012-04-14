@@ -54,7 +54,9 @@ class MudNature():
             player.register_channel(self.imm_channel)
             
         if player.imm_level == IMM_LEVELS["supreme"]:
-            player.register("db_log", player.display_line)  
+            player.register("db_log", player.display_line)
+            player.register("debug", player.display_line)
+              
 
 class MudSoul():
     look_action = Action(("look", "l", "exa", "examine", "look at"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)
