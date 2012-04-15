@@ -29,6 +29,10 @@ class Action():
         return Action.datastore.save_object(obj, update_rev)
         
     @staticmethod
+    def create_object(obj):
+        return Action.datastore.create_object(obj)
+        
+    @staticmethod
     def load_object(obj_class, key):
         return Action.datastore.load_object(obj_class, key)
         

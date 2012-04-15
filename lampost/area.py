@@ -44,7 +44,7 @@ class Area(RootDBO):
     def on_loaded(self):
         self.reset()
         self.reset_wait = randint(-180, 0) #Start resets at staggered intervals 
-        self.dispatcher.register_p(self.reset_pulse * 4, self.check_reset, self.reset_pulse * 2)
+        self.reset_reg = self.dispatcher.register_p(self.reset_pulse * 4, self.check_reset, self.reset_pulse * 2)
         
     def check_reset(self):
         self.reset_wait += self.reset_pulse
@@ -66,4 +66,8 @@ class Area(RootDBO):
             self.dispatcher.dispatch("debug", "No template for " + mobile_id)
         except TemplateException:
             pass
+            
+    def detach(self):
+        if self.reset_reg:
+            self.reset_reg.detach()
             

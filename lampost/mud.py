@@ -9,18 +9,18 @@ from channel import Channel
 from emote import Emotes
 from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
-    ListCommands, AreaList, GotoRoom, SetHome, GoHome
+    ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap
 from message import CLASS_SENSE_EXAMINE
 from area import Area
 from chat import TellAction, ReplyAction
 from movement import Direction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
-    FTH, DelRoom, MobList
+    FTH, DelRoom, MobList, ResetRoom
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
-    BuildMode(), FTH(), DelRoom(), MobList()
+    BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom()
 
 class MudNature():
     

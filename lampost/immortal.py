@@ -5,13 +5,14 @@ Created on Mar 4, 2012
 '''
 import string
 
-from action import Gesture
+from action import Gesture, Action, TARGET_MONSTER
 from player import Player
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from context import Context
 from dto.rootdto import RootDTO
 from dto.display import Display, DisplayLine
-from message import DialogMessage, CLASS_MOVEMENT, LMessage, CLASS_SENSE_EXAMINE
+from message import DialogMessage, CLASS_MOVEMENT, LMessage, CLASS_SENSE_EXAMINE,\
+    CLASS_DAMAGE
 from area import Area
 from room import Room
 from lmutil import ljust
@@ -30,7 +31,7 @@ class ListCommands(Gesture):
  
 class AreaList(Gesture):
     def __init__(self):
-        Gesture.__init__(self, "arealist")
+        Gesture.__init__(self, ("arealist", "alist"))
         self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target):
@@ -71,7 +72,16 @@ class GotoRoom(Gesture):
             return "Cannot find room " + room_id
         player.change_env(room)
         return player.parse("look")
+
    
+class Zap(Action):
+    def __init__(self):
+        Action.__init__(self, "zap", CLASS_DAMAGE, TARGET_MONSTER)
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def create_message(self, source, verb, target, command):
+        return LMessage(source, self.msg_class, 2000000, "An immortal recklessly weilds power.")
+    
         
 class GoHome(GotoRoom):
     def __init__(self):
@@ -192,7 +202,7 @@ class CreateArea(Gesture):
         room = Room(area_id + ":0", "Area " + area.name + " Start", "The Initial Room in " + area.name + " Area")
         area.rooms.append(room)
         area.owner_id = source.dbo_id
-        self.save_object(area)
+        self.create_object(area)
         self.mud.add_area(area)
         source.parse("goto room " + room.dbo_id)
 
@@ -215,6 +225,7 @@ class DeleteArea(Gesture):
             return RootDTO(silent=True)
         area = self.load_object(Area, dialog.area_id)
         if area:
+            area.detach()
             self.delete_object(area)
             del self.mud.area_map[dialog.area_id]
             return Display(dialog.area_id + " deleted.")

@@ -13,7 +13,7 @@ class Mobile(Creature):
     
     def __init__(self, mobile_id):
         self.mobile_id = mobile_id
-        
+               
     @property
     def name(self):
         return self.title
@@ -31,6 +31,10 @@ class MobileTemplate(RootDBO, Template):
         self.desc = desc
         if instance_class:
             self.instance_class = instance_class
+            
+    def config_instance(self, instance):
+        instance.baptise(set())
+ 
    
 class MobileReset(RootDBO):
     dbo_fields = "mobile_id", "mob_count", "mob_max"

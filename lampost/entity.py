@@ -164,19 +164,19 @@ class Entity(BaseItem):
     def refresh_env(self):
         self.change_env(self.env)
         
-    def change_env(self, new_env):
-        self.leave_env()
+    def change_env(self, new_env, exit_msg=None):
+        self.leave_env(exit_msg)
         self.enter_env(new_env)
         
-    def leave_env(self):
+    def leave_env(self, exit_msg=None):
         if self.env:
             self.remove_actions(self.env)
             self.remove_targets(self.env)
-            self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self, "{p} leaves."))
+            self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self, exit_msg if exit_msg else "{p} leaves."))
         
     def enter_env(self, new_env):
         self.env = new_env
-        self.room_id = new_env.dbo_id
+        self.room_id = new_env.room_id
         self.add_actions(new_env)      
         self.add_targets(new_env)
         self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self, "{p} arrives."))
