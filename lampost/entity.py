@@ -13,11 +13,11 @@ from parse import KeyData
 from item import BaseItem
 
 class Entity(BaseItem):
+    env = None
       
     def baptise(self, soul):
         self.registrations = set()
-        self.soul = soul
-        
+        self.soul = soul        
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}

@@ -38,7 +38,7 @@ class RoomList(Gesture):
         if not area:
             return "Invalid area"
         display = Display()
-        for room in area.rooms:
+        for room in area.sorted_rooms:
             display.append(DisplayLine(ljust(room.dbo_id, 20) + ljust(room.title, 20) + room.short_exits()))
         return display
 
@@ -184,7 +184,7 @@ class Dig(DirectionAction):
         if room.find_exit(new_dir):
             raise BuildError("This room already has a " + new_dir.desc + " exit.")
             
-        desc =  area.name + " Room " + str(area.next_room_id)
+        desc = area.name + " Room " + str(area.next_room_id)
         new_area, new_room = find_room(builder, args[1:], room.area_id)
         if new_room:
             if new_room.find_exit(new_dir.rev_dir):

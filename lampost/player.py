@@ -16,10 +16,10 @@ class Player(Creature, RootDBO):
     dbo_set_key = "players"
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room")
    
-    imm_level = 0 
+    imm_level = 0
+    target_class = TARGET_PLAYER 
       
     def __init__(self, dbo_id):
-        self.target_class = TARGET_PLAYER
         self.dbo_id = dbo_id.lower()
         self.target_id = self.dbo_id
         self.name = dbo_id.capitalize()

@@ -29,10 +29,11 @@ class Area(RootDBO):
     
     @property
     def first_room(self):
-        sorted_rooms = sorted(list(self.rooms.iterkeys()))
-        if not sorted_rooms:
-            return None
-        return self.get_room(sorted_rooms[0])
+        return self.sorted_rooms[0]
+        
+    @property
+    def sorted_rooms(self):
+        return sorted(self.rooms.values(), key= lambda x:int(x.dbo_id.split(":")[1]))
         
     def get_room(self, room_id):
         return self.rooms.get(room_id)

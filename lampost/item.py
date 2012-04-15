@@ -18,7 +18,7 @@ class BaseItem(RootDBO):
         
     def config_targets(self):
         parts = self.title.lower().split(" ")
-        self.prefixes = parts[:-1]
+        self.prefixes = tuple(parts[:-1])
         self.target_id = parts[-1] 
         
     def register(self, event_type, callback):
