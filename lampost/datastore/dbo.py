@@ -13,7 +13,13 @@ class RootDBOMeta(type):
 
 class DBODict(dict):
     def append(self, dbo):
-        self[dbo.dbo_id] = dbo   
+        self[dbo.dbo_id] = dbo
+    
+    def __iter__(self):
+        return self.itervalues()
+        
+    def remove(self, dbo):
+        del self[dbo.dbo_id]  
 
 class RootDBO(object): 
     __metaclass__ = RootDBOMeta   

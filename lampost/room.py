@@ -144,7 +144,7 @@ class Room(RootDBO):
             curr_count = len([inhabitent for inhabitent in self.contents if getattr(inhabitent, "mobile_id", None) == mreset.mobile_id])
             for unused in range(mreset.mob_count - curr_count):
                 area.create_mob(mreset.mobile_id, self)
-            if curr_count + 1 < mreset.mob_max:
+            if curr_count < mreset.mob_max:
                 area.create_mob(mreset.mobile_id, self)
                                    
     @property

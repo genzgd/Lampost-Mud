@@ -233,7 +233,7 @@ class GoToArea(Gesture):
             return "Area does not exist"
         if not area.rooms:
             return "Area has no rooms!"
-        dest = area.rooms[0]
+        dest = area.first_room
         source.receive(LMessage(self, CLASS_MOVEMENT, dest))
         return dest.receive(LMessage(source, CLASS_SENSE_EXAMINE))
 

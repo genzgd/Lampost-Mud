@@ -13,7 +13,11 @@ class Mobile(Creature):
     
     def __init__(self, mobile_id):
         self.mobile_id = mobile_id
-
+        
+    @property
+    def name(self):
+        return self.title
+     
 class MobileTemplate(RootDBO, Template):
     template_fields = Mobile.dbo_fields
     
