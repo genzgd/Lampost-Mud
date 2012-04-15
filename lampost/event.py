@@ -27,8 +27,8 @@ class PulseEvent():
 class Dispatcher:
     def __init__(self):
         self.registrations = {}
-        self.pulse_queue = [];
-        for i in range(0, MAX_PULSE_QUEUE): #@UnusedVariable
+        self.pulse_queue = []
+        for unused in range(MAX_PULSE_QUEUE): 
             self.pulse_queue.append(set())
         self.pulse_events = {}
         self.pulse_loc = 0;

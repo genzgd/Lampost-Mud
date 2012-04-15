@@ -64,6 +64,10 @@ class Room(RootDBO):
         self.contents = []
         self.exits = []
         self.mobile_resets = []
+    
+    @property
+    def room_id(self):
+        return self.dbo_id
         
     def get_children(self):
         return self.contents + self.exits

@@ -18,6 +18,10 @@ class RedisStore():
         self.decoder = JSONDecoder()
         self.class_map = {}
         self.object_map = {}
+    
+    def create_object(self, dbo, update_rev=False):
+        self.save_object(dbo)
+        dbo.on_loaded()
             
     def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:
@@ -29,7 +33,6 @@ class RedisStore():
             self.redis.sadd(dbo.dbo_set_key, key)
         self.dispatcher.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
         self.object_map[dbo.dbo_key] = dbo;
-        return True
     
     def build_json(self, dbo):
         dbo.before_save()
@@ -114,6 +117,8 @@ class RedisStore():
                         child_dbo = self.load_class(child_json, dbo_col.base_class)()
                         self.load_json(child_dbo, child_json)
                     coll.append(child_dbo)
+            except AttributeError:
+                self.dispatcher.dispatch("db_log", "{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, dbo.dbo_id))
             except KeyError:
                 self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing collection " + dbo_col.field_name)
         

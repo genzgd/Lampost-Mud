@@ -68,7 +68,7 @@ class BuildError(Exception):
         
 
 def check_area(builder, area_id):
-    if area_id == "immortal_citadel":
+    if area_id == "immortal_citadel" and builder.imm_level < IMM_LEVELS["supreme"]:
         raise BuildError("You cannot build in the immortal citadel")
     
     area = Gesture.mud.get_area(area_id)  #@UndefinedVariable
@@ -124,6 +124,14 @@ class BuildAction(Gesture):
         if key_data and len(key_data) == 1:
             return key_data[0]  
 
+class ResetRoom(Gesture):
+    def __init__(self):
+        Gesture.__init__(self, "reset")
+    
+    def execute(self, builder, args):
+        area = Gesture.mud.get_area(builder.env.area_id)  #@UndefinedVariable
+        builder.env.reset(area)
+        return "Room reset"
 
 class DelRoom(Gesture):
     def __init__(self):
