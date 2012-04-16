@@ -69,6 +69,7 @@ class SessionManager():
         self.display_players()
            
     def login(self, session_id, user_id):
+        user_id = user_id.lower()
         old_session = self.player_session_map.get(user_id);
         if old_session:
             player = old_session.player

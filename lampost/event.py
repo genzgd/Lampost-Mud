@@ -73,11 +73,14 @@ class Dispatcher:
         events = self.pulse_queue[self.pulse_loc]
         for event in events:
             self.dispatch(event)
-            next_loc = (self.pulse_loc + event.freq) % MAX_PULSE_QUEUE
-            del self.pulse_events[event.pulse_key]
-            event.pulse_key = PulseKey(event.freq, next_loc)
-            self.pulse_events[event.pulse_key] = event
-            self.pulse_queue[next_loc].add(event)
+            try:
+                del self.pulse_events[event.pulse_key]
+                next_loc = (self.pulse_loc + event.freq) % MAX_PULSE_QUEUE
+                event.pulse_key = PulseKey(event.freq, next_loc)
+                self.pulse_events[event.pulse_key] = event
+                self.pulse_queue[next_loc].add(event)
+            except KeyError:
+                pass   #The dispatch could have resulted in unregistering the event, so we don't put it back on the queue
             
         events.clear()
         self.pulse_loc = self.pulse_loc + 1;

@@ -80,7 +80,7 @@ class Zap(Action):
         self.imm_level = IMM_LEVELS["creator"]
         
     def create_message(self, source, verb, target, command):
-        return LMessage(source, self.msg_class, 2000000, "An immortal recklessly weilds power.")
+        return LMessage(source, self.msg_class, 2000000, "An immortal recklessly wields power.")
     
         
 class GoHome(GotoRoom):
