@@ -3,10 +3,9 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-from action import Action, TARGET_SELF
+from action import Action, SingleBroadcast
 from area import Area
 from article import Article
-from message import CLASS_BROADCAST, LMessage
 from room import Room, Exit
 from movement import UP, DOWN
 from mobile import MobileTemplate, MobileReset
@@ -35,8 +34,8 @@ class MusicBox(Article, Action):
         self.title = "music box"
         self.desc = "An translucent music box.  It doesn't seem quite all here."
         self.config_targets()
-        Action.__init__(self, ["play", "wind"], CLASS_BROADCAST, TARGET_SELF)
+        Action.__init__(self, ["play", "wind"])
         
-    def create_message(self, source, verb, target, command):
-        return LMessage(source, self.msg_class, target, "The music box plays an eerie atonal tune.")
+    def execute(self, **ignored):
+        return SingleBroadcast("The music box plays an eerie atonal tune.")
         

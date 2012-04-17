@@ -3,7 +3,6 @@ Created on Apr 8, 2012
 
 @author: Geoffrey
 '''
-from action import Gesture
 from immortal import IMM_LEVELS
 from movement import Direction
 from player import Player
@@ -11,25 +10,25 @@ from room import Room, Exit
 from lmutil import ljust
 from dto.display import Display, DisplayLine
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
-from message import DialogMessage
+from action import Action
 
 BUILD_ROOM = Room("buildroom")
 
-class BuildMode(Gesture):
+class BuildMode(Action):
     def __init__(self):
-        Gesture.__init__(self, "buildmode")
+        Action.__init__(self, "buildmode")
         
-    def execute(self, builder, args):
+    def execute(self, builder, **ignored):
         current = getattr(builder, "buildmode", False)
         builder.buildmode = not current
         return "Build Mode is {0}".format("On" if builder.buildmode else "Off")
 
 
-class RoomList(Gesture):
+class RoomList(Action):
     def __init__(self):
-        Gesture.__init__(self, "roomlist")
+        Action.__init__(self, "roomlist")
      
-    def execute(self, builder, args):
+    def execute(self, builder, args, **ignored):
         if args:
             area_id = args[0]
         else:
@@ -42,11 +41,12 @@ class RoomList(Gesture):
             display.append(DisplayLine(ljust(room.dbo_id, 20) + ljust(room.title, 20) + room.short_exits()))
         return display
 
-class MobList(Gesture):
+
+class MobList(Action):
     def __init__(self):
-        Gesture.__init__(self, "moblist")
+        Action.__init__(self, "moblist")
      
-    def execute(self, builder, args):
+    def execute(self, builder, args, **ignored):
         if args:
             area_id = args[0]
         else:
@@ -71,9 +71,9 @@ def check_area(builder, area_id):
     if area_id == "immortal_citadel" and builder.imm_level < IMM_LEVELS["supreme"]:
         raise BuildError("You cannot build in the immortal citadel")
     
-    area = Gesture.mud.get_area(area_id)  #@UndefinedVariable
+    area = Actio.mud.get_area(area_id)  #@UndefinedVariable
     if area.owner_id != builder.dbo_id:
-        owner = Gesture.load_object(Player, area.owner_id)
+        owner = Action.load_object(Player, area.owner_id)
         if owner.imm_level >= builder.imm_level:
             raise BuildError("You cannot build in " + owner.name + "'s area!")
     return area
@@ -96,10 +96,10 @@ def find_room(builder, room_id, start_area):
     return area, room
     
        
-class BuildAction(Gesture):
+class BuildAction(Action):
     imm_level = IMM_LEVELS["creator"]
     
-    def execute(self, builder, args):
+    def execute(self, builder, args, **ignored):
         try:
             feedback = None
             room = builder.env
@@ -124,20 +124,20 @@ class BuildAction(Gesture):
         if key_data and len(key_data) == 1:
             return key_data[0]  
 
-class ResetRoom(Gesture):
+class ResetRoom(Action):
     def __init__(self):
-        Gesture.__init__(self, "reset")
+        Action.__init__(self, "reset")
     
-    def execute(self, builder, args):
+    def execute(self, builder, args, *ignored):
         area = Gesture.mud.get_area(builder.env.area_id)  #@UndefinedVariable
         builder.env.reset(area)
         return "Room reset"
 
-class DelRoom(Gesture):
+class DelRoom(Action):
     def __init__(self):
-        Gesture.__init__(self, "delroom")
+        Action.__init__(self, "delroom")
         
-    def execute(self, builder, args):
+    def execute(self, builder, args, **ignored):
         if not args:
             return "Room id must be specified for delete"
         try:
@@ -149,7 +149,7 @@ class DelRoom(Gesture):
             confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.short_desc(builder), "Confirm Delete", self.confirm_delete)
             confirm_dialog.area = area
             confirm_dialog.room = room
-            return DialogMessage(confirm_dialog)
+            return confirm_dialog
         else:
             return self.del_room(builder, area,  room)
             
@@ -185,7 +185,7 @@ class DirectionAction(BuildAction):
     
 class Dig(DirectionAction):
     def __init__(self):
-        Gesture.__init__(self, "dig")
+        Action.__init__(self, "dig")
    
     def build(self, builder, room, area, new_dir, args):
              
@@ -221,7 +221,7 @@ class UnDig(DirectionAction):
     remove_other_room = True
     
     def __init__(self):
-        Gesture.__init__(self, "undig")
+        Action.__init__(self, "undig")
         
     def build(self, builder, room, area, target_dir, args):
   
@@ -253,24 +253,24 @@ class UnDig(DirectionAction):
 
 class FTH(UnDig):
     def __init__(self):
-        Gesture.__init__(self, "fth")
+        Action.__init__(self, "fth")
         self.remove_other_room = False
 
                 
 class BackFill(UnDig):
     def __init__(self):
-        Gesture.__init__(self, "backfill")
+        Action.__init__(self, "backfill")
         self.remove_other_exit = False
                                       
 class SetDesc(BuildAction):
     def __init__(self):
-        Gesture.__init__(self, ("rdesc",  "setdesc"))
+        Action.__init__(self, ("rdesc",  "setdesc"))
     
-    def create_message(self, builder, verb, target, command):
+    def executee(self, builder, args, command, **ignored):
         try:
-            check_room(builder, builder.env)
-            if not target:
+            if not args:
                 return "Set description to what?"
+            check_room(builder, builder.env)
             builder.env.desc = command.partition(" ")[2]
             self.save_object(builder.env, True)
         except BuildError as exp:
@@ -280,12 +280,12 @@ class SetDesc(BuildAction):
         
 class SetTitle(BuildAction):
     def __init__(self):
-        Gesture.__init__(self, ("rname", "settitle"))
+        Action.__init__(self, ("rname", "settitle"))
     
-    def create_message(self, builder, verb, target, command):
+    def execute(self, builder, args, command, **ignored):
         try:
             check_room(builder, builder.env)
-            if not target:
+            if not args:
                 return "Set title to what?"
             builder.env.title = command.partition(" ")[2]
             self.save_object(builder.env, True)

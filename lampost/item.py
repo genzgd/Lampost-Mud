@@ -12,6 +12,10 @@ class BaseItem(RootDBO):
     prefixes = []
     suffix = None
     title = ""
+    sex = "none"
+
+    def social(self, social):
+        pass
  
     def on_loaded(self):
         self.config_targets()

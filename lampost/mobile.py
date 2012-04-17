@@ -6,17 +6,15 @@ Created on Apr 13, 2012
 from creature import Creature
 from datastore.dbo import RootDBO
 from coreobj.template import Template
-from action import TARGET_MONSTER
 
-class Mobile(Creature):
-    target_class = TARGET_MONSTER
-    
+class Mobile(Creature):    
     def __init__(self, mobile_id):
         self.mobile_id = mobile_id
                
     @property
     def name(self):
         return self.title
+
      
 class MobileTemplate(RootDBO, Template):
     template_fields = Mobile.dbo_fields

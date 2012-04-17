@@ -5,58 +5,56 @@ Created on Mar 4, 2012
 '''
 import string
 
-from action import Gesture, Action, TARGET_MONSTER
+from action import Action, SingleBroadcast
 from player import Player
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from context import Context
 from dto.rootdto import RootDTO
 from dto.display import Display, DisplayLine
-from message import DialogMessage, CLASS_MOVEMENT, LMessage, CLASS_SENSE_EXAMINE,\
-    CLASS_DAMAGE
 from area import Area
 from room import Room
 from lmutil import ljust
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
 
-class ListCommands(Gesture):
+class ListCommands(Action):
     def __init__(self):
-        Gesture.__init__(self, "cmds")
+        Action.__init__(self, "cmds")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
+    def execute(self, source, **ignored):
         soul_actions = [action for action in source.soul if action.imm_level]
         verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in soul_actions]
         return ", ".join(sorted(verb_lists))
  
-class AreaList(Gesture):
+class AreaList(Action):
     def __init__(self):
-        Gesture.__init__(self, ("arealist", "alist"))
+        Action.__init__(self, ("arealist", "alist"))
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
+    def execute(self, source, **ignored):
         display = Display()
         for area in sorted(self.mud.area_map.itervalues()):
             display.append(DisplayLine(ljust(area.name, 20) + ljust(area.owner_id, 20) + str(len(area.rooms)) + " rooms"))
         return display
 
 
-class SetHome(Gesture):
+class SetHome(Action):
     def __init__(self):
-        Gesture.__init__(self, "sethome")
+        Action.__init__(self, "sethome")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
+    def execute(self, source, **ignored):
         source.home_room = source.env.dbo_id
 
     
-class GotoRoom(Gesture):
+class GotoRoom(Action):
     def __init__(self):
-        Gesture.__init__(self, "goto room")
+        Action.__init__(self, "goto room")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, player, target):
-        return self.goto_room(player, ":".join(target))
+    def execute(self, source, args, **ignored):
+        return self.goto_room(source, ":".join(args))
         
     def goto_room(self, player, room_id):
         if not ":" in room_id:
@@ -76,39 +74,40 @@ class GotoRoom(Gesture):
    
 class Zap(Action):
     def __init__(self):
-        Action.__init__(self, "zap", CLASS_DAMAGE, TARGET_MONSTER)
+        Action.__init__(self, "zap", "damage")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def create_message(self, source, verb, target, command):
-        return LMessage(source, self.msg_class, 2000000, "An immortal recklessly wields power.")
+    def execute(self, target_method, **ignored):
+        target_method(1000000)
+        return SingleBroadcast("An immortal recklessly wields power.")
     
         
 class GoHome(GotoRoom):
     def __init__(self):
-        Gesture.__init__(self, "home")
+        Action.__init__(self, "home")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, player, target):
-        return self.goto_room(player, player.home_room)
+    def execute(self, source, **ignored):
+        return self.goto_room(source, source.home_room)
 
 
-class CreatePlayer(Gesture):
+class CreatePlayer(Action):
     def __init__(self):
-        Gesture.__init__(self, "create player")
+        Action.__init__(self, "create player")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
-        if not len(target):
+    def execute(self, source, args, **ignored):
+        if not len(args):
             return "Name not specified"
             
-        if self.load_object(Player, target[0]):
+        if self.load_object(Player, args[0]):
             return "That player already exists"
-        player = Player(target[0])
-        if len(target) > 1:
-            imm_level = IMM_LEVELS.get(target[1])
+        player = Player(args[0])
+        if len(args) > 1:
+            imm_level = IMM_LEVELS.get(args[1])
             if not imm_level:
                 return "Invalid Immortal Level"
-            title = target[1]
+            title = args[1]
             if imm_level >= source.imm_level:
                 return "Cannot create player with a higher level or the same level as yourself"
             player.imm_level = imm_level
@@ -119,34 +118,34 @@ class CreatePlayer(Gesture):
         return title + " " + player.name + " created."
     
         
-class RegisterDisplay(Gesture):
+class RegisterDisplay(Action):
     def __init__(self):
-        Gesture.__init__(self, "register display")
+        Action.__init__(self, "register display")
         self.imm_level = IMM_LEVELS["creator"]
     
-    def execute(self, source, target):
-        if not len(target):
+    def execute(self, source, args, **ignored):
+        if not args:
             return "No event specified"
-        source.register(target[0], source.display_line)
+        source.register(args[0], source.display_line)
         
 
-class UnregisterDisplay(Gesture):
+class UnregisterDisplay(Action):
     def __init__(self):
-        Gesture.__init__(self, "unregister display")
+        Action.__init__(self, "unregister display")
         self.imm_level = IMM_LEVELS["creator"]
     
-    def execute(self, source, target):
-        source.unregister(target[0], source.display_line)
+    def execute(self, source, args, **ignored):
+        source.unregister(args[0], source.display_line)
                    
-class DeletePlayer(Gesture):
+class DeletePlayer(Action):
     def __init__(self):
-        Gesture.__init__(self, "delete player")
+        Action.__init__(self, "delete player")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
-        if not target:
+    def execute(self, source, args, **ignored):
+        if not args:
             return "Player name not specified"
-        player_id = target[0].lower()
+        player_id = args[0].lower()
         if Context.instance.sm.player_session_map.get(player_id): #@UndefinedVariable
             return "Player " + player_id + " logged in, cannot delete."
         todie = self.load_object(Player, player_id)
@@ -155,7 +154,7 @@ class DeletePlayer(Gesture):
                 return "Cannot delete player of same or lower level."
             confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove " + todie.name, "Confirm Delete", self.finish_delete)
             confirm_dialog.player_id = player_id
-            return DialogMessage(confirm_dialog)
+            return confirm_dialog
         return "Player " + player_id + " does not exist."
         
     def finish_delete(self, dialog):
@@ -167,16 +166,16 @@ class DeletePlayer(Gesture):
             return Display(dialog.player_id + " deleted.")
 
 
-class Describe(Gesture):
+class Describe(Action):
     def __init__(self):
-        Gesture.__init__(self, "describe")
+        Action.__init__(self, "describe")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
-        if not len(target):
+    def execute(self, source, args):
+        if not args:
             target = source.env
         else:
-            target = self.datastore.load_cached(target[0])
+            target = self.datastore.load_cached(args[0])
         if not target:
             return "No object with that key found"
         display = Display("&nbsp")
@@ -185,19 +184,19 @@ class Describe(Gesture):
         return display
 
 
-class CreateArea(Gesture):
+class CreateArea(Action):
     def __init__(self):
-        Gesture.__init__(self, "create area")
+        Action.__init__(self, "create area")
         self.imm_level = IMM_LEVELS["admin"]
     
-    def execute(self, source, target):
-        if not len(target):
+    def execute(self, source, args, **ignored):
+        if not args:
             return "Area name not specified"
-        area_id = "_".join(target).lower()
+        area_id = "_".join(args).lower()
         if self.load_object(Area, area_id):
             return "That area already exists"
         area = Area(area_id)
-        area_name = " ".join(target)
+        area_name = " ".join(args)
         area.name = string.capwords(area_name)
         room = Room(area_id + ":0", "Area " + area.name + " Start", "The Initial Room in " + area.name + " Area")
         area.rooms.append(room)
@@ -207,51 +206,51 @@ class CreateArea(Gesture):
         source.parse("goto room " + room.dbo_id)
 
 
-class DeleteArea(Gesture):
+class DeleteArea(Action):
     def __init__(self):
-        Gesture.__init__(self, "delete area")
+        Action.__init__(self, "delete area")
         self.imm_level = IMM_LEVELS["admin"]
     
-    def execute(self, source, target):
-        if not len(target):
+    def execute(self, source, args, **ignored):
+        if not args:
             return "Area name not specified"
-        area_id = target[0].lower()
+        area_id = args[0].lower()
         confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove area: " + area_id, "Confirm Delete", self.finish_delete)
         confirm_dialog.area_id = area_id
-        return DialogMessage(confirm_dialog)
+        return confirm_dialog
          
     def finish_delete(self, dialog):
         if dialog.data["response"] == "no":
-            return RootDTO(silent=True)
+            return
         area = self.load_object(Area, dialog.area_id)
         if area:
             area.detach()
             self.delete_object(area)
             del self.mud.area_map[dialog.area_id]
-            return Display(dialog.area_id + " deleted.")
-        return Display("Area " + dialog.area_id + " does not exist.")
+            dialog.area_id + " deleted."
+        return "Area " + dialog.area_id + " does not exist."
 
-class GoToArea(Gesture):
+class GoToArea(Action):
     def __init__(self):
-        Gesture.__init__(self, "goto area")
+        Action.__init__(self, "goto area")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, target):
-        if not len(target):
+    def execute(self, source, args, **ignored):
+        if not args:
             return "Area name not specified"
-        area = self.mud.get_area(" ".join(target))
+        area = self.mud.get_area(" ".join(args))
         if not area:
             return "Area does not exist"
         if not area.rooms:
             return "Area has no rooms!"
         dest = area.first_room
-        source.receive(LMessage(self, CLASS_MOVEMENT, dest))
-        return dest.receive(LMessage(source, CLASS_SENSE_EXAMINE))
+        source.enter_env(dest)
+        return source.parse("look")
 
     
 class Citadel(GoToArea):
     def __init__(self):
-        Gesture.__init__(self, "citadel")
+        Action.__init__(self, "citadel")
         self.imm_level = IMM_LEVELS["creator"]
      
     def execute(self, source, target):

@@ -4,10 +4,6 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 
-from message import CLASS_LEAVE_ROOM, LMessage, CLASS_ENTER_ROOM,\
-    CLASS_MOVEMENT, BC_ACTOR_NOTARG, BC_ENV_NOTARG, BC_ACTOR_SELFTARG,\
-    BC_ACTOR_WTARG, BC_TARG, BC_ENV_WTARG, BC_ENV_SELFTARG
-
 import math
 from parse import KeyData
 from item import BaseItem
@@ -31,19 +27,15 @@ class Entity(BaseItem):
             self.add_action(action)
         for target in inven:
             self.add_target(target, self)     
-
-    def receive(self, lmessage):
-        if lmessage.msg_class == CLASS_MOVEMENT:
-            self.change_env(lmessage.payload)
-        elif lmessage.msg_class == CLASS_LEAVE_ROOM:
-            self.remove_target(lmessage.payload)
-            self.remove_action(lmessage.payload)      
-        elif lmessage.msg_class == CLASS_ENTER_ROOM:
-            self.add_target(lmessage.payload, self.env)
-            self.add_actions(lmessage.payload)
-        else:
-            return super(Entity, self).receive(lmessage)
+ 
+    def entity_enter_env(self, entity, entry_msg):
+        self.add_target(entity, self.env)
+        self.add_actions(entity)
     
+    def entity_leave_env(self, entity, exit_msg):
+        self.remove_target(entity)
+        self.remove_action(entity)
+                
     def add_targets(self, target, parent=None):
         self.add_target(target, parent)
         for child_target in target.get_children():
@@ -172,43 +164,19 @@ class Entity(BaseItem):
         if self.env:
             self.remove_actions(self.env)
             self.remove_targets(self.env)
-            self.env.receive(LMessage(self, CLASS_LEAVE_ROOM, self, exit_msg if exit_msg else "{p} leaves."))
+            self.env.entity_leaves(self, exit_msg if exit_msg else "{p} leaves.")
         
     def enter_env(self, new_env):
         self.env = new_env
         self.room_id = new_env.room_id
         self.add_actions(new_env)      
         self.add_targets(new_env)
-        self.env.receive(LMessage(self, CLASS_ENTER_ROOM, self, "{p} arrives."))
+        self.env.entity_enters(self, "{p} arrives.")
             
     def detach(self):
         for registration in self.registrations:
             registration.detach()
             
-    def translate_broadcast(self, source, target, broadcast):
-        pname = source.name
-        try:
-            return broadcast.format(p=pname)
-        except:
-            pass
-        if len(broadcast) < 3:
-            if source == self:
-                version = BC_ACTOR_NOTARG
-            else:
-                version = BC_ENV_NOTARG
-            return broadcast[version].format(p=pname)
-
-        tname = target.name 
-        if source == self:
-            if target == self:
-                version = BC_ACTOR_SELFTARG
-            else:
-                version = BC_ACTOR_WTARG
-        elif target == self:
-            version = BC_TARG
-        elif target != source:
-            version = BC_ENV_WTARG
-        else:
-            version = BC_ENV_SELFTARG
-       
-        return broadcast[version].format(p=pname, t=tname, pself="themself")
+    def broadcast(self, broadcast):
+        pass
+        

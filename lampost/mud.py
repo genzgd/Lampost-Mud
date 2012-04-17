@@ -3,16 +3,15 @@ Created on Feb 25, 2012
 
 @author: Geoff
 '''
-from action import Action, SayAction, TARGET_GENERAL
+from action import Action
 from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
 from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
     ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap
-from message import CLASS_SENSE_EXAMINE
 from area import Area
-from chat import TellAction, ReplyAction
+from chat import TellAction, ReplyAction, SayAction
 from movement import Direction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom
@@ -62,7 +61,7 @@ class MudNature():
               
 
 class MudSoul():
-    look_action = Action(("look", "l", "exa", "examine", "look at"), CLASS_SENSE_EXAMINE, TARGET_GENERAL)
+    look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
     mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction())) | Direction.actions
     
 

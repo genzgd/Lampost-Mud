@@ -3,12 +3,9 @@ Created on Feb 16, 2012
 
 @author: Geoff
 '''
-from dto.display import DisplayLine
+from dto.display import Display, DisplayLine
 from entity import Entity
 from creature import Creature
-from dialog import DialogDTO
-from action import TARGET_PLAYER, TARGET_ACTION, TARGET_MSG_CLASS, TARGET_ENV,\
-    TARGET_SELF
 from datastore.dbo import RootDBO
 
 class Player(Creature, RootDBO):   
@@ -17,7 +14,6 @@ class Player(Creature, RootDBO):
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room")
    
     imm_level = 0
-    target_class = TARGET_PLAYER 
       
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id.lower()
@@ -41,74 +37,49 @@ class Player(Creature, RootDBO):
              
     def parse(self, command, retry=False):
         words = tuple(command.lower().split(" "))
-        matching_actions = self.match_actions(words)
-        if not matching_actions and not retry:
-            return self.parse("say " + command, True)   
-        matches = self.match_targets(matching_actions)
+        matches = self.match_actions(words)
         if not matches:
+            if not retry:
+                return self.parse("say " + command, True)   
             return "What?"
         if len(matches) > 1:
             return "Ambiguous command."
          
-        action, verb, target = matches[0]
-        message = action.create_message(self, verb, target, command)
-        try:
-            if message.msg_class:
-                feedback = target.receive(message)
+        action, verb, args, target, target_method = matches[0]
+        response = action.execute(source=self, target=target, verb=verb, args=args,
+            target_method=target_method, command=command)
+        broadcast = getattr(response, "broadcast", None)
+        feedback = getattr(response, "feedback", None)
+        if broadcast:
+            self.env.broadcast(broadcast)
+            display = Display(broadcast.translate(self), broadcast.color)
+            if feedback:
+                feedback.merge(display)
             else:
-                feedback = message.payload
-        except AttributeError:
-            feedback = message
+                feedback = display
         try:
-            if message.broadcast:
-                if message.msg_class and target != self.env:
-                    self.env.broadcast(self, target, message.broadcast)
-                feedback = self.translate_broadcast(self, target, message.broadcast)
-        except AttributeError:
-            pass
-        try:
-            if message.dialog:
-                self.session.dialog = message.dialog
-                feedback = DialogDTO(message.dialog)
+            if feedback and feedback.dialog:
+                self.session.dialog = feedback.dialog
         except AttributeError:
             pass
         return feedback
      
     def match_actions(self, words):
-        matching_actions = []
         for verb_size in range(1, len(words) + 1):
             verb = words[:verb_size]
-            action_set = self.actions.get(verb)
-            if action_set:
-                for action in action_set:
-                    target_id = action.msg_class if action.action_class == TARGET_MSG_CLASS else words[verb_size:]
-                    matching_actions.append((action, verb, target_id))
-        return matching_actions
-        
-    def match_targets(self, matching_actions):
-        matches = []
-        for action, verb, target_id in matching_actions:
-            if action.action_class == TARGET_ACTION:
-                matches.append((action, verb, target_id))
-            elif action.action_class == TARGET_ENV:
-                matches.append((action, verb, self.env))
-            elif action.action_class & TARGET_ENV and not target_id:
-                matches.append((action, verb, self.env))
-            else:
-                key_data = self.target_key_map.get(target_id)
-                if not key_data:
-                    continue
-                for target in key_data.values:
-                    if  (action.action_class == TARGET_SELF and target == action) or (target.target_class & action.action_class):
-                        matches.append((action, verb, target))
-        return matches;
-           
+            actions = self.actions.get(verb)
+            if not actions:
+                continue
+            args = words[verb_size:]           
+            target_data = self.target_key_map.get(args)
+            for action in actions:
+                if not action.msg_class:
+                    yield action, verb, args, None, None
+                for target in target_data.values:
+                    target_method = getattr(target, action.msg_class, None)
+                    if target_method:
+                        yield action, verb, args, target, target_method        
                      
-    def match_messages(self, messages):
-        for message in messages:
-            for target in self.targets:
-                if target.accepts(message):
-                    yield(message, target)
     
     def display_channel(self, message):
         if message.source != self:
@@ -120,10 +91,9 @@ class Player(Creature, RootDBO):
     def register_channel(self, channel):
         self.register(channel, self.display_channel)
         
-    def receive_broadcast(self, source, target, broadcast):
-        self.display_line(self.translate_broadcast(source, target, broadcast))
-                  
-             
+    def receive_broadcast(self, broadcast):
+        self.display_line(broadcast.translate(self), broadcast.color)
+                               
     def detach(self):
         Entity.detach(self)   
         self.session = None
