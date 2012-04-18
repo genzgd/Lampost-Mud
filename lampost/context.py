@@ -13,6 +13,7 @@ from action import Action
 from datastore.dbconn import RedisStore
 from datastore.dbo import RootDBO
 from item import BaseItem
+from coreobj import lmlog
 
 class Context():
     instance = None
@@ -23,6 +24,7 @@ class Context():
         Action.dispatcher = self.dispatcher
         BaseItem.dispatcher = self.dispatcher
         nature.dispatcher = self.dispatcher
+        lmlog.dispatcher = self.dispatcher
         self.datastore = RedisStore(self.dispatcher, db_host, db_port, db_num, db_pw)
         Action.datastore = self.datastore
         RootDBO.datastore = self.datastore

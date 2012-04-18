@@ -38,10 +38,6 @@ class Exit(RootDBO):
     def execute(self, source, **ignored):
         source.change_env(self.destination)
         return self.destination.rec_examine(source);
-   
-    @property
-    def target_id(self):
-        return self.direction
 
 
 class Room(RootDBO):
@@ -73,7 +69,7 @@ class Room(RootDBO):
         return self.room_id.split(":")[0]
             
     def rec_glance(self, source, **ignored):
-        return Display(self.short_desc(), Room.ROOM_COLOR)
+        return Display(self.short_desc(source), Room.ROOM_COLOR)
         
     def rec_examine(self, source, **ignored):
         return self.long_desc(source)
@@ -81,13 +77,22 @@ class Room(RootDBO):
     def rec_entity_enters(self, source):          
         self.contents.append(source)
         self.tell_contents("rec_entity_enter_env", source)
+        source.entry_msg.source = source
+        self.rec_broadcast(source.entry_msg)
         
     def rec_entity_leaves(self, source):
         self.contents.remove(source)
         self.tell_contents("rec_entity_leave_env", source)
+        source.exit_msg.source = source
+        self.rec_broadcast(source.exit_msg)
     
     def rec_broadcast(self, broadcast):
+        if broadcast.target == self:
+            broadcast.target = None
         self.tell_contents("rec_broadcast", broadcast)
+        
+    def rec_social(self):
+        pass
 
     def get_children(self):
         return self.contents + self.exits
@@ -111,6 +116,9 @@ class Room(RootDBO):
             if obj != observer:
                 longdesc.append(DisplayLine(obj.short_desc(observer), Room.ITEM_COLOR))
         return longdesc
+        
+    def short_desc(self, observer, build_mode=False):
+        return self.title
     
   
     def short_exits(self):

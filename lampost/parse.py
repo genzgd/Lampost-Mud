@@ -9,6 +9,3 @@ class KeyData():
         self.values = []
         if value:
             self.values.append(value)
-            
-    def __iter__(self):
-        return self.values.__iter__()

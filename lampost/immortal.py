@@ -48,22 +48,13 @@ class SetHome(Action):
     def execute(self, source, **ignored):
         source.home_room = source.env.dbo_id
 
-    
-class GotoRoom(Action):
-    def __init__(self):
-        Action.__init__(self, "goto room")
-        self.imm_level = IMM_LEVELS["creator"]
-        
-    def execute(self, source, args, **ignored):
-        return self.goto_room(source, ":".join(args))
-        
-    def goto_room(self, player, room_id):
+def goto_room(player, room_id):
         if not ":" in room_id:
             room_id = ":".join([player.env.area_id, room_id])
         area_id = room_id.split(":")[0]
 
         try:
-            area = self.mud.get_area(area_id)
+            area = Action.mud.get_area(area_id) #@UndefinedVariable
             room = area.get_room(room_id)
             if not room:
                 return "No such room in " + area.name
@@ -72,15 +63,24 @@ class GotoRoom(Action):
         player.change_env(room)
         return player.parse("look")
 
-   
+    
+class GotoRoom(Action):
+    def __init__(self):
+        Action.__init__(self, "goto room")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, args, **ignored):
+        return goto_room(source, ":".join(args))
+        
+  
 class Zap(Action):
     def __init__(self):
         Action.__init__(self, "zap", "damage")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, target_method, target, **ignored):
+    def execute(self, source, target_method, target, **ignored):
         target_method(1000000)
-        return SingleBroadcast("An immortal recklessly wields power.")
+        return SingleBroadcast(source, "An immortal recklessly wields power.")
     
         
 class GoHome(GotoRoom):
@@ -89,7 +89,7 @@ class GoHome(GotoRoom):
         self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, **ignored):
-        return self.goto_room(source, source.home_room)
+        return goto_room(source, source.home_room)
 
 
 class CreatePlayer(Action):
@@ -245,7 +245,7 @@ class GoToArea(Action):
         if not area.rooms:
             return "Area has no rooms!"
         dest = area.first_room
-        source.enter_env(dest)
+        source.change_env(dest)
         return source.parse("look")
 
     

@@ -27,6 +27,7 @@ EMOTES =  {"dance": BroadcastMap(s="You gyrate lewdly!",
 
 class Emotes(Action):
     def __init__(self):
+        self.rec_social = True
         Action.__init__(self, EMOTES.keys(), "social")
              
     def execute(self, source, target, verb, **ignored):

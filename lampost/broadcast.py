@@ -8,15 +8,12 @@ defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}
 
 class BroadcastMap(object):
     
-    def __init__(self, def_msg=None, key_map=None, **kwargs):
+    def __init__(self, def_msg=None, **kwargs):
         self.s = def_msg;
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
-        if key_map:
-            for key,value in key_map.iteritems():
-                setattr(self, key, value)
             
-    def __get_item__(self, msg_key):
+    def __getitem__(self, msg_key):
         while True:
             msg = getattr(self, msg_key, None)
             if msg:
@@ -26,8 +23,11 @@ class BroadcastMap(object):
                 return "Invalid message type"
                 
 class Broadcast(object):
-    def __init__(self, broadcast_map, source=None, target=None, color=0x000000):
-        self.broadcast_map = broadcast_map
+    def __init__(self, broadcast_map=None, source=None, target=None, color=0x000000, **kwargs):
+        if broadcast_map:
+            self.broadcast_map = broadcast_map
+        else:
+            self.broadcast_map = BroadcastMap(**kwargs)
         self.source = source
         self.target = target
         self.color = color
@@ -46,7 +46,7 @@ class Broadcast(object):
             return self.substitute('e')
         if self.source == observer:
             return self.substitute('st')
-        return self.substiteu('et')
+        return self.substitute('et')
             
     def substitute(self, version):
         message = self.broadcast_map[version]
@@ -63,20 +63,22 @@ class Broadcast(object):
        
         return message.format(n=sname, N=tname, e=ssub, E=tsub, \
             s=sposs, S=tposs, m=sobj, M=tobj, f=sself, F=tself)
-            
           
 class SingleBroadcast():
-    def __init__(self, all_msg, color=0x00000):
+    def __init__(self, source, all_msg, color=0x00000):
+        self.source = source
+        self.target = None
         self.all_msg = all_msg
         self.color = color
         self.broadcast = self
                 
     def translate(self, observer):
         return self.all_msg
-
         
 class EnvBroadcast():
     def __init__(self, source, self_msg, env_msg, color=0x000000):
+        self.target = None
+        self.source = source
         self.self_msg = self_msg
         self.env_msg = env_msg
         self.color = color

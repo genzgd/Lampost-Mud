@@ -22,6 +22,7 @@ class Dialog():
         self.dialog_msg = dialog_msg
         self.dialog_title = dialog_title
         self.callback = callback
+        self.dialog = self
         self.feedback = DialogDTO(self)
     
      

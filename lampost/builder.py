@@ -146,7 +146,7 @@ class DelRoom(Action):
             return exp.msg
 
         if room.dbo_rev:
-            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.short_desc(source), "Confirm Delete", self.confirm_delete)
+            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.title, "Confirm Delete", self.confirm_delete)
             confirm_dialog.area = area
             confirm_dialog.room = room
             return confirm_dialog
@@ -262,11 +262,11 @@ class BackFill(UnDig):
         Action.__init__(self, "backfill")
         self.remove_other_exit = False
                                       
-class SetDesc(BuildAction):
+class SetDesc(Action):
     def __init__(self):
         Action.__init__(self, ("rdesc",  "setdesc"))
     
-    def executee(self, source, args, command, **ignored):
+    def execute(self, source, args, command, **ignored):
         try:
             if not args:
                 return "Set description to what?"
@@ -278,7 +278,7 @@ class SetDesc(BuildAction):
         return source.parse("look")
  
         
-class SetTitle(BuildAction):
+class SetTitle(Action):
     def __init__(self):
         Action.__init__(self, ("rname", "settitle"))
     

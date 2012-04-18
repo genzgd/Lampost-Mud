@@ -39,6 +39,6 @@ class MusicBox(Article, Action):
         self.fixed_targets = self,
         Action.__init__(self, ["play", "wind"], "play")
         
-    def execute(self, **ignored):
-        return SingleBroadcast("The music box plays an eerie atonal tune.")
+    def execute(self, source, **ignored):
+        return SingleBroadcast(source, "The music box plays an eerie atonal tune.")
         

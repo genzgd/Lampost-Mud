@@ -53,9 +53,6 @@ class Player(Creature, RootDBO):
         broadcast = getattr(response, "broadcast", None)
         feedback = getattr(response, "feedback", None)
         if broadcast:
-            broadcast.source = self
-            broadcast.target = target
-            broadcast.parsed = True
             self.env.rec_broadcast(broadcast)
             display = Display(broadcast.translate(self), broadcast.color)
             if feedback:
@@ -102,6 +99,9 @@ class Player(Creature, RootDBO):
     def rec_broadcast(self, broadcast):
         if self != broadcast.source:
             self.display_line(broadcast.translate(self), broadcast.color)
+    
+    def die(self):
+        pass
                                
     def detach(self):
         Entity.detach(self)   
