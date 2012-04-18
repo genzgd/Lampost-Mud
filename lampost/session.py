@@ -68,11 +68,14 @@ class SessionManager():
                 self.player_map[session.player.dbo_id] = session.player_info(now)
         self.display_players()
            
-    def login(self, session_id, user_id):
-        user_id = user_id.lower()
+    def login(self, session, user_id):
+        user_id = user_id.lower()          
         old_session = self.player_session_map.get(user_id);
         if old_session:
             player = old_session.player
+            if old_session == session: #Could happen with some weird timing, apparently
+                session.append(player.parse("look"))
+                return self.respond(RootDTO(login="good"))
             old_session.player = None
             del self.player_session_map[user_id]
             kill_message = RootDTO(logout="logout")
@@ -85,8 +88,7 @@ class SessionManager():
                 noplayer_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player");
                 return DialogDTO(noplayer_dialog)
             self.nature.baptise(player)
-            
-        session = self.session_map.get(session_id)
+                  
         if old_session:
             session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
         else:  

@@ -3,9 +3,10 @@ Created on Apr 8, 2012
 
 @author: Geoff
 '''
-from action import Action, SimpleBroadcast
+from action import Action
 from context import Context
 from dto.display import Display
+from broadcast import EnvBroadcast
 
 class TellAction(Action):
     TELL_COLOR = 0x00a2e8
@@ -43,7 +44,7 @@ class ReplyAction(TellAction):
 
                   
 class SayAction(Action):
-    SAY_COLOR = 0xffc90e
+    SAY_COLOR = 0xe15a00
     def __init__(self):
         Action.__init__(self, 'say')
     
@@ -52,5 +53,5 @@ class SayAction(Action):
         if space_ix == -1:
             return "Say what?"
         statement = command[space_ix + 1:]
-        return SimpleBroadcast("You say `{0}'".format(statement), "{0} says, `{1}'".format(source.name, statement), SayAction.SAY_COLOR)
+        return EnvBroadcast(source, "You say `{0}'".format(statement), "{0} says, `{1}'".format(source.name, statement), SayAction.SAY_COLOR)
         

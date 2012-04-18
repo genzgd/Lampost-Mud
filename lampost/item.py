@@ -4,7 +4,6 @@ Created on Mar 11, 2012
 @author: Geoff
 '''
 from datastore.dbo import RootDBO
-from message import CLASS_SENSE_EXAMINE
 
 class BaseItem(RootDBO):
     dbo_fields = "desc", "title"
@@ -14,7 +13,16 @@ class BaseItem(RootDBO):
     title = ""
     sex = "none"
 
-    def social(self, social):
+    def rec_social(self, source, **ignored):
+        pass
+        
+    def rec_examine(self, source, **ignored):
+        return self.long_desc(source)
+    
+    def rec_glance(self, source, **ignored):
+        return self.short_desc(source)
+        
+    def rec_broadcast(self, broadcast):
         pass
  
     def on_loaded(self):
@@ -45,6 +53,3 @@ class BaseItem(RootDBO):
     def long_desc(self, observer):
         return self.desc
         
-    def receive(self, lmessage):
-        if lmessage.msg_class == CLASS_SENSE_EXAMINE:
-            return self.long_desc(lmessage.source)

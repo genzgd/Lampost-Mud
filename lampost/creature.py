@@ -4,7 +4,6 @@ Created on Mar 4, 2012
 @author: Geoffrey
 '''
 from entity import Entity
-from gameops.speciallocs import creature_limbo
 
 class Creature(Entity):
     dbo_fields = Entity.dbo_fields + ("level",)
@@ -13,10 +12,10 @@ class Creature(Entity):
     hp = 1
     
     def die(self):
-        self.change_env(creature_limbo, "{p} expires.")
+        self.leave_env("{p} expires.")
         del self
         
-    def damage(self, amount):
+    def rec_damage(self, amount):
         self.hp -= amount
         if self.hp < 0:
             self.die()

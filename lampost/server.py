@@ -52,9 +52,12 @@ class LoginResource(Resource):
         self.sm = sm
     
     def render_POST(self, request):
-        user_id = cgi.escape(request.args[ARG_USER_ID][0]);
         session_id = cgi.escape(request.args[ARG_SESSION_ID][0]);
-        return self.sm.login(session_id, user_id).json
+        session = self.sm.get_session(session_id)
+        if not session:
+            return LinkError(ERROR_SESSION_NOT_FOUND).json
+        user_id = cgi.escape(request.args[ARG_USER_ID][0]);
+        return self.sm.login(session, user_id).json
     
 
 class ConnectResource(Resource):

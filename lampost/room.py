@@ -16,6 +16,10 @@ class Exit(RootDBO):
     def __init__(self, direction=None, destination=None):
         self.direction = direction
         self.destination = destination
+        
+    @property
+    def verbs(self):
+        return ((self.direction.key,), (self.direction.desc,))
     
     @property
     def dir_name(self):
@@ -31,8 +35,9 @@ class Exit(RootDBO):
         else:
             return self.direction.desc
     
-    def use_exit(self, entity):
-        return entity.change_env(self.destination)
+    def execute(self, source, **ignored):
+        source.change_env(self.destination)
+        return self.destination.rec_examine(source);
    
     @property
     def target_id(self):
@@ -65,22 +70,28 @@ class Room(RootDBO):
         
     @property
     def area_id(self):
-        return self.dbo_id.split(":")[0]
+        return self.room_id.split(":")[0]
+            
+    def rec_glance(self, source, **ignored):
+        return Display(self.short_desc(), Room.ROOM_COLOR)
         
+    def rec_examine(self, source, **ignored):
+        return self.long_desc(source)
+    
+    def rec_entity_enters(self, source):          
+        self.contents.append(source)
+        self.tell_contents("rec_entity_enter_env", source)
+        
+    def rec_entity_leaves(self, source):
+        self.contents.remove(source)
+        self.tell_contents("rec_entity_leave_env", source)
+    
+    def rec_broadcast(self, broadcast):
+        self.tell_contents("rec_broadcast", broadcast)
+
     def get_children(self):
         return self.contents + self.exits
-    
-    def glance(self):
-        return Display(self.short_desc(), Room.ROOM_COLOR)
-    
-    def entity_enters(self, entity, entry_msg=None):          
-        self.contents.append(entity)
-        self.tell_contents("entity_enter_env", entity, entry_msg)
-        
-    def entity_leaves(self, entity, exit_msg=None):
-        self.contents.remove(entity)
-        self.tell_contents("entity_leave_env", entity, exit_msg)
-                                
+                    
     def long_desc(self, observer, build_mode=False):
         longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
         if build_mode:
@@ -115,10 +126,7 @@ class Room(RootDBO):
             rec_method = getattr(receiver, msg_type, None)
             if rec_method:
                 rec_method(*args)
-    
-    def broadcast(self, broadcast):
-        self.tell_contents(self, "broadcast", broadcast)
-                   
+                       
     def reset(self, area):
         for mreset in self.mobile_resets:
             curr_count = len([entity for entity in self.contents if getattr(entity, "mobile_id", None) == mreset.mobile_id])
@@ -133,7 +141,6 @@ class Room(RootDBO):
                 entity.refresh_env()
             except AttributeError:
                 pass
-                                   
- 
+                
         
 Exit.dbo_refs = DBORef("destination", Room, "room"),

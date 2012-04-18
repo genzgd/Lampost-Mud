@@ -28,11 +28,11 @@ class Entity(BaseItem):
         for target in inven:
             self.add_target(target, self)     
  
-    def entity_enter_env(self, entity, entry_msg):
+    def rec_entity_enter_env(self, entity):
         self.add_target(entity, self.env)
         self.add_actions(entity)
     
-    def entity_leave_env(self, entity, exit_msg):
+    def rec_entity_leave_env(self, entity):
         self.remove_target(entity)
         self.remove_action(entity)
                 
@@ -156,22 +156,22 @@ class Entity(BaseItem):
     def refresh_env(self):
         self.change_env(self.env)
         
-    def change_env(self, new_env, exit_msg=None):
-        self.leave_env(exit_msg)
+    def change_env(self, new_env):
+        self.leave_env()
         self.enter_env(new_env)
         
-    def leave_env(self, exit_msg=None):
+    def leave_env(self):
         if self.env:
             self.remove_actions(self.env)
             self.remove_targets(self.env)
-            self.env.entity_leaves(self, exit_msg if exit_msg else "{p} leaves.")
+            self.env.rec_entity_leaves(self)
         
     def enter_env(self, new_env):
         self.env = new_env
         self.room_id = new_env.room_id
         self.add_actions(new_env)      
         self.add_targets(new_env)
-        self.env.entity_enters(self, "{p} arrives.")
+        self.env.rec_entity_enters(self)
             
     def detach(self):
         for registration in self.registrations:
@@ -179,4 +179,3 @@ class Entity(BaseItem):
             
     def broadcast(self, broadcast):
         pass
-        

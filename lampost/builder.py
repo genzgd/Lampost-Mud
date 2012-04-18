@@ -18,21 +18,21 @@ class BuildMode(Action):
     def __init__(self):
         Action.__init__(self, "buildmode")
         
-    def execute(self, builder, **ignored):
-        current = getattr(builder, "buildmode", False)
-        builder.buildmode = not current
-        return "Build Mode is {0}".format("On" if builder.buildmode else "Off")
+    def execute(self, source, **ignored):
+        current = getattr(source, "buildmode", False)
+        source.buildmode = not current
+        return "Build Mode is {0}".format("On" if source.buildmode else "Off")
 
 
 class RoomList(Action):
     def __init__(self):
         Action.__init__(self, "roomlist")
      
-    def execute(self, builder, args, **ignored):
+    def execute(self, source, args, **ignored):
         if args:
             area_id = args[0]
         else:
-            area_id = builder.env.area_id
+            area_id = source.env.area_id
         area = self.mud.get_area(area_id)
         if not area:
             return "Invalid area"
@@ -46,11 +46,11 @@ class MobList(Action):
     def __init__(self):
         Action.__init__(self, "moblist")
      
-    def execute(self, builder, args, **ignored):
+    def execute(self, source, args, **ignored):
         if args:
             area_id = args[0]
         else:
-            area_id = builder.env.area_id
+            area_id = source.env.area_id
         area = self.mud.get_area(area_id)
         if not area:
             return "Invalid area"
@@ -71,7 +71,7 @@ def check_area(builder, area_id):
     if area_id == "immortal_citadel" and builder.imm_level < IMM_LEVELS["supreme"]:
         raise BuildError("You cannot build in the immortal citadel")
     
-    area = Actio.mud.get_area(area_id)  #@UndefinedVariable
+    area = Action.mud.get_area(area_id)  #@UndefinedVariable
     if area.owner_id != builder.dbo_id:
         owner = Action.load_object(Player, area.owner_id)
         if owner.imm_level >= builder.imm_level:
@@ -99,25 +99,25 @@ def find_room(builder, room_id, start_area):
 class BuildAction(Action):
     imm_level = IMM_LEVELS["creator"]
     
-    def execute(self, builder, args, **ignored):
+    def execute(self, source, args, **ignored):
         try:
             feedback = None
-            room = builder.env
-            area = check_room(builder, room)
-            target = self.find_target(builder, args)
-            builder.change_env(BUILD_ROOM)
-            feedback = self.build(builder, room, area, target, args)         
+            room = source.env
+            area = check_room(source, room)
+            target = self.find_target(source, args)
+            source.change_env(BUILD_ROOM)
+            feedback = self.build(source, room, area, target, args)         
         except BuildError as exp:  
             return exp.msg
         finally:
-            if builder.env == BUILD_ROOM:
+            if source.env == BUILD_ROOM:
                 if room.dbo_rev == -1:
-                    builder.change_env(builder.home_room)
+                    source.change_env(source.home_room)
                 else:
-                    builder.change_env(room)
+                    source.change_env(room)
         if feedback:
             return feedback
-        return builder.parse("look")
+        return source.parse("look")
          
     def find_target(self, builder, args):
         key_data = builder.target_key_map.get(args)
@@ -128,30 +128,30 @@ class ResetRoom(Action):
     def __init__(self):
         Action.__init__(self, "reset")
     
-    def execute(self, builder, args, *ignored):
-        area = Gesture.mud.get_area(builder.env.area_id)  #@UndefinedVariable
-        builder.env.reset(area)
+    def execute(self, source, args, **ignored):
+        area = Action.mud.get_area(source.env.area_id) #@UndefinedVariable
+        source.env.reset(area)
         return "Room reset"
 
 class DelRoom(Action):
     def __init__(self):
         Action.__init__(self, "delroom")
         
-    def execute(self, builder, args, **ignored):
+    def execute(self, source, args, **ignored):
         if not args:
             return "Room id must be specified for delete"
         try:
-            area, room = find_room(builder, args, builder.env.area_id)
+            area, room = find_room(source, args, source.env.area_id)
         except BuildError as exp:
             return exp.msg
 
         if room.dbo_rev:
-            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.short_desc(builder), "Confirm Delete", self.confirm_delete)
+            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.short_desc(source), "Confirm Delete", self.confirm_delete)
             confirm_dialog.area = area
             confirm_dialog.room = room
             return confirm_dialog
         else:
-            return self.del_room(builder, area,  room)
+            return self.del_room(source, area,  room)
             
     def confirm_delete(self, dialog):
         if dialog.data["response"] == "no":
@@ -266,30 +266,30 @@ class SetDesc(BuildAction):
     def __init__(self):
         Action.__init__(self, ("rdesc",  "setdesc"))
     
-    def executee(self, builder, args, command, **ignored):
+    def executee(self, source, args, command, **ignored):
         try:
             if not args:
                 return "Set description to what?"
-            check_room(builder, builder.env)
-            builder.env.desc = command.partition(" ")[2]
-            self.save_object(builder.env, True)
+            check_room(source, source.env)
+            source.env.desc = command.partition(" ")[2]
+            self.save_object(source.env, True)
         except BuildError as exp:
             return exp.msg
-        return builder.parse("look")
+        return source.parse("look")
  
         
 class SetTitle(BuildAction):
     def __init__(self):
         Action.__init__(self, ("rname", "settitle"))
     
-    def execute(self, builder, args, command, **ignored):
+    def execute(self, source, args, command, **ignored):
         try:
-            check_room(builder, builder.env)
+            check_room(source, source.env)
             if not args:
                 return "Set title to what?"
-            builder.env.title = command.partition(" ")[2]
-            self.save_object(builder.env, True)
+            source.env.title = command.partition(" ")[2]
+            self.save_object(source.env, True)
         except BuildError as exp:
             return exp.msg
-        return builder.parse("look")
+        return source.parse("look")
             

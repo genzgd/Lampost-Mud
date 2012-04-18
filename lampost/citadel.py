@@ -3,12 +3,13 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-from action import Action, SingleBroadcast
+from action import Action
 from area import Area
 from article import Article
 from room import Room, Exit
 from movement import UP, DOWN
 from mobile import MobileTemplate, MobileReset
+from broadcast import SingleBroadcast
 
 class ImmortalCitadel(Area):
     def __init__(self):
@@ -34,7 +35,9 @@ class MusicBox(Article, Action):
         self.title = "music box"
         self.desc = "An translucent music box.  It doesn't seem quite all here."
         self.config_targets()
-        Action.__init__(self, ["play", "wind"])
+        self.rec_play = True
+        self.fixed_targets = self,
+        Action.__init__(self, ["play", "wind"], "play")
         
     def execute(self, **ignored):
         return SingleBroadcast("The music box plays an eerie atonal tune.")

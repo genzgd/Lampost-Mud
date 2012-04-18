@@ -12,7 +12,6 @@ from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
     ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap
 from area import Area
 from chat import TellAction, ReplyAction, SayAction
-from movement import Direction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom
 
@@ -48,21 +47,22 @@ class MudNature():
             new_soul.add(self.imm_channel)
           
         player.baptise(new_soul)
-        player.equip(set())
-        player.enter_env(self.citadel.first_room)
+        player.register_channel(self.shout_channel)
         
         if player.imm_level:
-            player.register_channel(self.shout_channel)
             player.register_channel(self.imm_channel)
             
         if player.imm_level == IMM_LEVELS["supreme"]:
             player.register("db_log", player.display_line)
             player.register("debug", player.display_line)
-              
+            
+        player.equip(set())
+        player.enter_env(self.citadel.first_room)
+       
 
 class MudSoul():
     look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction())) | Direction.actions
+    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction())) 
     
 
 class Mud():

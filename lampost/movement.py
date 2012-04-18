@@ -3,10 +3,7 @@ Created on Mar 1, 2012
 
 @author: Geoffrey
 '''
-from action import Action
-
-class Direction(Action):
-    actions = set()
+class Direction(object):
     ref_map = {}
     
     @classmethod
@@ -16,15 +13,10 @@ class Direction(Action):
                 return value
     
     def __init__(self, key, desc, rev_key):
-        Action.__init__(self, (key, desc), "use_exit")
         self.key = key
         self.desc = desc
         self.rev_key = rev_key
-        Direction.actions.add(self)
         Direction.ref_map[key] = self
-        
-    def execute(self, source, target, **ignored):
-        return target.use_exit(source)
         
     @property
     def rev_dir(self):

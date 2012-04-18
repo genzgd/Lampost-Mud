@@ -5,7 +5,7 @@ Created on Mar 4, 2012
 '''
 import string
 
-from action import Action, SingleBroadcast
+from action import Action
 from player import Player
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from context import Context
@@ -14,6 +14,7 @@ from dto.display import Display, DisplayLine
 from area import Area
 from room import Room
 from lmutil import ljust
+from broadcast import SingleBroadcast
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
 
@@ -77,7 +78,7 @@ class Zap(Action):
         Action.__init__(self, "zap", "damage")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, target_method, **ignored):
+    def execute(self, target_method, target, **ignored):
         target_method(1000000)
         return SingleBroadcast("An immortal recklessly wields power.")
     
@@ -171,7 +172,7 @@ class Describe(Action):
         Action.__init__(self, "describe")
         self.imm_level = IMM_LEVELS["creator"]
         
-    def execute(self, source, args):
+    def execute(self, source, args, **ignored):
         if not args:
             target = source.env
         else:
@@ -253,7 +254,7 @@ class Citadel(GoToArea):
         Action.__init__(self, "citadel")
         self.imm_level = IMM_LEVELS["creator"]
      
-    def execute(self, source, target):
+    def execute(self, source, **ignored):
         return GoToArea.execute(self, source, ("immortal", "citadel"))
 
         
