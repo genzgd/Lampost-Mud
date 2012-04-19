@@ -13,12 +13,13 @@ from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
 from area import Area
 from chat import TellAction, ReplyAction, SayAction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
-    FTH, DelRoom, MobList, ResetRoom
+    FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
-    BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom()
+    BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
+    DelMob()
 
 class MudNature():
     

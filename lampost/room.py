@@ -3,7 +3,6 @@ Created on Feb 26, 2012
 
 @author: Geoff
 '''
-
 from dto.display import Display, DisplayLine
 from datastore.dbo import RootDBO, DBORef
 from movement import Direction
@@ -140,7 +139,7 @@ class Room(RootDBO):
             curr_count = len([entity for entity in self.contents if getattr(entity, "mobile_id", None) == mreset.mobile_id])
             for unused in range(mreset.mob_count - curr_count):
                 area.create_mob(mreset.mobile_id, self)
-            if curr_count < mreset.mob_max:
+            if curr_count >= mreset.mob_count and curr_count < mreset.mob_max:
                 area.create_mob(mreset.mobile_id, self)
                 
     def refresh(self):

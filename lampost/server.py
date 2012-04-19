@@ -16,6 +16,7 @@ from datetime import datetime
 from dto.link import LinkError, ERROR_SESSION_NOT_FOUND, ERROR_NOT_LOGGED_IN
 from dto.display import Display, DisplayLine
 from json.decoder import JSONDecoder
+from dto.rootdto import RootDTO
 
 FILE_WEB_CLIENT = "webclient"
 
@@ -95,8 +96,14 @@ class DialogResource(Resource):
             session = self.sm.get_session(session_id)
             if not session:
                 return  LinkError(ERROR_SESSION_NOT_FOUND).json
-            response = request.args[ARG_DIALOG_RESPONSE][0]
-            return session.dialog_response(self.decoder.decode(response)).json
+            response = self.decoder.decode(request.args[ARG_DIALOG_RESPONSE][0])
+            feedback = session.dialog_response(response)
+            if not feedback:
+                return RootDTO(silent=True)
+            if getattr(feedback, "json", None):
+                return feedback.json
+            else:
+                return Display(feedback).json
         except:
             display = Display()
             display.append(DisplayLine(traceback.format_exc(), 0xff0000))

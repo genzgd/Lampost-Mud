@@ -10,10 +10,10 @@ from event import Dispatcher
 from session import SessionManager
 from server import LampostResource
 from action import Action
-from datastore.dbconn import RedisStore
-from datastore.dbo import RootDBO
+from lampost.datastore.dbconn import RedisStore
+from lampost.datastore.dbo import RootDBO
 from item import BaseItem
-from coreobj import lmlog
+from lampost.coreobj import lmlog 
 
 class Context():
     instance = None

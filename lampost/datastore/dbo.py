@@ -33,7 +33,7 @@ class RootDBO(object):
     
     @property    
     def dbo_key(self):
-        return self.dbo_key_type + ":" + self.dbo_id
+        return ":".join([self.dbo_key_type, self.dbo_id])
     
     @property
     def dbo_set_key(self):
@@ -52,8 +52,10 @@ class RootDBO(object):
          
     def describe(self, level=0, follow_refs=True):
         display = []
+        
         def append(key, value):
-            display.append(3 * level * "&nbsp" + key + ":" + (16 - len(key)) * "&nbsp"  + str(value))
+            display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp"  + str(value))
+        
         if self.dbo_id:
             append("key", self.dbo_key)
         class_name =  self.__class__.__module__ + "." + self.__class__.__name__
@@ -62,13 +64,13 @@ class RootDBO(object):
             append("class", class_name)
         if self.dbo_set_key:
             append("set_key", self.dbo_set_key)
-
         for field in self.dbo_fields:
             append(field, getattr(self, field, "None"))
+        
         for ref in self.dbo_refs:
             child_dbo = getattr(self, ref.field_name, None)
             if child_dbo:
-                if follow_refs:
+                if follow_refs or not child_dbo.dbo_key_type:
                     display.extend(child_dbo.describe(level + 1))
                 else:
                     append(ref.field_name, child_dbo.dbo_key)
@@ -79,10 +81,10 @@ class RootDBO(object):
             if child_coll:
                 append(col.field_name, "")
                 for child_dbo in child_coll:
-                    if follow_refs:
+                    if follow_refs or not child_dbo.dbo_key_type:
                         display.extend(child_dbo.describe(level + 1, False))
                     else:
-                        append(3 * "&nbsp", child_dbo.dbo_key)
+                        append(col.field_name, child_dbo.dbo_key)
             else:
                 append(col.field_name, "None")
         return display

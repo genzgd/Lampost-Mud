@@ -228,8 +228,9 @@ class DeleteArea(Action):
             area.detach()
             self.delete_object(area)
             del self.mud.area_map[dialog.area_id]
-            dialog.area_id + " deleted."
-        return "Area " + dialog.area_id + " does not exist."
+            return dialog.area_id + " deleted."
+        else:
+            return "Area " + dialog.area_id + " does not exist."
 
 class GoToArea(Action):
     def __init__(self):
@@ -256,7 +257,4 @@ class Citadel(GoToArea):
      
     def execute(self, source, **ignored):
         return GoToArea.execute(self, source, ("immortal", "citadel"))
-
-        
-    
                 

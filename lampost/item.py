@@ -51,5 +51,5 @@ class BaseItem(RootDBO):
         return self.title
            
     def long_desc(self, observer):
-        return self.desc
+        return self.desc if self.desc else self.title
         

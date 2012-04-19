@@ -11,10 +11,13 @@ from lmutil import ljust
 from dto.display import Display, DisplayLine
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from action import Action
+from mobile import MobileTemplate, MobileReset
 
 BUILD_ROOM = Room("buildroom")
 
 class BuildMode(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
     def __init__(self):
         Action.__init__(self, "buildmode")
         
@@ -25,6 +28,8 @@ class BuildMode(Action):
 
 
 class RoomList(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
     def __init__(self):
         Action.__init__(self, "roomlist")
      
@@ -43,6 +48,8 @@ class RoomList(Action):
 
 
 class MobList(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
     def __init__(self):
         Action.__init__(self, "moblist")
      
@@ -58,10 +65,10 @@ class MobList(Action):
             return "No mobiles defined"
         display = Display()
         for mobile in area.mobiles:
-            display.append(DisplayLine(ljust(mobile.dbo_id, 20) + ljust(mobile.title, 20) + mobile.level))
+            display.append(DisplayLine(ljust(mobile.dbo_id, 20) + ljust(mobile.title, 20) + unicode(mobile.level)))
         return display
-
-
+        
+        
 class BuildError(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -94,8 +101,86 @@ def find_room(builder, room_id, start_area):
     except:
         raise BuildError("Invalid room id")
     return area, room
+ 
+class CreateMob(Action):
+    imm_level = IMM_LEVELS["creator"]
     
-       
+    def __init__(self):
+        Action.__init__(self, "areamob")
+        
+    def execute(self, source, args, command, **ignored):
+        area_id = source.env.area_id;
+        if not args:
+            return "mob id required"
+        try:
+            area = check_area(source, area_id)
+        except BuildError as exp:
+            return exp.msg;
+            
+        mobile_id = ":".join([area_id, args[0]])
+        if area.get_mobile(mobile_id):
+            return mobile_id + " already exists in this area"
+        
+        title = command.partition(args[0])[2][1:]
+        if not title:
+            title = area.name + " " + args[0]
+        template = MobileTemplate(mobile_id, title)
+        self.save_object(template)
+        area.mobiles.append(template)
+        self.save_object(area)
+
+        
+class EditAreaMob(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
+    def __init__(self):
+        Action.__init__(self, ("delareamob", "mlevel", "mname", "mdesc"))
+        
+    def execute(self, source, verb, args, command, **ignored):
+        area_id = source.env.area_id;
+        if not args:
+            return "mob id required"
+        try:
+            area = check_area(source, area_id)
+        except BuildError as exp:
+            return exp.msg;
+            
+        mob_template = area.get_mobile(args[0])
+        if not mob_template:
+            return "Monster does not exist in this area"
+            
+        if verb[0] == "delareamob":
+            mobile_resets = list(area.find_mobile_resets(mob_template.mobile_id))
+            if mobile_resets:
+                if len(args) < 2 or args[1] != "force":
+                    return "Mobile is used in rooms.  Use 'force' option to remove from rooms"
+                for room, mobile_reset in mobile_resets:
+                    room.mobile_resets.remove(mobile_reset)
+                    self.save_object(room, True)
+            
+            area.mobiles.remove(mob_template)
+            self.save_object(area)
+            return mob_template.mobile_id + " deleted."
+            
+        if len(args) < 2:
+            return "Value required"
+            
+        if verb[0] == "mlevel":
+            try:
+                mob_template.level = int(args[1])
+            except TypeError:
+                return "Invalid level"
+        
+        else:
+            value = " ".join(command.split(" ")[2:])
+            if verb[0] == "mdesc":
+                mob_template.desc = value
+            elif verb[0] == "mname":
+                mob_template.title = value
+        self.save_object(mob_template)
+        return mob_template.mobile_id + " updated"
+            
+                
 class BuildAction(Action):
     imm_level = IMM_LEVELS["creator"]
     
@@ -124,6 +209,56 @@ class BuildAction(Action):
         if key_data and len(key_data) == 1:
             return key_data[0]  
 
+class AddMob(BuildAction):
+    def __init__(self):
+        Action.__init__(self, "addmob")
+        
+    def build(self, source, room, area, target, args):
+        if not args:
+            return "Mob id required"
+        
+        mob_template = area.get_mobile(args[0])
+        if not mob_template:
+            return "Monster does not exist in this area"
+        mob_reset = MobileReset(mob_template.mobile_id)
+        try:
+            mob_reset.mob_count = int(args[1])
+        except (TypeError, IndexError):
+            pass
+        try:
+            mob_reset.mob_max = int(args[2])
+        except  (TypeError, IndexError):
+            pass
+        room.mobile_resets.append(mob_reset)
+        self.save_object(room, True)
+        return "Mobile reset created"
+
+         
+class DelMob(BuildAction):
+    def __init__(self):
+        Action.__init__(self, "delmob")
+        
+    def build(self, source, room, area, target, args):
+        if not args:
+            return "Mob id required"
+            
+        mobile_id = args[0]
+        if ":" not in mobile_id:
+            mobile_id = ":".join([room.area_id, mobile_id])
+            
+        found = False
+        for mobile_reset in room.mobile_resets[:]:
+            if mobile_reset.mobile_id == mobile_id:
+                room.mobile_resets.remove(mobile_reset)
+                found = True
+                
+        if not found:
+            return "No resets for " + mobile_id + " in this room"
+        
+        self.save_object(room, True)
+        return mobile_id + " removed from " + room.title
+        
+       
 class ResetRoom(Action):
     def __init__(self):
         Action.__init__(self, "reset")

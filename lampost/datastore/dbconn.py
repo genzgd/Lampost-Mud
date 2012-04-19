@@ -8,6 +8,7 @@ from redis import ConnectionPool
 from redis.client import StrictRedis
 from json import JSONEncoder
 from json.decoder import JSONDecoder
+from lampost.coreobj.lmlog import db_log
 
 class RedisStore():
     def __init__(self, dispatcher, db_host, db_port, db_num, db_pw):
@@ -65,7 +66,7 @@ class RedisStore():
         try:
             del self.object_map[dbo.dbo_key]
         except:
-            self.dispatcher.dispatch("db_log", "Failed to evict " + dbo.dbo_key + " from db cache")
+            db_log("Failed to evict " + dbo.dbo_key + " from db cache")
                 
     def load_by_key(self, key_type, key, base_class=None):
         dbo_key = key_type + ":" + key
@@ -106,7 +107,7 @@ class RedisStore():
             try:
                 setattr(dbo, field_name, json_obj[field_name])
             except KeyError:
-                self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing field " + field_name)
+                db_log("db: Object " + unicode(dbo.dbo_key) + " json missing field " + field_name)
         for dbo_col in dbo.dbo_collections:
             coll = getattr(dbo, dbo_col.field_name, [])
             try:
@@ -118,9 +119,10 @@ class RedisStore():
                         self.load_json(child_dbo, child_json)
                     coll.append(child_dbo)
             except AttributeError:
-                self.dispatcher.dispatch("db_log", "{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, dbo.dbo_id))
+                db_log("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)))
             except KeyError:
-                self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing collection " + dbo_col.field_name)
+                if dbo.dbo_key_type:
+                    db_log("db: Object " + unicode(dbo.dbo_key) + " json missing collection " + dbo_col.field_name)
         
         for dbo_ref in dbo.dbo_refs:
             try:
@@ -128,7 +130,8 @@ class RedisStore():
                 ref_obj = self.load_by_key(dbo_ref.key_type, ref_key, dbo_ref.base_class)
                 setattr(dbo, dbo_ref.field_name, ref_obj)    
             except:
-                self.dispatcher.dispatch("db_log", "db: Object " + dbo.dbo_key + " json missing ref " + dbo_ref.field_name)
+                if dbo.dbo_key_type:
+                    db_log("db: Object " + unicode(dbo.dbo_key) + " json missing ref " + dbo_ref.field_name)
         dbo.on_loaded()    
         return True
                     
@@ -142,7 +145,7 @@ class RedisStore():
                 coll = getattr(dbo, dbo_col.field_name, set())
                 for child_dbo in coll:
                     self.delete_object(child_dbo)
-        self.dispatcher.dispatch("db_log", "object deleted: " + key)
+        db_log("object deleted: " + key)
         if self.object_map.get(dbo.dbo_key):
             del self.object_map[dbo.dbo_key]
         return True
