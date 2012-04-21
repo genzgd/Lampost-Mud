@@ -15,7 +15,7 @@ from chat import TellAction, ReplyAction, SayAction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob,\
     DeleteArea
-from merc.flavor import MercFlavor
+from lampost.merc.flavor import MercFlavor
 from mobile import MobileTemplate
 from player import Player
 

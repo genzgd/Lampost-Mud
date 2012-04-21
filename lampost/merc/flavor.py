@@ -3,7 +3,7 @@ Created on Apr 20, 2012
 
 @author: Geoff
 '''
-from merc.util import nudge, scale32
+from lampost.merc.util import nudge, scale32
 from random import randint
 
 class MercFlavor():
