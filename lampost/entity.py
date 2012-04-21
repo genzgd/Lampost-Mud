@@ -19,7 +19,7 @@ class Entity(BaseItem):
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
-        self.add_target_keys((self.target_id,), self) 
+        self.add_target_keys([(self.target_id,)], self) 
         for action in soul:
             self.add_action(action)
         
@@ -40,7 +40,7 @@ class Entity(BaseItem):
                 
     def add_targets(self, target, parent=None):
         self.add_target(target, parent)
-        for child_target in target.get_children():
+        for child_target in getattr(target, "children", []):
             self.add_target(child_target, target)
     
     def add_target(self, target, parent=None):
@@ -88,7 +88,8 @@ class Entity(BaseItem):
             yield tuple(next_prefix) + (target_id,)
             
     def remove_targets(self, target):
-        for child_target in target.get_children():
+        self.remove_target(target)
+        for child_target in getattr(target, "children", []):
             self.remove_target(child_target)
                 
     def remove_target(self, target):
@@ -120,43 +121,33 @@ class Entity(BaseItem):
     
     def add_actions(self, provider):
         self.add_action(provider)
-        try:
-            for child_provider in provider.get_children():
-                self.add_actions(child_provider)
-        except AttributeError:
-            pass
+        for child_provider in getattr(provider, "children", []):
+            self.add_actions(child_provider)
     
     def add_action(self, provider):
-        try:
-            for verb in provider.verbs:
-                bucket = self.actions.get(verb)
-                if not bucket:
-                    bucket = set()
-                    self.actions[verb] = bucket
-                bucket.add(provider)
-        except AttributeError:
-            pass
+        for verb in getattr(provider, "verbs", []):
+            bucket = self.actions.get(verb)
+            if not bucket:
+                bucket = set()
+                self.actions[verb] = bucket
+            bucket.add(provider)
            
     def remove_actions(self, provider):
         self.remove_action(provider)
-        try:
-            for child_provider in provider.get_children():
-                self.remove_action(child_provider)
-        except AttributeError:
-            pass
+        for child_provider in getattr(provider, "children", []):
+            self.remove_action(child_provider)
+       
             
     def remove_action(self, provider):
-        try:
-            for verb in provider.verbs:
-                bucket = self.actions.get(verb)
-                bucket.remove(provider)
-                if len(bucket) == 0:
-                    del self.actions[verb]
-        except AttributeError:
-            pass
+        for verb in getattr(provider, "verbs", []):
+            bucket = self.actions.get(verb)
+            bucket.remove(provider)
+            if len(bucket) == 0:
+                del self.actions[verb]
+        
             
     def parse_command(self, command):
-        words = tuple(command.lower().split(" "))
+        words = tuple(command.lower().split())
         matches = list(self.match_actions(words))
         if not matches:
             return None, None
@@ -185,9 +176,8 @@ class Entity(BaseItem):
         for target in self.target_key_map.get(target_args, []) if target_args else [self.env]:
             target_method = target_method = getattr(target, msg_class, None)
             if target_method:
-                yield target, target_method       
- 
-        
+                yield target, target_method
+                      
     def refresh_env(self):
         self.change_env(self.env)
         

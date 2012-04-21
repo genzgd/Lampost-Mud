@@ -7,19 +7,23 @@ from action import Action
 from citadel import ImmortalCitadel
 from channel import Channel
 from emote import Emotes
-from immortal import CreatePlayer, DeletePlayer, CreateArea, DeleteArea,\
+from immortal import CreatePlayer, DeletePlayer, CreateArea,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
-    ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap
+    ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget
 from area import Area
 from chat import TellAction, ReplyAction, SayAction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
-    FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob
+    FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob,\
+    DeleteArea
+from merc.flavor import MercFlavor
+from mobile import MobileTemplate
+from player import Player
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
     BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
-    DelMob()
+    DelMob(), DeleteArea, PatchTarget(), PatchDB()
 
 class MudNature():
     
@@ -70,11 +74,14 @@ class Mud():
     def __init__(self, datastore, dispatcher):
         Area.dispatcher = dispatcher
         self.area_map = {}
+        self.flavor = MercFlavor()
         area_keys = datastore.fetch_set_keys("areas")
         for area_key in area_keys:
             area_id = area_key.split(":")[1]
             area = datastore.load_object(Area, area_id)
             self.add_area(area)
+        self.flavor.apply_mobile(MobileTemplate)
+        self.flavor.apply_player(Player)
     
     def add_area(self, area):
         self.area_map[area.dbo_id] = area

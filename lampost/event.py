@@ -71,7 +71,9 @@ class Dispatcher:
     def pulse(self):
         self.dispatch("pulse")
         events = self.pulse_queue[self.pulse_loc]
-        for event in events:
+        active_events = events.copy()
+        events.clear();
+        for event in active_events:
             self.dispatch(event)
             try:
                 del self.pulse_events[event.pulse_key]
@@ -82,7 +84,6 @@ class Dispatcher:
             except KeyError:
                 pass   #The dispatch could have resulted in unregistering the event, so we don't put it back on the queue
             
-        events.clear()
         self.pulse_loc = self.pulse_loc + 1;
         if self.pulse_loc == MAX_PULSE_QUEUE:
             self.pulse_loc = 0;

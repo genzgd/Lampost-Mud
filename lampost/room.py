@@ -93,7 +93,8 @@ class Room(RootDBO):
     def rec_social(self):
         pass
 
-    def get_children(self):
+    @property
+    def children(self):
         return self.contents + self.exits
                     
     def long_desc(self, observer, build_mode=False):

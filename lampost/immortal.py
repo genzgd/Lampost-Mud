@@ -13,7 +13,7 @@ from dto.rootdto import RootDTO
 from dto.display import Display, DisplayLine
 from area import Area
 from room import Room
-from lmutil import ljust
+from lmutil import ljust, extra, patch_object, PatchError
 from broadcast import SingleBroadcast
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
@@ -27,6 +27,82 @@ class ListCommands(Action):
         soul_actions = [action for action in source.soul if action.imm_level]
         verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in soul_actions]
         return ", ".join(sorted(verb_lists))
+
+class PatchTarget(Action):
+    def __init__(self):
+        Action.__init__(self, "patch")
+        self.imm_level = IMM_LEVELS["admin"]
+        
+    def execute(self, source, verb, args, command, **ignored):
+        try:
+            split_ix = args.index(":")
+            target_id = args[:split_ix]
+            prop = args[split_ix + 1]
+            new_value =  extra(verb, split_ix + 2, command)
+        except (ValueError, IndexError):
+            return "Syntax -- 'patch [target] [:] [prop_name] [new_value]'"
+        target_list = list(source.matching_targets(target_id, "__dict__"))
+        if not target_list:
+            return "No matching target"
+        if len(target_list) > 1:
+            return "Multiple matching targets"
+        if not new_value:
+            return "New value required"
+        if new_value == "None":
+            new_value = None     
+        if prop == "imm_level":
+            try:
+                if source.imm_level < int(new_value):
+                    return "Umm, no."
+            except ValueError:
+                return "Invalid value"    
+        try:
+            patch_object(target_list[0][0], prop, new_value)
+        except PatchError as exp:
+            return exp.message
+        return "Object successfully patched"
+        
+        
+class PatchDB(Action):
+    def __init__(self):
+        Action.__init__(self, "patchdb")
+        self.imm_level = IMM_LEVELS["admin"]
+        
+    def execute(self, source, verb, args, command, **ignored):
+        if len(args) == 0:
+            return "Type required."
+        obj_type = args[0]
+        if len(args) == 1:
+            return "Object id required."
+        obj_id = args[1]
+        if len(args) == 2:
+            return "Property name required."
+        prop = args[2]
+        new_value = extra(verb, 3, command)
+        if not new_value:
+            return "Value required."
+        if new_value == "None":
+            new_value = None
+        if prop == "imm_level":
+            try:
+                if source.imm_level < int(new_value):
+                    return "Umm, no."
+            except ValueError:
+                return "Invalid value"   
+        key = ":".join([obj_type, obj_id])
+        if obj_type == "player":
+            obj = self.load_object(Player, obj_id)
+        else:
+            obj = self.datastore.load_cached(key)
+        if not obj:
+            return "Object not found"
+        try:
+            patch_object(obj, prop, new_value)
+        except PatchError as exp:
+            return exp.message
+            
+        self.save_object(obj)
+        return "Object " + key + " patched"
  
 class AreaList(Action):
     def __init__(self):
@@ -188,7 +264,7 @@ class Describe(Action):
 class CreateArea(Action):
     def __init__(self):
         Action.__init__(self, "create area")
-        self.imm_level = IMM_LEVELS["admin"]
+        self.imm_level = IMM_LEVELS["creator"]
     
     def execute(self, source, args, **ignored):
         if not args:
@@ -206,31 +282,6 @@ class CreateArea(Action):
         self.mud.add_area(area)
         source.parse("goto room " + room.dbo_id)
 
-
-class DeleteArea(Action):
-    def __init__(self):
-        Action.__init__(self, "delete area")
-        self.imm_level = IMM_LEVELS["admin"]
-    
-    def execute(self, source, args, **ignored):
-        if not args:
-            return "Area name not specified"
-        area_id = args[0].lower()
-        confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove area: " + area_id, "Confirm Delete", self.finish_delete)
-        confirm_dialog.area_id = area_id
-        return confirm_dialog
-         
-    def finish_delete(self, dialog):
-        if dialog.data["response"] == "no":
-            return
-        area = self.load_object(Area, dialog.area_id)
-        if area:
-            area.detach()
-            self.delete_object(area)
-            del self.mud.area_map[dialog.area_id]
-            return dialog.area_id + " deleted."
-        else:
-            return "Area " + dialog.area_id + " does not exist."
 
 class GoToArea(Action):
     def __init__(self):

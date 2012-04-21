@@ -12,6 +12,7 @@ from dto.display import Display, DisplayLine
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from action import Action
 from mobile import MobileTemplate, MobileReset
+from area import Area
 
 BUILD_ROOM = Room("buildroom")
 
@@ -101,6 +102,35 @@ def find_room(builder, room_id, start_area):
     except:
         raise BuildError("Invalid room id")
     return area, room
+
+class DeleteArea(Action):
+    def __init__(self):
+        Action.__init__(self, "delete area")
+        self.imm_level = IMM_LEVELS["creator"]
+    
+    def execute(self, source, args, **ignored):
+        if not args:
+            return "Area name not specified"
+        area_id = args[0].lower()
+        try:
+            check_area(source, area_id)
+        except BuildError as exp:
+            return exp.msg
+        confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove area: " + area_id, "Confirm Delete", self.finish_delete)
+        confirm_dialog.area_id = area_id
+        return confirm_dialog
+         
+    def finish_delete(self, dialog):
+        if dialog.data["response"] == "no":
+            return
+        area = self.load_object(Area, dialog.area_id)
+        if area:
+            area.detach()
+            self.delete_object(area)
+            del self.mud.area_map[dialog.area_id]
+            return dialog.area_id + " deleted."
+        else:
+            return "Area " + dialog.area_id + " does not exist."
  
 class CreateMob(Action):
     imm_level = IMM_LEVELS["creator"]

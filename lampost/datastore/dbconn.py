@@ -102,7 +102,6 @@ class RedisStore():
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
     
     def load_json(self, dbo, json_obj):
-        
         for field_name in dbo.dbo_fields:
             try:
                 setattr(dbo, field_name, json_obj[field_name])
