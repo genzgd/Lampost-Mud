@@ -28,7 +28,12 @@ class Entity(BaseItem):
         for action in inven:
             self.add_action(action)
         for target in inven:
-            self.add_target(target, self)     
+            self.add_target(target, self)
+            
+    def enhance_soul(self, actions):
+        for action in actions:
+            self.add_action(action)
+        self.soul.update(set(actions))    
  
     def rec_entity_enter_env(self, entity):
         self.add_target(entity, self.env)
@@ -199,6 +204,7 @@ class Entity(BaseItem):
         self.env.rec_entity_enters(self)
             
     def detach(self):
+        self.env = None
         for registration in self.registrations:
             registration.detach()
             

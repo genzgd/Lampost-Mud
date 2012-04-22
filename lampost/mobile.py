@@ -17,9 +17,8 @@ class Mobile(Creature):
 
      
 class MobileTemplate(RootDBO, Template):
-    template_fields = Mobile.dbo_fields
     dbo_key_type = "mobile"
-    dbo_fields = template_fields + ("instance_class", "world_max")
+
     instance_class = ".".join([Mobile.__module__, Mobile.__name__]) #@UndefinedVariable
   
     def __init__(self, dbo_id, title=None, desc=None, instance_class=None):
@@ -29,11 +28,11 @@ class MobileTemplate(RootDBO, Template):
         self.desc = desc
         if instance_class:
             self.instance_class = instance_class
-        self.level = 1
             
     def config_instance(self, instance):
+        self.mud.init_mobile(instance)
         instance.baptise(set())
- 
+
    
 class MobileReset(RootDBO):
     dbo_fields = "mobile_id", "mob_count", "mob_max"

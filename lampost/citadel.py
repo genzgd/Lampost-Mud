@@ -26,7 +26,9 @@ class ImmortalCitadel(Area):
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
         
-        self.mobiles.append(MobileTemplate("immortal_citadel:guard", "Citadel Guard", "The impassive, immaculate citadel guard"))
+        guard = MobileTemplate("immortal_citadel:guard", "Citadel Guard", "The impassive, immaculate citadel guard")
+        guard.level = 1
+        self.mobiles.append(guard)
         cube.mobile_resets.append(MobileReset("immortal_citadel:guard", 0, 7))
    
         

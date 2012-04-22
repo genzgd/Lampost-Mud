@@ -34,18 +34,26 @@ class BaseItem(RootDBO):
         self.target_id = parts[-1] 
         
     def register(self, event_type, callback):
-        self.registrations.add(self.dispatcher.register(event_type, callback))
+        registration = self.dispatcher.register(event_type, callback)
+        self.registrations.add(registration)
+        return registration
         
-    def unregister(self, event_type, callback):
+    def unregister_type(self, event_type, callback):
         detach_set = set()
         for reg in self.registrations:
             if reg.event_type == event_type and reg.callback == callback:
                 reg.detach()
                 detach_set.add(reg)
         self.registrations.difference_update(detach_set)
-                
+        
+    def unregister(self, registration):
+        registration.detach()
+        self.registrations.remove(registration)
+                 
     def register_p(self, freq, callback):
-        self.registrations.add(self.dispatcher.register_p(freq, callback))      
+        registration = self.dispatcher.register_p(freq, callback)
+        self.registrations.add(registration)
+        return registration      
         
     def short_desc(self, observer):
         return self.title

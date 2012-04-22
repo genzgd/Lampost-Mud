@@ -16,7 +16,7 @@ from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode
     FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob,\
     DeleteArea
 from lampost.merc.flavor import MercFlavor
-from mobile import MobileTemplate
+from mobile import MobileTemplate, Mobile
 from player import Player
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
@@ -35,13 +35,19 @@ class MudNature():
         
     def create(self, datastore):
         self.mud = Mud(datastore, self.dispatcher)
+        MobileTemplate.mud = self.mud
         Action.mud = self.mud
         self.citadel = ImmortalCitadel()
         self.mud.add_area(self.citadel)
         self.citadel.on_loaded()
         self.basic_soul.add(self.shout_channel)
+       
         
     def baptise(self, player):
+        
+        if not getattr(player, "mudflavor", None):
+            self.mud.init_player(player)
+        
         new_soul = self.basic_soul.copy()
        
         for cmd in IMM_COMMANDS:
@@ -62,6 +68,8 @@ class MudNature():
             player.register("debug", player.display_line)
             
         player.equip(set())
+        self.mud.enhance_player(player)
+
         player.enter_env(self.citadel.first_room)
        
 
@@ -80,7 +88,8 @@ class Mud():
             area_id = area_key.split(":")[1]
             area = datastore.load_object(Area, area_id)
             self.add_area(area)
-        self.flavor.apply_mobile(MobileTemplate)
+        self.flavor.apply_mobile(Mobile)
+        self.flavor.apply_mobile_template(MobileTemplate)
         self.flavor.apply_player(Player)
     
     def add_area(self, area):
@@ -90,4 +99,14 @@ class Mud():
         area_id = area_id.lower().split(" ")
         area_id = "_".join(area_id)
         return self.area_map.get(area_id)
+    
+    def init_player(self, player):
+        player.flavor = self.flavor.flavor
+        self.flavor.init_player(player)
+        
+    def enhance_player(self, player):
+        self.flavor.enhance_player(player)
+        
+    def init_mobile(self, mobile):
+        self.flavor.init_mobile(mobile)
         

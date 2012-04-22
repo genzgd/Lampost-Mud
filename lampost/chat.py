@@ -15,7 +15,7 @@ class TellAction(Action):
     def __init__(self):
         Action.__init__(self, ("tell", "t"))
     
-    def execute(self, source, verb, args, command):
+    def execute(self, source, verb, args, command, **ignored):
         if not args:
             return "Tell who?"  
         return self.tell_message(source, args[0], command.partition(args[0])[2][1:])

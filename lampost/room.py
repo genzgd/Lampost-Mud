@@ -75,20 +75,20 @@ class Room(RootDBO):
     
     def rec_entity_enters(self, source):          
         self.contents.append(source)
-        self.tell_contents("rec_entity_enter_env", source)
+        self.tell_contents("rec_entity_enter_env", source, source)
         source.entry_msg.source = source
-        self.rec_broadcast(source.entry_msg)
+        self.rec_broadcast(source.entry_msg, source)
         
     def rec_entity_leaves(self, source):
         self.contents.remove(source)
-        self.tell_contents("rec_entity_leave_env", source)
+        self.tell_contents("rec_entity_leave_env", source, source)
         source.exit_msg.source = source
-        self.rec_broadcast(source.exit_msg)
+        self.rec_broadcast(source.exit_msg, source)
     
-    def rec_broadcast(self, broadcast):
+    def rec_broadcast(self, broadcast, exclude=None):
         if broadcast.target == self:
             broadcast.target = None
-        self.tell_contents("rec_broadcast", broadcast)
+        self.tell_contents("rec_broadcast", exclude, broadcast)
         
     def rec_social(self):
         pass
@@ -120,7 +120,6 @@ class Room(RootDBO):
     def short_desc(self, observer, build_mode=False):
         return self.title
     
-  
     def short_exits(self):
         return ", ".join([ex.short_desc() for ex in self.exits])
     
@@ -129,8 +128,10 @@ class Room(RootDBO):
             if my_exit.direction == exit_dir:
                 return my_exit;
             
-    def tell_contents(self, msg_type, *args):
+    def tell_contents(self, msg_type, exclude, *args):
         for receiver in self.contents:
+            if receiver == exclude:
+                continue
             rec_method = getattr(receiver, msg_type, None)
             if rec_method:
                 rec_method(*args)

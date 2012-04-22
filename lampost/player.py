@@ -11,7 +11,7 @@ from datastore.dbo import RootDBO
 class Player(Creature, RootDBO):   
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room")
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor")
    
     imm_level = 0
       
@@ -48,10 +48,10 @@ class Player(Creature, RootDBO):
         broadcast = getattr(response, "broadcast", None)
         feedback = getattr(response, "feedback", None)
         if broadcast:
-            self.env.rec_broadcast(broadcast)
+            self.env.rec_broadcast(broadcast, broadcast.source)
             display = Display(broadcast.translate(self), broadcast.color)
             if feedback:
-                Display.merge(feedback)
+                feedback.merge(Display)
             else:
                 feedback = display
         try:
@@ -72,8 +72,7 @@ class Player(Creature, RootDBO):
         self.register(channel, self.display_channel)
         
     def rec_broadcast(self, broadcast):
-        if self != broadcast.source:
-            self.display_line(broadcast.translate(self), broadcast.color)
+        self.display_line(broadcast.translate(self), broadcast.color)
     
     def die(self):
         pass

@@ -212,7 +212,7 @@ class UnregisterDisplay(Action):
         self.imm_level = IMM_LEVELS["creator"]
     
     def execute(self, source, args, **ignored):
-        source.unregister(args[0], source.display_line)
+        source.unregister_type(args[0], source.display_line)
                    
 class DeletePlayer(Action):
     def __init__(self):
@@ -255,7 +255,7 @@ class Describe(Action):
             target = self.datastore.load_cached(args[0])
         if not target:
             return "No object with that key found"
-        display = Display("&nbsp")
+        display = Display("&nbsp;")
         for line in target.describe():
             display.append(DisplayLine(line))
         return display

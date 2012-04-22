@@ -6,6 +6,7 @@ Created on Feb 17, 2012
 from random import randint
 MAX_PULSE_QUEUE = 100;
 PULSE_TIME = .25;
+PULSES_PER_SECOND = int(1 / PULSE_TIME)
 
 class PulseKey():
     def __init__(self, freq, next_loc):
@@ -54,7 +55,10 @@ class Dispatcher:
                 except AttributeError:
                     return
                 del self.pulse_events[pulse_key]
-                self.pulse_queue[pulse_key.next_loc].remove(event_type)              
+                try:
+                    self.pulse_queue[pulse_key.next_loc].remove(event_type)
+                except KeyError:
+                    pass #  If we're being removed during the dispatch of ourselves, this will be empty            
         else:
             self.dispatch("debug", "Attempt to unregister {0} with registration".format(str(event_type)))
                     
