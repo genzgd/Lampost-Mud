@@ -25,8 +25,7 @@ class MercFlavor():
         player.max_health = 20
         player.health = 20
         player.experience = 0
-        
-        
+               
     def enhance_player(self, player):
         player.enhance_soul(soul)
         

@@ -28,8 +28,8 @@ class Exit(RootDBO):
     def dir_name(self, value):
         self.direction = Direction.ref_map[value]
               
-    def short_desc(self, build_mode=False):
-        if build_mode:
+    def short_desc(self, observer=None):
+        if observer and observer.build_mode:
             return "{0}   {1}".format(self.direction.desc, self.destination.dbo_id)
         else:
             return self.direction.desc
@@ -97,16 +97,18 @@ class Room(RootDBO):
     def children(self):
         return self.contents + self.exits
                     
-    def long_desc(self, observer, build_mode=False):
-        longdesc = Display(Room.ROOM_SEP, Room.ROOM_COLOR)
-        if build_mode:
-            longdesc.append(DisplayLine("Room Id: " + self.dbo_id))
+    def long_desc(self, observer):
+        short_desc = self.short_desc(observer)
+        if observer and observer.build_mode:
+            short_desc = "{0} [{1}]".format(short_desc, self.dbo_id)
+        longdesc = Display(short_desc, 0x6b306b) 
+        longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
         longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
         longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
         if self.exits:
-            if build_mode:
+            if observer.build_mode:
                 for my_exit in self.exits:
-                    longdesc.append(DisplayLine("Exit: {0} ".format(my_exit.short_desc(build_mode)), Room.EXIT_COLOR))
+                    longdesc.append(DisplayLine("Exit: {0} ".format(my_exit.short_desc(observer)), Room.EXIT_COLOR))
             else:
                 longdesc.append(DisplayLine("Obvious exits are: " + self.short_exits(),  Room.EXIT_COLOR))
         else:
@@ -117,7 +119,7 @@ class Room(RootDBO):
                 longdesc.append(DisplayLine(obj.short_desc(observer), Room.ITEM_COLOR))
         return longdesc
         
-    def short_desc(self, observer, build_mode=False):
+    def short_desc(self, observer):
         return self.title
     
     def short_exits(self):

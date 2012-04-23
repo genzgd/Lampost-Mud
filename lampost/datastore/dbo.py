@@ -54,7 +54,7 @@ class RootDBO(object):
         display = []
         
         def append(key, value):
-            display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;"  + str(value))
+            display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;"  + unicode(value))
         
         if self.dbo_id:
             append("key", self.dbo_key)

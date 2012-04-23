@@ -57,7 +57,8 @@ class Entity(BaseItem):
             return
         if self.target_map.get(target):  #Should not happen
             debug("Trying to add " + str(target_id) + " more than once")
-            return    
+            return
+                
         target_id = target_id.lower()
         prefixes = list(target.prefixes)
         if parent == self.env:

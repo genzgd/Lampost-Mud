@@ -35,14 +35,12 @@ class MudNature():
         
     def create(self, datastore):
         self.mud = Mud(datastore, self.dispatcher)
-        MobileTemplate.mud = self.mud
         Action.mud = self.mud
         self.citadel = ImmortalCitadel()
         self.mud.add_area(self.citadel)
         self.citadel.on_loaded()
         self.basic_soul.add(self.shout_channel)
-       
-        
+              
     def baptise(self, player):
         
         if not getattr(player, "mudflavor", None):
@@ -62,6 +60,7 @@ class MudNature():
         
         if player.imm_level:
             player.register_channel(self.imm_channel)
+            player.build_mode = True
             
         if player.imm_level == IMM_LEVELS["supreme"]:
             player.register("db_log", player.display_line)
@@ -80,17 +79,19 @@ class MudSoul():
 
 class Mud():
     def __init__(self, datastore, dispatcher):
-        Area.dispatcher = dispatcher
-        self.area_map = {}
+        MobileTemplate.mud = self
         self.flavor = MercFlavor()
+        self.flavor.apply_mobile(Mobile)
+        self.flavor.apply_mobile_template(MobileTemplate)
+        self.flavor.apply_player(Player)
+     
+        Area.dispatcher = dispatcher
+        self.area_map = {}  
         area_keys = datastore.fetch_set_keys("areas")
         for area_key in area_keys:
             area_id = area_key.split(":")[1]
             area = datastore.load_object(Area, area_id)
             self.add_area(area)
-        self.flavor.apply_mobile(Mobile)
-        self.flavor.apply_mobile_template(MobileTemplate)
-        self.flavor.apply_player(Player)
     
     def add_area(self, area):
         self.area_map[area.dbo_id] = area

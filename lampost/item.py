@@ -5,6 +5,10 @@ Created on Mar 11, 2012
 '''
 from datastore.dbo import RootDBO
 
+class ItemExtra(RootDBO):
+    dbo_fields = "target_ids", "desc"
+
+
 class BaseItem(RootDBO):
     dbo_fields = "desc", "title"
     desc = ""

@@ -4,22 +4,20 @@ function ActionLMModule (root) {
 	if (lmapp.dialogCount == 0) {
 		actionInput.focus();
 	}
-	actionInput.keydown(function (event) {
-		if (event.which == 13) {
-			event.preventDefault();
-			event.stopPropagation();
-			event.stopImmediatePropagation();
-			sendAction(event);
-			return false;
-		}
-		return true;
-	});
+	actionInput.keydown(sendAction);
 	
 	function refocus(data) {
 		actionInput.focus();
 	};
 
 	function sendAction(event) {
+		if (event.which != 13) {
+			return true;
+		}
+		event.preventDefault();
+		event.stopPropagation();
+		event.stopImmediatePropagation();
+		
 		var action = actionInput.val();
 		if (action) {
 			lmdp.dispatch("default_line", ">" + action);

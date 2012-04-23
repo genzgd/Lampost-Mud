@@ -4,8 +4,8 @@ Created on Apr 13, 2012
 @author: Geoff
 '''
 from creature import Creature
-from datastore.dbo import RootDBO
-from coreobj.template import Template
+from lampost.datastore.dbo import RootDBO
+from lampost.coreobj.template import Template
 
 class Mobile(Creature):    
     def __init__(self, mobile_id):

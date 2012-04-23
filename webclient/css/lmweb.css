@@ -7,12 +7,15 @@ html, body {
 	height: 100%;
 }
 
-.wrapper {
-	height: 100%;
-}
-
 td {
 	overflow: hidden;
+}
+
+.boxsizingBorder {
+    box-sizing: border-box;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
 }
 
 .no-close .ui-dialog-titlebar-close {display: none }

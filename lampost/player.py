@@ -14,6 +14,7 @@ class Player(Creature, RootDBO):
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor")
    
     imm_level = 0
+    build_mode = False
       
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id.lower()

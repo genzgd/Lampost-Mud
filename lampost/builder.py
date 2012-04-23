@@ -23,9 +23,9 @@ class BuildMode(Action):
         Action.__init__(self, "buildmode")
         
     def execute(self, source, **ignored):
-        current = getattr(source, "buildmode", False)
-        source.buildmode = not current
-        return "Build Mode is {0}".format("On" if source.buildmode else "Off")
+        current = getattr(source, "build_mode", False)
+        source.build_mode = not current
+        return "Build Mode is {0}".format("On" if source.build_mode else "Off")
 
 
 class RoomList(Action):
@@ -363,6 +363,8 @@ class Dig(DirectionAction):
             if new_room.find_exit(new_dir.rev_dir):
                 raise BuildError("The other room already has a {0} exit".format(new_dir.rev_key))
         else:
+            if len(args) > 1:
+                raise BuildError("Other room not found")
             new_room = Room(area.dbo_id + ":" + str(area.next_room_id), desc, desc)
             new_area = area
             new_area.rooms.append(new_room)
