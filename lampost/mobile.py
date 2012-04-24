@@ -18,8 +18,8 @@ class Mobile(Creature):
      
 class MobileTemplate(RootDBO, Template):
     dbo_key_type = "mobile"
-
     instance_class = ".".join([Mobile.__module__, Mobile.__name__]) #@UndefinedVariable
+    aliases= []
   
     def __init__(self, dbo_id, title=None, desc=None, instance_class=None):
         self.dbo_id = dbo_id

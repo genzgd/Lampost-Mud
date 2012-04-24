@@ -5,17 +5,14 @@ Created on Mar 11, 2012
 '''
 from datastore.dbo import RootDBO
 
-class ItemExtra(RootDBO):
-    dbo_fields = "target_ids", "desc"
-
-
 class BaseItem(RootDBO):
-    dbo_fields = "desc", "title"
+    dbo_fields = "desc", "title", "aliases"
+    
     desc = ""
-    prefixes = []
     suffix = None
     title = ""
     sex = "none"
+    aliases = []
 
     def rec_social(self, source, **ignored):
         pass
@@ -33,9 +30,7 @@ class BaseItem(RootDBO):
         self.config_targets()
         
     def config_targets(self):
-        parts = self.title.lower().split(" ")
-        self.prefixes = tuple(parts[:-1])
-        self.target_id = parts[-1] 
+        self.target_id = tuple(self.title.lower().split(" "))
         
     def register(self, event_type, callback):
         registration = self.dispatcher.register(event_type, callback)
@@ -64,4 +59,5 @@ class BaseItem(RootDBO):
            
     def long_desc(self, observer):
         return self.desc if self.desc else self.title
+        
         

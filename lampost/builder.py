@@ -7,12 +7,13 @@ from immortal import IMM_LEVELS
 from movement import Direction
 from player import Player
 from room import Room, Exit
-from lmutil import ljust
-from dto.display import Display, DisplayLine
+from lmutil import ljust, find_extra
+from lampost.dto.display import Display, DisplayLine
 from dialog import Dialog, DIALOG_TYPE_CONFIRM
 from action import Action
 from mobile import MobileTemplate, MobileReset
 from area import Area
+from item import BaseItem
 
 BUILD_ROOM = Room("buildroom")
 
@@ -237,8 +238,51 @@ class BuildAction(Action):
     def find_target(self, builder, args):
         key_data = builder.target_key_map.get(args)
         if key_data and len(key_data) == 1:
-            return key_data[0]  
-
+            return key_data[0]
+            
+class AddExtra(Action):
+    def __init__(self):
+        Action.__init__(self, "addextra")
+        
+    def execute(self, source, verb, args, command, **ignored):
+        try:
+            check_room(source, source.env)
+        except BuildError as exp:
+            return exp.msg
+            
+        if not args:
+            return "Set title to what?"
+        extra = BaseItem()
+        extra.desc = find_extra(verb, 1, command)
+        if not extra.desc:
+            return "Description required"
+        extra.title = args[0]
+        extra.on_loaded()
+        source.clear_all()
+        source.env.extras.append(extra)
+        self.save_object(source.env, True)
+        source.refresh_all() 
+        return extra.title + " added to room."
+        
+        
+class DelExtra(Action):
+    def __init__(self):
+        Action.__init__(self, "delextra", "examine")
+        
+    def execute(self, source, target, **ignored):
+        try:
+            check_room(source, source.env)
+        except BuildError as exp:
+            return exp.msg
+        if not target in source.env.extras:
+            return target.target_id + " not part of room."
+        source.clear_all()
+        source.env.extras.remove(target)
+        self.save_object(source.env, True)
+        source.refresh_all()
+        return target.title + " removed from room" 
+    
+    
 class AddMob(BuildAction):
     def __init__(self):
         Action.__init__(self, "addmob")

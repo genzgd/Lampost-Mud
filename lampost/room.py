@@ -7,6 +7,7 @@ from dto.display import Display, DisplayLine
 from datastore.dbo import RootDBO, DBORef
 from movement import Direction
 from mobile import MobileReset
+from item import BaseItem
 
 
 class Exit(RootDBO):
@@ -47,7 +48,7 @@ class Room(RootDBO):
     
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev"
-    dbo_collections = DBORef("exits", Exit), DBORef("mobile_resets", MobileReset)
+    dbo_collections = DBORef("exits", Exit), DBORef("extras", BaseItem), DBORef("mobile_resets", MobileReset)
     
     dbo_rev = 0 
  
@@ -58,6 +59,7 @@ class Room(RootDBO):
         self.contents = []
         self.exits = []
         self.mobile_resets = []
+        self.extras = []
     
     @property
     def room_id(self):
@@ -95,7 +97,7 @@ class Room(RootDBO):
 
     @property
     def children(self):
-        return self.contents + self.exits
+        return self.contents + self.exits + self.extras
                     
     def long_desc(self, observer):
         short_desc = self.short_desc(observer)

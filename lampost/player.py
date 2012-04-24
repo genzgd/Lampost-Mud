@@ -18,7 +18,7 @@ class Player(Creature, RootDBO):
       
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id.lower()
-        self.target_id = self.dbo_id
+        self.target_id = self.dbo_id,
         self.name = dbo_id.capitalize()
         self.last_tell = None
         
@@ -48,6 +48,8 @@ class Player(Creature, RootDBO):
             return response
         broadcast = getattr(response, "broadcast", None)
         feedback = getattr(response, "feedback", None)
+        if isinstance(feedback, basestring):
+            feedback = Display(feedback)
         if broadcast:
             self.env.rec_broadcast(broadcast, broadcast.source)
             display = Display(broadcast.translate(self), broadcast.color)

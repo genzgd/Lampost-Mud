@@ -10,18 +10,26 @@ from room import Room, Exit
 from movement import UP, DOWN
 from mobile import MobileTemplate, MobileReset
 from broadcast import SingleBroadcast
+from item import BaseItem
 
 class ImmortalCitadel(Area):
     def __init__(self):
         Area.__init__(self, "immortal_citadel")
         self.name = "Immortal Citadel"
         self.owner_id = "MUD"
-        cube = Room("immortal_citadel:0", "A White Cube", "A perfect white cube, about 30 feet on a side")
+        cube = Room("immortal_citadel:0", "A White Cube", "A perfect white cube, about 30 feet on a side.  It has a single blemish.")
         sphere = Room("immortal_citadel:1", "A Silver Sphere", "A perfect silver sphere, with a radius of about 30 feet")
         cube.exits.append(Exit(UP, sphere))
+        blemish = BaseItem()
+        blemish.title = "blemish"
+        blemish.desc = "It's nothing, just a speck of imperfection. A bit of dust. Quit obsessing."
+        blemish.aliases = [("speck",), ("dust",)]
+        blemish.config_targets();
+        cube.extras.append(blemish)
         sphere.exits.append(Exit(DOWN, cube))
         self.rooms.append(cube)
         self.rooms.append(sphere)
+        
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())
         sphere.contents.append(MusicBox())

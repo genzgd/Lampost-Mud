@@ -13,7 +13,7 @@ from dto.rootdto import RootDTO
 from dto.display import Display, DisplayLine
 from area import Area
 from room import Room
-from lmutil import ljust, extra, patch_object, PatchError
+from lmutil import ljust, find_extra, patch_object, PatchError
 from broadcast import SingleBroadcast
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
@@ -38,7 +38,7 @@ class PatchTarget(Action):
             split_ix = args.index(":")
             target_id = args[:split_ix]
             prop = args[split_ix + 1]
-            new_value =  extra(verb, split_ix + 2, command)
+            new_value =  find_extra(verb, split_ix + 2, command)
         except (ValueError, IndexError):
             return "Syntax -- 'patch [target] [:] [prop_name] [new_value]'"
         target_list = list(source.matching_targets(target_id, "__dict__"))
@@ -78,7 +78,7 @@ class PatchDB(Action):
         if len(args) == 2:
             return "Property name required."
         prop = args[2]
-        new_value = extra(verb, 3, command)
+        new_value = find_extra(verb, 3, command)
         if not new_value:
             return "Value required."
         if new_value == "None":

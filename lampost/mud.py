@@ -14,7 +14,7 @@ from area import Area
 from chat import TellAction, ReplyAction, SayAction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob,\
-    DeleteArea
+    DeleteArea, AddExtra, DelExtra
 from lampost.merc.flavor import MercFlavor
 from mobile import MobileTemplate, Mobile
 from player import Player
@@ -23,7 +23,7 @@ IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToA
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
     BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
-    DelMob(), DeleteArea, PatchTarget(), PatchDB()
+    DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra()
 
 class MudNature():
     

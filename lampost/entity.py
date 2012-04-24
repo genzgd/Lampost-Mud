@@ -15,14 +15,14 @@ class Entity(BaseItem):
       
     def baptise(self, soul):
         self.registrations = set()
-        self.soul = soul        
-        self.target_map = {}
-        self.target_key_map = {}
-        self.actions = {}
-        self.add_target_keys([(self.target_id,)], self) 
-        for action in soul:
-            self.add_action(action)
+        self.soul = soul
+        self.clear_all()
+        self.refresh_soul()
         
+    def refresh_soul(self):
+        for action in self.soul:
+            self.add_action(action)
+  
     def equip(self, inven):
         self.inven = inven
         for action in inven:
@@ -56,16 +56,20 @@ class Entity(BaseItem):
         except AttributeError:
             return
         if self.target_map.get(target):  #Should not happen
-            debug("Trying to add " + str(target_id) + " more than once")
+            debug("Trying to add " + unicode(target_id) + " more than once")
             return
-                
-        target_id = target_id.lower()
-        prefixes = list(target.prefixes)
+        self.add_target_key_set(target, target_id, parent)
+        for target_id in getattr(target, "aliases", []):
+            self.add_target_key_set(target, target_id, parent)
+            
+    def add_target_key_set(self, target, target_id, parent):
         if parent == self.env:
-            prefixes.insert(0, "the")
+            prefix = "the",
         elif parent == self.inven:
-            prefixes.insert(0, "my")
-        target_keys = list(self.gen_ids(prefixes, target_id))
+            prefix = "my"
+        else:
+            prefix = ()
+        target_keys = list(self.gen_ids(prefix + target_id))
         self.add_target_keys(target_keys, target)
     
     
@@ -84,14 +88,15 @@ class Entity(BaseItem):
                 self.target_key_map[target_key] = [target]
             
 
-    def gen_ids(self, prefixes, target_id):
-        pcnt = len(prefixes)
+    def gen_ids(self, target_id):
+        pcnt = len(target_id) - 1
+        target = target_id[pcnt],
         for x in range(0, int(math.pow(2, pcnt))):
             next_prefix = []
             for y in range(0, pcnt):
                 if int(math.pow(2, y)) & x:
-                    next_prefix.append(prefixes[y])
-            yield tuple(next_prefix) + (target_id,)
+                    next_prefix.append(target_id[y])
+            yield tuple(next_prefix) + target
             
     def remove_targets(self, target):
         self.remove_target(target)
@@ -142,16 +147,17 @@ class Entity(BaseItem):
         self.remove_action(provider)
         for child_provider in getattr(provider, "children", []):
             self.remove_action(child_provider)
-       
-            
+             
     def remove_action(self, provider):
         for verb in getattr(provider, "verbs", []):
-            bucket = self.actions.get(verb)
-            bucket.remove(provider)
-            if len(bucket) == 0:
-                del self.actions[verb]
-        
-            
+            bucket = self.actions.get(verb, None)
+            if bucket:
+                bucket.remove(provider)
+                if len(bucket) == 0:
+                    del self.actions[verb]
+            else:
+                debug("Removing action " + unicode(verb) + " that does not exist from " + self.short_desc(self))
+          
     def parse_command(self, command):
         words = tuple(command.lower().split())
         matches = list(self.match_actions(words))
@@ -184,9 +190,7 @@ class Entity(BaseItem):
             if target_method:
                 yield target, target_method
                       
-    def refresh_env(self):
-        self.change_env(self.env)
-        
+         
     def change_env(self, new_env):
         self.leave_env()
         self.enter_env(new_env)
@@ -203,6 +207,17 @@ class Entity(BaseItem):
         self.add_actions(new_env)      
         self.add_targets(new_env)
         self.env.rec_entity_enters(self)
+        
+    def clear_all(self):
+        self.target_map = {}
+        self.target_key_map = {}
+        self.actions = {}
+        self.add_target_keys([self.target_id], self) 
+        
+    def refresh_all(self):
+        self.refresh_soul()
+        self.equip(self.inven)
+        self.enter_env(self.env);
             
     def detach(self):
         self.env = None
