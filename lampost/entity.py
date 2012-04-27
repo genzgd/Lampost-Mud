@@ -7,6 +7,7 @@ import math
 from lampost.coreobj.lmlog import debug
 from item import BaseItem
 from broadcast import Broadcast
+import sys
 
 class Entity(BaseItem):
     env = None
@@ -217,12 +218,17 @@ class Entity(BaseItem):
     def refresh_all(self):
         self.refresh_soul()
         self.equip(self.inven)
-        self.enter_env(self.env);
+        self.change_env(self.env);
             
     def detach(self):
         self.env = None
+        if getattr(self, "detached", None):
+            sys.stderr.write("Calling detached a second time")
+            return
         for registration in self.registrations:
             registration.detach()
+        self.registrations.clear()
+        self.detached = True
             
     def broadcast(self, broadcast):
         pass

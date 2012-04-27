@@ -4,6 +4,8 @@ Created on Feb 17, 2012
 @author: Geoff
 '''
 from random import randint
+from lampost.coreobj.lmlog import error
+ 
 MAX_PULSE_QUEUE = 100;
 PULSE_TIME = .25;
 PULSES_PER_SECOND = int(1 / PULSE_TIME)
@@ -24,6 +26,9 @@ class PulseEvent():
     def __init__(self, freq, pulse_key):
         self.freq = freq
         self.pulse_key = pulse_key
+        
+    def __str__(self):
+        return "freq: " + self.freq + " next_loc: " + self.pulse_key.next_loc
                      
 class Dispatcher:
     def __init__(self):
@@ -47,7 +52,10 @@ class Dispatcher:
         event_type = registration.event_type
         event_registrations = self.registrations.get(event_type)
         if (event_registrations):
-            event_registrations.remove(registration)
+            try:
+                event_registrations.remove(registration)
+            except KeyError:
+                error("No registration found for " + str(event_type))
             if not event_registrations:
                 del self.registrations[event_type]
                 try:
@@ -78,7 +86,10 @@ class Dispatcher:
         active_events = events.copy()
         events.clear();
         for event in active_events:
-            self.dispatch(event)
+            try:
+                self.dispatch(event)
+            except:
+                error("Error processing event " + str(event))
             try:
                 del self.pulse_events[event.pulse_key]
                 next_loc = (self.pulse_loc + event.freq) % MAX_PULSE_QUEUE

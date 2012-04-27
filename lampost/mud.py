@@ -14,7 +14,7 @@ from area import Area
 from chat import TellAction, ReplyAction, SayAction
 from builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob,\
-    DeleteArea, AddExtra, DelExtra
+    DeleteArea, AddExtra, DelExtra, CreateRoom
 from lampost.merc.flavor import MercFlavor
 from mobile import MobileTemplate, Mobile
 from player import Player
@@ -23,7 +23,7 @@ IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToA
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
     BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
-    DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra()
+    DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra(), CreateRoom()
 
 class MudNature():
     
@@ -65,6 +65,7 @@ class MudNature():
         if player.imm_level == IMM_LEVELS["supreme"]:
             player.register("db_log", player.display_line)
             player.register("debug", player.display_line)
+            player.register("error", player.display_line)
             
         player.equip(set())
         self.mud.enhance_player(player)

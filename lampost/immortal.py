@@ -62,7 +62,6 @@ class PatchTarget(Action):
             return exp.message
         return "Object successfully patched"
         
-        
 class PatchDB(Action):
     def __init__(self):
         Action.__init__(self, "patchdb")

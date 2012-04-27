@@ -243,6 +243,7 @@ class BuildAction(Action):
 class AddExtra(Action):
     def __init__(self):
         Action.__init__(self, "addextra")
+        self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, verb, args, command, **ignored):
         try:
@@ -268,6 +269,7 @@ class AddExtra(Action):
 class DelExtra(Action):
     def __init__(self):
         Action.__init__(self, "delextra", "examine")
+        self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, target, **ignored):
         try:
@@ -342,8 +344,38 @@ class ResetRoom(Action):
         source.env.reset(area)
         return "Room reset"
 
+class CreateRoom(Action):
+    def __init__(self):
+        Action.__init__(self, "createroom")
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, verb, args, command, **ignored):
+        if not args:
+            return "Room id must be specified for create"
+        if ":" in args[0]:
+            area_id, room_id = tuple(args[0].split(":"))
+        else:
+            area_id = source.env.area_id
+            room_id = args[0]
+        try:
+            area = check_area(source, area_id)
+        except BuildError as exp:
+            return exp.msg
+        if len(args) > 1:
+            title = find_extra(verb, 1, command)
+        else:
+            title = "Area " + area_id + " room " + room_id
+        room = Room(area_id + ":" + room_id, title, title)
+        self.save_object(room)
+        area.rooms.append(room)
+        self.save_object(area)
+        source.change_env(room)
+        return source.parse("look")
+            
+
 class DelRoom(Action):
     def __init__(self):
+        self.imm_level = IMM_LEVELS["creator"]
         Action.__init__(self, "delroom")
         
     def execute(self, source, args, **ignored):
