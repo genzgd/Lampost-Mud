@@ -6,7 +6,7 @@ Created on Feb 25, 2012
 from lampost.action.action import Action, HelpAction
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
-from lampost.action.emote import Emotes
+from lampost.action.emote import Emotes, Socials
 from lampost.immortal.immortal import CreatePlayer, DeletePlayer, CreateArea,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
     ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
@@ -76,7 +76,7 @@ class MudNature():
 
 class MudSoul():
     look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction())) 
+    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(), Socials())) 
     
 
 class Mud():

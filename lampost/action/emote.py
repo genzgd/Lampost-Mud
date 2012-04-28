@@ -91,3 +91,10 @@ class Emotes(Action):
         broadcast_map = EMOTES[verb[0]]
         return Broadcast(broadcast_map, source, target)
         
+class Socials(Action):
+    def __init__(self):
+        Action.__init__(self, "socials")
+        
+    def execute(self, **ignored):
+        return " ".join(sorted(EMOTES.keys()))
+        
