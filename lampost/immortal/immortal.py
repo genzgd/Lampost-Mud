@@ -147,6 +147,8 @@ class SetHome(Action):
         source.home_room = source.env.dbo_id
 
 def goto_room(player, room_id):
+    if not ":" in room_id:
+        room_id = ":".join([player.env.area_id, room_id])
     room = Action.mud.find_room(room_id) #@UndefinedVariable
     if not room:
         return "Cannot find room " + room_id

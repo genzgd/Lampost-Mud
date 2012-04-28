@@ -135,7 +135,10 @@ class Mud():
             return None
                 
     def start_player(self, player):
-        room = self.find_room(player.room_id)
+        if getattr(player, "room_id", None):
+            room = self.find_room(player.room_id)
+        else:
+            room = None
         if not room:
             room = self.find_room(self.config.start_room)
         if not room:

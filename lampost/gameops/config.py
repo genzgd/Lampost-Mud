@@ -11,5 +11,5 @@ class Config(RootDBO):
     dbo_fields = "start_room", 
     start_room = "immortal_citadel:0"
     
-    def __init__(self, config_id):
+    def __init__(self, config_id = "config"):
         pass
