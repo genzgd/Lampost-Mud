@@ -23,7 +23,7 @@ class ImmortalCitadel(Area):
         blemish = BaseItem()
         blemish.title = "blemish"
         blemish.desc = "It's nothing, just a speck of imperfection. A bit of dust. Quit obsessing."
-        blemish.aliases = [("speck",), ("dust",)]
+        blemish.aliases = ["speck", "dust"]
         blemish.config_targets();
         cube.extras.append(blemish)
         sphere.exits.append(Exit(DOWN, cube))

@@ -60,8 +60,9 @@ class Entity(BaseItem):
         if self.target_map.get(target):  #Should not happen
             debug("Trying to add " + unicode(target_id) + " more than once")
             return
+        self.target_map[target] = []
         self.add_target_key_set(target, target_id, parent)
-        for target_id in getattr(target, "aliases", []):
+        for target_id in getattr(target, "target_aliases", []):
             self.add_target_key_set(target, target_id, parent)
             
     def add_target_key_set(self, target, target_id, parent):
@@ -76,7 +77,6 @@ class Entity(BaseItem):
     
     
     def add_target_keys(self, target_keys, target):
-        self.target_map[target] = []
         for target_key in target_keys:
             self.target_map[target].append(target_key)
             key_data = self.target_key_map.get(target_key)
@@ -161,36 +161,55 @@ class Entity(BaseItem):
                 debug("Removing action " + unicode(verb) + " that does not exist from " + self.short_desc(self))
           
     def parse_command(self, command):
-        words = tuple(command.lower().split())
+        words = command.lower().split()
         matches = list(self.match_actions(words))
         if not matches:
             return None, None
         if len(matches) > 1:
             return matches, None    
-        action, verb, args, target, target_method = matches[0]
+        action, verb, args, target, target_method, obj, obj_method = matches[0]
         return matches, action.execute(source=self, target=target, verb=verb, args=args,
-            target_method=target_method, command=command)
+            target_method=target_method, command=command, obj=obj, obj_method=obj_method)
   
               
     def match_actions(self, words):
         for verb_size in range(1, len(words) + 1):
-            verb = words[:verb_size]
+            verb = tuple(words[:verb_size])
             args = words[verb_size:]    
             for action in self.actions.get(verb, []):
                 msg_class = getattr(action, "msg_class", None)
-                fixed_targets = getattr(action, "fixed_targets", None)
-                if msg_class:           
-                    for target, target_method in self.matching_targets(args, msg_class):
-                        if not fixed_targets or target in fixed_targets:
-                            yield action, verb, args, target, target_method
+                if not msg_class:
+                    yield action, verb, tuple(args), action, None, None, None
+                    continue 
+                if action.prep:
+                    try:
+                        prep_loc = args.index(action.prep)
+                    except ValueError:
+                        continue
+                    obj_args = tuple(args[(prep_loc + 1):])
+                    args = tuple(args[:prep_loc])
+                    obj_msg_class = getattr(action, "obj_msg_class", None)
                 else:
-                    yield action, verb, args, action, None
+                    args = tuple(args)
+                    obj_args = None
+                fixed_targets = getattr(action, "fixed_targets", None)
+                for target, target_method in self.matching_targets(args, msg_class):
+                    if not fixed_targets or target in fixed_targets:
+                        if obj_args:
+                            if not obj_msg_class:
+                                yield action, verb, args, target, target_method, obj_args, None
+                                continue
+                            for obj, obj_method in self.matching_targets(args, obj_msg_class):
+                                yield action, verb, args, target, target_method, obj, obj_method
+                        else:
+                            yield action, verb, args, target, target_method, None, None
                             
     def matching_targets(self, target_args, msg_class):
-        for target in self.target_key_map.get(target_args, []) if target_args else [self.env]:
-            target_method = target_method = getattr(target, msg_class, None)
-            if target_method:
-                yield target, target_method
+        target_list = self.target_key_map.get(target_args, []) if target_args else [self.env]
+        if target_list:
+            target_method = getattr(target_list[0], msg_class, None)
+            if target_method != None:
+                yield target_list[0], target_method
                       
          
     def change_env(self, new_env):
@@ -214,6 +233,7 @@ class Entity(BaseItem):
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
+        self.target_map[self] = []
         self.add_target_keys([self.target_id], self) 
         
     def refresh_all(self):

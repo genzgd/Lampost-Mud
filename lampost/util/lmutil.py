@@ -21,6 +21,10 @@ def find_nth(haystack, needle, n):
         n -= 1
     return start
     
+def find_extra_prep(prep, command):
+    start_ix = find_nth(command, prep, 1)
+    return command[start_ix + len(prep) + 1:]
+    
 def find_extra(verb, used_args, command):
     verb_len = len(verb)
     try:

@@ -13,6 +13,7 @@ class BaseItem(RootDBO):
     title = ""
     sex = "none"
     aliases = []
+    target_aliases = []
 
     def rec_social(self, source, **ignored):
         pass
@@ -31,6 +32,10 @@ class BaseItem(RootDBO):
         
     def config_targets(self):
         self.target_id = tuple(self.title.lower().split(" "))
+        if not self.aliases:
+            return
+        self.target_aliases = [tuple(alias.split(" ")) for alias in self.aliases]
+
         
     def register(self, event_type, callback):
         registration = self.dispatcher.register(event_type, callback)

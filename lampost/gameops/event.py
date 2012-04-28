@@ -28,7 +28,7 @@ class PulseEvent():
         self.pulse_key = pulse_key
         
     def __str__(self):
-        return "freq: " + self.freq + " next_loc: " + self.pulse_key.next_loc
+        return "freq: " + str(self.freq) + " next_loc: " + str(self.pulse_key.next_loc)
                      
 class Dispatcher:
     def __init__(self):

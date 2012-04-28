@@ -13,8 +13,8 @@ from lampost.env.room import Room
 from lampost.mud.area import Area
 from lampost.player.player import Player
 from lampost.util.lmutil import ljust, find_extra, patch_object, PatchError
-import string
 
+import string
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000} 
 
@@ -28,6 +28,29 @@ class ListCommands(Action):
         verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in soul_actions]
         return ", ".join(sorted(verb_lists))
 
+class AllPlayers(Action):
+    def __init__(self):
+        Action.__init__(self, "allplayers")
+        self.imm_level = IMM_LEVELS["admin"]
+        
+    def execute(self, **ignored):
+        player_keys = self.datastore.fetch_set_keys("players")
+        return " ".join([player.split(":")[1] for player in player_keys])
+
+class GotoPlayer(Action):
+    def __init__(self):
+        Action.__init__(self, ("goto player", "gplayer"))
+        self.imm_level = IMM_LEVELS["creator"]
+        
+    def execute(self, source, args, **ignored):
+        if not args:
+            return "player name required"
+        session = Context.instance.sm.player_session_map.get(args[0]) #@UndefinedVariable
+        if not session:
+            return "Cannot find " + args[0]
+        source.change_env(session.player.env)
+        return source.parse("look")
+        
 class PatchTarget(Action):
     def __init__(self):
         Action.__init__(self, "patch")
@@ -124,21 +147,12 @@ class SetHome(Action):
         source.home_room = source.env.dbo_id
 
 def goto_room(player, room_id):
-        if not ":" in room_id:
-            room_id = ":".join([player.env.area_id, room_id])
-        area_id = room_id.split(":")[0]
+    room = Action.mud.find_room(room_id) #@UndefinedVariable
+    if not room:
+        return "Cannot find room " + room_id
+    player.change_env(room)
+    return player.parse("look")
 
-        try:
-            area = Action.mud.get_area(area_id) #@UndefinedVariable
-            room = area.get_room(room_id)
-            if not room:
-                return "No such room in " + area.name
-        except:
-            return "Cannot find room " + room_id
-        player.change_env(room)
-        return player.parse("look")
-
-    
 class GotoRoom(Action):
     def __init__(self):
         Action.__init__(self, "goto room")

@@ -34,8 +34,9 @@ class Broadcast(object):
         self.broadcast = self
         
     def translate(self, observer):
-        if not self.target and not self.source:
-            return self.substitute('s')
+        if not self.target:
+            if not self.source or self.source == observer:
+                return self.substitute('s')
         if self.target == self.source:
             if self.source == observer:
                 return self.substitute('sf')

@@ -10,8 +10,6 @@ from lampost.mobile.mobile import MobileTemplate
 from lampost.util.lmlog import debug
 from random import randint
 
-
-
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"

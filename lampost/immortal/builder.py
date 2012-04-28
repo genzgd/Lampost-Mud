@@ -7,7 +7,7 @@ from immortal import IMM_LEVELS
 from lampost.env.movement import Direction
 from lampost.player.player import Player
 from lampost.env.room import Room, Exit
-from lampost.util.lmutil import ljust, find_extra
+from lampost.util.lmutil import ljust, find_extra, find_extra_prep
 from lampost.dto.display import Display, DisplayLine
 from lampost.client.dialog import Dialog, DIALOG_TYPE_CONFIRM
 from lampost.action.action import Action
@@ -228,7 +228,7 @@ class BuildAction(Action):
         finally:
             if source.env == BUILD_ROOM:
                 if room.dbo_rev == -1:
-                    source.change_env(source.home_room)
+                    Action.mud.start_player(source) #@UndefinedVariable
                 else:
                     source.change_env(room)
         if feedback:
@@ -282,8 +282,46 @@ class DelExtra(Action):
         source.env.extras.remove(target)
         self.save_object(source.env, True)
         source.refresh_all()
-        return target.title + " removed from room" 
-    
+        return target.title + " removed from room"
+        
+class EditAlias(Action):
+    def __init__(self):
+        Action.__init__(self, ("addalias", "delalias"))
+        self.msg_class = "aliases"
+        self.prep = ":"
+        self.imm_level = IMM_LEVELS["creator"]
+        self.help_text = "Usage:  addalias [target] : [new alias], delalias [target] : [old_alias]  \
+            Multiple words aliases allowed.  If used on a monster or object, the template for all \
+            such monsters or objects is modified"
+        
+    def execute(self, verb, source, args, target, command, **ignored):
+        try:
+            check_room(source, source.env)
+        except BuildError as exp:
+            return exp.msg
+        
+        edit_alias = find_extra_prep(self.prep, command)
+        template = getattr(target, "template", None)
+        if template:
+            save_target = template
+        elif target in source.env.extras or target in source.env.exits:
+            save_target = source.env
+        else:
+            return "Invalid database target"
+        if edit_alias in target.aliases:
+            if verb[0] == "delalias":
+                target.aliases.remove(edit_alias)
+            else:
+                return "Alias already exists"
+        else:
+            if verb[0] == "addalias":
+                target.aliases.append(edit_alias)
+            else:
+                return "Alias does not exist"
+        target.config_targets()   
+        self.save_object(save_target)
+        source.refresh_all()
+        return "Alias modified " + ("[template]" if template else "")
     
 class AddMob(BuildAction):
     def __init__(self):

@@ -15,7 +15,7 @@ class MercFlavor():
     
     
     def init_mobile(self, mobile):
-        mobile.level = nudge(mobile.level)
+        mobile.level = nudge(mobile.level if mobile.level else 1)
         mobile.defense = scale32(mobile.level, 100, -100)
         mobile.max_health = mobile.level * 8 + randint(mobile.level * mobile.level / 4, mobile.level * mobile.level)
         mobile.health = mobile.max_health
@@ -46,5 +46,6 @@ class MercFlavor():
     def apply_mobile_template(self, mobile_template_cls):
         mobile_template_cls.template_fields = Mobile.dbo_fields
         mobile_template_cls.dbo_fields = Mobile.dbo_fields + ("instance_class", "world_max")
+        mobile_template_cls.level = 1
   
         

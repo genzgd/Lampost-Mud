@@ -3,27 +3,31 @@ Created on Feb 25, 2012
 
 @author: Geoff
 '''
-from lampost.action.action import Action
+from lampost.action.action import Action, HelpAction
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
 from lampost.action.emote import Emotes
 from lampost.immortal.immortal import CreatePlayer, DeletePlayer, CreateArea,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
-    ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget
+    ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
+    AllPlayers
 from area import Area
 from lampost.comm.chat import TellAction, ReplyAction, SayAction
 from lampost.immortal.builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
-    FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob,\
+    FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob, EditAlias,\
     DeleteArea, AddExtra, DelExtra, CreateRoom
 from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
+from lampost.gameops.config import Config
+from lampost.util.lmlog import error
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
     BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
-    DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra(), CreateRoom()
+    DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra(), CreateRoom(), GotoPlayer(),  \
+    EditAlias(), AllPlayers()
 
 class MudNature():
     
@@ -41,13 +45,11 @@ class MudNature():
         self.citadel.on_loaded()
         self.basic_soul.add(self.shout_channel)
               
-    def baptise(self, player):
-        
+    def baptise(self, player):      
         if not getattr(player, "mudflavor", None):
             self.mud.init_player(player)
         
         new_soul = self.basic_soul.copy()
-       
         for cmd in IMM_COMMANDS:
             if player.imm_level >= cmd.imm_level:
                 new_soul.add(cmd)
@@ -69,23 +71,27 @@ class MudNature():
             
         player.equip(set())
         self.mud.enhance_player(player)
-
-        player.enter_env(self.citadel.first_room)
+        self.mud.start_player(player)
        
 
 class MudSoul():
     look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction())) 
+    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction())) 
     
 
 class Mud():
     def __init__(self, datastore, dispatcher):
         MobileTemplate.mud = self
+        self.config =  datastore.load_object(Config, "config")
+        if not self.config:
+            self.config = Config()
+            datastore.save_object(self.config)
+     
         self.flavor = MercFlavor()
         self.flavor.apply_mobile(Mobile)
         self.flavor.apply_mobile_template(MobileTemplate)
         self.flavor.apply_player(Player)
-     
+        
         Area.dispatcher = dispatcher
         self.area_map = {}  
         area_keys = datastore.fetch_set_keys("areas")
@@ -111,4 +117,28 @@ class Mud():
         
     def init_mobile(self, mobile):
         self.flavor.init_mobile(mobile)
+        
+    def find_room(self, room_id):
+        try:
+            area_id = room_id.split(":")[0]
+            area = self.get_area(area_id)
+            if not area:
+                error("Unable to find area for " + area_id)  
+                return None
+            room = area.get_room(room_id)
+            if not room:
+                error("Unable to room for " + room_id)
+                return None
+            return room
+        except:
+            error("Exception finding room " + room_id)
+            return None
+                
+    def start_player(self, player):
+        room = self.find_room(player.room_id)
+        if not room:
+            room = self.find_room(self.config.start_room)
+        if not room:
+            room = self.find_room("immortal_citadel:0") #Last chance, if this fails something is really wrong
+        player.change_env(room)
         
