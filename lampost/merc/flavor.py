@@ -8,7 +8,7 @@ from lampost.merc.combat import mob_rec_violence, player_calc_damage, mob_calc_d
     player_rec_violence, mob_attack, player_rec_damage, player_auto_attack
 from lampost.merc.player import soul
 from random import randint
-from lampost.mobile import Mobile
+from lampost.mobile.mobile import Mobile
 
 class MercFlavor():
     flavor = "merc2.2"

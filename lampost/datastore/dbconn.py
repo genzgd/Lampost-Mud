@@ -8,7 +8,7 @@ from redis import ConnectionPool
 from redis.client import StrictRedis
 from json import JSONEncoder
 from json.decoder import JSONDecoder
-from lampost.coreobj.lmlog import db_log
+from lampost.util.lmlog import db_log
 
 class RedisStore():
     def __init__(self, dispatcher, db_host, db_port, db_num, db_pw):

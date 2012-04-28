@@ -6,8 +6,8 @@ Created on Mar 4, 2012
 import sys
 
 from lampost.datastore.dbconn import RedisStore
-from lampost.player import Player
-from lampost.immortal import IMM_LEVELS
+from lampost.player.player import Player
+from lampost.immortal.immortal import IMM_LEVELS
 from lampost.event import Dispatcher
 
 if __name__ != "__main__":

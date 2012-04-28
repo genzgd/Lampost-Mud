@@ -3,9 +3,9 @@ Created on Apr 15, 2012
 
 @author: Geoff
 '''
-from lampost.action import Action
-from lampost.broadcast import Broadcast
-from lampost.event import PULSES_PER_SECOND
+from lampost.action.action import Action
+from lampost.comm.broadcast import Broadcast
+from lampost.gameops.event import PULSES_PER_SECOND
 from lampost.merc.util import scale32
 from random import randint
 

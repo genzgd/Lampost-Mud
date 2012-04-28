@@ -5,8 +5,8 @@ Created on Feb 15, 2012
 '''
 import sys
 
-from lampost.mud import MudNature
-from lampost.context import Context
+from lampost.mud.mud import MudNature
+from lampost.context.context import Context
 
 
 if __name__ != "__main__":
