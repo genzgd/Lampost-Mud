@@ -8,6 +8,7 @@ from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction
 from lampost.mobile.mobile import MobileReset
 from lampost.model.item import BaseItem
+from lampost.model.article import ArticleReset
 
 
 class Exit(RootDBO):
@@ -48,7 +49,8 @@ class Room(RootDBO):
     
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev"
-    dbo_collections = DBORef("exits", Exit), DBORef("extras", BaseItem), DBORef("mobile_resets", MobileReset)
+    dbo_collections = DBORef("exits", Exit), DBORef("extras", BaseItem), DBORef("mobile_resets", MobileReset), \
+        DBORef("article_resets", ArticleReset)
     
     dbo_rev = 0 
  
@@ -59,6 +61,7 @@ class Room(RootDBO):
         self.contents = []
         self.exits = []
         self.mobile_resets = []
+        self.article_resets = []
         self.extras = []
     
     @property
@@ -78,16 +81,22 @@ class Room(RootDBO):
     def rec_entity_enters(self, source):          
         self.contents.append(source)
         self.tell_contents("rec_entity_enter_env", source, source)
-        source.entry_msg.source = source
-        self.rec_broadcast(source.entry_msg, source)
+        entry_msg = getattr(source, "entry_msg", None)
+        if entry_msg:
+            source.entry_msg.source = source
+            self.rec_broadcast(entry_msg, source)
         
     def rec_entity_leaves(self, source):
         self.contents.remove(source)
         self.tell_contents("rec_entity_leave_env", source, source)
-        source.exit_msg.source = source
-        self.rec_broadcast(source.exit_msg, source)
+        exit_msg = getattr(source, "exit_msg", None)
+        if exit_msg:
+            source.exit_msg.source = source
+            self.rec_broadcast(exit_msg, source)
     
     def rec_broadcast(self, broadcast, exclude=None):
+        if not broadcast:
+            return
         if broadcast.target == self:
             broadcast.target = None
         self.tell_contents("rec_broadcast", exclude, broadcast)
@@ -147,6 +156,12 @@ class Room(RootDBO):
                 area.create_mob(mreset.mobile_id, self)
             if curr_count >= mreset.mob_count and curr_count < mreset.mob_max:
                 area.create_mob(mreset.mobile_id, self)
+        for areset in self.article_resets:
+            curr_count = len([entity for entity in self.contents if getattr(entity, "article_id", None) == areset.article_id])
+            for unused in range(areset.article_count - curr_count):
+                area.create_article(areset.article_id, self)
+            if curr_count >= areset.article_count and curr_count < areset.article_max:
+                area.create_article(mreset.article_id, self)
                 
     def refresh(self):
         for entity in self.contents:

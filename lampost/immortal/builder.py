@@ -14,6 +14,7 @@ from lampost.action.action import Action
 from lampost.mobile.mobile import MobileTemplate, MobileReset
 from lampost.mud.area import Area
 from lampost.model.item import BaseItem
+from lampost.model.article import ArticleTemplate, ArticleReset
 
 BUILD_ROOM = Room("buildroom")
 
@@ -67,9 +68,29 @@ class MobList(Action):
             return "No mobiles defined"
         display = Display()
         for mobile in area.mobiles:
-            display.append(DisplayLine(ljust(mobile.dbo_id, 20) + ljust(mobile.title, 20) + unicode(mobile.level)))
+            display.append(DisplayLine(ljust(mobile.dbo_id.split(":")[1], 20) + ljust(mobile.title, 20) + unicode(mobile.level)))
         return display
         
+class ItemList(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
+    def __init__(self):
+        Action.__init__(self, "itemlist")
+     
+    def execute(self, source, args, **ignored):
+        if args:
+            area_id = args[0]
+        else:
+            area_id = source.env.area_id
+        area = self.mud.get_area(area_id)
+        if not area:
+            return "Invalid area"
+        if not area.articles:
+            return "No articles defined"
+        display = Display()
+        for article in area.articles:
+            display.append(DisplayLine(ljust(article.dbo_id.split(":")[1], 20) + ljust(article.title, 20) + unicode(article.level)))
+        return display
         
 class BuildError(Exception):
     def __init__(self, msg):
@@ -159,8 +180,7 @@ class CreateMob(Action):
         self.save_object(template)
         area.mobiles.append(template)
         self.save_object(area)
-
-        
+                
 class EditAreaMob(Action):
     imm_level = IMM_LEVELS["creator"]
     
@@ -210,6 +230,90 @@ class EditAreaMob(Action):
                 mob_template.title = value
         self.save_object(mob_template)
         return mob_template.mobile_id + " updated"
+        
+class CreateItem(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
+    def __init__(self):
+        Action.__init__(self, "areaitem")
+        
+    def execute(self, source, args, command, **ignored):
+        area_id = source.env.area_id;
+        if not args:
+            return "item id required"
+        try:
+            area = check_area(source, area_id)
+        except BuildError as exp:
+            return exp.msg;
+            
+        article_id = ":".join([area_id, args[0]])
+        if area.get_article(article_id):
+            return article_id + " already exists in this area"
+        
+        title = command.partition(args[0])[2][1:]
+        if not title:
+            title = area.name + " " + args[0]
+        template = ArticleTemplate(article_id, title)
+        self.save_object(template)
+        area.articles.append(template)
+        self.save_object(area)
+
+        
+class EditAreaItem(Action):
+    imm_level = IMM_LEVELS["creator"]
+    
+    def __init__(self):
+        Action.__init__(self, ("delareaitem", "ilevel", "iname", "idesc", "iweight"))
+        
+    def execute(self, source, verb, args, command, **ignored):
+        area_id = source.env.area_id;
+        if not args:
+            return "item id required"
+        try:
+            area = check_area(source, area_id)
+        except BuildError as exp:
+            return exp.msg;
+            
+        article_template = area.get_article(args[0])
+        if not article_template:
+            return "Monster does not exist in this area"
+            
+        if verb[0] == "delareaitem":
+            article_resets = list(area.find_mobile_resets(article_template.article_id))
+            if article_resets:
+                if len(args) < 2 or args[1] != "force":
+                    return "Item is used in rooms.  Use 'force' option to remove from rooms"
+                for room, article_reset in article_resets:
+                    room.mobile_resets.remove(article_reset)
+                    self.save_object(room, True)
+            
+            area.article.remove(article_template)
+            self.save_object(area)
+            return article_template.article_id + " deleted."
+            
+        if len(args) < 2:
+            return "Value required"
+            
+        if verb[0] == "ilevel":
+            try:
+                article_template.level = int(args[1])
+            except TypeError:
+                return "Invalid level"
+                
+        if verb[0] == "iweight":
+            try:
+                article_template.weight = int(args[1])
+            except TypeError:
+                return "Invalid weight"
+        else:
+            value = " ".join(command.split(" ")[2:])
+            if verb[0] == "idesc":
+                article_template.desc = value
+            elif verb[0] == "iname":
+                article_template.title = value
+        self.save_object(article_template)
+        return article_template.article_id + " updated"
+
             
                 
 class BuildAction(Action):
@@ -249,18 +353,26 @@ class AddExtra(Action):
         try:
             check_room(source, source.env)
         except BuildError as exp:
-            return exp.msg
-            
+            return exp.msg    
         if not args:
             return "Set title to what?"
-        extra = BaseItem()
-        extra.desc = find_extra(verb, 1, command)
-        if not extra.desc:
+        desc = find_extra(verb, 1, command)
+        if not desc:
             return "Description required"
-        extra.title = args[0]
+        extra = None
+        for existing in source.env.extras:
+            if existing.title == args[0]:
+                extra = existing
+                break
+        if not extra:
+            extra = BaseItem()
+            extra.title = args[0]
+            existing = None
+        extra.desc = desc
         extra.on_loaded()
         source.clear_all()
-        source.env.extras.append(extra)
+        if not existing: 
+            source.env.extras.append(extra)
         self.save_object(source.env, True)
         source.refresh_all() 
         return extra.title + " added to room."
@@ -277,7 +389,7 @@ class DelExtra(Action):
         except BuildError as exp:
             return exp.msg
         if not target in source.env.extras:
-            return target.target_id + " not part of room."
+            return getattr(target, "target_id", "Unknown") + " not part of room."
         source.clear_all()
         source.env.extras.remove(target)
         self.save_object(source.env, True)
@@ -315,6 +427,8 @@ class EditAlias(Action):
                 return "Alias already exists"
         else:
             if verb[0] == "addalias":
+                if not target.aliases:
+                    target.aliases = []
                 target.aliases.append(edit_alias)
             else:
                 return "Alias does not exist"
@@ -373,6 +487,55 @@ class DelMob(BuildAction):
         return mobile_id + " removed from " + room.title
         
        
+class AddItem(BuildAction):
+    def __init__(self):
+        Action.__init__(self, "additem")
+        
+    def build(self, source, room, area, target, args):
+        if not args:
+            return "Item id required"
+        
+        article_template = area.get_article(args[0])
+        if not article_template:
+            return "Item does not exist in this area"
+        article_reset = ArticleReset(article_template.article_id)
+        try:
+            article_reset.article_count = int(args[1])
+        except (TypeError, IndexError):
+            pass
+        try:
+            article_reset.article_max = int(args[2])
+        except (TypeError, IndexError):
+            pass
+        room.article_resets.append(article_reset)
+        self.save_object(room, True)
+        return "Item reset created"
+
+         
+class DelItem(BuildAction):
+    def __init__(self):
+        Action.__init__(self, "delitem")
+        
+    def build(self, source, room, area, target, args):
+        if not args:
+            return "Item id required"
+            
+        article_id = args[0]
+        if ":" not in article_id:
+            article_id = ":".join([room.area_id, article_id])
+            
+        found = False
+        for article_reset in room.article_resets[:]:
+            if article_reset.article_id == article_id:
+                room.article_resets.remove(article_reset)
+                found = True
+                
+        if not found:
+            return "No resets for " + article_id + " in this room"
+        
+        self.save_object(room, True)
+        return article_id + " removed from " + room.title
+       
 class ResetRoom(Action):
     def __init__(self):
         Action.__init__(self, "reset")
@@ -384,7 +547,7 @@ class ResetRoom(Action):
 
 class CreateRoom(Action):
     def __init__(self):
-        Action.__init__(self, "createroom")
+        Action.__init__(self, ("createroom", "cr"))
         self.imm_level = IMM_LEVELS["creator"]
         
     def execute(self, source, verb, args, command, **ignored):

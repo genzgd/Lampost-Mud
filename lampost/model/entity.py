@@ -32,6 +32,24 @@ class Entity(BaseItem):
         for target in inven:
             self.add_target(target, self)
             
+    def add_inven(self, article):
+        if article in self.inven:
+            return "You already have that."
+        article.leave_env()
+        self.inven.add(article)
+        self.add_actions(article)
+        self.add_target(article, self.inven)
+        return Broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article, source=self)
+        
+    def drop_inven(self, article):
+        if not article in self.inven:
+            return "You don't have that."
+        self.inven.remove(article)
+        self.remove_actions(article)
+        self.remove_target(article)
+        article.enter_env(self.env)
+        return Broadcast(s="You drop {N}", e="{n} drops {N}", target=article, source=self)
+            
     def enhance_soul(self, actions):
         for action in actions:
             self.add_action(action)
@@ -69,7 +87,7 @@ class Entity(BaseItem):
         if parent == self.env:
             prefix = "the",
         elif parent == self.inven:
-            prefix = "my"
+            prefix = "my",
         else:
             prefix = ()
         target_keys = list(self.gen_ids(prefix + target_id))
@@ -206,10 +224,11 @@ class Entity(BaseItem):
                             
     def matching_targets(self, target_args, msg_class):
         target_list = self.target_key_map.get(target_args, []) if target_args else [self.env]
-        if target_list:
-            target_method = getattr(target_list[0], msg_class, None)
+        for target in target_list:
+            target_method = getattr(target, msg_class, None)
             if target_method != None:
-                yield target_list[0], target_method
+                yield target, target_method
+                return
                       
          
     def change_env(self, new_env):

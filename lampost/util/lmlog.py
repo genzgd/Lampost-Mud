@@ -18,6 +18,6 @@ def debug(debug_msg):
     dispatcher.dispatch("debug", debug_msg)
     
 def error(error_msg):
-    stderr.write(str(datetime.now()) + " " + error_msg)
+    stderr.write(str(datetime.now()) + " " + (error_msg if error_msg else ""))
     stderr.write(traceback.format_exc())
     dispatcher.dispatch("error", error_msg)

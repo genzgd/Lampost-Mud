@@ -4,13 +4,23 @@ Created on Feb 26, 2012
 @author: Geoff
 '''
 from lampost.action.action import Action
-from lampost.model.article import Article
+from lampost.model.article import Article, ArticleTemplate, ArticleReset
 from lampost.env.room import Room, Exit
 from lampost.env.movement import UP, DOWN
 from lampost.mobile.mobile import MobileTemplate, MobileReset
 from lampost.comm.broadcast import SingleBroadcast
 from lampost.model.item import BaseItem
 from lampost.mud.area import Area
+
+class MusicBox(Article, Action):
+    def __init__(self, article_id):
+        self.article_id = article_id
+        self.rec_play = True
+        self.fixed_targets = self,
+        Action.__init__(self, ["play", "wind"], "play")
+        
+    def execute(self, source, **ignored):
+        return SingleBroadcast(source, "The music box plays an eerie atonal tune.")
 
 class ImmortalCitadel(Area):
     def __init__(self):
@@ -30,25 +40,15 @@ class ImmortalCitadel(Area):
         self.rooms.append(cube)
         self.rooms.append(sphere)
         
-        sphere.contents.append(MusicBox())
-        sphere.contents.append(MusicBox())
-        sphere.contents.append(MusicBox())
-        
+        musicbox = ArticleTemplate("immortal_citadel:music_box", "Music Box", "An odd, translucent music box", MusicBox)
+        self.articles.append(musicbox)
+        sphere.article_resets.append(ArticleReset("immortal_citadel:music_box", 3, 3))
+       
         guard = MobileTemplate("immortal_citadel:guard", "Citadel Guard", "The impassive, immaculate citadel guard")
         guard.level = 1
         self.mobiles.append(guard)
         cube.mobile_resets.append(MobileReset("immortal_citadel:guard", 0, 7))
    
         
-class MusicBox(Article, Action):
-    def __init__(self):
-        self.title = "music box"
-        self.desc = "An translucent music box.  It doesn't seem quite all here."
-        self.config_targets()
-        self.rec_play = True
-        self.fixed_targets = self,
-        Action.__init__(self, ["play", "wind"], "play")
-        
-    def execute(self, source, **ignored):
-        return SingleBroadcast(source, "The music box plays an eerie atonal tune.")
+
         

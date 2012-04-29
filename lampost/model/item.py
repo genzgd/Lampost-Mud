@@ -10,6 +10,7 @@ class BaseItem(RootDBO):
     
     desc = ""
     suffix = None
+    env = None
     title = ""
     sex = "none"
     aliases = []
@@ -64,5 +65,15 @@ class BaseItem(RootDBO):
            
     def long_desc(self, observer):
         return self.desc if self.desc else self.title
+        
+    def enter_env(self, new_env):
+        self.env = new_env
+        if new_env:
+            self.env.rec_entity_enters(self)
+        
+    def leave_env(self):
+        if self.env:
+            self.env.rec_entity_leaves(self)
+        self.env = None
         
         

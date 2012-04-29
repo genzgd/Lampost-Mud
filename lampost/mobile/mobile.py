@@ -32,11 +32,6 @@ class MobileTemplate(RootDBO, Template):
     def config_instance(self, instance):
         self.mud.init_mobile(instance)
         instance.baptise(set())
-        
-    def on_loaded(self):
-        if self.instance_class == "lampost.mobile.Mobile":
-            self.instance_class = MobileTemplate.instance_class
-            self.datastore.save_object(self)
 
    
 class MobileReset(RootDBO):

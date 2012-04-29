@@ -63,7 +63,7 @@ class Broadcast(object):
             tname = tsub = tobj = tposs = tself = None
        
         return message.format(n=sname, N=tname, e=ssub, E=tsub, \
-            s=sposs, S=tposs, m=sobj, M=tobj, f=sself, F=tself)
+            s=sposs, S=tposs, m=sobj, M=tobj, f=sself, F=tself).capitalize()
           
 class SingleBroadcast():
     def __init__(self, source, all_msg, color=0x00000):

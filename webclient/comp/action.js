@@ -1,5 +1,7 @@
 function ActionLMModule (root) {
 	
+	var prev_actions = [];
+	var history_loc = -1;
 	var actionInput = root.find("#actionInput");
 	if (lmapp.dialogCount == 0) {
 		actionInput.focus();
@@ -11,6 +13,10 @@ function ActionLMModule (root) {
 	};
 
 	function sendAction(event) {
+		if (event.which == 38) {
+			//if 
+		}
+		
 		if (event.which != 13) {
 			return true;
 		}
@@ -20,6 +26,8 @@ function ActionLMModule (root) {
 		
 		var action = actionInput.val();
 		if (action) {
+			prev_actions.unshift(action);
+			history_loc = -1;
 			lmdp.dispatch("default_line", ">" + action);
 			lmdp.dispatchEvent(new LMRemote.Request("action", {action: action}));
 			actionInput.val("");

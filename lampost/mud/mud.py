@@ -15,19 +15,22 @@ from area import Area
 from lampost.comm.chat import TellAction, ReplyAction, SayAction
 from lampost.immortal.builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob, EditAlias,\
-    DeleteArea, AddExtra, DelExtra, CreateRoom
+    DeleteArea, AddExtra, DelExtra, CreateRoom, ItemList, CreateItem,\
+    EditAreaItem, AddItem, DelItem
 from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
 from lampost.gameops.config import Config
 from lampost.util.lmlog import error
+from lampost.action.inventory import GetAction, ShowInventory, DropAction
+from lampost.model.article import Article, ArticleTemplate
 
 IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
     RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
     AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
     BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
     DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra(), CreateRoom(), GotoPlayer(),  \
-    EditAlias(), AllPlayers()
+    EditAlias(), AllPlayers(), ItemList(), CreateItem(), EditAreaItem(), AddItem(), DelItem() 
 
 class MudNature():
     
@@ -76,7 +79,8 @@ class MudNature():
 
 class MudSoul():
     look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(), Socials())) 
+    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(), \
+        ShowInventory(), Socials(), GetAction(), DropAction())) 
     
 
 class Mud():
@@ -91,6 +95,8 @@ class Mud():
         self.flavor.apply_mobile(Mobile)
         self.flavor.apply_mobile_template(MobileTemplate)
         self.flavor.apply_player(Player)
+        self.flavor.apply_article(Article)
+        self.flavor.apply_article_template(ArticleTemplate)
         
         Area.dispatcher = dispatcher
         self.area_map = {}  
@@ -127,7 +133,7 @@ class Mud():
                 return None
             room = area.get_room(room_id)
             if not room:
-                error("Unable to room for " + room_id)
+                error("Unable to find room for " + room_id)
                 return None
             return room
         except:
