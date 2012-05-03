@@ -566,7 +566,11 @@ class CreateRoom(Action):
             title = find_extra(verb, 1, command)
         else:
             title = "Area " + area_id + " room " + room_id
-        room = Room(area_id + ":" + room_id, title, title)
+        room_id = area_id + ":" + room_id
+        if area.get_room(room_id):
+            return "That room id already exists"
+       
+        room = Room(room_id, title, title)
         self.save_object(room)
         area.rooms.append(room)
         self.save_object(area)
@@ -642,7 +646,11 @@ class Dig(DirectionAction):
         else:
             if len(args) > 1:
                 raise BuildError("Other room not found")
-            new_room = Room(area.dbo_id + ":" + str(area.next_room_id), desc, desc)
+            room_id = area.dbo_id + ":" + str(area.next_room_id)
+            while area.get_room(room_id):
+                area.next_room_id += 1
+                room_id = area.dbo_id + ":" + str(area.next_room_id)
+            new_room = Room(room_id, desc, desc)
             new_area = area
             new_area.rooms.append(new_room)
         
@@ -656,7 +664,7 @@ class Dig(DirectionAction):
         new_room.refresh()
         self.save_object(new_room)
         
-        area.next_room_id = area.next_room_id + 1
+        area.next_room_id += 1
         self.save_object(area)
 
     
