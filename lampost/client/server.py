@@ -43,6 +43,7 @@ class LampostResource(Resource):
         self.putChild(URL_ACTION, ActionResource(sm))
         self.putChild(URL_CONNECT, ConnectResource(sm))
         self.putChild(URL_DIALOG, DialogResource(sm))
+        self.putChild("ngclient", File("ngclient"));
         
         
 class LoginResource(Resource):
@@ -63,6 +64,7 @@ class ConnectResource(Resource):
     IsLeaf = True
     def __init__(self, sm):
         self.sm = sm
+        self.decoder = JSONDecoder()
     
     def render_POST(self, request):
         return self.sm.start_session().json
@@ -72,10 +74,11 @@ class LinkResource(Resource):
     IsLeaf = True   
     def __init__(self, sm):
         self.sm = sm
+        self.decoder = JSONDecoder()
         
     def render_POST(self, request):
-        session_id = request.args[ARG_SESSION_ID][0]
-        user_session = self.sm.session_map.get(session_id)
+        content = self.decoder.decode(request.content.getvalue());
+        user_session = self.sm.session_map.get(content['session_id'])
         if user_session:
             user_session.attach(request)
             return NOT_DONE_YET;
