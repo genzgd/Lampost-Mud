@@ -6,29 +6,24 @@
     <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="css/lampost.css" rel="stylesheet">
 </head>
-<body>
 
-    <div class="container-fluid">
+<body>
+    <div class="container-fluid" ng-controller="NavController" style="height: 100%">
         <div class="row-fluid">
             <div class="span12 pagination-centered">
-                <h1>Lampost Mud</h1>
-        </div>
-
-        <div class="row-fluid">
-            <div class="span6">
-                {{loginText}}
-            </div>
-            <div class="span6">
-                Span4
+                <h2>Lampost</h2>
             </div>
         </div>
+        <div id="mainDisplay" class="row-fluid" ng-include="'view/main.html'"/>
     </div>
 
     <script src="lib/jquery-1.8.0.min.js"></script>
     <script src="lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="lib/angular-1.0.1.js"></script>
     <script src="app/app.js"></script>
+    <script src="app/directives.js"></script>
     <script src="app/dialog.js"></script>
     <script src="app/remote.js"></script>
+    <script src="app/display.js"></script>
 </body>
 </html>

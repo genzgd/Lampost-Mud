@@ -1,4 +1,5 @@
-lampost.service('lmRemote', ['$rootScope', '$http', 'lmLog', 'lmDialog', function($rootScope, $http, lmLog, lmDialog) {
+lampost.service('lmRemote', ['$rootScope', '$http', '$timeout', 'lmLog', 'lmDialog',
+    function($rootScope, $http, $timeout, lmLog, lmDialog) {
 
     var sessionId = 0;
     var connected = true;
@@ -9,7 +10,7 @@ lampost.service('lmRemote', ['$rootScope', '$http', 'lmLog', 'lmDialog', functio
         '<div class="modal-footer"><button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div>' +
         '</div>';
 
-    function serverRequest(method, data) {
+    function linkRequest(method, data) {
         if (data === undefined) {
             data = {};
         }
@@ -22,20 +23,18 @@ lampost.service('lmRemote', ['$rootScope', '$http', 'lmLog', 'lmDialog', functio
     }
 
     function link(data) {
-        serverRequest("link");
+        linkRequest("link");
     }
 
     function linkFailure(status) {
         if (connected) {
             connected = false;
             lmLog.log("Link stopped: " + status);
-            setTimeout(showLinkFailure, 100);
-        }
-    }
-
-    function showLinkFailure() {
-        if (!connected && !windowClosed) {
-            lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
+            $timeout(function() {
+                if (!connected && !windowClosed) {
+                    lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
+                }
+            }, 100);
         }
     }
 
@@ -46,7 +45,7 @@ lampost.service('lmRemote', ['$rootScope', '$http', 'lmLog', 'lmDialog', functio
         } else if (status == "no_session") {
             $rootScope.$broadcast("logout", "invalid_session");
             sessionId = 0;
-            serverRequest("connect");
+            linkRequest("connect");
         } else if (status == "no_login") {
             $rootScope.$broadcast("logout", "invalid_session");
         }
@@ -64,40 +63,37 @@ lampost.service('lmRemote', ['$rootScope', '$http', 'lmLog', 'lmDialog', functio
     }
 
     function onServerRequest(event, method, data) {
-        serverRequest(method, data);
+        linkRequest(method, data);
     }
 
     function reconnect() {
         if (sessionId == 0) {
-            serverRequest("connect");
+            linkRequest("connect");
         } else {
             link();
         }
     }
 
     this.request = function(method, args) {
-        serverRequest(method, args);
+        linkRequest(method, args);
     }
 
     $rootScope.$on("connect", onConnect);
     $rootScope.$on("link_status", onLinkStatus);
     $rootScope.$on("server_request", onServerRequest);
+
     $(window).unload(function() {
         windowClosed = true;
     });
 
-    function ReconnectController($scope, dialog, lmDialog, $timeout) {
+    function ReconnectController($scope, dialog, $timeout) {
 
         var tickPromise;
         var time = 16;
-        var valid = true;
 
         $scope.$on("link_status", function(event) {
-            if (valid) {
-                lmDialog.close(dialog);
-                $timeout.cancel(tickPromise);
-                valid = false;
-            }
+            $scope.dismiss();
+            $timeout.cancel(tickPromise);
         });
 
         $scope.reconnectNow = function () {
@@ -117,7 +113,6 @@ lampost.service('lmRemote', ['$rootScope', '$http', 'lmLog', 'lmDialog', functio
             tickPromise = $timeout(tickDown, 1000);
         }
     }
-
 }]);
 
 

@@ -36,6 +36,7 @@ class LampostResource(Resource):
     IsLeaf = True
     def __init__(self, sm):
         Resource.__init__(self)
+        Resource.decoder = JSONDecoder();
         self.putChild("", Redirect(URL_START))
         self.putChild(URL_WEB_CLIENT, File(FILE_WEB_CLIENT))
         self.putChild(URL_LOGIN, LoginResource(sm))
@@ -52,11 +53,12 @@ class LoginResource(Resource):
         self.sm = sm
     
     def render_POST(self, request):
-        session_id = cgi.escape(request.args[ARG_SESSION_ID][0]);
+        content = self.decoder.decode(request.content.getvalue());
+        session_id = content['session_id'];
         session = self.sm.get_session(session_id)
         if not session:
             return LinkError(ERROR_SESSION_NOT_FOUND).json
-        user_id = cgi.escape(request.args[ARG_USER_ID][0]);
+        user_id = content['user_id']
         return self.sm.login(session, user_id).json
     
 
@@ -89,16 +91,15 @@ class DialogResource(Resource):
     IsLeaf = True
     def __init__(self, sm):
         self.sm = sm
-        self.decoder = JSONDecoder()
 
     def render_POST(self, request):
         try:
-            session_id = request.args[ARG_SESSION_ID][0]
+            content = self.decoder.decode(request.content.getvalue());
+            session_id = content['session_id'];
             session = self.sm.get_session(session_id)
             if not session:
                 return  LinkError(ERROR_SESSION_NOT_FOUND).json
-            response = self.decoder.decode(request.args[ARG_DIALOG_RESPONSE][0])
-            feedback = session.dialog_response(response)
+            feedback = session.dialog_response(content)
             if not feedback:
                 return RootDTO(silent=True)
             if getattr(feedback, "json", None):
@@ -118,7 +119,8 @@ class ActionResource(Resource):
     
     def render_POST(self, request):
         try:
-            session_id = request.args[ARG_SESSION_ID][0]
+            content = self.decoder.decode(request.content.getvalue());
+            session_id = content['session_id'];
             session = self.sm.get_session(session_id)
             if not session:
                 return LinkError(ERROR_SESSION_NOT_FOUND).json
@@ -126,7 +128,7 @@ class ActionResource(Resource):
             if not player:
                 return LinkError(ERROR_NOT_LOGGED_IN).json
             
-            action = cgi.escape(request.args[ARG_ACTION][0]).strip()
+            action = cgi.escape(content['action']).strip()
             if not action:
                 return;
             if action in ["quit", "logout", "log out"]:
