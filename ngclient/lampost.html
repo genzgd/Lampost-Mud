@@ -7,13 +7,18 @@
     <link href="css/lampost.css" rel="stylesheet">
 </head>
 
-<body>
-    <div class="container-fluid" ng-controller="NavController" style="height: 100%">
-        <div class="row-fluid">
-            <div class="span12 pagination-centered">
-                <h2>Lampost</h2>
-            </div>
+<body ng-controller="NavController">
+    <div id="lm-navbar" class="navbar">
+        <div class="navbar-inner">
+            <a class="brand" ng-href="#game">Lampost-Mud</a>
+            <ul class="nav">
+                <li class="active"><a ng-href="#game">Home</a></li>
+                <li><a ng-href="#editor">Editor</a></li>
+                <li><a ng-href="#account">Account</a></li>
+            </ul>
         </div>
+    </div>
+    <div class="container-fluid" ng-style="mainHeight">
         <div id="mainDisplay" class="row-fluid" ng-include="'view/main.html'"/>
     </div>
 

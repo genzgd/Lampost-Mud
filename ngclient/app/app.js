@@ -21,7 +21,12 @@ function LoginController($rootScope, $scope) {
     };
 }
 
-function NavController($scope, lmDialog) {
+function NavController($scope, $timeout, lmDialog) {
+    $(window).on("resize", function() {
+        $scope.$apply(resize);
+    });
+    resize();
+
     $scope.$on("logout", function(event, data) {
         lmDialog.removeAll();
         $scope.actionPane = "login";
@@ -34,6 +39,11 @@ function NavController($scope, lmDialog) {
             $scope.actionPane = "action";
         }
     );
+
+    function resize() {
+        var newHeight = $(window).height() - $('#lm-navbar').height();
+        $scope.mainHeight = {height: newHeight.toString() + "px"};
+    }
 }
 
 function ActionController($rootScope, $scope) {

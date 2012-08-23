@@ -22,11 +22,16 @@ lampost.service('lmDialog', ['$rootScope', '$compile', '$controller', '$template
         var dialog = {};
         var dialogScope = args.scope || $rootScope.$new(true);
         var enabledElements = $('button:enabled, selector:enabled, input:enabled, textarea:enabled');
+        var enabledLinks = $('a[href]');
         dialog.id = "lmDialog_" + nextId++;
         dialog.element = element;
         dialog.scope = dialogScope;
         dialog.prevElement = $(document.activeElement);
         enabledElements.attr('disabled', true);
+        enabledLinks.each(function() {
+            $(this).attr("data-oldhref", $(this).attr("href"));
+            $(this).removeAttr("href");
+        });
         dialogScope.dismiss = function() {
             element.modal("hide");
         };
@@ -48,6 +53,10 @@ lampost.service('lmDialog', ['$rootScope', '$compile', '$controller', '$template
             delete dialogMap[dialog.id];
             dialog.scope.finalize && dialog.scope.finalize();
             enabledElements.removeAttr('disabled');
+            enabledLinks.each(function() {
+                $(this).attr("href", $(this).attr("data-oldhref"));
+                $(this).removeAttr("data-oldhref");
+            });
             if (dialog.prevElement.closest('html').length) {
                 dialog.prevElement.focus();
             } else {

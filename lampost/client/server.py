@@ -16,42 +16,35 @@ from twisted.web.util import Redirect
 import cgi
 import traceback
 
-FILE_WEB_CLIENT = "webclient"
+FILE_WEB_CLIENT = "ngclient"
 
-URL_WEB_CLIENT = "webclient"
+URL_WEB_CLIENT = "ngclient"
 URL_LOGIN = "login"
 URL_ACTION = "action"
 URL_LINK = "link"
 URL_DIALOG = "dialog"
 URL_CONNECT = "connect"
-URL_START = "/" + URL_WEB_CLIENT + "/start.html"
+URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 ARG_SESSION_ID = "session_id"
 ARG_USER_ID = "user_id"
 ARG_ACTION = "action"
 ARG_DIALOG_RESPONSE = "response"
 
-
 class LampostResource(Resource):
-    IsLeaf = True
     def __init__(self, sm):
-        Resource.__init__(self)
+        Resource.sm = sm
         Resource.decoder = JSONDecoder();
+        Resource.__init__(self)
         self.putChild("", Redirect(URL_START))
         self.putChild(URL_WEB_CLIENT, File(FILE_WEB_CLIENT))
-        self.putChild(URL_LOGIN, LoginResource(sm))
-        self.putChild(URL_LINK, LinkResource(sm))
-        self.putChild(URL_ACTION, ActionResource(sm))
-        self.putChild(URL_CONNECT, ConnectResource(sm))
-        self.putChild(URL_DIALOG, DialogResource(sm))
-        self.putChild("ngclient", File("ngclient"));
-        
-        
+        self.putChild(URL_LOGIN, LoginResource())
+        self.putChild(URL_LINK, LinkResource())
+        self.putChild(URL_ACTION, ActionResource())
+        self.putChild(URL_CONNECT, ConnectResource())
+        self.putChild(URL_DIALOG, DialogResource())
+                
 class LoginResource(Resource):
-    IsLeaf = True
-    def __init__(self, sm):
-        self.sm = sm
-    
     def render_POST(self, request):
         content = self.decoder.decode(request.content.getvalue());
         session_id = content['session_id'];
@@ -61,23 +54,11 @@ class LoginResource(Resource):
         user_id = content['user_id']
         return self.sm.login(session, user_id).json
     
-
 class ConnectResource(Resource):
-    IsLeaf = True
-    def __init__(self, sm):
-        self.sm = sm
-        self.decoder = JSONDecoder()
-    
     def render_POST(self, request):
         return self.sm.start_session().json
     
-    
 class LinkResource(Resource):
-    IsLeaf = True   
-    def __init__(self, sm):
-        self.sm = sm
-        self.decoder = JSONDecoder()
-        
     def render_POST(self, request):
         content = self.decoder.decode(request.content.getvalue());
         user_session = self.sm.session_map.get(content['session_id'])
@@ -86,12 +67,7 @@ class LinkResource(Resource):
             return NOT_DONE_YET;
         return LinkError(ERROR_SESSION_NOT_FOUND).json
 
-
 class DialogResource(Resource):
-    IsLeaf = True
-    def __init__(self, sm):
-        self.sm = sm
-
     def render_POST(self, request):
         try:
             content = self.decoder.decode(request.content.getvalue());
@@ -113,10 +89,6 @@ class DialogResource(Resource):
             
             
 class ActionResource(Resource):
-    IsLeaf = True
-    def __init__(self, sm):
-        self.sm = sm
-    
     def render_POST(self, request):
         try:
             content = self.decoder.decode(request.content.getvalue());
