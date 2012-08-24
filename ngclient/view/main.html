@@ -10,11 +10,11 @@
             <div ng-repeat="line in display" ng-style="line.style">{{line.text}}</div>
        </div>
        <div class="telnet-input">
-            <textarea ng-model="action" enter-key="sendAction()" history pref-focus />
+            <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus />
        </div>
     </div>
 </div>
-<div class="span6" class="tabbable">
+<div class="span6 tabbable">
     <ul class="nav nav-tabs" id="myTabs">
         <li class="active"><a ng-href="#playerListTab" data-toggle="playerListTab">Players</a></li>
     </ul>
