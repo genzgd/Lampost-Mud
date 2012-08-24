@@ -12,14 +12,13 @@
         <div class="navbar-inner">
             <a class="brand" ng-href="#game">Lampost-Mud</a>
             <ul class="nav">
-                <li class="active"><a ng-href="#game">Home</a></li>
-                <li><a ng-href="#editor">Editor</a></li>
+                <li><a ng-href="#game">Home</a></li>
                 <li><a ng-href="#account">Account</a></li>
             </ul>
         </div>
     </div>
     <div class="container-fluid" ng-style="mainHeight">
-        <div id="mainDisplay" class="row-fluid" ng-include="'view/main.html'"/>
+        <div ng-view class="row-fluid main-display" ng-include="'view/main.html'"/>
     </div>
 
     <script src="lib/jquery-1.8.0.min.js"></script>
@@ -29,6 +28,6 @@
     <script src="app/directives.js"></script>
     <script src="app/dialog.js"></script>
     <script src="app/remote.js"></script>
-    <script src="app/display.js"></script>
+    <script src="app/game.js"></script>
 </body>
 </html>

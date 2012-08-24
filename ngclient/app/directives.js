@@ -22,16 +22,38 @@ lampost.directive('scrollBottom', function() {
             })
         }
     };
-})
+});
+
+lampost.directive('history', function() {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attr) {
+            element.bind('keydown', function(event) {
+                var apply = null;
+                if (event.keyCode == 38) {
+                    apply = function() {scope.historyUp()};
+                } else if (event.keyCode == 40) {
+                    apply = function() {scope.historyDown()};
+                }
+                if (apply) {
+                    scope.$apply(apply);
+                    event.preventDefault();
+                    return false;
+                }
+            });
+        }
+    }
+});
 
 lampost.directive("prefFocus", ['$rootScope', '$timeout', function($rootScope, $timeout) {
     return {
-        restrict: "ACE",
+        restrict: "A",
         link: function(scope, element) {
+            element.attr('autofocus', true);
+            element.attr('tabindex', 1);
             scope.$on("refocus", forceFocus);
 
-            var timer = $timeout(forceFocus, 0);
-
+            var timer = $timeout(forceFocus);
             function forceFocus() {
                 $timeout.cancel(timer);
                 element.focus();

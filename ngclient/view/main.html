@@ -1,29 +1,42 @@
-<div class="span6" ng-switch on="actionPane" style="height: 100%" >
+<div ng-switch on="actionPane" class="span6 v-full">
     <div ng-switch-when="login" ng-controller="LoginController">
         <form ng-submit="login()">
             <label for="player_input">Player Name:</label>
             <input id="player_input" type="text" ng-model="email" pref-focus/>
         </form>
     </div>
-    <div ng-switch-default ng-controller="ActionController" style="height: 100%">
-       <div id="displayPane" style="height: 78%; overflow-y: scroll" scroll-bottom="update">
+    <div ng-switch-default ng-controller="ActionController" class="v-full">
+       <div id="displayPane" scroll-bottom="update" class="telnet">
             <div ng-repeat="line in display" ng-style="line.style">{{line.text}}</div>
        </div>
-       <div style="height: 20%; padding-top: 1.5%">
-            <textarea ng-model="action"  enter-key="sendAction()" pref-focus style="width: 98%; height: 98%"/>
+       <div class="telnet-input">
+            <textarea ng-model="action" enter-key="sendAction()" history pref-focus />
        </div>
     </div>
 </div>
 <div class="span6" class="tabbable">
     <ul class="nav nav-tabs" id="myTabs">
-        <li><a href="#home"  class="active" data-toggle="tab">Home</a></li>
-        <li><a href="#foo" data-toggle="tab">Foo</a></li>
-        <li><a href="#bar" data-toggle="tab">Bar</li>
+        <li class="active"><a ng-href="#playerListTab" data-toggle="playerListTab">Players</a></li>
     </ul>
 
-    <div class="tab-content">
-        <div class="tab-pane active" id="home"></div>
-        <div class="tab-pane" id="foo"></div>
-        <div class="tab-pane" id="bar">Some static text. (displayed if AJAX request fails)</div>
+    <div class="tab-content span12">
+        <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
+            <table class="table table-condensed" >
+                <thead>
+                    <tr>
+                        <th class="span2">Name</th>
+                        <th class="span2">Status</th>
+                        <th class="span7">Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="player in playerList">
+                        <td class="span2">{{player.name}}</td>
+                        <td class="span2">{{player.status}}</td>
+                        <td class="span7">{{player.loc}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

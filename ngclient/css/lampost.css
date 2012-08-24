@@ -7,6 +7,27 @@ html, body {
     overflow-y: hidden;
 }
 
-#mainDisplay {
-    height: 93%;
+.main-display {
+    height: 96%;
 }
+
+div .v-full {
+    height: 100%;
+}
+
+div .telnet {
+    height: 78%;
+    overflow-y: scroll;
+}
+
+div .telnet-input {
+    height: 20%;
+    padding-top: 1.5%;
+}
+
+.telnet-input textarea {
+    width: 98%;
+    height: 98%;
+}
+
+
