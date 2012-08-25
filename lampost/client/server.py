@@ -43,13 +43,13 @@ class RootResource(Resource):
         self.putChild(URL_CONNECT, ConnectResource())
         self.putChild(URL_DIALOG, DialogResource())
 
-@requires('sm', 'decoder')
+@requires('sm', 'decode')
 class ChildResource(Resource):
     IsLeaf = True
 
 class LoginResource(ChildResource):
     def render_POST(self, request):
-        content = self.decoder.decode(request.content.getvalue());
+        content = self.decode(request.content.getvalue());
         session_id = content['session_id'];
         session = self.sm.get_session(session_id)
         if not session:
@@ -63,7 +63,7 @@ class ConnectResource(ChildResource):
     
 class LinkResource(ChildResource):
     def render_POST(self, request):
-        content = self.decoder.decode(request.content.getvalue());
+        content = self.decode(request.content.getvalue());
         user_session = self.sm.session_map.get(content['session_id'])
         if user_session:
             user_session.attach(request)
@@ -73,7 +73,7 @@ class LinkResource(ChildResource):
 class DialogResource(ChildResource):
     def render_POST(self, request):
         try:
-            content = self.decoder.decode(request.content.getvalue());
+            content = self.decode(request.content.getvalue());
             session_id = content['session_id'];
             session = self.sm.get_session(session_id)
             if not session:
@@ -94,7 +94,7 @@ class DialogResource(ChildResource):
 class ActionResource(ChildResource):
     def render_POST(self, request):
         try:
-            content = self.decoder.decode(request.content.getvalue());
+            content = self.decode(request.content.getvalue());
             session_id = content['session_id'];
             session = self.sm.get_session(session_id)
             if not session:

@@ -1,11 +1,13 @@
-from lampost.context.resource import requires
+import sys
+from lampost.context.resource import requires, inject
 from lampost.datastore.dbo import RootDBO, DBORef, DBODict
 from lampost.env.room import Room
 from lampost.gameops.template import TemplateException
 from lampost.mobile.mobile import MobileTemplate
-from lampost.util.lmlog import debug
 from random import randint
 from lampost.model.article import ArticleTemplate
+
+inject(sys.modules[__name__], 'log')
 
 @requires('dispatcher')
 class Area(RootDBO):

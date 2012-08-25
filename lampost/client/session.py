@@ -105,7 +105,6 @@ class SessionManager():
         for session in self.session_map.itervalues():
             session.append(player_list_dto)
 
-
 @requires('dispatcher')
 class UserSession():
     def __init__(self):

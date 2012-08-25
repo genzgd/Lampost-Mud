@@ -1,3 +1,5 @@
+import sys
+
 def _inject(cls, name, service):
     setattr(cls, name, service)
     for attr, value in _methods.get(name, {}).iteritems():
@@ -39,6 +41,12 @@ def requires(*resources):
             inject(cls, name)
         return cls
     return wrapper
+
+def m_requires(*resources):
+    module = sys.modules[resources[-1]]
+    for name in resources[:-1]:
+        inject(module, name)
+
 
 _registry = {}
 _consumers = {}

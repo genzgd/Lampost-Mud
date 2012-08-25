@@ -17,7 +17,6 @@ from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
 from lampost.gameops.config import Config
-from lampost.util.lmlog import error
 from lampost.action.inventory import GetAction, ShowInventory, DropAction
 from lampost.model.article import Article, ArticleTemplate
 

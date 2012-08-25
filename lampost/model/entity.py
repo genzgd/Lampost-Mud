@@ -5,7 +5,6 @@ Created on Feb 26, 2012
 '''
 from lampost.comm.broadcast import Broadcast
 from lampost.model.item import BaseItem
-from lampost.util.lmlog import debug
 import math
 import sys
 

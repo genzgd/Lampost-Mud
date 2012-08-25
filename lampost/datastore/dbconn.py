@@ -1,16 +1,11 @@
-'''
-Created on Mar 4, 2012
-
-@author: Geoffrey
-'''
-
 from redis import ConnectionPool
 from redis.client import StrictRedis
-from lampost.context.resource import requires, provides
-from lampost.util.lmlog import db_log
+from lampost.context.resource import requires, provides, m_requires
+
+m_requires('log', __name__)
 
 @provides('datastore')
-@requires('dispatcher', 'decoder', 'encoder')
+@requires('dispatcher', 'decode', 'encode')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
@@ -27,7 +22,7 @@ class RedisStore():
             dbo.dbo_rev = getattr(dbo, "dbo_rev", 0) + 1
         json_obj = self.build_json(dbo)
         key = dbo.dbo_key
-        self.redis.set(key, self.encoder.encode(json_obj))
+        self.redis.set(key, self.encode(json_obj))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, key)
         self.dispatcher.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
@@ -55,7 +50,7 @@ class RedisStore():
         return json_obj
     
     def cache_object(self, dbo):
-        self.object_map[dbo.dbo_key]
+        self.object_map[dbo.dbo_key] = dbo
     
     def load_cached(self, key):
         return self.object_map.get(key)
@@ -74,7 +69,7 @@ class RedisStore():
         json_str = self.redis.get(dbo_key)
         if not json_str:
             return None
-        json_obj = self.decoder.decode(json_str)
+        json_obj = self.decode(json_str)
         dbo = self.load_class(json_obj, base_class)(key)
         if dbo.dbo_key_type:
             self.object_map[dbo.dbo_key] = dbo

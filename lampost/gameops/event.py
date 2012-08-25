@@ -1,10 +1,12 @@
+import sys
 from random import randint
-from lampost.util.lmlog import error
-from lampost.context.resource import provides;
+from lampost.context.resource import provides, requires, inject
  
 MAX_PULSE_QUEUE = 100;
 PULSE_TIME = .25;
 PULSES_PER_SECOND = int(1 / PULSE_TIME)
+
+inject(sys.modules[__name__], 'log')
 
 class PulseKey():
     def __init__(self, freq, next_loc):
@@ -27,6 +29,7 @@ class PulseEvent():
         return "freq: " + str(self.freq) + " next_loc: " + str(self.pulse_key.next_loc)
 
 @provides('dispatcher')
+@requires('log')
 class Dispatcher:
     def __init__(self):
         self.registrations = {}
