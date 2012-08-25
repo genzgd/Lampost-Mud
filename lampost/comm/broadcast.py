@@ -7,7 +7,6 @@ from lampost.util.lmutil import pronouns
 defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}    
 
 class BroadcastMap(object):
-    
     def __init__(self, def_msg=None, **kwargs):
         self.s = def_msg;
         for key, value in kwargs.iteritems():

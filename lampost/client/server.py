@@ -5,6 +5,7 @@ Created on Feb 15, 2012
 '''
 from datetime import datetime
 from json.decoder import JSONDecoder
+from lampost.context.resource import requires
 from lampost.dto.display import Display, DisplayLine
 from lampost.dto.link import LinkError, ERROR_SESSION_NOT_FOUND, \
     ERROR_NOT_LOGGED_IN
@@ -31,10 +32,8 @@ ARG_USER_ID = "user_id"
 ARG_ACTION = "action"
 ARG_DIALOG_RESPONSE = "response"
 
-class LampostResource(Resource):
-    def __init__(self, sm):
-        Resource.sm = sm
-        Resource.decoder = JSONDecoder();
+class RootResource(Resource):
+    def __init__(self):
         Resource.__init__(self)
         self.putChild("", Redirect(URL_START))
         self.putChild(URL_WEB_CLIENT, File(FILE_WEB_CLIENT))
@@ -43,8 +42,12 @@ class LampostResource(Resource):
         self.putChild(URL_ACTION, ActionResource())
         self.putChild(URL_CONNECT, ConnectResource())
         self.putChild(URL_DIALOG, DialogResource())
-                
-class LoginResource(Resource):
+
+@requires('sm', 'decoder')
+class ChildResource(Resource):
+    IsLeaf = True
+
+class LoginResource(ChildResource):
     def render_POST(self, request):
         content = self.decoder.decode(request.content.getvalue());
         session_id = content['session_id'];
@@ -54,11 +57,11 @@ class LoginResource(Resource):
         user_id = content['user_id']
         return self.sm.login(session, user_id).json
     
-class ConnectResource(Resource):
+class ConnectResource(ChildResource):
     def render_POST(self, request):
         return self.sm.start_session().json
     
-class LinkResource(Resource):
+class LinkResource(ChildResource):
     def render_POST(self, request):
         content = self.decoder.decode(request.content.getvalue());
         user_session = self.sm.session_map.get(content['session_id'])
@@ -67,7 +70,7 @@ class LinkResource(Resource):
             return NOT_DONE_YET;
         return LinkError(ERROR_SESSION_NOT_FOUND).json
 
-class DialogResource(Resource):
+class DialogResource(ChildResource):
     def render_POST(self, request):
         try:
             content = self.decoder.decode(request.content.getvalue());
@@ -88,7 +91,7 @@ class DialogResource(Resource):
             return display.json
             
             
-class ActionResource(Resource):
+class ActionResource(ChildResource):
     def render_POST(self, request):
         try:
             content = self.decoder.decode(request.content.getvalue());

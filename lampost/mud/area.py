@@ -1,8 +1,4 @@
-'''
-Created on Feb 26, 2012
-
-@author: Geoff
-'''
+from lampost.context.resource import requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBODict
 from lampost.env.room import Room
 from lampost.gameops.template import TemplateException
@@ -11,6 +7,7 @@ from lampost.util.lmlog import debug
 from random import randint
 from lampost.model.article import ArticleTemplate
 
+@requires('dispatcher')
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"

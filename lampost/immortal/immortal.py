@@ -6,7 +6,7 @@ Created on Mar 4, 2012
 from lampost.action.action import Action
 from lampost.client.dialog import Dialog, DIALOG_TYPE_CONFIRM
 from lampost.comm.broadcast import SingleBroadcast
-from lampost.context.context import Context
+from lampost.context.resource import requires
 from lampost.dto.display import Display, DisplayLine
 from lampost.dto.rootdto import RootDTO
 from lampost.env.room import Room
@@ -37,6 +37,7 @@ class AllPlayers(Action):
         player_keys = self.datastore.fetch_set_keys("players")
         return " ".join([player.split(":")[1] for player in player_keys])
 
+@requires('sm')
 class GotoPlayer(Action):
     def __init__(self):
         Action.__init__(self, ("goto player", "gplayer"))
@@ -45,7 +46,7 @@ class GotoPlayer(Action):
     def execute(self, source, args, **ignored):
         if not args:
             return "player name required"
-        session = Context.instance.sm.player_session_map.get(args[0]) #@UndefinedVariable
+        session = self.sm.player_session_map.get(args[0]) #@UndefinedVariable
         if not session:
             return "Cannot find " + args[0]
         source.change_env(session.player.env)
@@ -228,7 +229,8 @@ class UnregisterDisplay(Action):
     
     def execute(self, source, args, **ignored):
         source.unregister_type(args[0], source.display_line)
-                   
+
+@requires('sm')
 class DeletePlayer(Action):
     def __init__(self):
         Action.__init__(self, "delete player")
@@ -238,7 +240,7 @@ class DeletePlayer(Action):
         if not args:
             return "Player name not specified"
         player_id = args[0].lower()
-        if Context.instance.sm.player_session_map.get(player_id): #@UndefinedVariable
+        if self.sm.player_session_map.get(player_id): #@UndefinedVariable
             return "Player " + player_id + " logged in, cannot delete."
         todie = self.load_object(Player, player_id)
         if todie:

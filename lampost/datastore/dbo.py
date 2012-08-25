@@ -1,12 +1,8 @@
-'''
-Created on Mar 4, 2012
-
-@author: Geoffrey
-'''
+from lampost.context.resource import requires
 
 class RootDBOMeta(type):
-    def __new__(meta, class_name, bases, new_attrs): #@NoSelf
-        cls = type.__new__(meta, class_name, bases, new_attrs)
+    def __new__(mcs, class_name, bases, new_attrs):
+        cls = type.__new__(mcs, class_name, bases, new_attrs)
         if "RootDBO" in [base.__name__ for base in bases]:
             cls.dbo_base_class = cls
         return cls
@@ -21,6 +17,7 @@ class DBODict(dict):
     def remove(self, dbo):
         del self[dbo.dbo_id]  
 
+@requires('datastore')
 class RootDBO(object): 
     __metaclass__ = RootDBOMeta   
     dbo_key_type = None
@@ -47,9 +44,8 @@ class RootDBO(object):
         pass
          
     def autosave(self):
-        self.datastore.save_object(self, autosave=True);
-        
-         
+        self.datastore.save_object(self, autosave=True)
+
     def describe(self, level=0, follow_refs=True):
         display = []
         

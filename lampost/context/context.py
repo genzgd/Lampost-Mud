@@ -1,44 +1,30 @@
-'''
-Created on Feb 26, 2012
+from json.decoder import JSONDecoder
+from json.encoder import JSONEncoder
 
-@author: Geoff
-'''
 from twisted.internet import reactor, task
 from twisted.web.server import Site
 
+from lampost.context.resource import register, provides
 from lampost.gameops.event import Dispatcher
 from lampost.client.session import SessionManager
-from lampost.client.server import LampostResource
-from lampost.action.action import Action
+from lampost.client.server import RootResource
 from lampost.datastore.dbconn import RedisStore
-from lampost.datastore.dbo import RootDBO
-from lampost.model.item import BaseItem
+from lampost.mud.mud import MudNature
 from lampost.util import lmlog
 
+@provides('context')
 class Context():
-    instance = None
-     
-    def __init__(self, nature, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None):
-        self.nature = nature;
-        self.dispatcher = Dispatcher()
-        Action.dispatcher = self.dispatcher
-        BaseItem.dispatcher = self.dispatcher
-        nature.dispatcher = self.dispatcher
-        lmlog.dispatcher = self.dispatcher
-        self.datastore = RedisStore(self.dispatcher, db_host, db_port, db_num, db_pw)
-        Action.datastore = self.datastore
-        RootDBO.datastore = self.datastore
+    def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None):
+        dispatcher = Dispatcher()
+        lmlog.dispatcher = dispatcher
+        register('decoder', JSONDecoder())
+        register('encoder', JSONEncoder())
+        RedisStore(db_host, db_port, db_num, db_pw)
+        SessionManager()
+        nature = MudNature()
 
-        self.sm = SessionManager(self.dispatcher, self.datastore, nature)
-      
-        self.site = Site(LampostResource(self.sm))
-        self.port = port
-        self.nature.create(self.datastore)
-        Context.instance = self
-               
-        pulse = task.LoopingCall(self.dispatcher.pulse)
+        pulse = task.LoopingCall(dispatcher.pulse)
         pulse.start(nature.pulse_interval)
-        
-    def start(self):
-        reactor.listenTCP(self.port, self.site) #@UndefinedVariable
-        reactor.run() #@UndefinedVariable
+
+        reactor.listenTCP(port, Site(RootResource()))
+        reactor.run()

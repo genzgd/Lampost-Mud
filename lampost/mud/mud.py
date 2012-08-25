@@ -1,9 +1,5 @@
-'''
-Created on Feb 25, 2012
-
-@author: Geoff
-'''
 from lampost.action.action import Action, HelpAction
+from lampost.context.resource import provides, requires
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
 from lampost.action.emote import Emotes, Socials
@@ -25,23 +21,25 @@ from lampost.util.lmlog import error
 from lampost.action.inventory import GetAction, ShowInventory, DropAction
 from lampost.model.article import Article, ArticleTemplate
 
-IMM_COMMANDS = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
-    RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
-    AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
-    BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(), \
-    DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra(), CreateRoom(), GotoPlayer(),  \
-    EditAlias(), AllPlayers(), ItemList(), CreateItem(), EditAreaItem(), AddItem(), DelItem() 
-
+@requires('sm')
+@provides('nature')
 class MudNature():
-    
+
     def __init__(self):
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
-        self.basic_soul = MudSoul.mud_soul.copy()
+        look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
+        self.basic_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),\
+                               ShowInventory(), Socials(), GetAction(), DropAction()))
+        self.imm_commands = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
+                       RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
+                       AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
+                       BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(),\
+                       DelMob(), DeleteArea, PatchTarget(), PatchDB(), AddExtra(), DelExtra(), CreateRoom(), GotoPlayer(),\
+                       EditAlias(), AllPlayers(), ItemList(), CreateItem(), EditAreaItem(), AddItem(), DelItem()
         
-    def create(self, datastore):
-        self.mud = Mud(datastore, self.dispatcher)
+        self.mud = Mud()
         Action.mud = self.mud
         self.citadel = ImmortalCitadel()
         self.mud.add_area(self.citadel)
@@ -53,7 +51,7 @@ class MudNature():
             self.mud.init_player(player)
         
         new_soul = self.basic_soul.copy()
-        for cmd in IMM_COMMANDS:
+        for cmd in self.imm_commands:
             if player.imm_level >= cmd.imm_level:
                 new_soul.add(cmd)
                 
@@ -75,21 +73,15 @@ class MudNature():
         player.equip(set())
         self.mud.enhance_player(player)
         self.mud.start_player(player)
-       
 
-class MudSoul():
-    look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-    mud_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(), \
-        ShowInventory(), Socials(), GetAction(), DropAction())) 
-    
-
+@requires('datastore', 'dispatcher')
 class Mud():
-    def __init__(self, datastore, dispatcher):
+    def __init__(self):
         MobileTemplate.mud = self
-        self.config =  datastore.load_object(Config, "config")
+        self.config =  self.datastore.load_object(Config, "config")
         if not self.config:
             self.config = Config()
-            datastore.save_object(self.config)
+            self.datastore.save_object(self.config)
      
         self.flavor = MercFlavor()
         self.flavor.apply_mobile(Mobile)
@@ -98,12 +90,11 @@ class Mud():
         self.flavor.apply_article(Article)
         self.flavor.apply_article_template(ArticleTemplate)
         
-        Area.dispatcher = dispatcher
-        self.area_map = {}  
-        area_keys = datastore.fetch_set_keys("areas")
+        self.area_map = {}
+        area_keys = self.datastore.fetch_set_keys("areas")
         for area_key in area_keys:
             area_id = area_key.split(":")[1]
-            area = datastore.load_object(Area, area_id)
+            area = self.datastore.load_object(Area, area_id)
             self.add_area(area)
     
     def add_area(self, area):

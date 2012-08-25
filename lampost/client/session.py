@@ -1,14 +1,10 @@
-'''
-Created on Feb 12, 2012
-
-@author: Geoff
-'''
 from datetime import datetime, timedelta
+from lampost.context.resource import requires, provides
 from lampost.dto.display import Display, DisplayLine
 from lampost.dto.link import LinkCancel, LinkGood
 from lampost.dto.rootdto import RootDTO
 from lampost.player.player import Player
-from os import urandom;
+from os import urandom
 from base64 import b64encode
 from dialog import DIALOG_TYPE_OK, Dialog, DialogDTO
 
@@ -16,41 +12,74 @@ LINK_DEAD_INTERVAL = timedelta(seconds=5)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
 LINK_IDLE_REFRESH = timedelta(seconds=45)
 
-
+@provides('sm')
+@requires('dispatcher', 'datastore', 'nature')
 class SessionManager():
-    def __init__(self, dispatcher, datastore, nature):
-        self.dispatcher = dispatcher
-        self.datastore = datastore
-        self.nature = nature;
+    def __init__(self):
         self.session_map = {}
         self.player_map = {}
         self.player_session_map = {}
-        self.dispatcher.register_p(20, self.refresh_link_status)                    
- 
-    def get_next_id(self):
-        usession_id = b64encode(str(urandom(16)))
-        while self.get_session(usession_id):
-            usession_id = b64encode(str(urandom(16)))
-        return usession_id
-    
-    def get_session(self, session_id):
-        return self.session_map.get(session_id)   
-        
-    def respond(self, rootDto):
-        return rootDto.merge(RootDTO(player_list=self.player_map))
-        
-    def start_session(self):
-        session_id = self.get_next_id()
-        session = UserSession(self.dispatcher)
-        self.session_map[session_id] = session
-        return self.respond(RootDTO(connect=session_id))
-                    
-    def display_players(self):
-        player_list_dto = RootDTO(player_list=self.player_map)
-        for session in self.session_map.itervalues():
-            session.append(player_list_dto)
+        self.register_p(20, self._refresh_link_status)
 
-    def refresh_link_status(self, *args):
+    def get_session(self, session_id):
+        return self.session_map.get(session_id)
+
+    def start_session(self):
+        session_id = self._get_next_id()
+        session = UserSession()
+        self.session_map[session_id] = session
+        return self._respond(RootDTO(connect=session_id))
+
+    def login(self, session, user_id):
+        user_id = user_id.lower()
+        old_session = self.player_session_map.get(user_id)
+        if old_session:
+            player = old_session.player
+            if old_session == session: #Could happen with some weird timing, apparently
+                session.append(player.parse("look"))
+                return self._respond(RootDTO(login="good"))
+            old_session.player = None
+            del self.player_session_map[user_id]
+            kill_message = RootDTO(logout="logout")
+            kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Logged Out")
+            kill_message.merge(DialogDTO(kill_dialog))
+            old_session.append(kill_message)
+        else:
+            player = self.datastore.load_object(Player, user_id)
+            if not player:
+                no_player_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player")
+                return DialogDTO(no_player_dialog)
+            player.session = session
+            self.nature.baptise(player)
+            player.start()
+
+        if old_session:
+            session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
+        else:
+            session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
+        self.player_map[player.dbo_id] = session.login(player)
+        self.player_session_map[player.dbo_id] = session
+        session.append(player.parse("look"))
+        return self._respond(RootDTO(login="good"))
+
+    def logout(self, session):
+        player = session.player
+        player.leave_env()
+        player.detach()
+        session.player = None
+        del self.player_map[player.dbo_id]
+        self.datastore.save_object(player)
+        self.datastore.evict(player)
+        del self.player_session_map[player.dbo_id]
+        return self._respond(RootDTO(logout="logout"))
+
+    def _get_next_id(self):
+        u_session_id = b64encode(str(urandom(16)))
+        while self.get_session(u_session_id):
+            u_session_id = b64encode(str(urandom(16)))
+        return u_session_id
+
+    def _refresh_link_status(self, *args):
         now = datetime.now()
         for session_id, session in self.session_map.items():
             if session.ld_time:
@@ -66,57 +95,22 @@ class SessionManager():
                 session.link_failed("Timeout")
             if session.player:
                 self.player_map[session.player.dbo_id] = session.player_info(now)
-        self.display_players()
-           
-    def login(self, session, user_id):
-        user_id = user_id.lower()          
-        old_session = self.player_session_map.get(user_id);
-        if old_session:
-            player = old_session.player
-            if old_session == session: #Could happen with some weird timing, apparently
-                session.append(player.parse("look"))
-                return self.respond(RootDTO(login="good"))
-            old_session.player = None
-            del self.player_session_map[user_id]
-            kill_message = RootDTO(logout="logout")
-            kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Logged Out");
-            kill_message.merge(DialogDTO(kill_dialog))
-            old_session.append(kill_message)
-        else:
-            player = self.datastore.load_object(Player, user_id)
-            if not player:
-                noplayer_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player");
-                return DialogDTO(noplayer_dialog)
-            player.session = session
-            self.nature.baptise(player)
-            player.start()
-                  
-        if old_session:
-            session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
-        else:  
-            session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
-        self.player_map[player.dbo_id] = session.login(player)
-        self.player_session_map[player.dbo_id] = session
-        session.append(player.parse("look"))
-        return self.respond(RootDTO(login="good"))
-     
-    def logout(self, session):
-        player = session.player
-        player.leave_env()
-        player.detach()
-        session.player = None
-        del self.player_map[player.dbo_id]
-        self.datastore.save_object(player)
-        self.datastore.evict(player)
-        del self.player_session_map[player.dbo_id]
-        return self.respond(RootDTO(logout="logout"))
-        
-        
+        self._display_players()
+
+    def _respond(self, rootDto):
+        return rootDto.merge(RootDTO(player_list=self.player_map))
+
+    def _display_players(self):
+        player_list_dto = RootDTO(player_list=self.player_map)
+        for session in self.session_map.itervalues():
+            session.append(player_list_dto)
+
+
+@requires('dispatcher')
 class UserSession():
-    def __init__(self, dispatcher):
-        self.dispatcher = dispatcher
+    def __init__(self):
         self.output = RootDTO()
-        self.player = None;  
+        self.player = None
         self.attach_time = datetime.now()
         self.ld_time = None
         self.request = None
@@ -133,7 +127,7 @@ class UserSession():
         if self.ld_time:
             status = "Link Dead"
         else:
-            idle = (now - self.activity_time).seconds;
+            idle = (now - self.activity_time).seconds
             if idle < 60:
                 status = "Active"
             else:

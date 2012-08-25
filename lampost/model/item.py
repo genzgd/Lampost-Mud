@@ -3,8 +3,10 @@ Created on Mar 11, 2012
 
 @author: Geoff
 '''
+from lampost.context.resource import requires
 from lampost.datastore.dbo import RootDBO
 
+@requires('dispatcher', 'datastore')
 class BaseItem(RootDBO):
     dbo_fields = "desc", "title", "aliases"
     

@@ -1,10 +1,6 @@
-'''
-Created on Feb 17, 2012
-
-@author: Geoff
-'''
 from random import randint
 from lampost.util.lmlog import error
+from lampost.context.resource import provides;
  
 MAX_PULSE_QUEUE = 100;
 PULSE_TIME = .25;
@@ -29,7 +25,8 @@ class PulseEvent():
         
     def __str__(self):
         return "freq: " + str(self.freq) + " next_loc: " + str(self.pulse_key.next_loc)
-                     
+
+@provides('dispatcher')
 class Dispatcher:
     def __init__(self):
         self.registrations = {}
@@ -69,8 +66,19 @@ class Dispatcher:
                     pass #  If we're being removed during the dispatch of ourselves, this will be empty            
         else:
             self.dispatch("debug", "Attempt to unregister {0} with registration".format(str(event_type)))
-                    
-        
+
+    def register_p(self, freq, callback, randomize=0):
+        if randomize:
+            randomize = randint(0, randomize)
+        next_loc = (self.pulse_loc + freq + randomize) % MAX_PULSE_QUEUE;
+        pulse_key = PulseKey(freq, next_loc)
+        pulse_event = self.pulse_events.get(pulse_key)
+        if not pulse_event:
+            pulse_event = PulseEvent(freq, pulse_key)
+            self.pulse_events[pulse_key] = pulse_event
+            self.pulse_queue[next_loc].add(pulse_event)
+        return self.register(pulse_event, callback)
+
     def dispatch(self, event_type, data=None):
         event_registrations = self.registrations.get(event_type)
         if event_registrations:
@@ -84,7 +92,7 @@ class Dispatcher:
         self.dispatch("pulse")
         events = self.pulse_queue[self.pulse_loc]
         active_events = events.copy()
-        events.clear();
+        events.clear()
         for event in active_events:
             try:
                 self.dispatch(event)
@@ -102,18 +110,6 @@ class Dispatcher:
         self.pulse_loc = self.pulse_loc + 1;
         if self.pulse_loc == MAX_PULSE_QUEUE:
             self.pulse_loc = 0;
-                
-    def register_p(self, freq, callback, randomize=0):
-        if randomize:
-            randomize = randint(0, randomize)
-        next_loc = (self.pulse_loc + freq + randomize) % MAX_PULSE_QUEUE;
-        pulse_key = PulseKey(freq, next_loc)
-        pulse_event = self.pulse_events.get(pulse_key)
-        if not pulse_event:
-            pulse_event = PulseEvent(freq, pulse_key)
-            self.pulse_events[pulse_key] = pulse_event
-            self.pulse_queue[next_loc].add(pulse_event)
-        return self.register(pulse_event, callback)
 
             
 class Registration():

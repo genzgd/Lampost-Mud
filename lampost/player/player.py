@@ -8,7 +8,7 @@ from lampost.dto.display import Display, DisplayLine
 from lampost.model.creature import Creature
 from lampost.model.entity import Entity
 
-class Player(Creature, RootDBO):   
+class Player(Creature, RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
     dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor")

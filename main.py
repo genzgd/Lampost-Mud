@@ -1,13 +1,6 @@
-'''
-Created on Feb 15, 2012
-
-@author: Geoff
-'''
 import sys
 
-from lampost.mud.mud import MudNature
 from lampost.context.context import Context
-
 
 if __name__ != "__main__":
     print "Invalid usage"
@@ -37,4 +30,5 @@ try:
 except ValueError:
     print "Invalid argument format: " + arg
     sys.exit(2)
-Context(MudNature(), port, db_host, db_port, db_num, db_pw).start()
+
+Context(port, db_host, db_port, db_num, db_pw)

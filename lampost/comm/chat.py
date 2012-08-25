@@ -5,9 +5,10 @@ Created on Apr 8, 2012
 '''
 from lampost.action.action import Action
 from lampost.comm.broadcast import EnvBroadcast
-from lampost.context.context import Context
+from lampost.context.resource import requires
 from lampost.dto.display import Display
 
+@requires('sm')
 class TellAction(Action):
     TELL_COLOR = 0x00a2e8
     TELL_OTHER_COLOR = 0x0033f8
@@ -21,7 +22,7 @@ class TellAction(Action):
         return self.tell_message(source, args[0], command.partition(args[0])[2][1:])
         
     def tell_message(self, source, player_id, statement):
-        session = Context.instance.sm.player_session_map.get(player_id) #@UndefinedVariable
+        session = sm.player_session_map.get(player_id) #@UndefinedVariable
         if not session:
             return "Cannot find " + player_id
         player = session.player

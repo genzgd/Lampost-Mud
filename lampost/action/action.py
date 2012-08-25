@@ -1,32 +1,10 @@
-'''
-Created on Feb 17, 2012
+from lampost.context.resource import requires
 
-@author: Geoff
-'''
+@requires('dispatcher', 'datastore')
 class Action(object):
     imm_level = 0
     mud = None
     prep = None
- 
-    @staticmethod 
-    def dispatch(event_type, data):
-        Action.dispatcher.dispatch(event_type, data) 
-        
-    @staticmethod
-    def save_object(obj, update_rev=False):
-        return Action.datastore.save_object(obj, update_rev)
-        
-    @staticmethod
-    def create_object(obj):
-        return Action.datastore.create_object(obj)
-        
-    @staticmethod
-    def load_object(obj_class, key):
-        return Action.datastore.load_object(obj_class, key)
-        
-    @staticmethod
-    def delete_object(obj):
-        return Action.datastore.delete_object(obj)          
     
     def __init__(self, verbs, msg_class=None):
         self.verbs = set()

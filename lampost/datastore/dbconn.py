@@ -6,17 +6,15 @@ Created on Mar 4, 2012
 
 from redis import ConnectionPool
 from redis.client import StrictRedis
-from json import JSONEncoder
-from json.decoder import JSONDecoder
+from lampost.context.resource import requires, provides
 from lampost.util.lmlog import db_log
 
+@provides('datastore')
+@requires('dispatcher', 'decoder', 'encoder')
 class RedisStore():
-    def __init__(self, dispatcher, db_host, db_port, db_num, db_pw):
-        self.dispatcher = dispatcher
+    def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
         self.redis = StrictRedis(connection_pool=pool)
-        self.encoder = JSONEncoder()
-        self.decoder = JSONDecoder()
         self.class_map = {}
         self.object_map = {}
     
