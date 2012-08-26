@@ -31,6 +31,7 @@ m_requires('sm', 'decode', 'log', __name__)
 class WebServer(Resource):
     def __init__(self, port):
         Resource.__init__(self)
+        self.port = port
         self.putChild("", Redirect(URL_START))
         self.putChild(URL_WEB_CLIENT, File(FILE_WEB_CLIENT))
         self.putChild(URL_LOGIN, LoginResource())
