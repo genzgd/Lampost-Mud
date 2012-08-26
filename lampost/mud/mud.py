@@ -1,5 +1,5 @@
 from lampost.action.action import Action, HelpAction
-from lampost.context.resource import provides, requires
+from lampost.context.resource import provides, requires, m_requires
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
 from lampost.action.emote import Emotes, Socials
@@ -19,6 +19,8 @@ from lampost.player.player import Player
 from lampost.gameops.config import Config
 from lampost.action.inventory import GetAction, ShowInventory, DropAction
 from lampost.model.article import Article, ArticleTemplate
+
+m_requires('log', __name__)
 
 @requires('sm')
 @provides('nature')

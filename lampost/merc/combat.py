@@ -5,7 +5,6 @@ Created on Apr 15, 2012
 '''
 from lampost.action.action import Action
 from lampost.comm.broadcast import Broadcast
-from lampost.gameops.event import PULSES_PER_SECOND
 from lampost.merc.util import scale32
 from random import randint
 
@@ -51,7 +50,7 @@ def mob_rec_violence(self, opponent):
         return
     
     self.current_target = opponent
-    self.combat_pulse = self.register_p(3 * PULSES_PER_SECOND, self.mob_attack)
+    self.combat_pulse = self.register_p(self.mob_attack, seconds=3)
     
 def mob_rec_damage(self, damage):
     self.health -= damage
@@ -64,7 +63,7 @@ def player_rec_damage(self, damage):
         
 def player_rec_violence(self, opponent):
     if not self.current_target:
-        self.combat_pulse = self.register_p(3 * PULSES_PER_SECOND, self.auto_attack)
+        self.combat_pulse = self.register_p(self.auto_attack, seconds=3)
     self.current_target = opponent
     
 def player_auto_attack(self):

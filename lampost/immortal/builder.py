@@ -147,7 +147,7 @@ class DeleteArea(Action):
             return
         area = self.load_object(Area, dialog.area_id)
         if area:
-            area.detach()
+            self.detach_events(area)
             self.delete_object(area)
             del self.mud.area_map[dialog.area_id]
             return dialog.area_id + " deleted."

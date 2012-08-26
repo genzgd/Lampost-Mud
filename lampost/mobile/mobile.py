@@ -1,8 +1,3 @@
-'''
-Created on Apr 13, 2012
-
-@author: Geoff
-'''
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.template import Template
 from lampost.model.creature import Creature

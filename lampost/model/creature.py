@@ -1,8 +1,3 @@
-'''
-Created on Mar 4, 2012
-
-@author: Geoffrey
-'''
 from entity import Entity
 from lampost.comm.broadcast import Broadcast
 

@@ -1,12 +1,15 @@
-'''
+"""
 Created on Feb 26, 2012
 
 @author: Geoff
-'''
-from lampost.comm.broadcast import Broadcast
-from lampost.model.item import BaseItem
+"""
 import math
-import sys
+
+from lampost.comm.broadcast import Broadcast
+from lampost.context.resource import m_requires
+from lampost.model.item import BaseItem
+
+m_requires('log', __name__)
 
 class Entity(BaseItem):
     env = None
@@ -102,7 +105,7 @@ class Entity(BaseItem):
                 new_count = len(key_data)
                 if new_count == 2:
                     self.target_key_map[target_key + ("1",)] = [key_data[0]]
-                self.target_key_map[target_key + (unicode(new_count),)] = [target];
+                self.target_key_map[target_key + (unicode(new_count),)] = [target]
             else:
                 self.target_key_map[target_key] = [target]
             
@@ -257,17 +260,7 @@ class Entity(BaseItem):
     def refresh_all(self):
         self.refresh_soul()
         self.equip(self.inven)
-        self.change_env(self.env);
-            
-    def detach(self):
-        self.env = None
-        if getattr(self, "detached", None):
-            sys.stderr.write("Calling detached a second time")
-            return
-        for registration in self.registrations:
-            registration.detach()
-        self.registrations.clear()
-        self.detached = True
-            
+        self.change_env(self.env)
+
     def broadcast(self, broadcast):
         pass

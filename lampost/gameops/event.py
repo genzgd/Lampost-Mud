@@ -1,102 +1,96 @@
-import sys
+from collections import defaultdict
 from random import randint
-from lampost.context.resource import provides, requires, inject
- 
-MAX_PULSE_QUEUE = 100
-PULSE_TIME = .25
-PULSES_PER_SECOND = int(1 / PULSE_TIME)
+from twisted.internet import task
 
-inject(sys.modules[__name__], 'log')
+from lampost.context.resource import provides, requires
+from lampost.util.lmlog import logged
 
 @provides('dispatcher')
-@requires('log')
 class Dispatcher:
-    def __init__(self):
-        self.registrations = {}
-        self.pulse_map = {}
+    def __init__(self, max_pulse_queue = 100, pulse_interval = .25):
+        self._registrations = defaultdict(set)
+        self._pulse_map = defaultdict(set)
+        self._owner_map = defaultdict(set)
         self.pulse_count = 0
-      
+        self.max_pulse_queue = max_pulse_queue
+        self.pulse_interval = pulse_interval
+        self.pulses_per_second = 1 / pulse_interval
+
     def register(self, event_type, callback):
-        registration = Registration(event_type, callback)
-        self._add_registration(registration)
-        return registration
-        
+        return self._add_registration(Registration(event_type, callback))
+
     def unregister(self, registration):
         registration.cancel()
-        event_type = registration.event_type
-        event_registrations = self.registrations.get(event_type)
-        if event_registrations:
-            try:
-                event_registrations.remove(registration)
-            except KeyError:
-                error("No registration found for " + str(event_type))
-            if not event_registrations:
-                del self.registrations[event_type]
-        else:
-            self.dispatch("debug", "Attempt to unregister {0} with registration".format(str(event_type)))
+        owner_registrations = self._owner_map[registration.owner]
+        owner_registrations.remove(registration)
+        if not owner_registrations:
+            del self._owner_map[registration.owner]
+        event_registrations = self._registrations.get(registration.event_type)
+        event_registrations.remove(registration)
+        if not event_registrations:
+            del self._registrations[registration.event_type]
 
-    def register_p(self, freq, callback, randomize=0):
+    def register_p(self, callback, pulses=0, seconds=0, randomize=0):
+        if seconds:
+            pulses = int (seconds * self.pulses_per_second)
+            randomize = int (randomize * self.pulses_per_second)
+        if pulses >= self.max_pulse_queue:
+            raise ValueError("Pulse Frequency Greater Than Pulse Queue Size")
         if randomize:
             randomize = randint(0, randomize)
-        registration = PulseRegistration(freq, callback)
-        self._add_registration(registration)
+        registration = PulseRegistration(pulses, callback)
         self._add_pulse(self.pulse_count + randomize, registration)
-        return registration
+        return self._add_registration(registration)
 
     def dispatch(self, event_type, data=None):
-        event_registrations = self.registrations.get(event_type)
-        if event_registrations:
-            for registration in event_registrations.copy():
-                if data:
-                    registration.callback(data)
-                else:
-                    registration.callback()
-           
+        for registration in self._registrations.get(event_type, set()).copy():
+            if data:
+                registration.callback(data)
+            else:
+                registration.callback()
+
+    @logged
     def pulse(self):
-        self.dispatch("pulse")
-        events = self.pulse_map.get(self.pulse_count % MAX_PULSE_QUEUE, set())
-        for event in events:
-            if not event.freq:
-                continue
-            try:
+        self.dispatch('pulse')
+        map_loc = self.pulse_count % self.max_pulse_queue
+        for event in self._pulse_map[map_loc]:
+            if event.freq:
                 event.callback()
-            except:
-                error("Error processing event " + str(event))
-            self._add_pulse(self.pulse_count, event)
-        events.clear()
+                self._add_pulse(self.pulse_count, event)
+        del self._pulse_map[map_loc]
         self.pulse_count += 1
 
+    def detach_events(self, owner):
+        for registration in self._owner_map[owner].copy():
+            self.unregister(registration)
+
     def _add_registration(self, registration):
-        event_registrations = self.registrations.get(registration.event_type)
-        if not event_registrations:
-            event_registrations = set()
-            self.registrations[registration.event_type] = event_registrations
-        event_registrations.add(registration)
+        self._registrations[registration.event_type].add(registration)
+        self._owner_map[registration.owner].add(registration)
+        return registration
 
     def _add_pulse(self, start, event):
-        next_loc = (start + event.freq) % MAX_PULSE_QUEUE
-        event_set = self.pulse_map.get(next_loc)
-        if not event_set:
-            event_set = set()
-            self.pulse_map[next_loc] = event_set
-        event_set.add(event)
+        next_loc = (start + event.freq) % self.max_pulse_queue
+        self._pulse_map[next_loc].add(event)
 
-@requires('dispatcher')
-class Registration():
+    @logged
+    def _start_service(self):
+        task.LoopingCall(self.pulse).start(self.pulse_interval)
+
+
+class Registration(object):
     def __init__(self, event_type, callback):
         self.event_type = event_type
         self.callback = callback
-
-    def detach(self):
-        self.unregister(self)
+        self.owner = getattr(callback, 'im_self', self)
 
     def cancel(self):
         pass
 
+
 class PulseRegistration(Registration):
     def __init__(self, freq, callback):
-        self.event_type = "pulse_i"
-        self.callback = callback
+        super(PulseRegistration, self).__init__('pulse_i', callback)
         self.freq = freq
 
     def cancel(self):

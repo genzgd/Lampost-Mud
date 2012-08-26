@@ -19,7 +19,7 @@ class SessionManager():
         self.session_map = {}
         self.player_map = {}
         self.player_session_map = {}
-        self.register_p(20, self._refresh_link_status)
+        self.register_p(self._refresh_link_status, seconds=5)
 
     def get_session(self, session_id):
         return self.session_map.get(session_id)
@@ -82,7 +82,7 @@ class SessionManager():
             u_session_id = b64encode(str(urandom(16)))
         return u_session_id
 
-    def _refresh_link_status(self, *args):
+    def _refresh_link_status(self):
         now = datetime.now()
         for session_id, session in self.session_map.items():
             if session.ld_time:
@@ -174,7 +174,7 @@ class UserSession():
         if self.request:
             self.push(self.output.merge(LinkGood()))
             self.output = RootDTO()
-            self.pulse_reg.detach()
+            self.unregister(self.pulse_reg)
             self.pulse_reg = None
             
     def push(self, output):

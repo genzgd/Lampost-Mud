@@ -1,21 +1,19 @@
-'''
-Created on Feb 15, 2012
+import cgi
 
-@author: Geoff
-'''
 from datetime import datetime
-from json.decoder import JSONDecoder
-from lampost.context.resource import requires
-from lampost.dto.display import Display, DisplayLine
+
+from lampost.util.lmlog import logged
+from lampost.context.resource import m_requires, provides
+from lampost.dto.display import Display
 from lampost.dto.link import LinkError, ERROR_SESSION_NOT_FOUND, \
     ERROR_NOT_LOGGED_IN
 from lampost.dto.rootdto import RootDTO
+
+from twisted.internet import reactor
 from twisted.web.resource import Resource
-from twisted.web.server import NOT_DONE_YET
+from twisted.web.server import Site, NOT_DONE_YET
 from twisted.web.static import File
 from twisted.web.util import Redirect
-import cgi
-import traceback
 
 FILE_WEB_CLIENT = "ngclient"
 
@@ -27,13 +25,11 @@ URL_DIALOG = "dialog"
 URL_CONNECT = "connect"
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
-ARG_SESSION_ID = "session_id"
-ARG_USER_ID = "user_id"
-ARG_ACTION = "action"
-ARG_DIALOG_RESPONSE = "response"
+m_requires('sm', 'decode', 'log', __name__)
 
-class RootResource(Resource):
-    def __init__(self):
+@provides('web_server')
+class WebServer(Resource):
+    def __init__(self, port):
         Resource.__init__(self)
         self.putChild("", Redirect(URL_START))
         self.putChild(URL_WEB_CLIENT, File(FILE_WEB_CLIENT))
@@ -43,82 +39,66 @@ class RootResource(Resource):
         self.putChild(URL_CONNECT, ConnectResource())
         self.putChild(URL_DIALOG, DialogResource())
 
-@requires('sm', 'decode')
-class ChildResource(Resource):
-    IsLeaf = True
+    @logged
+    def _start_service(self):
+        reactor.listenTCP(self.port, Site(self))
+        reactor.run()
 
-class LoginResource(ChildResource):
-    def render_POST(self, request):
-        content = self.decode(request.content.getvalue());
-        session_id = content['session_id'];
-        session = self.sm.get_session(session_id)
-        if not session:
-            return LinkError(ERROR_SESSION_NOT_FOUND).json
-        user_id = content['user_id']
-        return self.sm.login(session, user_id).json
-    
-class ConnectResource(ChildResource):
-    def render_POST(self, request):
-        return self.sm.start_session().json
-    
-class LinkResource(ChildResource):
-    def render_POST(self, request):
-        content = self.decode(request.content.getvalue());
-        user_session = self.sm.session_map.get(content['session_id'])
-        if user_session:
-            user_session.attach(request)
-            return NOT_DONE_YET;
-        return LinkError(ERROR_SESSION_NOT_FOUND).json
 
-class DialogResource(ChildResource):
-    def render_POST(self, request):
-        try:
-            content = self.decode(request.content.getvalue());
-            session_id = content['session_id'];
-            session = self.sm.get_session(session_id)
-            if not session:
-                return  LinkError(ERROR_SESSION_NOT_FOUND).json
-            feedback = session.dialog_response(content)
-            if not feedback:
-                return RootDTO(silent=True)
-            if getattr(feedback, "json", None):
-                return feedback.json
-            else:
-                return Display(feedback).json
-        except:
-            display = Display()
-            display.append(DisplayLine(traceback.format_exc(), 0xff0000))
-            return display.json
-            
-            
-class ActionResource(ChildResource):
-    def render_POST(self, request):
-        try:
-            content = self.decode(request.content.getvalue());
-            session_id = content['session_id'];
-            session = self.get_session(session_id)
+def request(func):
+    @logged
+    def wrapper(self, request):
+        content = decode(request.content.getvalue())
+        session_id = content.get('session_id', None)
+        if session_id:
+            session = get_session(session_id)
             if not session:
                 return LinkError(ERROR_SESSION_NOT_FOUND).json
-            player = session.player  
-            if not player:
-                return LinkError(ERROR_NOT_LOGGED_IN).json
-            
-            action = cgi.escape(content['action']).strip()
-            if not action:
-                return;
-            if action in ["quit", "logout", "log out"]:
-                return self.sm.logout(session).json
-            
-            session.activity_time = datetime.now()
-            feedback = player.parse(action)
-            if not feedback:
-                return Display("Nothing appears to happen.").json
-            if getattr(feedback, "json", None):
-                return feedback.json
-            else:
-                return Display(feedback).json
-        except:
-            display = Display()
-            display.append(DisplayLine(traceback.format_exc(), 0xff0000))
-            return display.json
-            
+        if hasattr(self, 'raw'):
+            return func(self, session, request)
+        return func(self, content, session).json
+    return wrapper
+
+class ConnectResource(Resource):
+    @logged
+    def render_POST(self, request):
+        return start_session().json
+
+class LoginResource(Resource):
+    @request
+    def render_POST(self, content, session):
+        return login(session, content['user_id'])
+    
+class LinkResource(Resource):
+    raw = True
+    @request
+    def render_POST(self, session, request):
+        session.attach(request)
+        return NOT_DONE_YET
+
+class DialogResource(Resource):
+    @request
+    def render_POST(self, content, session):
+        feedback = session.dialog_response(content)
+        if not feedback:
+            return RootDTO(silent=True)
+        if getattr(feedback, "json", None):
+            return feedback
+        return Display(feedback)
+
+class ActionResource(Resource):
+    @request
+    def render_POST(self, content, session):
+        player = session.player
+        if not player:
+            return LinkError(ERROR_NOT_LOGGED_IN)
+        action = cgi.escape(content['action']).strip()
+        if action in ["quit", "logout", "log out"]:
+            return logout(session)
+        session.activity_time = datetime.now()
+        feedback = player.parse(action)
+        if not feedback:
+            return Display("Nothing appears to happen.")
+        if getattr(feedback, "json", None):
+            return feedback
+        return Display(feedback)

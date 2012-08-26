@@ -22,7 +22,7 @@ class TellAction(Action):
         return self.tell_message(source, args[0], command.partition(args[0])[2][1:])
         
     def tell_message(self, source, player_id, statement):
-        session = sm.player_session_map.get(player_id) #@UndefinedVariable
+        session = self.sm.user_session(player_id)
         if not session:
             return "Cannot find " + player_id
         player = session.player

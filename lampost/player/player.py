@@ -1,17 +1,11 @@
-'''
-Created on Feb 16, 2012
-
-@author: Geoff
-'''
 from lampost.datastore.dbo import RootDBO
 from lampost.dto.display import Display, DisplayLine
 from lampost.model.creature import Creature
-from lampost.model.entity import Entity
 
 class Player(Creature, RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor")
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor", "user_id")
    
     imm_level = 0
     build_mode = False
@@ -26,7 +20,7 @@ class Player(Creature, RootDBO):
         pass
         
     def start(self):
-        self.register_p(80, self.autosave)
+        self.register_p(self.autosave, seconds=20)
             
     def long_desc(self, observer):
         if self.desc:
@@ -81,7 +75,7 @@ class Player(Creature, RootDBO):
         pass
                                
     def detach(self):
-        Entity.detach(self)   
+        super(Player, self).detach()
         self.session = None
 
         

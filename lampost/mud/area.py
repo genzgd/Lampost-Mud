@@ -1,5 +1,4 @@
-import sys
-from lampost.context.resource import requires, inject
+from lampost.context.resource import requires, m_requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBODict
 from lampost.env.room import Room
 from lampost.gameops.template import TemplateException
@@ -7,7 +6,7 @@ from lampost.mobile.mobile import MobileTemplate
 from random import randint
 from lampost.model.article import ArticleTemplate
 
-inject(sys.modules[__name__], 'log')
+m_requires('log', __name__)
 
 @requires('dispatcher')
 class Area(RootDBO):
@@ -18,8 +17,8 @@ class Area(RootDBO):
         DBORef("articles", ArticleTemplate, "article")
     
     next_room_id = 1
-    reset_time = 180
-    reset_pulse = 20
+    reset_time = 180 # reset every 3 minutes
+    reset_pulse = 20 # we get the reset pulse every 20 seconds
     
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id
@@ -52,7 +51,7 @@ class Area(RootDBO):
     def on_loaded(self):
         self.reset()
         self.reset_wait = randint(-180, 0) #Start resets at staggered intervals 
-        self.reset_reg = self.dispatcher.register_p(self.reset_pulse * 4, self.check_reset, self.reset_pulse * 2)
+        self.reset_reg = self.register_p(self.check_reset, seconds=self.reset_pulse, randomize=10)
         
     def check_reset(self):
         self.reset_wait += self.reset_pulse
@@ -96,8 +95,4 @@ class Area(RootDBO):
             debug("No template for " + article_id)
         except TemplateException:
             pass
-            
-    def detach(self):
-        if self.reset_reg:
-            self.reset_reg.detach()
             

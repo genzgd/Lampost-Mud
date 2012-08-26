@@ -6,6 +6,16 @@ from lampost.context.resource import m_requires, provides
 
 m_requires('dispatcher', __name__)
 
+def logged(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            stderr.write(str(datetime.now()) + " Unhandled exception\n")
+            stderr.write(traceback.format_exc())
+            dispatch("error", traceback.format_exc())
+    return wrapper
+
 @provides('log')
 class Log(object):
     def db_log(self, log_msg):
@@ -15,6 +25,7 @@ class Log(object):
         dispatch("debug", debug_msg)
     
     def error(self, error_msg):
-        stderr.write(str(datetime.now()) + " " + (error_msg if error_msg else ""))
+        stderr.write(str(datetime.now()) + " " + (error_msg if error_msg else "") + "\n")
         stderr.write(traceback.format_exc())
         dispatch("error", error_msg)
+

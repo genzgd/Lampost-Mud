@@ -1,8 +1,3 @@
-'''
-Created on Mar 11, 2012
-
-@author: Geoff
-'''
 from lampost.context.resource import requires
 from lampost.datastore.dbo import RootDBO
 
@@ -39,29 +34,6 @@ class BaseItem(RootDBO):
             return
         self.target_aliases = [tuple(alias.split(" ")) for alias in self.aliases]
 
-        
-    def register(self, event_type, callback):
-        registration = self.dispatcher.register(event_type, callback)
-        self.registrations.add(registration)
-        return registration
-        
-    def unregister_type(self, event_type, callback):
-        detach_set = set()
-        for reg in self.registrations:
-            if reg.event_type == event_type and reg.callback == callback:
-                reg.detach()
-                detach_set.add(reg)
-        self.registrations.difference_update(detach_set)
-        
-    def unregister(self, registration):
-        registration.detach()
-        self.registrations.remove(registration)
-                 
-    def register_p(self, freq, callback):
-        registration = self.dispatcher.register_p(freq, callback)
-        self.registrations.add(registration)
-        return registration      
-        
     def short_desc(self, observer):
         return self.title
            
@@ -77,5 +49,11 @@ class BaseItem(RootDBO):
         if self.env:
             self.env.rec_entity_leaves(self)
         self.env = None
+
+    def detach(self):
+        self.detach_events(self)
+        self.detached = True
+        self.env = None
+
         
         
