@@ -4,6 +4,9 @@ lampost.service('lmDialog', ['$rootScope', '$compile', '$controller', '$template
     var dialogMap = {};
     var nextId = 0;
     var self = this;
+    var prevElement;
+    var enabledElements;
+    var enabledLinks;
 
     function showDialog(args) {
         if (args.templateUrl) {
@@ -17,21 +20,43 @@ lampost.service('lmDialog', ['$rootScope', '$compile', '$controller', '$template
         }
     }
 
-    function showDialogTemplate(args) {
-        var element = angular.element(args.template);
-        var dialog = {};
-        var dialogScope = args.scope || $rootScope.$new(true);
-        var enabledElements = $('button:enabled, selector:enabled, input:enabled, textarea:enabled');
-        var enabledLinks = $('a[href]');
-        dialog.id = "lmDialog_" + nextId++;
-        dialog.element = element;
-        dialog.scope = dialogScope;
-        dialog.prevElement = $(document.activeElement);
+    function disableUI() {
+        prevElement = $(document.activeElement);
+        enabledElements = $('button:enabled, selector:enabled, input:enabled, textarea:enabled');
+        enabledLinks = $('a[href]');
         enabledElements.attr('disabled', true);
         enabledLinks.each(function() {
             $(this).attr("data-oldhref", $(this).attr("href"));
             $(this).removeAttr("href");
+            })
+    }
+
+    function enableUI() {
+        enabledElements.removeAttr('disabled');
+        enabledLinks.each(function() {
+            $(this).attr("href", $(this).attr("data-oldhref"));
+            $(this).removeAttr("data-oldhref");
         });
+        $timeout(function () {
+            if (prevElement.closest('html').length) {
+                prevElement.focus();
+            } else {
+                $rootScope.$broadcast("refocus");
+            }
+        }, 0);
+    }
+
+    function showDialogTemplate(args) {
+        var element = angular.element(args.template);
+        var dialog = {};
+        var dialogScope = args.scope || $rootScope.$new(true);
+        if ($.isEmptyObject(dialogMap)) {
+           disableUI();
+        }
+
+        dialog.id = "lmDialog_" + nextId++;
+        dialog.element = element;
+        dialog.scope = dialogScope;
         dialogScope.dismiss = function() {
             element.modal("hide");
         };
@@ -50,20 +75,13 @@ lampost.service('lmDialog', ['$rootScope', '$compile', '$controller', '$template
             if (!dialogMap[dialog.id]) {
                 return;
             }
-            delete dialogMap[dialog.id];
             dialog.scope.finalize && dialog.scope.finalize();
-            enabledElements.removeAttr('disabled');
-            enabledLinks.each(function() {
-                $(this).attr("href", $(this).attr("data-oldhref"));
-                $(this).removeAttr("data-oldhref");
-            });
-            if (dialog.prevElement.closest('html').length) {
-                dialog.prevElement.focus();
-            } else {
-                $rootScope.$broadcast("refocus");
+            delete dialogMap[dialog.id];
+            dialog.element.remove();
+            if ($.isEmptyObject(dialogMap)) {
+                enableUI();
             }
             $timeout(function() {
-                dialog.element.remove();
                 dialog.scope.$destroy();
                 dialog = null;
             });

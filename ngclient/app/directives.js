@@ -13,16 +13,21 @@ lampost.directive("enterKey", function() {
     }
 });
 
-lampost.directive('scrollBottom', function() {
+lampost.directive('scrollBottom', ['$timeout', function($timeout) {
     return {
         restrict: 'A',
         link: function(scope, element, attrs) {
             scope.$watch(attrs.scrollBottom, function(newValue, oldValue) {
-                element.scrollTop(element[0].scrollHeight);
+                $timeout(function () {
+                    var scrollHeight = element[0].scrollHeight;
+                    if (scrollHeight) {
+                        element.scrollTop(scrollHeight);
+                    }
+                });
             })
         }
     };
-});
+}]);
 
 lampost.directive('history', function() {
     return {
@@ -49,17 +54,12 @@ lampost.directive("prefFocus", ['$rootScope', '$timeout', function($rootScope, $
     return {
         restrict: "A",
         link: function(scope, element) {
-            element.attr('autofocus', true);
-            element.attr('tabindex', 1);
             scope.$on("refocus", forceFocus);
-
             var timer = $timeout(forceFocus);
             function forceFocus() {
                 $timeout.cancel(timer);
-                element.focus();
+                $(element)[0].focus();
             }
-
         }
-
     }
 }]);

@@ -6,7 +6,7 @@
         </form>
     </div>
     <div ng-switch-default ng-controller="ActionController" class="v-full">
-       <div id="displayPane" scroll-bottom="update" class="telnet">
+       <div id="displayPane" scroll-bottom="update" class="telnet span12">
             <div ng-repeat="line in display" ng-style="line.style">{{line.text}}</div>
        </div>
        <div class="telnet-input">
@@ -21,7 +21,7 @@
 
     <div class="tab-content span12">
         <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
-            <table class="table table-condensed" >
+            <table class="table table-condensed">
                 <thead>
                     <tr>
                         <th class="span2">Name</th>

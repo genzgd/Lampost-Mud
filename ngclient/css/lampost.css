@@ -1,5 +1,6 @@
 * {
     margin: 0;
+
 }
 
 html, body {
@@ -18,6 +19,7 @@ div .v-full {
 div .telnet {
     height: 78%;
     overflow-y: scroll;
+    padding-bottom: 1.5%;
 }
 
 div .telnet-input {

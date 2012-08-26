@@ -272,7 +272,7 @@ class Describe(Action):
             target = self.datastore.load_cached(args[0])
         if not target:
             return "No object with that key found"
-        display = Display("&nbsp;")
+        display = Display(" ")
         for line in target.describe():
             display.append(DisplayLine(line))
         return display

@@ -17,7 +17,7 @@ lampost.service('lmGame', ['$rootScope', function($rootScope) {
             var color = parseInt(line.color).toString(16).toUpperCase();
             color = '#' + padding.substring(0, 6-color.length) + color;
             line.style = {color: color};
-            self.display.push(lines[i]);
+            self.display.push(line);
         }
         if (self.display.length > maxLines) {
             self.display.splice(0, maxLines - self.display.length);

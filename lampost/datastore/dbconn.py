@@ -25,7 +25,7 @@ class RedisStore():
         self.redis.set(key, self.encode(json_obj))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, key)
-        self.dispatcher.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
+        self.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
         self.object_map[dbo.dbo_key] = dbo;
     
     def build_json(self, dbo):
@@ -55,7 +55,7 @@ class RedisStore():
     def load_cached(self, key):
         return self.object_map.get(key)
     
-    def evict(self, dbo):
+    def evict_object(self, dbo):
         try:
             del self.object_map[dbo.dbo_key]
         except:

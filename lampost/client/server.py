@@ -96,7 +96,7 @@ class ActionResource(ChildResource):
         try:
             content = self.decode(request.content.getvalue());
             session_id = content['session_id'];
-            session = self.sm.get_session(session_id)
+            session = self.get_session(session_id)
             if not session:
                 return LinkError(ERROR_SESSION_NOT_FOUND).json
             player = session.player  

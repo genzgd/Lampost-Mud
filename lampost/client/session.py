@@ -24,6 +24,9 @@ class SessionManager():
     def get_session(self, session_id):
         return self.session_map.get(session_id)
 
+    def user_session(self, user_id):
+        return self.player_session_map.get(user_id, None)
+
     def start_session(self):
         session_id = self._get_next_id()
         session = UserSession()
@@ -32,7 +35,7 @@ class SessionManager():
 
     def login(self, session, user_id):
         user_id = user_id.lower()
-        old_session = self.player_session_map.get(user_id)
+        old_session = self.user_session(user_id)
         if old_session:
             player = old_session.player
             if old_session == session: #Could happen with some weird timing, apparently
@@ -45,7 +48,7 @@ class SessionManager():
             kill_message.merge(DialogDTO(kill_dialog))
             old_session.append(kill_message)
         else:
-            player = self.datastore.load_object(Player, user_id)
+            player = self.load_object(Player, user_id)
             if not player:
                 no_player_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player")
                 return DialogDTO(no_player_dialog)
@@ -68,8 +71,8 @@ class SessionManager():
         player.detach()
         session.player = None
         del self.player_map[player.dbo_id]
-        self.datastore.save_object(player)
-        self.datastore.evict(player)
+        self.save_object(player)
+        self.evict_object(player)
         del self.player_session_map[player.dbo_id]
         return self._respond(RootDTO(logout="logout"))
 
@@ -150,7 +153,7 @@ class UserSession():
     
     def append(self, data):
         if not self.pulse_reg:
-            self.pulse_reg = self.dispatcher.register("pulse", self.push_output)
+            self.pulse_reg = self.register("pulse", self.push_output)
         self.output.merge(data)
          
     def display_line(self, display_line):
