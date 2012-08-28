@@ -15,8 +15,9 @@ class DBODict(dict):
         return self.itervalues()
         
     def remove(self, dbo):
-        del self[dbo.dbo_id]  
+        del self[dbo.dbo_id]
 
+#noinspection PyUnresolvedReferences
 @requires('datastore')
 class RootDBO(object): 
     __metaclass__ = RootDBOMeta   
@@ -36,7 +37,7 @@ class RootDBO(object):
     def dbo_set_key(self):
         if self.dbo_set_type:
             return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
-            
+
     def on_loaded(self):
         pass
         
@@ -44,7 +45,7 @@ class RootDBO(object):
         pass
          
     def autosave(self):
-        self.datastore.save_object(self, autosave=True)
+        self.save_object(self, autosave=True)
 
     def describe(self, level=0, follow_refs=True):
         display = []

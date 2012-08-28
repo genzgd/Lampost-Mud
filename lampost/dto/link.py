@@ -1,10 +1,6 @@
-'''
-Created on Feb 19, 2012
-
-@author: Geoff
-'''
 ERROR_SESSION_NOT_FOUND = "no_session"
 ERROR_NOT_LOGGED_IN = "no_login"
+ERROR_NO_SESSION_ID = "no_session_id"
 
 LINK_GOOD = "good"
 LINK_CANCEL = "cancel"

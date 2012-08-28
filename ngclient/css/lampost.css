@@ -19,12 +19,11 @@ div .v-full {
 div .telnet {
     height: 78%;
     overflow-y: scroll;
-    padding-bottom: 1.5%;
+    margin-bottom: 1.5%;
 }
 
 div .telnet-input {
     height: 20%;
-    padding-top: 1.5%;
 }
 
 .telnet-input textarea {

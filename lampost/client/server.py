@@ -5,8 +5,7 @@ from datetime import datetime
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, provides
 from lampost.dto.display import Display
-from lampost.dto.link import LinkError, ERROR_SESSION_NOT_FOUND, \
-    ERROR_NOT_LOGGED_IN
+from lampost.dto.link import *
 from lampost.dto.rootdto import RootDTO
 
 from twisted.internet import reactor
@@ -27,6 +26,7 @@ URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 m_requires('sm', 'decode', 'log', __name__)
 
+#noinspection PyUnresolvedReferences
 @provides('web_server')
 class WebServer(Resource):
     def __init__(self, port):
@@ -47,16 +47,18 @@ class WebServer(Resource):
 
 
 def request(func):
+    #noinspection PyUnresolvedReferences
     @logged
     def wrapper(self, request):
         content = decode(request.content.getvalue())
         session_id = content.get('session_id', None)
-        if session_id:
-            session = get_session(session_id)
-            if not session:
-                return LinkError(ERROR_SESSION_NOT_FOUND).json
-        if hasattr(self, 'raw'):
-            return func(self, session, request)
+        if not session_id:
+            return LinkError(ERROR_SESSION_NOT_FOUND).json
+        session = get_session(session_id)
+        if not session:
+            return LinkError(ERROR_NO_SESSION_ID).json
+        if getattr(self, 'Raw', False):
+            return func(self, request, session)
         return func(self, content, session).json
     return wrapper
 
@@ -71,9 +73,9 @@ class LoginResource(Resource):
         return login(session, content['user_id'])
     
 class LinkResource(Resource):
-    raw = True
+    Raw = True
     @request
-    def render_POST(self, session, request):
+    def render_POST(self, request, session):
         session.attach(request)
         return NOT_DONE_YET
 

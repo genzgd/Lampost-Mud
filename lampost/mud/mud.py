@@ -16,7 +16,6 @@ from lampost.immortal.builder import Dig, RoomList, UnDig, SetDesc, SetTitle, Ba
 from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
-from lampost.gameops.config import Config
 from lampost.action.inventory import GetAction, ShowInventory, DropAction
 from lampost.model.article import Article, ArticleTemplate
 
@@ -31,8 +30,8 @@ class MudNature():
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
         look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-        self.basic_soul = set((look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),\
-                               ShowInventory(), Socials(), GetAction(), DropAction()))
+        self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
+                           ShowInventory(), Socials(), GetAction(), DropAction()}
         self.imm_commands = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
                        RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
                        AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
@@ -75,15 +74,11 @@ class MudNature():
         self.mud.enhance_player(player)
         self.mud.start_player(player)
 
-@requires('datastore', 'dispatcher')
+@requires('datastore', 'dispatcher', 'config')
 class Mud():
     def __init__(self):
         MobileTemplate.mud = self
-        self.config =  self.datastore.load_object(Config, "config")
-        if not self.config:
-            self.config = Config()
-            self.datastore.save_object(self.config)
-     
+
         self.flavor = MercFlavor()
         self.flavor.apply_mobile(Mobile)
         self.flavor.apply_mobile_template(MobileTemplate)

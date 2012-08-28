@@ -1,4 +1,6 @@
-lampost.directive("enterKey", function() {
+angular.module('lampost_dir', []);
+
+angular.module('lampost_dir').directive("enterKey", function() {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
@@ -13,11 +15,11 @@ lampost.directive("enterKey", function() {
     }
 });
 
-lampost.directive('scrollBottom', ['$timeout', function($timeout) {
+angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function($timeout) {
     return {
         restrict: 'A',
         link: function(scope, element, attrs) {
-            scope.$watch(attrs.scrollBottom, function(newValue, oldValue) {
+            scope.$watch(attrs.scrollBottom, function() {
                 $timeout(function () {
                     var scrollHeight = element[0].scrollHeight;
                     if (scrollHeight) {
@@ -29,10 +31,10 @@ lampost.directive('scrollBottom', ['$timeout', function($timeout) {
     };
 }]);
 
-lampost.directive('history', function() {
+angular.module('lampost_dir').directive('history', function() {
     return {
         restrict: 'A',
-        link: function(scope, element, attr) {
+        link: function(scope, element) {
             element.bind('keydown', function(event) {
                 var apply = null;
                 if (event.keyCode == 38) {
@@ -50,7 +52,7 @@ lampost.directive('history', function() {
     }
 });
 
-lampost.directive("prefFocus", ['$rootScope', '$timeout', function($rootScope, $timeout) {
+angular.module('lampost_dir').directive("prefFocus", ['$rootScope', '$timeout', function($rootScope, $timeout) {
     return {
         restrict: "A",
         link: function(scope, element) {

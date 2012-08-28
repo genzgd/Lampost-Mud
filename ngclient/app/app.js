@@ -1,6 +1,6 @@
-var lampost = angular.module('lampost', []);
+angular.module('lampost', ['lampost_dir', 'lampost_svc']);
 
-lampost.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+angular.module('lampost').config(['$routeProvider', function($routeProvider) {
     $routeProvider.
         when('/game', {templateUrl: 'view/main.html',   controller: GameController}).
         when('/editor', {templateUrl: 'view/editor.html'}).
@@ -8,18 +8,13 @@ lampost.config(['$routeProvider', '$locationProvider', function($routeProvider, 
         otherwise({redirectTo: '/game'});
 }]);
 
-lampost.service('lmLog', function() {
-    this.log  = function(msg) {
-       if (window.console) {
-           window.console.log(msg);
-       }
-   }
-});
-
-lampost.run(['$rootScope', 'lmRemote', 'lmGame',  function($rootScope, lmRemote, lmGame) {
+// Using here so they get instantiated.
+//noinspection JSUnusedLocalSymbols
+angular.module('lampost').run(['$rootScope', 'lmRemote', 'lmGame',  function($rootScope, lmRemote, lmGame) {
     $rootScope.$broadcast("server_request", "connect");
 }]);
 
+//noinspection JSUnusedGlobalSymbols
 function NavController($scope) {
     $(window).on("resize", function() {
         $scope.$apply(resize);
@@ -47,6 +42,7 @@ function GameController($scope, lmDialog, lmGame) {
     );
 }
 
+//noinspection JSUnusedGlobalSymbols
 function LoginController($rootScope, $scope) {
     $scope.email = "";
     $scope.login = function() {
@@ -56,25 +52,27 @@ function LoginController($rootScope, $scope) {
     };
 }
 
+//LoginController
+
 function ActionController($rootScope, $scope, lmGame) {
 
     var curAction;
     $scope.update = 0;
     $scope.action = "";
     $scope.display = lmGame.display;
-    $scope.$on("display_update", function() {
+    $scope.$on("display_update", function () {
         $scope.display = lmGame.display;
         $scope.update++;
-    })
-    $scope.sendAction = function() {
+    });
+    $scope.sendAction = function () {
         if (this.action) {
-            $rootScope.$broadcast("server_request", "action", {action: this.action});
+            $rootScope.$broadcast("server_request", "action", {action:this.action});
             lmGame.history.push(this.action);
             lmGame.historyIx = lmGame.history.length;
             this.action = "";
         }
-    }
-    $scope.historyUp = function() {
+    };
+    $scope.historyUp = function () {
         if (lmGame.historyIx > 0) {
             if (lmGame.historyIx == lmGame.history.length) {
                 curAction = this.action;
@@ -82,7 +80,7 @@ function ActionController($rootScope, $scope, lmGame) {
             lmGame.historyIx--;
             this.action = lmGame.history[lmGame.historyIx];
         }
-    }
+    };
     $scope.historyDown = function() {
         if (lmGame.historyIx < lmGame.history.length) {
             lmGame.historyIx++;

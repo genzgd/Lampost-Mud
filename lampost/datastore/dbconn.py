@@ -20,15 +20,15 @@ class RedisStore():
     def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:
             dbo.dbo_rev = getattr(dbo, "dbo_rev", 0) + 1
-        json_obj = self.build_json(dbo)
+        json_obj = self._build_json(dbo)
         key = dbo.dbo_key
         self.redis.set(key, self.encode(json_obj))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, key)
         self.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
-        self.object_map[dbo.dbo_key] = dbo;
-    
-    def build_json(self, dbo):
+        self.object_map[dbo.dbo_key] = dbo
+
+    def _build_json(self, dbo):
         dbo.before_save()
         json_obj = {}
         if dbo.__class__ != dbo.dbo_base_class:
@@ -41,7 +41,7 @@ class RedisStore():
                 if dbo_col.key_type:
                     coll_list.append(child_dbo.dbo_id)
                 else:
-                    coll_list.append(self.build_json(child_dbo))
+                    coll_list.append(self._build_json(child_dbo))
             json_obj[dbo_col.field_name] = coll_list
         for dbo_ref in dbo.dbo_refs:
             ref = getattr(dbo, dbo_ref.field_name, None)
@@ -104,14 +104,15 @@ class RedisStore():
             coll = getattr(dbo, dbo_col.field_name, [])
             try:
                 for child_json in json_obj[dbo_col.field_name]:
-                    if dbo_col.key_type:
-                        child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
-                    else:
-                        child_dbo = self.load_class(child_json, dbo_col.base_class)()
-                        self.load_json(child_dbo, child_json)
-                    coll.append(child_dbo)
-            except AttributeError:
-                db_log("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)))
+                    try:
+                        if dbo_col.key_type:
+                            child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
+                        else:
+                            child_dbo = self.load_class(child_json, dbo_col.base_class)()
+                            self.load_json(child_dbo, child_json)
+                        coll.append(child_dbo)
+                    except AttributeError:
+                        db_log("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)))
             except KeyError:
                 if dbo.dbo_key_type:
                     db_log("db: Object " + unicode(dbo.dbo_key) + " json missing collection " + dbo_col.field_name)

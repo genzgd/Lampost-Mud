@@ -1,4 +1,4 @@
-lampost.service('lmGame', ['$rootScope', function($rootScope) {
+angular.module('lampost').service('lmGame', ['$rootScope', function($rootScope) {
 
     var maxLines = 1000;
     var padding = "00000000";
@@ -10,6 +10,7 @@ lampost.service('lmGame', ['$rootScope', function($rootScope) {
     this.history = [];
     this.historyIx = 0;
 
+    //noinspection JSUnusedLocalSymbols
     function updateDisplay(event, display) {
         var lines = display.lines;
         for (var i = 0; i < lines.length; i++) {
