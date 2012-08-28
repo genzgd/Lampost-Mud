@@ -1,6 +1,7 @@
 import cgi
 
 from datetime import datetime
+from lampost.client.lsp import GeneratedResource
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, provides
@@ -22,11 +23,12 @@ URL_ACTION = "action"
 URL_LINK = "link"
 URL_DIALOG = "dialog"
 URL_CONNECT = "connect"
+URL_GENERATED = "lsp"
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 m_requires('sm', 'decode', 'log', __name__)
 
-#noinspection PyUnresolvedReferences
+
 @provides('web_server')
 class WebServer(Resource):
     def __init__(self, port):
@@ -39,7 +41,9 @@ class WebServer(Resource):
         self.putChild(URL_ACTION, ActionResource())
         self.putChild(URL_CONNECT, ConnectResource())
         self.putChild(URL_DIALOG, DialogResource())
+        self.putChild(URL_GENERATED, GeneratedResource())
 
+    #noinspection PyUnresolvedReferences
     @logged
     def _start_service(self):
         reactor.listenTCP(self.port, Site(self))
@@ -47,14 +51,13 @@ class WebServer(Resource):
 
 
 def request(func):
-    #noinspection PyUnresolvedReferences
     @logged
     def wrapper(self, request):
         content = decode(request.content.getvalue())
         session_id = content.get('session_id', None)
         if not session_id:
             return LinkError(ERROR_SESSION_NOT_FOUND).json
-        session = get_session(session_id)
+        session = sm.get_session(session_id)
         if not session:
             return LinkError(ERROR_NO_SESSION_ID).json
         if getattr(self, 'Raw', False):
@@ -65,12 +68,12 @@ def request(func):
 class ConnectResource(Resource):
     @logged
     def render_POST(self, request):
-        return start_session().json
+        return sm.start_session().json
 
 class LoginResource(Resource):
     @request
     def render_POST(self, content, session):
-        return login(session, content['user_id'])
+        return sm.login(session, content['user_id'])
     
 class LinkResource(Resource):
     Raw = True
@@ -97,7 +100,7 @@ class ActionResource(Resource):
             return LinkError(ERROR_NOT_LOGGED_IN)
         action = cgi.escape(content['action']).strip()
         if action in ["quit", "logout", "log out"]:
-            return logout(session)
+            return sm.logout(session)
         session.activity_time = datetime.now()
         feedback = player.parse(action)
         if not feedback:
@@ -105,3 +108,5 @@ class ActionResource(Resource):
         if getattr(feedback, "json", None):
             return feedback
         return Display(feedback)
+
+

@@ -8,13 +8,15 @@
 </head>
 
 <body ng-controller="NavController">
-    <div id="lm-navbar" class="navbar">
+    <div id="lm-navbar" class="navbar" ng-cloak >
         <div class="navbar-inner">
-            <a class="brand" ng-href="#game">Lampost-Mud</a>
+            <a class="brand" ng-href="#game">{{siteTitle}}</a>
             <ul class="nav">
-                <li><a ng-href="#game">Home</a></li>
-                <li><a ng-href="#account">Account</a></li>
+                <li ng-repeat="link in links | orderBy:'priority'" ng-class="linkClass(link.name)">
+                    <a  ng-href="#{{link.name}}">{{link.label}}</a>
+                </li>
             </ul>
+            <a class="pull-right" id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>
         </div>
     </div>
     <div class="container-fluid" ng-style="mainHeight">
@@ -28,5 +30,6 @@
     <script src="app/directives.js"></script>
     <script src="app/app.js"></script>
     <script src="app/game.js"></script>
+    <script src="/lsp/config.js"></script>
 </body>
 </html>

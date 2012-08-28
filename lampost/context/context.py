@@ -18,7 +18,7 @@ class Context():
         dispatcher = Dispatcher()
         register('decode', JSONDecoder().decode)
         register('encode', JSONEncoder().encode)
-        data_store = RedisStore(db_host, db_port, db_num, db_pw)
+        data_store = RedisStore(db_host, int(db_port), int(db_num), db_pw)
         SessionManager()
         web_server = WebServer(port)
         MudNature()

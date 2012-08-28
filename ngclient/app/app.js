@@ -15,10 +15,19 @@ angular.module('lampost').run(['$rootScope', 'lmRemote', 'lmGame',  function($ro
 }]);
 
 //noinspection JSUnusedGlobalSymbols
-function NavController($scope) {
+function NavController($scope, $location) {
+
+    $scope.links = [{name:"game", label:"Mud", priority:0},
+        {name:"account", label:"Account", priority:100}];
+
+    $scope.siteTitle = lampost_config.title;
     $(window).on("resize", function() {
         $scope.$apply(resize);
     });
+
+    $scope.linkClass = function(name) {
+        return ($location.path() == '/' + name) ? "active" : "";
+    };
 
     resize();
     function resize() {

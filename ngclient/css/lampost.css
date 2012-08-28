@@ -8,6 +8,11 @@ html, body {
     overflow-y: hidden;
 }
 
+#powered-link {
+    padding-top: 12px;
+    font-style: italic;
+}
+
 .main-display {
     height: 96%;
 }

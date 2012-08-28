@@ -2,10 +2,10 @@ from collections import defaultdict
 from random import randint
 from twisted.internet import task
 
-from lampost.context.resource import provides, requires
+from lampost.context.resource import provides
 from lampost.util.lmlog import logged
 
-@provides('dispatcher')
+@provides('dispatcher', True)
 class Dispatcher:
     def __init__(self, max_pulse_queue = 100, pulse_interval = .25):
         self._registrations = defaultdict(set)
@@ -42,15 +42,16 @@ class Dispatcher:
         self._add_pulse(self.pulse_count + randomize, registration)
         return self._add_registration(registration)
 
-    def dispatch(self, event_type, data=None):
+    def dispatch(self, event_type, *args, **kwargs):
         for registration in self._registrations.get(event_type, set()).copy():
-            if data:
-                registration.callback(data)
-            else:
-                registration.callback()
+            registration.callback(*args, **kwargs)
+
+    def detach_events(self, owner):
+        for registration in self._owner_map[owner].copy():
+            self.unregister(registration)
 
     @logged
-    def pulse(self):
+    def _pulse(self):
         self.dispatch('pulse')
         map_loc = self.pulse_count % self.max_pulse_queue
         for event in self._pulse_map[map_loc]:
@@ -59,10 +60,6 @@ class Dispatcher:
                 self._add_pulse(self.pulse_count, event)
         del self._pulse_map[map_loc]
         self.pulse_count += 1
-
-    def detach_events(self, owner):
-        for registration in self._owner_map[owner].copy():
-            self.unregister(registration)
 
     def _add_registration(self, registration):
         self._registrations[registration.event_type].add(registration)
@@ -75,7 +72,7 @@ class Dispatcher:
 
     @logged
     def _start_service(self):
-        task.LoopingCall(self.pulse).start(self.pulse_interval)
+        task.LoopingCall(self._pulse).start(self.pulse_interval)
 
 
 class Registration(object):

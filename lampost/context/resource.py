@@ -6,12 +6,13 @@ def _inject(cls, name, service):
         if not getattr(cls, attr, None):
             setattr(cls, attr, value)
 
-def register(name, service):
+def register(name, service, export_methods=False):
     _registry[name] = service
-    _methods[name] = {}
-    for attr, value in service.__class__.__dict__.iteritems():
-        if not attr.startswith("_") and hasattr(value, '__call__'):
-            _methods[name][attr] = value.__get__(service, service.__class__)
+    if export_methods:
+        _methods[name] = {}
+        for attr, value in service.__class__.__dict__.iteritems():
+            if not attr.startswith("_") and hasattr(value, '__call__'):
+                _methods[name][attr] = value.__get__(service, service.__class__)
     for cls in _consumers.get(name, []):
         _inject(cls, name, service)
     if _consumers.get(name, None):
@@ -25,12 +26,12 @@ def inject(cls, name):
     _consumers[name] = _consumers.get(name, [])
     _consumers[name].append(cls)
 
-def provides(name):
+def provides(name, export_methods=False):
     def wrapper(cls):
         original_init = cls.__init__
         def init_and_register(self, *args, **kwargs):
             original_init(self, *args, **kwargs)
-            register(name, self)
+            register(name, self, export_methods)
         cls.__init__ = init_and_register
         return cls
     return wrapper

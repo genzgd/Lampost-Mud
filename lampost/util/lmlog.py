@@ -16,7 +16,7 @@ def logged(func):
             dispatch("error", traceback.format_exc())
     return wrapper
 
-@provides('log')
+@provides('log', True)
 class Log(object):
     def db_log(self, log_msg):
         dispatch("db_log", log_msg)

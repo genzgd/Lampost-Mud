@@ -4,7 +4,7 @@ from lampost.context.resource import requires, provides, m_requires
 
 m_requires('log', __name__)
 
-@provides('datastore')
+@provides('datastore', True)
 @requires('dispatcher', 'decode', 'encode')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):

@@ -1,8 +1,3 @@
-'''
-Created on Mar 4, 2012
-
-@author: Geoffrey
-'''
 from lampost.action.action import Action
 from lampost.client.dialog import Dialog, DIALOG_TYPE_CONFIRM
 from lampost.comm.broadcast import SingleBroadcast
@@ -46,7 +41,7 @@ class GotoPlayer(Action):
     def execute(self, source, args, **ignored):
         if not args:
             return "player name required"
-        session = self.sm.player_session_map.get(args[0]) #@UndefinedVariable
+        session = self.sm.user_session(args[0]) #@UndefinedVariable
         if not session:
             return "Cannot find " + args[0]
         source.change_env(session.player.env)
@@ -240,7 +235,7 @@ class DeletePlayer(Action):
         if not args:
             return "Player name not specified"
         player_id = args[0].lower()
-        if self.sm.player_session_map.get(player_id): #@UndefinedVariable
+        if self.sm.user_session(player_id): #@UndefinedVariable
             return "Player " + player_id + " logged in, cannot delete."
         todie = self.load_object(Player, player_id)
         if todie:
