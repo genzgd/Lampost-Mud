@@ -45,6 +45,17 @@ class MudNature():
         self.mud.add_area(self.citadel)
         self.citadel.on_loaded()
         self.basic_soul.add(self.shout_channel)
+
+    def editors(self, player):
+        editors = []
+        if player.imm_level >= IMM_LEVELS['supreme']:
+            editors.append('config')
+        if player.imm_level >= IMM_LEVELS['admin']:
+            editors.append('players')
+            editors.append('socials')
+        if player.imm_level >= IMM_LEVELS['creator']:
+            editors.append('areas')
+        return editors
               
     def baptise(self, player):      
         if not getattr(player, "mudflavor", None):

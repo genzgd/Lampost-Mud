@@ -9,8 +9,9 @@ html, body {
 }
 
 #powered-link {
-    padding-top: 12px;
+    padding-top: 16px;
     font-style: italic;
+    font-size: 11px;
 }
 
 .main-display {

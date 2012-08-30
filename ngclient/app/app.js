@@ -11,30 +11,49 @@ angular.module('lampost').config(['$routeProvider', function($routeProvider) {
 // Using here so they get instantiated.
 //noinspection JSUnusedLocalSymbols
 angular.module('lampost').run(['$rootScope', 'lmRemote', 'lmGame',  function($rootScope, lmRemote, lmGame) {
+    window.onbeforeunload = function() {
+      $rootScope.windowClosing = true;
+    };
+    $rootScope.siteTitle = lampost_config.title;
+    $('title').text($rootScope.siteTitle);
     $rootScope.$broadcast("server_request", "connect");
 }]);
 
-//noinspection JSUnusedGlobalSymbols
+
 function NavController($scope, $location) {
+    var baseLinks = [{name:"game", label:"Mud", priority:0},
+        {name:"account", label:"Account", priority:50}];
 
-    $scope.links = [{name:"game", label:"Mud", priority:0},
-        {name:"account", label:"Account", priority:100}];
+    function validatePath()  {
+        $scope.links = baseLinks.slice();
+        for (var i = 0; i < baseLinks.length; i++) {
+            if ($location.path() == '/' + name) {
+                return;
+            }
+        }
+        $location.path('/' + baseLinks[0].name);
+    }
 
-    $scope.siteTitle = lampost_config.title;
-    $(window).on("resize", function() {
-        $scope.$apply(resize);
+    validatePath();
+    $scope.$on("login", function(event, loginData) {
+        $scope.editors = loginData.editors;
+        if (loginData.editors) {
+           $scope.links.push({name:"editor", label:"Editor", priority:100});
+        }
+});
+
+    $scope.$on("logout", function() {
+        validatePath();
     });
 
     $scope.linkClass = function(name) {
         return ($location.path() == '/' + name) ? "active" : "";
     };
 
-    resize();
-    function resize() {
-        var newHeight = $(window).height() - $('#lm-navbar').height() - 18;
-        $scope.mainHeight = {height: newHeight.toString() + "px"};
-    }
+
 }
+NavController.$inject = ['$scope', '$location'];
+
 
 function GameController($scope, lmDialog, lmGame) {
     $scope.$on("logout", function(event, data) {
@@ -49,9 +68,20 @@ function GameController($scope, lmDialog, lmGame) {
             $scope.actionPane = "action";
         }
     );
-}
 
-//noinspection JSUnusedGlobalSymbols
+    $(window).on("resize", function() {
+        $scope.$apply(resize);
+    });
+
+    resize();
+    function resize() {
+        var newHeight = $(window).height() - $('#lm-navbar').height() - 18;
+        $scope.gameHeight = {height: newHeight.toString() + "px"};
+    }
+}
+GameController.$inject = ['$scope', 'lmDialog', 'lmGame'];
+
+
 function LoginController($rootScope, $scope) {
     $scope.email = "";
     $scope.login = function() {
@@ -60,11 +90,10 @@ function LoginController($rootScope, $scope) {
         }
     };
 }
+LoginController.$inject = ['$rootScope', '$scope'];
 
-//LoginController
 
 function ActionController($rootScope, $scope, lmGame) {
-
     var curAction;
     $scope.update = 0;
     $scope.action = "";
@@ -101,4 +130,5 @@ function ActionController($rootScope, $scope, lmGame) {
         }
     }
 }
+ActionController.$inject = ['$rootScope', '$scope', 'lmGame'];
 

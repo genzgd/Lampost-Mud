@@ -13,7 +13,6 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
 
         var sessionId = 0;
         var connected = true;
-        var windowClosed = false;
         var reconnectTemplate = '<div class="modal fade hide">' +
             '<div class="modal-header"><h3>Reconnecting To Server</h3></div>' +
             '<div class="modal-body"><p>Reconnecting in {{time}} seconds.</p></div>' +
@@ -39,7 +38,7 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
                 connected = false;
                 lmLog.log("Link stopped: " + status);
                 $timeout(function() {
-                    if (!connected && !windowClosed) {
+                    if (!connected && !$rootScope.windowClosing) {
                         lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
                     }
                 }, 100);
@@ -93,9 +92,6 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
         $rootScope.$on("link_status", onLinkStatus);
         $rootScope.$on("server_request", onServerRequest);
 
-        $(window).unload(function() {
-            windowClosed = true;
-        });
 
         function ReconnectController($scope, $timeout) {
 

@@ -1,35 +1,34 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="lampost" xmlns="http://www.w3.org/1999/html">
 <head>
-    <meta charset="utf-8">
-    <title>Lampost Mud</title>
-    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link href="css/lampost.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <title>Lampost Mud</title>
+  <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+  <link href="css/lampost.css" rel="stylesheet">
 </head>
 
 <body ng-controller="NavController">
-    <div id="lm-navbar" class="navbar" ng-cloak >
-        <div class="navbar-inner">
-            <a class="brand" ng-href="#game">{{siteTitle}}</a>
-            <ul class="nav">
-                <li ng-repeat="link in links | orderBy:'priority'" ng-class="linkClass(link.name)">
-                    <a  ng-href="#{{link.name}}">{{link.label}}</a>
-                </li>
-            </ul>
-            <a class="pull-right" id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>
-        </div>
-    </div>
-    <div class="container-fluid" ng-style="mainHeight">
-        <div ng-view class="row-fluid main-display" ng-include="'view/main.html'"></div>
-    </div>
+<div id="lm-navbar" class="navbar" ng-cloak>
+  <div class="navbar-inner">
+    <a class="brand" ng-href="#game">{{siteTitle}}</a>
+    <ul class="nav">
+      <li ng-repeat="link in links | orderBy:'priority'" ng-class="linkClass(link.name)">
+        <a ng-href="#{{link.name}}">{{link.label}}</a>
+      </li>
+    </ul>
+    <a class="pull-right" id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>
+  </div>
+</div>
+<div ng-view></div>
 
-    <script src="lib/jquery-1.8.0.min.js"></script>
-    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
-    <script src="lib/angular-1.0.1.js"></script>
-    <script src="app/services.js"></script>
-    <script src="app/directives.js"></script>
-    <script src="app/app.js"></script>
-    <script src="app/game.js"></script>
-    <script src="/lsp/config.js"></script>
+<script src="lib/jquery-1.8.0.min.js"></script>
+<script src="lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="lib/angular-1.0.1.js"></script>
+<script src="app/services.js"></script>
+<script src="app/directives.js"></script>
+<script src="app/app.js"></script>
+<script src="app/game.js"></script>
+<script src="app/editor.js"></script>
+<script src="/lsp/config.js"></script>
 </body>
 </html>

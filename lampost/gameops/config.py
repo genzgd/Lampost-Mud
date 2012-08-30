@@ -16,7 +16,7 @@ class Config(RootDBO):
         self.dbo_id = dbo_id
 
     def on_loaded(self):
-        self.lsp.add_content("config.js", "var lampost_config = {{title:'{0}', description:'{1}'}};".format(self.title, self.description))
+        self.lsp.add_js("config.js", "var lampost_config = {{title:'{0}', description:'{1}'}};".format(self.title, self.description))
 
 
 

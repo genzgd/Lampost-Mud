@@ -1,42 +1,46 @@
-<div ng-switch on="actionPane" class="span6 v-full">
-    <div ng-switch-when="login" ng-controller="LoginController">
+<div class="container-fluid" ng-style="gameHeight">
+  <div class="row-fluid main-display">
+    <div ng-switch on="actionPane" class="span6 v-full">
+      <div ng-switch-when="login" ng-controller="LoginController">
         <form ng-submit="login()">
-            <label for="player_input">Player Name:</label>
-            <input id="player_input" type="text" ng-model="email" pref-focus/>
+          <label for="player_input">Player Name:</label>
+          <input id="player_input" type="text" ng-model="email" pref-focus/>
         </form>
-    </div>
-    <div ng-switch-default ng-controller="ActionController" class="v-full">
-       <div id="displayPane" scroll-bottom="update" class="telnet span12">
-            <div ng-repeat="line in display" ng-style="line.style">{{line.text}}</div>
-       </div>
-       <div class="telnet-input">
-            <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus />
-       </div>
-    </div>
-</div>
-<div class="span6 tabbable">
-    <ul class="nav nav-tabs" id="myTabs">
-        <li class="active"><a ng-href="#playerListTab" data-toggle="playerListTab">Players</a></li>
-    </ul>
-
-    <div class="tab-content span12">
-        <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th class="span2">Name</th>
-                        <th class="span2">Status</th>
-                        <th class="span7">Location</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="player in playerList">
-                        <td class="span2">{{player.name}}</td>
-                        <td class="span2">{{player.status}}</td>
-                        <td class="span7">{{player.loc}}</td>
-                    </tr>
-                </tbody>
-            </table>
+      </div>
+      <div ng-switch-default ng-controller="ActionController" class="v-full">
+        <div id="displayPane" scroll-bottom="update" class="telnet span12">
+          <div ng-repeat="line in display" ng-style="line.style">{{line.text}}</div>
         </div>
+        <div class="telnet-input">
+          <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus></textarea>
+        </div>
+      </div>
     </div>
+    <div class="span6 tabbable">
+      <ul class="nav nav-tabs" id="myTabs">
+        <li class="active"><a ng-href="#playerListTab" data-toggle="playerListTab">Players</a></li>
+      </ul>
+
+      <div class="tab-content span12">
+        <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
+          <table class="table table-condensed">
+            <thead>
+            <tr>
+              <th class="span2">Name</th>
+              <th class="span2">Status</th>
+              <th class="span7">Location</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="player in playerList">
+              <td class="span2">{{player.name}}</td>
+              <td class="span2">{{player.status}}</td>
+              <td class="span7">{{player.loc}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

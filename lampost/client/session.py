@@ -40,7 +40,7 @@ class SessionManager():
             player = old_session.player
             if old_session == session: #Could happen with some weird timing, apparently
                 session.append(player.parse("look"))
-                return self._respond(RootDTO(login="good"))
+                return self._respond(RootDTO(login={'privilege':player.imm_level, 'editors':self.nature.editors(player)}))
             old_session.player = None
             del self.player_session_map[user_id]
             kill_message = RootDTO(logout="logout")
@@ -63,7 +63,7 @@ class SessionManager():
         self.player_map[player.dbo_id] = session.login(player)
         self.player_session_map[player.dbo_id] = session
         session.append(player.parse("look"))
-        return self._respond(RootDTO(login="good"))
+        return self._respond(RootDTO(login={'privilege':player.imm_level, 'editors':self.nature.editors(player)}))
 
     def logout(self, session):
         player = session.player
@@ -181,3 +181,4 @@ class UserSession():
             self.request.write(output.json)
             self.request.finish()
             self.request = None
+

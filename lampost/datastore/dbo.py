@@ -17,8 +17,7 @@ class DBODict(dict):
     def remove(self, dbo):
         del self[dbo.dbo_id]
 
-#noinspection PyUnresolvedReferences
-@requires('datastore')
+@requires('datastore', 'encode')
 class RootDBO(object): 
     __metaclass__ = RootDBOMeta   
     dbo_key_type = None
@@ -37,6 +36,14 @@ class RootDBO(object):
     def dbo_set_key(self):
         if self.dbo_set_type:
             return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
+
+    @property
+    def json_obj(self):
+        return self._to_json_obj()
+
+    @property
+    def json(self):
+        return self.encode(self._to_json_obj())
 
     def on_loaded(self):
         pass
@@ -85,7 +92,26 @@ class RootDBO(object):
             else:
                 append(col.field_name, "None")
         return display
-    
+
+    def _to_json_obj(self):
+        json_obj = {}
+        if self.__class__ != self.dbo_base_class:
+            json_obj["class_name"] = self.__module__ + "." + self.__class__.__name__
+        for field_name in self.dbo_fields:
+            json_obj[field_name] = getattr(self, field_name, None)
+        for dbo_col in self.dbo_collections:
+            coll_list = list()
+            for child_dbo in getattr(self, dbo_col.field_name):
+                if dbo_col.key_type:
+                    coll_list.append(child_dbo.dbo_id)
+                else:
+                    coll_list.append(child_dbo.json_obj)
+            json_obj[dbo_col.field_name] = coll_list
+        for dbo_ref in self.dbo_refs:
+            ref = getattr(self, dbo_ref.field_name, None)
+            if ref:
+                json_obj[dbo_ref.field_name] = ref.dbo_id
+        return json_obj
             
 class DBORef():
     def __init__(self, field_name, base_class, key_type=None):
