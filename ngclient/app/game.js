@@ -53,3 +53,4 @@ function PlayerListController($scope, lmGame) {
         $scope.playerList = lmGame.playerList;
     }
 }
+PlayerListController.$inject = ['$scope', 'lmGame'];

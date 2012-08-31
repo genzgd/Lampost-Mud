@@ -7,13 +7,13 @@
   <link href="css/lampost.css" rel="stylesheet">
 </head>
 
-<body ng-controller="NavController">
-<div id="lm-navbar" class="navbar" ng-cloak>
+<body>
+<div  ng-controller="NavController" id="lm-navbar" class="navbar navbar-inverse" ng-cloak>
   <div class="navbar-inner">
     <a class="brand" ng-href="#game">{{siteTitle}}</a>
     <ul class="nav">
-      <li ng-repeat="link in links | orderBy:'priority'" ng-class="linkClass(link.name)">
-        <a ng-href="#{{link.name}}">{{link.label}}</a>
+      <li ng-repeat="link in links | orderBy:'priority'" ng-class="link.class()">
+        <a ng-href="#{{link.name}}">{{link.label}} <i ng-class="link.iconClass()"></i></a>
       </li>
     </ul>
     <a class="pull-right" id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>

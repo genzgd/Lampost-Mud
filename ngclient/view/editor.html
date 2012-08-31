@@ -1,5 +1,16 @@
 <div class="container-fluid" ng-controller="EditorController">
-    <div class="span1">
-        <button ng-repeat="button in buttons">{{button.label}}</button>
+  <div class="row-fluid">
+    <div class="tabbable tabs-left span12">
+      <ul class="nav nav-tabs">
+        <li ng-repeat="button in buttons" ng-class="button.class()">
+          <a ng-click="click(button)">{{button.label}}</a></li>
+      </ul>
+
+      <div class="tab-content" ng-switch on="editor.id">
+        <div class="tab-pane active span12" ng-switch-when="config" ng-include="'view/editor/config.html'" ng-controller="MudConfigController"/>
+        <div class="tab-pane active" ng-switch-when="players" ng-include="'view/editor/players.html'"/>
+        <div class="tab-pane active" ng-switch-when="area" ng-include="'view/editor/area.html'" ng-controller="AreaEditorController"/>
+      </div>
     </div>
+  </div>
 </div>

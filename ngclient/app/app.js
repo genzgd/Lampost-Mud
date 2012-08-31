@@ -20,14 +20,33 @@ angular.module('lampost').run(['$rootScope', 'lmRemote', 'lmGame',  function($ro
 }]);
 
 
-function NavController($scope, $location) {
-    var baseLinks = [{name:"game", label:"Mud", priority:0},
-        {name:"account", label:"Account", priority:50}];
+function NavController($rootScope, $scope, $location) {
+
+    function Link(name, label, icon, priority) {
+        this.name = name;
+        this.label = label;
+        this.icon = icon;
+        this.priority = priority;
+        this.active = function () {
+            return $location.path() == '/' + this.name;
+        };
+        this.class = function() {
+            return this.active() ? "active" : "";
+        };
+        this.iconClass = function() {
+            return this.icon + " icon-white" + (this.active() ? "" : " icon-gray");
+        };
+    }
+
+    var baseLinks = [new Link("game", "Mud", "icon-leaf", 0),
+        new Link("account", "Account", "icon-user", 50)];
+
+    var editor = new Link("editor", "Editor", "icon-wrench", 100);
 
     function validatePath()  {
         $scope.links = baseLinks.slice();
-        for (var i = 0; i < baseLinks.length; i++) {
-            if ($location.path() == '/' + name) {
+        for (var i = 0; i < $scope.links.length; i++) {
+            if ($scope.links[i].active()) {
                 return;
             }
         }
@@ -36,9 +55,9 @@ function NavController($scope, $location) {
 
     validatePath();
     $scope.$on("login", function(event, loginData) {
-        $scope.editors = loginData.editors;
+        $rootScope.editors = loginData.editors;
         if (loginData.editors) {
-           $scope.links.push({name:"editor", label:"Editor", priority:100});
+           $scope.links.push(editor);
         }
 });
 
@@ -46,13 +65,8 @@ function NavController($scope, $location) {
         validatePath();
     });
 
-    $scope.linkClass = function(name) {
-        return ($location.path() == '/' + name) ? "active" : "";
-    };
-
-
 }
-NavController.$inject = ['$scope', '$location'];
+NavController.$inject = ['$rootScope', '$scope', '$location'];
 
 
 function GameController($scope, lmDialog, lmGame) {
