@@ -1,11 +1,18 @@
 <div class="container-fluid" ng-style="gameHeight">
   <div class="row-fluid main-display">
     <div ng-switch on="actionPane" class="span6 v-full">
-      <div ng-switch-when="login" ng-controller="LoginController">
-        <form ng-submit="login()">
-          <label for="player_input">Player Name:</label>
-          <input id="player_input" type="text" ng-model="email" pref-focus/>
-        </form>
+      <div class="row-fluid" ng-switch-when="login" ng-controller="LoginController">
+        <div class="span6">
+          <h4>Welcome to {{siteTitle}}</h4>
+          <p>{{siteDescription}}</p>
+        </div>
+          <form class="span4 well" id="login-form" ng-submit="login()">
+            <label>Player or Account Name:</label>
+            <input class="input-medium" type="text" ng-model="email" pref-focus/>
+            <label>Account Password:</label>
+            <input class="input-medium" type="password" ng-model="password"/>
+            <button class="btn btn-small btn-primary" type="submit">Enter {{siteTitle}}</button>
+          </form>
       </div>
       <div ng-switch-default ng-controller="ActionController" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12">

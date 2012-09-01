@@ -41,4 +41,8 @@ div .telnet-input {
 opacity: 0.5;
 }
 
+#login-form {
+  margin-top: 6%;
+}
+
 

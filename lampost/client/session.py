@@ -50,8 +50,7 @@ class SessionManager():
         else:
             player = self.load_object(Player, user_id)
             if not player:
-                no_player_dialog = Dialog(DIALOG_TYPE_OK, user_id + " does not exist, contact Administrator", "No Such Player")
-                return DialogDTO(no_player_dialog)
+                return RootDTO(response='not_found')
             player.session = session
             self.nature.baptise(player)
             player.start()
@@ -118,13 +117,13 @@ class UserSession():
         self.request = None
         self.pulse_reg = None
         self.dialog = None
-        
+
     def login(self, player):
         self.player = player
         player.session = self
         self.activity_time = datetime.now()
         return self.player_info(self.activity_time)
-        
+
     def player_info(self, now):
         if self.ld_time:
             status = "Link Dead"
@@ -138,7 +137,7 @@ class UserSession():
         info.name = self.player.name
         info.loc = self.player.env.title
         return info
-        
+
     def attach(self, request):
         if self.request:
             self.push(LinkCancel())
@@ -146,16 +145,16 @@ class UserSession():
         self.ld_time = None
         self.request = request
         self.request.notifyFinish().addErrback(self.link_failed)
-    
+
     def link_failed(self, error):
         self.ld_time = datetime.now()
         self.request = None
-    
+
     def append(self, data):
         if not self.pulse_reg:
             self.pulse_reg = self.register("pulse", self.push_output)
         self.output.merge(data)
-         
+
     def display_line(self, display_line):
         display = Display()
         display.append(display_line)
@@ -169,14 +168,14 @@ class UserSession():
         dialog.data = data
         dialog.player = self.player
         return dialog.callback(dialog)
- 
+
     def push_output(self):
         if self.request:
             self.push(self.output.merge(LinkGood()))
             self.output = RootDTO()
             self.unregister(self.pulse_reg)
             self.pulse_reg = None
-            
+
     def push(self, output):
             self.request.write(output.json)
             self.request.finish()

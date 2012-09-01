@@ -1,4 +1,4 @@
-angular.module('lampost').service('lmGame', ['$rootScope', function($rootScope) {
+angular.module('lampost').service('lmGame', ['lmBus', function(lmBus) {
 
     var maxLines = 1000;
     var padding = "00000000";
@@ -10,8 +10,7 @@ angular.module('lampost').service('lmGame', ['$rootScope', function($rootScope) 
     this.history = [];
     this.historyIx = 0;
 
-    //noinspection JSUnusedLocalSymbols
-    function updateDisplay(event, display) {
+    function updateDisplay(display) {
         var lines = display.lines;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
@@ -23,19 +22,19 @@ angular.module('lampost').service('lmGame', ['$rootScope', function($rootScope) 
         if (self.display.length > maxLines) {
             self.display.splice(0, maxLines - self.display.length);
         }
-        $rootScope.$broadcast("display_update", display);
+        lmBus.dispatch("display_update", display);
     }
 
-    $rootScope.$on("login", function(event, data) {
+    lmBus.register("login", function(data) {
         self.player = data;
     });
 
-    $rootScope.$on("player_list", function(event, data) {
+    lmBus.register("player_list", function(data) {
         self.playerList = data;
     });
 
-    $rootScope.$on("display", updateDisplay);
-    $rootScope.$on("logout", function() {
+    lmBus.register("display", updateDisplay);
+    lmBus.register("logout", function() {
         self.player = null;
         self.display = [];
         self.history = [];
@@ -44,13 +43,13 @@ angular.module('lampost').service('lmGame', ['$rootScope', function($rootScope) 
 
 }]);
 
-function PlayerListController($scope, lmGame) {
+function PlayerListController($scope, lmGame, lmBus) {
 
-    $scope.$on("player_list", update);
+    lmBus.register("player_list", update, $scope);
     update();
 
     function update() {
         $scope.playerList = lmGame.playerList;
     }
 }
-PlayerListController.$inject = ['$scope', 'lmGame'];
+PlayerListController.$inject = ['$scope', 'lmGame', 'lmBus'];

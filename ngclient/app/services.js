@@ -8,8 +8,94 @@ angular.module('lampost_svc').service('lmLog', [function() {
     }
 }]);
 
-angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$timeout', 'lmLog', 'lmDialog',
-    function($rootScope, $http, $timeout, lmLog, lmDialog) {
+angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
+    var self = this;
+    var registry = {};
+
+    this.register = function(event_type, callback, scope) {
+        if (!registry[event_type]) {
+            registry[event_type] = [];
+        }
+
+        var registration = {event_type: event_type,  callback: callback};
+        registry[event_type].push(registration);
+        if (scope) {
+            registration.scope = scope;
+            if (!scope['lm_regs'])
+            {
+                scope.lm_regs = [];
+                scope.$on('$destroy', function(event) {
+                    var copy = event.currentScope.lm_regs.slice();
+                    for (var i = 0; i < copy.length; i++) {
+                        self.unregister(copy[i]);
+                    }
+                });
+            }
+            scope.lm_regs.push(registration);
+        }
+        return registration;
+    };
+
+    this.unregister = function (registration) {
+        var registrations = registry[registration.event_type];
+        if (!registrations) {
+            lmLog.log("Unregistering event for " + event_type + " that was never registered");
+            return;
+        }
+        var found = false;
+        var i;
+        for (i = 0; i < registrations.length; i++) {
+            if (registrations[i] == registration) {
+                registrations.splice(i, 1);
+                found = true;
+                break;
+            }
+            if (!registrations) {
+                delete registry[registration.event_type];
+            }
+        }
+        if (!found) {
+            lmLog.log("Failed to unregister event " + registration.event_type + " " + registration.callback);
+            return;
+        }
+        if (registration.scope) {
+            var listeners = registration.scope.lm_regs;
+            for (i = 0; i < listeners.length; i++) {
+                if (listeners[i] == registration) {
+                    listeners.splice(i, 1);
+                    break;
+                }
+            }
+            if (!listeners) {
+                delete registration.scope.lm_regs;
+            }
+        }
+    };
+
+    this.dispatch = function() {
+        var event_type = arguments[0];
+        var i;
+        var args = [];
+        for (i = 1; i < arguments.length; i++) {
+            args.push(arguments[i]);
+        }
+        var registrations = registry[event_type];
+        if (registrations) {
+            for (i = 0; i < registrations.length; i++) {
+                var registration = registrations[i];
+                if (registration.scope) {
+                    registration.scope.$apply(registration.callback.apply(registration.scope, args));
+                } else {
+                    registration.callback.apply(this, args);
+                }
+            }
+        }
+    };
+}]);
+
+
+angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog', 'lmBus', 'lmDialog',
+    function($timeout, $http, lmLog, lmBus, lmDialog) {
 
         var sessionId = 0;
         var connected = true;
@@ -19,14 +105,32 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
             '<div class="modal-footer"><button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div>' +
             '</div>';
 
-        function linkRequest(method, data) {
+        function linkRequest(resource, data) {
             data = data ? data : {};
             data.session_id = sessionId;
-            $http({method: 'POST', url: '/' + method, data:data}).
-                success(serverResult).
-                error(function (data, status) {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '/' + resource,
+                data: JSON.stringify(data),
+                success: serverResult,
+                error: function (jqXHR, status) {
+                    linkFailure(status)}
+            });
+        }
+
+        function resourceRequest(resource, data) {
+            data = data ? data : {};
+            data.session_id = sessionId;
+            return $http({method: 'POST', url: '/' + resource, data:data}).
+                error(function(data, status) {
                     linkFailure(status);
+                }).then(function(result) {
+                    var data = result.data;
+                    serverResult(data);
+                    return data.hasOwnProperty('response') ? data.response : data;
                 });
+
         }
 
         function link() {
@@ -37,43 +141,40 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
             if (connected) {
                 connected = false;
                 lmLog.log("Link stopped: " + status);
-                $timeout(function() {
-                    if (!connected && !$rootScope.windowClosing) {
+                setTimeout(function() {
+                    if (!connected && !window.windowClosing) {
                         lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
                     }
                 }, 100);
             }
         }
 
-        //noinspection JSUnusedLocalSymbols
-        function onLinkStatus(event, status) {
+        function onLinkStatus(status) {
             connected = true;
             if (status == "good") {
                 link();
             } else if (status == "no_session") {
-                $rootScope.$broadcast("logout", "invalid_session");
+                lmBus.dispatch("logout", "invalid_session");
                 sessionId = 0;
                 linkRequest("connect");
             } else if (status == "no_login") {
-                $rootScope.$broadcast("logout", "invalid_session");
+                lmBus.dispatch("logout", "invalid_session");
             }
         }
 
         function serverResult(eventMap) {
             for (var key in eventMap) {
-                $rootScope.$broadcast(key, eventMap[key]);
+                lmBus.dispatch(key, eventMap[key]);
             }
         }
 
-        //noinspection JSUnusedLocalSymbols
-        function onConnect(event, data) {
+        function onConnect(data) {
             sessionId = data;
             link();
         }
 
-        //noinspection JSUnusedLocalSymbols
-        function onServerRequest(event, method, data) {
-            linkRequest(method, data);
+        function onServerRequest(resource, data) {
+            linkRequest(resource, data);
         }
 
         function reconnect() {
@@ -84,25 +185,22 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
             }
         }
 
-        this.request = function (method, args) {
-            linkRequest(method, args);
+        this.request = function(resource, args) {
+            return resourceRequest(resource, args);
         };
 
-        $rootScope.$on("connect", onConnect);
-        $rootScope.$on("link_status", onLinkStatus);
-        $rootScope.$on("server_request", onServerRequest);
+        lmBus.register("connect", onConnect);
+        lmBus.register("link_status", onLinkStatus);
+        lmBus.register("server_request", onServerRequest);
 
 
         function ReconnectController($scope, $timeout) {
-
             var tickPromise;
             var time = 16;
-
-            //noinspection JSUnusedLocalSymbols
-            $scope.$on("link_status", function(event) {
+            lmBus.register("link_status", function() {
                 $scope.dismiss();
                 $timeout.cancel(tickPromise);
-            });
+            }, $scope);
 
             $scope.reconnectNow = function () {
                 time = 1;
@@ -121,12 +219,14 @@ angular.module('lampost_svc').service('lmRemote', ['$rootScope', '$http', '$time
                 tickPromise = $timeout(tickDown, 1000);
             }
         }
+        ReconnectController.$inject = ['$scope, $timeout'];
+
     }]);
 
 
 angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache',
-    '$timeout',  '$http', function($rootScope, $compile, $controller, $templateCache,
-                                   $timeout, $http) {
+    '$timeout',  '$http', 'lmBus', function($rootScope, $compile, $controller, $templateCache,
+                                   $timeout, $http, lmBus) {
         var dialogMap = {};
         var nextId = 0;
         var self = this;
@@ -234,12 +334,13 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             }
         }
 
-        //noinspection JSUnusedLocalSymbols
-        function onShowDialog(event, args) {
+        function onShowDialog(args) {
             if (args.dialog_type == 1) {
-                self.showOk(args.dialog_title, args.dialog_msg);
+                $rootScope.$apply(
+                    self.showOk(args.dialog_title, args.dialog_msg));
             } else if (args.dialog_type == 0) {
-                self.showConfirm(args.dialog_title, args.dialog_msg);
+                $rootScope.$apply(
+                    self.showConfirm(args.dialog_title, args.dialog_msg));
             }
         }
 
@@ -267,10 +368,10 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         this.showConfirm = function (title, msg) {
             var scope = $rootScope.$new();
             var yesButton = {label:"Yes", dismiss:true, click:function () {
-                $rootScope.$broadcast("server_request", "dialog", {response:"yes"});
+                lmBus.dispatch("server_request", "dialog", {response:"yes"});
             }};
             var noButton = {label:"No", dismiss:true, click:function () {
-                $rootScope.$broadcast("server_request", "dialog", {response:"no"});
+                lmBus.dispatch("server_request", "dialog", {response:"no"});
             },
                 class:"btn-primary", default:true};
             scope.buttons = [yesButton, noButton];
@@ -281,7 +382,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
                 controller:AlertController, noEscape:true});
         };
 
-        $rootScope.$on("show_dialog", onShowDialog);
+        lmBus.register("show_dialog", onShowDialog);
 
         function AlertController($scope, dialog) {
             $scope.click = function (button) {

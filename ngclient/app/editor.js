@@ -1,4 +1,5 @@
 angular.module('lampost').service('lmEditor', [function() {
+
     this.editors = {};
     this.editors.config = {id:"config", label: "Mud Config", controller:MudConfigController};
     this.editors.players = {id:"players", label: "Players"};
