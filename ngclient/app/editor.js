@@ -1,35 +1,59 @@
+function Editor(type, parent) {
+
+    var types = {
+        config: {label: "Mud Config", controller:MudConfigController},
+        players: {label: "Players", controller:PlayersEditorController},
+        areas: {label:"Areas", controller:AreasEditorController}
+    };
+
+    var eType = types[type];
+
+    this.label = eType.label + " " + (parent ? parent : "");
+    this.controller = eType.controller;
+    this.include = "view/editor/" + type + ".html";
+    this.dirty = false;
+    this.id = type + parent ? ":" + parent : "";
+    this.model = {initialized: false};
+
+}
+
+angular.module('lampost').directive('editorModel', [function() {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            scope.editor = scope.$eval(attrs.editorModel);
+        }
+    }
+}]);
+
 angular.module('lampost').service('lmEditor', ['lmBus', function(lmBus) {
 
     var self = this;
-    var labels = {config: "Mud Config", player: "players", area:"Area",
-        user:"Users"};
 
     lmBus.register("login", configEditors);
 
     function configEditors(loginData) {
         self.editors = [];
-        var ids = loginData.editors;
 
+        var ids = loginData.editors;
         for (var i = 0; i < ids.length; i++) {
-            editors.push({id:ids[i], label:labels[ids[i]]});
+            self.editors.push(new Editor(ids[i]));
         }
+        self.currentEditor = self.editors[0];
     }
 
 }]);
 
 function EditorController($scope, lmEditor) {
-    $scope.buttons = [];
-    for (var i = 0; i < lmEditor.editors.length; i++) {
-        var editor = lmEditor.editors[i];
-        editor.dirty = false;
-        editor.class = function() {
-            return (this == $scope.editor) ? "active" : "";
-        };
-        $scope.buttons.push(editor);
-    }
-    $scope.editor = $scope.buttons[0];
+    $scope.editors = lmEditor.editors;
+    $scope.currentEditor = lmEditor.currentEditor;
+    $scope.tabClass = function(editor) {
+        return editor == $scope.currentEditor ? "active" : "";
+    };
+
     $scope.click = function(editor) {
-        $scope.editor = editor;
+        $scope.currentEditor = editor;
+        lmEditor.currentEditor = editor;
     }
 }
 EditorController.$inject = ['$scope', 'lmEditor'];
@@ -39,7 +63,18 @@ function MudConfigController($scope) {
 }
 MudConfigController.$inject = ['$scope'];
 
-function AreaEditorController($scope) {
-    $scope.id = "Area1";
+function AreasEditorController($scope, lmRemote) {
+    $scope.model = $scope.$parent.currentEditor.model;
+    if (!$scope.model.initialized) {
+        lmRemote.request("editor/area/list").then(function(list) {
+            $scope.model.list = list;
+            $scope.model.initialized = true;
+        })
+    }
 }
-MudConfigController.$inject = ['$scope'];
+AreasEditorController.$inject = ['$scope', 'lmRemote'];
+
+function PlayersEditorController($scope) {
+
+}
+PlayersEditorController.$inject = ['$scope'];

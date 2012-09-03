@@ -1,7 +1,7 @@
 function SettingsController($scope) {
 
-    $scope.headings = [{id:"account", label:"Account", class:"active"},
-        {id:"colors", label:"Colors", class:""}];
+    $scope.headings = [{id:"account", label:"Account", class:"active"}];
+       // {id:"colors", label:"Colors", class:""}];
     $scope.headingId = "account";
     $scope.click = function (headingId) {
         $scope.headingId = headingId;

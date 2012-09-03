@@ -1,0 +1,29 @@
+<div ng-controller="AreasEditorController">
+  <div class="span1">
+    <h4>Areas</h4>
+  </div>
+  <div class="span6">
+    <table class="table table-condensed">
+      <thead>
+      <tr>
+        <th class="span2">Id</th>
+        <th class="span2">Name</th>
+        <th class="span1 cell-right">Rooms</th>
+        <th class="span1 cell-right">Items</th>
+        <th class="span1 cell-right">Mobiles</th>
+        <th class="span1 cell-right">Next Room</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr ng-repeat="area in model.list">
+        <td class="span2">{{area.id}}</td>
+        <td class="span2">{{area.name}}</td>
+        <td class="span1 cell-right">{{area.rooms}}</td>
+        <td class="span1 cell-right">{{area.items}}</td>
+        <td class="span1 cell-right">{{area.mobiles}}</td>
+        <td class="span1 cell-right"><div contenteditable>{{area.next_room}}</div></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

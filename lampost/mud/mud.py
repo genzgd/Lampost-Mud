@@ -48,10 +48,11 @@ class MudNature():
 
     def editors(self, player):
         editors = []
+        if player.imm_level >= IMM_LEVELS['admin']:
+            editors.append('areas')
         if player.imm_level >= IMM_LEVELS['supreme']:
             editors.append('config')
-            editors.append('area')
-            editors.append('users')
+        #    editors.append('users')
         #if player.imm_level >= IMM_LEVELS['admin']:
         #    editors.append('players')
         #    editors.append('socials')
@@ -87,6 +88,7 @@ class MudNature():
         self.mud.start_player(player)
 
 @requires('datastore', 'dispatcher', 'config')
+@provides('mud')
 class Mud():
     def __init__(self):
         MobileTemplate.mud = self

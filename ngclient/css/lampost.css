@@ -18,17 +18,17 @@ html, body {
     height: 96%;
 }
 
-div .v-full {
+div.v-full {
     height: 100%;
 }
 
-div .telnet {
+div.telnet {
     height: 78%;
     overflow-y: scroll;
     margin-bottom: 1.5%;
 }
 
-div .telnet-input {
+div.telnet-input {
     height: 20%;
 }
 
@@ -43,6 +43,11 @@ opacity: 0.5;
 
 .form-padding {
   margin-top: 8%;
+}
+
+td.cell-right, th.cell-right {
+  padding-left: 5px;
+  text-align: right;
 }
 
 

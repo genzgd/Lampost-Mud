@@ -30,9 +30,9 @@ def request(func):
         try:
             return result.json
         except AttributeError:
-            if isinstance(result, basestring):
-                return Response(result).json
-            return encode(result)
+            if isinstance(result, dict):
+                return encode(result)
+            return Response(result).json
     return wrapper
 
 class ConnectResource(Resource):

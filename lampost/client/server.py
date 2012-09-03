@@ -1,4 +1,4 @@
-from lampost.client.editor import EditorResource
+from lampost.editor.editor import EditorResource
 
 from lampost.client.resources import *
 from lampost.client.settings import SettingsResource
