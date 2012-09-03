@@ -10,16 +10,16 @@ class RootDBOMeta(type):
 class DBODict(dict):
     def append(self, dbo):
         self[dbo.dbo_id] = dbo
-    
+
     def __iter__(self):
         return self.itervalues()
-        
+
     def remove(self, dbo):
         del self[dbo.dbo_id]
 
 @requires('datastore', 'encode')
-class RootDBO(object): 
-    __metaclass__ = RootDBOMeta   
+class RootDBO(object):
+    __metaclass__ = RootDBOMeta
     dbo_key_type = None
     dbo_set_type = None
     dbo_set_id = None
@@ -27,11 +27,11 @@ class RootDBO(object):
     dbo_collections = ()
     dbo_refs = ()
     dbo_id = None
-    
-    @property    
+
+    @property
     def dbo_key(self):
         return ":".join([self.dbo_key_type, self.dbo_id])
-    
+
     @property
     def dbo_set_key(self):
         if self.dbo_set_type:
@@ -45,21 +45,22 @@ class RootDBO(object):
     def json(self):
         return self.encode(self._to_json_obj())
 
+
     def on_loaded(self):
         pass
-        
+
     def before_save(self):
         pass
-         
+
     def autosave(self):
         self.save_object(self, autosave=True)
 
     def describe(self, level=0, follow_refs=True):
         display = []
-        
+
         def append(key, value):
             display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;"  + unicode(value))
-        
+
         if self.dbo_id:
             append("key", self.dbo_key)
         class_name =  self.__class__.__module__ + "." + self.__class__.__name__
@@ -70,7 +71,7 @@ class RootDBO(object):
             append("set_key", self.dbo_set_key)
         for field in self.dbo_fields:
             append(field, getattr(self, field, "None"))
-        
+
         for ref in self.dbo_refs:
             child_dbo = getattr(self, ref.field_name, None)
             if child_dbo:
@@ -112,10 +113,10 @@ class RootDBO(object):
             if ref:
                 json_obj[dbo_ref.field_name] = ref.dbo_id
         return json_obj
-            
+
 class DBORef():
     def __init__(self, field_name, base_class, key_type=None):
         self.field_name = field_name
         self.base_class = base_class
         self.key_type = key_type
-        
+

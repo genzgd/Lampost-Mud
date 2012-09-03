@@ -1,6 +1,7 @@
 from lampost.client.editor import EditorResource
 
 from lampost.client.resources import *
+from lampost.client.settings import SettingsResource
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import provides
@@ -21,6 +22,7 @@ URL_DIALOG = "dialog"
 URL_CONNECT = "connect"
 URL_GENERATED = "lsp"
 URL_EDITOR = "editor"
+URL_SETTINGS = "settings"
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 @provides('web_server')
@@ -37,6 +39,7 @@ class WebServer(Resource):
         self.putChild(URL_DIALOG, DialogResource())
         self.putChild(URL_GENERATED, GeneratedResource())
         self.putChild(URL_EDITOR, EditorResource())
+        self.putChild(URL_SETTINGS, SettingsResource())
 
     #noinspection PyUnresolvedReferences
     @logged

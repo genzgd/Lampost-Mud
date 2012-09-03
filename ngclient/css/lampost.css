@@ -9,7 +9,7 @@ html, body {
 }
 
 #powered-link {
-    padding-top: 16px;
+    padding-top: 17px;
     font-style: italic;
     font-size: 11px;
 }
@@ -41,8 +41,9 @@ div .telnet-input {
 opacity: 0.5;
 }
 
-#login-form {
-  margin-top: 6%;
+.form-padding {
+  margin-top: 8%;
 }
+
 
 

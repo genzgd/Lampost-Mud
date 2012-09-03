@@ -3,7 +3,6 @@ from lampost.context.resource import requires, provides
 from lampost.dto.display import Display, DisplayLine
 from lampost.dto.link import LinkCancel, LinkGood
 from lampost.dto.rootdto import RootDTO
-from lampost.player.player import Player
 from os import urandom
 from base64 import b64encode
 from dialog import DIALOG_TYPE_OK, Dialog, DialogDTO
@@ -12,8 +11,18 @@ LINK_DEAD_INTERVAL = timedelta(seconds=5)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
 LINK_IDLE_REFRESH = timedelta(seconds=45)
 
+@requires('nature')
+class LoginResult(RootDTO):
+    def __init__(self, player):
+        login = RootDTO()
+        login.name = player.name
+        login.privilege = player.imm_level
+        login.editors = self.nature.editors(player)
+        login.user_id = player.user_id
+        self.login = login
+
 @provides('sm')
-@requires('dispatcher', 'datastore', 'nature')
+@requires('dispatcher', 'datastore', 'nature', 'user_manager')
 class SessionManager():
     def __init__(self):
         self.session_map = {}
@@ -33,36 +42,35 @@ class SessionManager():
         self.session_map[session_id] = session
         return self._respond(RootDTO(connect=session_id))
 
-    def login(self, session, user_id):
-        user_id = user_id.lower()
-        old_session = self.user_session(user_id)
+    def login(self, session, user_id, password):
+        result, user, player  = self.user_manager.validate_user(user_id.lower(), password)
+        if result != "ok":
+            return result
+
+        old_session = self.user_session(player.dbo_id)
         if old_session:
-            player = old_session.player
             if old_session == session: #Could happen with some weird timing, apparently
                 session.append(player.parse("look"))
-                return self._respond(RootDTO(login={'privilege':player.imm_level, 'editors':self.nature.editors(player)}))
+                return self._respond(LoginResult(player))
             old_session.player = None
-            del self.player_session_map[user_id]
+            old_session.user_id = 0
+            del self.player_session_map[player.dbo_id]
             kill_message = RootDTO(logout="logout")
             kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Logged Out")
             kill_message.merge(DialogDTO(kill_dialog))
             old_session.append(kill_message)
         else:
-            player = self.load_object(Player, user_id)
-            if not player:
-                return RootDTO(response='not_found')
             player.session = session
             self.nature.baptise(player)
             player.start()
-
         if old_session:
             session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
         else:
             session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
-        self.player_map[player.dbo_id] = session.login(player)
+        self.player_map[player.dbo_id] = session.login(player, user)
         self.player_session_map[player.dbo_id] = session
         session.append(player.parse("look"))
-        return self._respond(RootDTO(login={'privilege':player.imm_level, 'editors':self.nature.editors(player)}))
+        return self._respond(LoginResult(player))
 
     def logout(self, session):
         player = session.player
@@ -117,9 +125,11 @@ class UserSession():
         self.request = None
         self.pulse_reg = None
         self.dialog = None
+        self.user = None
 
-    def login(self, player):
+    def login(self, player, user):
         self.player = player
+        self.user = user
         player.session = self
         self.activity_time = datetime.now()
         return self.player_info(self.activity_time)
@@ -180,4 +190,5 @@ class UserSession():
             self.request.write(output.json)
             self.request.finish()
             self.request = None
+
 

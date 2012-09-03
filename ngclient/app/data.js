@@ -1,4 +1,4 @@
-angular.module('lampost').service('lmGame', ['lmBus', function(lmBus) {
+angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
     var maxLines = 1000;
     var padding = "00000000";
@@ -26,30 +26,29 @@ angular.module('lampost').service('lmGame', ['lmBus', function(lmBus) {
     }
 
     lmBus.register("login", function(data) {
-        self.player = data;
-    });
+        self.player = data;}, null, -100);
 
     lmBus.register("player_list", function(data) {
         self.playerList = data;
     });
 
-    lmBus.register("display", updateDisplay);
+    lmBus.register("display", updateDisplay, null, -100);
     lmBus.register("logout", function() {
         self.player = null;
         self.display = [];
         self.history = [];
         self.historyIx = 0;
-        });
+        }, null, -100);
 
 }]);
 
-function PlayerListController($scope, lmGame, lmBus) {
+function PlayerListController($scope, lmData, lmBus) {
 
     lmBus.register("player_list", update, $scope);
     update();
 
     function update() {
-        $scope.playerList = lmGame.playerList;
+        $scope.playerList = lmData.playerList;
     }
 }
-PlayerListController.$inject = ['$scope', 'lmGame', 'lmBus'];
+PlayerListController.$inject = ['$scope', 'lmData', 'lmBus'];

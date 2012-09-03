@@ -12,13 +12,13 @@ from lampost.context.resource import provides, m_requires
 
 __author__ = 'Geoff'
 
-m_requires('sm', 'decode', 'log', __name__)
+m_requires('sm', 'decode', 'encode', 'log', __name__)
 
 def request(func):
     @logged
     def wrapper(self, request):
-        content = decode(request.content.getvalue())
-        session_id = content.get('session_id', None)
+        content = RootDTO().merge_dict(decode(request.content.getvalue()))
+        session_id = getattr(content, 'session_id', None)
         if not session_id:
             return LinkError(ERROR_SESSION_NOT_FOUND).json
         session = sm.get_session(session_id)
@@ -26,7 +26,13 @@ def request(func):
             return LinkError(ERROR_NO_SESSION_ID).json
         if getattr(self, 'Raw', False):
             return func(self, request, session)
-        return func(self, content, session).json
+        result = func(self, content, session)
+        try:
+            return result.json
+        except AttributeError:
+            if isinstance(result, basestring):
+                return Response(result).json
+            return encode(result)
     return wrapper
 
 class ConnectResource(Resource):
@@ -37,7 +43,7 @@ class ConnectResource(Resource):
 class LoginResource(Resource):
     @request
     def render_POST(self, content, session):
-        return sm.login(session, content['user_id'])
+        return sm.login(session, content.user_id, content.password)
 
 class LinkResource(Resource):
     Raw = True
@@ -62,7 +68,7 @@ class ActionResource(Resource):
         player = session.player
         if not player:
             return LinkError(ERROR_NOT_LOGGED_IN)
-        action = cgi.escape(content['action']).strip()
+        action = cgi.escape(content.action).strip()
         if action in ["quit", "logout", "log out"]:
             return sm.logout(session)
         session.activity_time = datetime.now()

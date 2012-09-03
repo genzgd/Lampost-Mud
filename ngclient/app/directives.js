@@ -15,6 +15,18 @@ angular.module('lampost_dir').directive("enterKey", function() {
     }
 });
 
+angular.module('lampost_dir').directive('lmBlur', function() {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            element.bind('blur', function() {
+                scope.$eval(attrs.lmBlur);
+            });
+        }
+    }
+
+});
+
 angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function($timeout) {
     return {
         restrict: 'A',

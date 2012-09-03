@@ -4,23 +4,29 @@ angular.module('lampost').config(['$routeProvider', function($routeProvider) {
     $routeProvider.
         when('/game', {templateUrl: 'view/main.html',   controller: GameController}).
         when('/editor', {templateUrl: 'view/editor.html'}).
-        when('/account', {templateUrl: 'view/account.html'}).
+        when('/settings', {templateUrl: 'view/settings.html'}).
         otherwise({redirectTo: '/game'});
 }]);
 
+
 // Using here so they get instantiated.
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmGame',  function($rootScope, lmBus, lmRemote, lmGame) {
+angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmDialog',
+    function($rootScope, lmBus, lmRemote, lmData, lmDialog) {
     window.onbeforeunload = function() {
         window.windowClosing = true;
     };
+
     $rootScope.siteTitle = lampost_config.title;
     $('title').text(lampost_config.title);
+
     lmBus.dispatch("server_request", "connect");
 }]);
 
 
-function NavController($rootScope, $scope, $location, lmBus) {
+
+
+function NavController($scope, $location, lmBus, lmData) {
 
     function Link(name, label, icon, priority) {
         this.name = name;
@@ -38,12 +44,13 @@ function NavController($rootScope, $scope, $location, lmBus) {
         };
     }
 
-    var baseLinks = [new Link("game", "Mud", "icon-leaf", 0),
-        new Link("account", "Account", "icon-user", 50)];
+    var baseLinks = [new Link("game", "Mud", "icon-leaf", 0)];
+    var settingsLink =  new Link("settings", "Settings", "icon-user", 50);
 
-    var editor = new Link("editor", "Editor", "icon-wrench", 100);
+    var editorLink = new Link("editor", "Editor", "icon-wrench", 100);
 
     function validatePath()  {
+        $scope.welcome = 'Please Log In';
         $scope.links = baseLinks.slice();
         for (var i = 0; i < $scope.links.length; i++) {
             if ($scope.links[i].active()) {
@@ -54,97 +61,97 @@ function NavController($rootScope, $scope, $location, lmBus) {
     }
 
     validatePath();
-    lmBus.register("login", function(loginData) {
-        $rootScope.editors = loginData.editors;
-        if (loginData.editors) {
-           $scope.links.push(editor);
-        }}, $scope);
+    lmBus.register("login", function() {
+        if (lmData.player.editors.length) {
+            $scope.links.push(editorLink);
+        }
+        $scope.links.push(settingsLink);
+        $scope.welcome = 'Welcome ' + lmData.player.name;
+    }, $scope);
 
     lmBus.register("logout", validatePath, $scope);
 }
-NavController.$inject = ['$rootScope', '$scope', '$location', 'lmBus'];
+NavController.$inject = ['$scope', '$location', 'lmBus', 'lmData'];
 
 
-function GameController($scope, lmDialog, lmGame, lmBus) {
-    lmBus.register("logout", function(data) {
-        lmDialog.removeAll();
-        $scope.actionPane = "login";
-        if (data == "invalid_session") {
-            lmDialog.showOk("Session Expired", "Your session has expired.");
-        }}, $scope);
-    $scope.actionPane = lmGame.player ? "action" : "login";
-    lmBus.register("login", function() {
-            $scope.actionPane = "action";
-        }, $scope);
+function GameController($scope, lmBus, lmData) {
 
+    update();
+    resize();
+
+    lmBus.register("login", update, $scope);
+    lmBus.register("logout", update, $scope);
     $(window).on("resize", function() {
         $scope.$apply(resize);
     });
 
-    resize();
+
     function resize() {
         var newHeight = $(window).height() - $('#lm-navbar').height() - 18;
         $scope.gameHeight = {height: newHeight.toString() + "px"};
     }
+    function update() {
+        $scope.actionPane = lmData.player ? "action" : "login";
+    }
 }
-GameController.$inject = ['$scope', 'lmDialog', 'lmGame', 'lmBus'];
+GameController.$inject = ['$scope', 'lmBus', 'lmData'];
 
 
-function LoginController($scope, lmRemote, lmDialog) {
+function LoginController($scope, lmRemote) {
+    $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
-    $scope.email = "";
     $scope.login = function() {
-        if ($scope.email) {
-            lmRemote.request("login", {user_id: $scope.email}).then(loginError);
-        }
+        lmRemote.request("login", {user_id: this.userId,
+           password:this.password}).then(loginError);
+
     };
 
     function loginError(response) {
-        if (response == 'not_found') {
-            lmDialog.showOk("Player not found", "That player does not exist.");
+        if (response == "not_found") {
+            $scope.loginError = true;
         }
     }
 
 }
-LoginController.$inject = ['$scope', 'lmRemote', 'lmDialog'];
+LoginController.$inject = ['$scope', 'lmRemote'];
 
 
-function ActionController($scope, lmBus, lmGame) {
+function ActionController($scope, lmBus, lmData) {
     var curAction;
     $scope.update = 0;
     $scope.action = "";
-    $scope.display = lmGame.display;
+    $scope.display = lmData.display;
     lmBus.register("display_update", function () {
-        $scope.display = lmGame.display;
+        $scope.display = lmData.display;
         $scope.update++;
     }, $scope);
     $scope.sendAction = function () {
         if (this.action) {
             lmBus.dispatch("server_request", "action", {action:this.action});
-            lmGame.history.push(this.action);
-            lmGame.historyIx = lmGame.history.length;
+            lmData.history.push(this.action);
+            lmData.historyIx = lmData.history.length;
             this.action = "";
         }
     };
     $scope.historyUp = function () {
-        if (lmGame.historyIx > 0) {
-            if (lmGame.historyIx == lmGame.history.length) {
+        if (lmData.historyIx > 0) {
+            if (lmData.historyIx == lmData.history.length) {
                 curAction = this.action;
             }
-            lmGame.historyIx--;
-            this.action = lmGame.history[lmGame.historyIx];
+            lmData.historyIx--;
+            this.action = lmData.history[lmData.historyIx];
         }
     };
     $scope.historyDown = function() {
-        if (lmGame.historyIx < lmGame.history.length) {
-            lmGame.historyIx++;
-            if (lmGame.historyIx == lmGame.history.length) {
+        if (lmData.historyIx < lmData.history.length) {
+            lmData.historyIx++;
+            if (lmData.historyIx == lmData.history.length) {
                 this.action = curAction;
             } else {
-                this.action = lmGame.history[lmGame.historyIx];
+                this.action = lmData.history[lmData.historyIx];
             }
         }
     }
 }
-ActionController.$inject = ['$scope', 'lmBus', 'lmGame'];
+ActionController.$inject = ['$scope', 'lmBus', 'lmData'];
 

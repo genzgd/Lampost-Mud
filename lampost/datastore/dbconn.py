@@ -12,11 +12,11 @@ class RedisStore():
         self.redis = StrictRedis(connection_pool=pool)
         self.class_map = {}
         self.object_map = {}
-    
+
     def create_object(self, dbo, update_rev=False):
         self.save_object(dbo, update_rev)
         dbo.on_loaded()
-            
+
     def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:
             dbo.dbo_rev = getattr(dbo, "dbo_rev", 0) + 1
@@ -30,13 +30,13 @@ class RedisStore():
 
     def load_cached(self, key):
         return self.object_map.get(key)
-    
+
     def evict_object(self, dbo):
         try:
             del self.object_map[dbo.dbo_key]
         except:
             db_log("Failed to evict " + dbo.dbo_key + " from db cache")
-                
+
     def load_by_key(self, key_type, key, base_class=None):
         dbo_key = key_type + ":" + key
         cached_dbo = self.object_map.get(dbo_key)
@@ -55,6 +55,10 @@ class RedisStore():
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
 
+    def update_object(self, dbo, json_obj):
+        self._load_json(dbo, json_obj)
+        self.save_object(dbo, True)
+
     def delete_object(self, dbo):
         key = dbo.dbo_key
         self.redis.delete(key)
@@ -69,9 +73,18 @@ class RedisStore():
         if self.object_map.get(dbo.dbo_key):
             del self.object_map[dbo.dbo_key]
         return True
-        
+
     def fetch_set_keys(self, set_key):
         return self.redis.smembers(set_key)
+
+    def set_index(self, index_name, key, value):
+        return self.redis.hset(index_name, key, value)
+
+    def get_index(self, index_name, key):
+        return self.redis.hget(index_name, key)
+
+    def delete_index(self, index_name, key):
+        return self.redis.hdel(index_name, key)
 
     def _load_class(self, json_obj, base_class):
         class_path = json_obj.get("class_name")

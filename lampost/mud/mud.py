@@ -51,6 +51,7 @@ class MudNature():
         if player.imm_level >= IMM_LEVELS['supreme']:
             editors.append('config')
             editors.append('area')
+            editors.append('users')
         #if player.imm_level >= IMM_LEVELS['admin']:
         #    editors.append('players')
         #    editors.append('socials')

@@ -1,18 +1,22 @@
 <div class="container-fluid" ng-style="gameHeight">
   <div class="row-fluid main-display">
-    <div ng-switch on="actionPane" class="span6 v-full">
+    <div ng-switch="actionPane" class="span6 v-full">
       <div class="row-fluid" ng-switch-when="login" ng-controller="LoginController">
         <div class="span6">
           <h4>Welcome to {{siteTitle}}</h4>
           <p>{{siteDescription}}</p>
         </div>
-          <form class="span4 well" id="login-form" ng-submit="login()">
-            <label>Player or Account Name:</label>
-            <input class="input-medium" type="text" ng-model="email" pref-focus/>
-            <label>Account Password:</label>
-            <input class="input-medium" type="password" ng-model="password"/>
-            <button class="btn btn-small btn-primary" type="submit">Enter {{siteTitle}}</button>
-          </form>
+        <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
+          <label>Player or Account Name:</label>
+          <input class="span11" type="text" ng-change="loginError = false" ng-model="userId" pref-focus required/>
+          <label>Account Password:</label>
+          <input class="span11" type="password" ng-change="loginError = false" ng-model="password" required/>
+          <div class="alert alert-error" ng-show="loginError">
+            <button type="button" class="close" ng-click="loginError = false">×</button>
+            Invalid user name or password
+          </div>
+          <button class="btn btn-small btn-primary" type="submit">Enter {{siteTitle}}</button>
+        </form>
       </div>
       <div ng-switch-default ng-controller="ActionController" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12">

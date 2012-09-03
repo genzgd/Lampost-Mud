@@ -7,11 +7,12 @@ __author__ = "Geoff"
 @requires('lsp')
 class Config(RootDBO):
     dbo_key_type = "config"
-    dbo_fields = ('title', 'description', 'start_room')
+    dbo_fields = ('title', 'description', 'start_room', 'next_user_id')
     start_room = "immortal_citadel:0"
     title = "Lampost-Mud"
     description = "A fresh install of Lampost Mud"
-    
+    next_user_id = 1
+
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id
 

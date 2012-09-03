@@ -1,15 +1,26 @@
-angular.module('lampost').service('lmEditor', [function() {
+angular.module('lampost').service('lmEditor', ['lmBus', function(lmBus) {
 
-    this.editors = {};
-    this.editors.config = {id:"config", label: "Mud Config", controller:MudConfigController};
-    this.editors.players = {id:"players", label: "Players"};
-    this.editors.area = {id:"area", label:"Area"}
+    var self = this;
+    var labels = {config: "Mud Config", player: "players", area:"Area",
+        user:"Users"};
+
+    lmBus.register("login", configEditors);
+
+    function configEditors(loginData) {
+        self.editors = [];
+        var ids = loginData.editors;
+
+        for (var i = 0; i < ids.length; i++) {
+            editors.push({id:ids[i], label:labels[ids[i]]});
+        }
+    }
+
 }]);
 
 function EditorController($scope, lmEditor) {
     $scope.buttons = [];
-    for (var i = 0; i < $scope.editors.length; i++) {
-        var editor = lmEditor.editors[$scope.editors[i]];
+    for (var i = 0; i < lmEditor.editors.length; i++) {
+        var editor = lmEditor.editors[i];
         editor.dirty = false;
         editor.class = function() {
             return (this == $scope.editor) ? "active" : "";
@@ -24,7 +35,7 @@ function EditorController($scope, lmEditor) {
 EditorController.$inject = ['$scope', 'lmEditor'];
 
 function MudConfigController($scope) {
-
+    $scope.data = '';
 }
 MudConfigController.$inject = ['$scope'];
 

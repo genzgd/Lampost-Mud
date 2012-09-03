@@ -12,13 +12,15 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
     var self = this;
     var registry = {};
 
-    this.register = function(event_type, callback, scope) {
+    this.register = function(event_type, callback, scope, priority) {
         if (!registry[event_type]) {
             registry[event_type] = [];
         }
 
-        var registration = {event_type: event_type,  callback: callback};
+        var registration = {event_type: event_type,  callback: callback,
+            priority: priority ? priority : 0};
         registry[event_type].push(registration);
+        registry[event_type].sort(function(a, b) {return a.priority - b.priority});
         if (scope) {
             registration.scope = scope;
             if (!scope['lm_regs'])
@@ -127,7 +129,8 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
                     linkFailure(status);
                 }).then(function(result) {
                     var data = result.data;
-                    serverResult(data);
+                    $timeout(function() {
+                        serverResult(data)}, 0);
                     return data.hasOwnProperty('response') ? data.response : data;
                 });
 
@@ -153,12 +156,14 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
             connected = true;
             if (status == "good") {
                 link();
-            } else if (status == "no_session") {
+            } else if (status == "no_session_id") {
                 lmBus.dispatch("logout", "invalid_session");
                 sessionId = 0;
                 linkRequest("connect");
             } else if (status == "no_login") {
                 lmBus.dispatch("logout", "invalid_session");
+            } else {
+                lmDialog.showOk("Unknown Server Error", status);
             }
         }
 
@@ -219,7 +224,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
                 tickPromise = $timeout(tickDown, 1000);
             }
         }
-        ReconnectController.$inject = ['$scope, $timeout'];
+        ReconnectController.$inject = ['$scope', '$timeout'];
 
     }]);
 
