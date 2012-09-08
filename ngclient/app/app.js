@@ -1,8 +1,8 @@
-angular.module('lampost', ['lampost_dir', 'lampost_svc']);
+angular.module('lampost', ['lampost_dir', 'lampost_svc', 'lampost_edit']);
 
 angular.module('lampost').config(['$routeProvider', function($routeProvider) {
     $routeProvider.
-        when('/game', {templateUrl: 'view/main.html',   controller: GameController}).
+        when('/game', {templateUrl: 'view/main.html', controller: 'GameController'}).
         when('/editor', {templateUrl: 'view/editor.html'}).
         when('/settings', {templateUrl: 'view/settings.html'}).
         otherwise({redirectTo: '/game'});
@@ -20,13 +20,12 @@ angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmD
     $rootScope.siteTitle = lampost_config.title;
     $('title').text(lampost_config.title);
 
-    lmBus.dispatch("server_request", "connect");
+    lmRemote.connect();
 }]);
 
 
-
-
-function NavController($scope, $location, lmBus, lmData) {
+angular.module('lampost').controller('NavController', ['$scope', '$location', 'lmBus', 'lmData',
+    function ($scope, $location, lmBus, lmData) {
 
     function Link(name, label, icon, priority) {
         this.name = name;
@@ -70,11 +69,10 @@ function NavController($scope, $location, lmBus, lmData) {
     }, $scope);
 
     lmBus.register("logout", validatePath, $scope);
-}
-NavController.$inject = ['$scope', '$location', 'lmBus', 'lmData'];
+}]);
 
 
-function GameController($scope, lmBus, lmData) {
+angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmData', function($scope, lmBus, lmData) {
 
     update();
     resize();
@@ -93,11 +91,10 @@ function GameController($scope, lmBus, lmData) {
     function update() {
         $scope.actionPane = lmData.player ? "action" : "login";
     }
-}
-GameController.$inject = ['$scope', 'lmBus', 'lmData'];
+}]);
 
 
-function LoginController($scope, lmRemote) {
+angular.module('lampost').controller('LoginController', ['$scope', 'lmRemote', function($scope, lmRemote) {
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function() {
@@ -111,12 +108,10 @@ function LoginController($scope, lmRemote) {
             $scope.loginError = true;
         }
     }
-
-}
-LoginController.$inject = ['$scope', 'lmRemote'];
+}]);
 
 
-function ActionController($scope, lmBus, lmData) {
+angular.module('lampost').controller('ActionController', ['$scope', 'lmBus', 'lmData', function($scope, lmBus, lmData) {
     var curAction;
     $scope.update = 0;
     $scope.action = "";
@@ -152,6 +147,4 @@ function ActionController($scope, lmBus, lmData) {
             }
         }
     }
-}
-ActionController.$inject = ['$scope', 'lmBus', 'lmData'];
-
+}]);

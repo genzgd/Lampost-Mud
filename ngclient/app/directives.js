@@ -10,6 +10,7 @@ angular.module('lampost_dir').directive("enterKey", function() {
                     event.preventDefault();
                     return false;
                 }
+                return true;
             })
         }
     }
@@ -59,6 +60,7 @@ angular.module('lampost_dir').directive('history', function() {
                     event.preventDefault();
                     return false;
                 }
+                return true;
             });
         }
     }

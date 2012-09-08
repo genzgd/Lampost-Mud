@@ -1,29 +1,36 @@
-<div ng-controller="AreasEditorController">
-  <div class="span1">
-    <h4>Areas</h4>
-  </div>
-  <div class="span6">
-    <table class="table table-condensed">
-      <thead>
-      <tr>
-        <th class="span2">Id</th>
-        <th class="span2">Name</th>
-        <th class="span1 cell-right">Rooms</th>
-        <th class="span1 cell-right">Items</th>
-        <th class="span1 cell-right">Mobiles</th>
-        <th class="span1 cell-right">Next Room</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr ng-repeat="area in model.list">
-        <td class="span2">{{area.id}}</td>
-        <td class="span2">{{area.name}}</td>
-        <td class="span1 cell-right">{{area.rooms}}</td>
-        <td class="span1 cell-right">{{area.items}}</td>
-        <td class="span1 cell-right">{{area.mobiles}}</td>
-        <td class="span1 cell-right"><div contenteditable>{{area.next_room}}</div></td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+<div ng-controller="AreasEditorController" ng-show="ready">
+    <div class="span1">
+        <h4>Areas</h4>
+        <button ng-click="addNew()" class="btn btn-small btn-success">New Area</button>
+    </div>
+    <div class="span8">
+        <table class="span12 table table-condensed" ng-controller="TableController" edit-list="areas">
+            <thead>
+            <tr>
+                <th class="span1"></th>
+                <th class="span2">Id</th>
+                <th class="span1">Owner</th>
+                <th class="span2">Name</th>
+                <th class="span1 cell-right">Rooms</th>
+                <th class="span1 cell-right">Items</th>
+                <th class="span1 cell-right">Mobiles</th>
+                <th class="span1 cell-right">Next Room</th>
+                <th class="span2"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="edit-row table-bordered" ng-repeat="area in areas" ng-form="rowForm" ng-class="rowClass(rowForm)">
+                <td class="span1">{{$index + 1}}</td>
+                <td class="span2">{{area.id}}</td>
+                <td class="span1">{{area.owner_id}}</td>
+                <td class="span2 edit-cell"><input class="span12 edit-cell" type="text" ng-model="area.name"/></td>
+                <td class="span1 cell-right">{{area.rooms}}</td>
+                <td class="span1 cell-right">{{area.items}}</td>
+                <td class="span1 cell-right">{{area.mobiles}}</td>
+                <td class="span1 edit-cell"><input class="span12 edit-cell cell-right" type="text" ng-model="area.next_room_id"/></td>
+                <td class="cell-centered" ng-include="'view/editor/editbar.html'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

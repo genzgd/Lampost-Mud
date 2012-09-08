@@ -7,7 +7,7 @@ from os import urandom
 from base64 import b64encode
 from dialog import DIALOG_TYPE_OK, Dialog, DialogDTO
 
-LINK_DEAD_INTERVAL = timedelta(seconds=5)
+LINK_DEAD_INTERVAL = timedelta(seconds=15)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
 LINK_IDLE_REFRESH = timedelta(seconds=45)
 
@@ -41,6 +41,13 @@ class SessionManager():
         session = UserSession()
         self.session_map[session_id] = session
         return self._respond(RootDTO(connect=session_id))
+
+    def reconnect_session(self, session_id, player_id):
+        session = self.get_session(session_id)
+        if not session or not session.ld_time or not session.player or session.player.dbo_id != player_id:
+            return self.start_session()
+        session.display_line(DisplayLine("-- Reconnecting Session --"))
+        return self._respond(LoginResult(session.player).merge(RootDTO(connect=session_id)))
 
     def login(self, session, user_id, password):
         result, user, player  = self.user_manager.validate_user(user_id.lower(), password)
@@ -190,5 +197,9 @@ class UserSession():
             self.request.write(output.json)
             self.request.finish()
             self.request = None
+
+    @property
+    def privilege(self):
+        return self.player.imm_level if self.player else 0
 
 

@@ -17,3 +17,6 @@ class Permissions(object):
 
         return player_level >= self.levels[req_level]
 
+    def level(self, label):
+        return self.levels.get(label, self.levels['admin'])
+

@@ -38,6 +38,10 @@ def request(func):
 class ConnectResource(Resource):
     @logged
     def render_POST(self, request):
+        content = RootDTO().merge_dict(decode(request.content.getvalue()))
+        session_id = getattr(content, 'session_id', None)
+        if session_id:
+            return sm.reconnect_session(session_id, content.player_id).json
         return sm.start_session().json
 
 class LoginResource(Resource):

@@ -38,17 +38,52 @@ div.telnet-input {
 }
 
 .icon-gray {
-opacity: 0.5;
+
+  opacity: 0.5;
+}
+
+.default-cursor {
+  cursor: default;
 }
 
 .form-padding {
   margin-top: 8%;
 }
 
-td.cell-right, th.cell-right {
+.table tbody tr.warning td {
+  background-color: #fcf8e3;
+}
+
+td.cell-right, th.cell-right, input.cell-right {
   padding-left: 5px;
   text-align: right;
 }
+
+td.cell-centered {
+  text-align: center;
+}
+
+tr.edit-row {
+  padding-bottom: 1px;
+  padding-top: 2px;
+}
+
+td.edit-cell, input.edit-cell[ng-model] {
+  margin: 0;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  min-height: 26px;
+}
+
+.no-border {
+  border-style: none;
+}
+
+a.icon-link {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 
 
 
