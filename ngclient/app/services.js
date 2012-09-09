@@ -129,339 +129,344 @@ angular.module('lampost_svc').service('lmCookies', [function() {
 angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog', 'lmBus', 'lmDialog', 'lmCookies',
     function($timeout, $http, lmLog, lmBus, lmDialog, lmCookies) {
 
-        var sessionId = '';
-        var playerId = '';
-        var connected = true;
-        var reconnectTemplate = '<div class="modal fade hide">' +
-            '<div class="modal-header"><h3>Reconnecting To Server</h3></div>' +
-            '<div class="modal-body"><p>Reconnecting in {{time}} seconds.</p></div>' +
-            '<div class="modal-footer"><button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div>' +
-            '</div>';
+    var sessionId = '';
+    var playerId = '';
+    var connected = true;
+    var reconnectTemplate = '<div class="modal fade hide">' +
+        '<div class="modal-header"><h3>Reconnecting To Server</h3></div>' +
+        '<div class="modal-body"><p>Reconnecting in {{time}} seconds.</p></div>' +
+        '<div class="modal-footer"><button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div>' +
+        '</div>';
 
-        function linkRequest(resource, data) {
-            data = data ? data : {};
-            data.session_id = sessionId;
-            $.ajax({
-                type: 'POST',
-                dataType: 'json',
-                url: '/' + resource,
-                data: JSON.stringify(data),
-                success: serverResult,
-                error: function (jqXHR, status) {
-                    linkFailure(status)}
+    function linkRequest(resource, data) {
+        data = data ? data : {};
+        data.session_id = sessionId;
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '/' + resource,
+            data: JSON.stringify(data),
+            success: serverResult,
+            error: function (jqXHR, status) {
+                linkFailure(status)}
+        });
+    }
+
+    function resourceRequest(resource, data) {
+        data = data ? data : {};
+        data.session_id = sessionId;
+        return $http({method: 'POST', url: '/' + resource, data:data}).
+            error(function(data, status) {
+                linkFailure(status);
+            }).then(function(result) {
+                var data = result.data;
+                $timeout(function() {
+                    serverResult(data)}, 0);
+                return data.hasOwnProperty('response') ? data.response : data;
             });
+
+    }
+
+    function link() {
+        if (playerId) {
+            lmCookies.writeCookie('lampost_session', sessionId + '&&' + playerId, 60);
         }
+        linkRequest("link");
+    }
 
-        function resourceRequest(resource, data) {
-            data = data ? data : {};
-            data.session_id = sessionId;
-            return $http({method: 'POST', url: '/' + resource, data:data}).
-                error(function(data, status) {
-                    linkFailure(status);
-                }).then(function(result) {
-                    var data = result.data;
-                    $timeout(function() {
-                        serverResult(data)}, 0);
-                    return data.hasOwnProperty('response') ? data.response : data;
-                });
-
+    function linkFailure(status) {
+        if (connected) {
+            connected = false;
+            lmLog.log("Link stopped: " + status);
+            setTimeout(function() {
+                if (!connected && !window.windowClosing) {
+                    lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
+                }
+            }, 100);
         }
+    }
 
-        function link() {
-            if (playerId) {
-                lmCookies.writeCookie('lampost_session', sessionId + '&&' + playerId, 60);
-            }
-            linkRequest("link");
+    function onLinkStatus(status) {
+        connected = true;
+        if (status == "good") {
+            link();
+        } else if (status == "no_session_id") {
+            lmBus.dispatch("logout", "invalid_session");
+            sessionId = 0;
+            linkRequest("connect");
+        } else if (status == "no_login") {
+            lmBus.dispatch("logout", "invalid_session");
+        } else {
+            lmDialog.showOk("Unknown Server Error", status);
         }
+    }
 
-        function linkFailure(status) {
-            if (connected) {
-                connected = false;
-                lmLog.log("Link stopped: " + status);
-                setTimeout(function() {
-                    if (!connected && !window.windowClosing) {
-                        lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
-                    }
-                }, 100);
-            }
+    function serverResult(eventMap) {
+        for (var key in eventMap) {
+            lmBus.dispatch(key, eventMap[key]);
         }
+    }
 
-        function onLinkStatus(status) {
-            connected = true;
-            if (status == "good") {
-                link();
-            } else if (status == "no_session_id") {
-                lmBus.dispatch("logout", "invalid_session");
-                sessionId = 0;
-                linkRequest("connect");
-            } else if (status == "no_login") {
-                lmBus.dispatch("logout", "invalid_session");
-            } else {
-                lmDialog.showOk("Unknown Server Error", status);
-            }
-        }
+    function onConnect(data) {
+        sessionId = data;
+        link();
+    }
 
-        function serverResult(eventMap) {
-            for (var key in eventMap) {
-                lmBus.dispatch(key, eventMap[key]);
-            }
-        }
+    function onServerRequest(resource, data) {
+        linkRequest(resource, data);
+    }
 
-        function onConnect(data) {
-            sessionId = data;
+    function onLogin(data) {
+        playerId = data.name.toLowerCase();
+    }
+
+    function onLogout() {
+        playerId = '';
+        lmCookies.deleteCookie('lampost_session');
+    }
+
+    function reconnect() {
+        if (sessionId == 0) {
+            linkRequest("connect");
+        } else {
             link();
         }
+    }
 
-        function onServerRequest(resource, data) {
-            linkRequest(resource, data);
-        }
+    this.request = function(resource, args) {
+        return resourceRequest(resource, args);
+    };
 
-        function onLogin(data) {
-            playerId = data.name.toLowerCase();
-        }
-
-        function onLogout() {
-            playerId = '';
-            lmCookies.deleteCookie('lampost_session');
-        }
-
-        function reconnect() {
-            if (sessionId == 0) {
-                linkRequest("connect");
-            } else {
-                link();
+    this.connect = function() {
+        var data = {};
+        if (!sessionId ) {
+            var cookie = lmCookies.readCookie('lampost_session').split('&&');
+            if (cookie.length == 2) {
+                sessionId = cookie[0];
+                data.player_id = cookie[1];
             }
         }
+        linkRequest("connect", data);
+    };
 
-        this.request = function(resource, args) {
-            return resourceRequest(resource, args);
-        };
-
-        this.connect = function() {
-            var data = {};
-            if (!sessionId ) {
-                var cookie = lmCookies.readCookie('lampost_session').split('&&');
-                if (cookie.length == 2) {
-                    sessionId = cookie[0];
-                    data.player_id = cookie[1];
-                }
-            }
-            linkRequest("connect", data);
-        };
-
-        lmBus.register("connect", onConnect);
-        lmBus.register("link_status", onLinkStatus);
-        lmBus.register("server_request", onServerRequest);
-        lmBus.register("login", onLogin);
-        lmBus.register("logout", onLogout);
+    lmBus.register("connect", onConnect);
+    lmBus.register("link_status", onLinkStatus);
+    lmBus.register("server_request", onServerRequest);
+    lmBus.register("login", onLogin);
+    lmBus.register("logout", onLogout);
 
 
-        function ReconnectController($scope, $timeout) {
-            var tickPromise;
-            var time = 16;
-            lmBus.register("link_status", function() {
-                $scope.dismiss();
-                $timeout.cancel(tickPromise);
-            }, $scope);
+    function ReconnectController($scope, $timeout) {
+        var tickPromise;
+        var time = 16;
+        lmBus.register("link_status", function() {
+            $scope.dismiss();
+            $timeout.cancel(tickPromise);
+        }, $scope);
 
-            $scope.reconnectNow = function () {
-                time = 1;
-                $timeout.cancel(tickPromise);
-                tickDown();
-            };
-
+        $scope.reconnectNow = function () {
+            time = 1;
+            $timeout.cancel(tickPromise);
             tickDown();
-            function tickDown() {
-                time--;
-                if (time == 0) {
-                    time = 15;
-                    reconnect();
-                }
-                $scope.time = time;
-                tickPromise = $timeout(tickDown, 1000);
-            }
-        }
-        ReconnectController.$inject = ['$scope', '$timeout'];
+        };
 
-    }]);
+        tickDown();
+        function tickDown() {
+            time--;
+            if (time == 0) {
+                time = 15;
+                reconnect();
+            }
+            $scope.time = time;
+            tickPromise = $timeout(tickDown, 1000);
+        }
+    }
+    ReconnectController.$inject = ['$scope', '$timeout'];
+
+}]);
 
 
 angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache',
     '$timeout',  '$http', 'lmBus', function($rootScope, $compile, $controller, $templateCache,
                                    $timeout, $http, lmBus) {
-        var dialogMap = {};
-        var nextId = 0;
-        var self = this;
-        var prevElement;
-        var enabledElements;
-        var enabledLinks;
+    var dialogMap = {};
+    var nextId = 0;
+    var self = this;
+    var prevElement;
+    var enabledElements;
+    var enabledLinks;
 
-        function showDialog(args) {
-            if (args.templateUrl) {
-                $http.get(args.templateUrl, {cache: $templateCache}).then(
-                    function(response) {
-                        args.template = response.data;
-                        showDialogTemplate(args);
-                    });
-            } else {
-                showDialogTemplate(args);
-            }
-        }
-
-        function disableUI() {
-            prevElement = $(document.activeElement);
-            enabledElements = $('button:enabled, selector:enabled, input:enabled, textarea:enabled');
-            enabledLinks = $('a[href]');
-            enabledElements.attr('disabled', true);
-            enabledLinks.each(function() {
-                $(this).attr("data-oldhref", $(this).attr("href"));
-                $(this).removeAttr("href");
-            })
-        }
-
-        function enableUI() {
-            enabledElements.removeAttr('disabled');
-            enabledLinks.each(function() {
-                $(this).attr("href", $(this).attr("data-oldhref"));
-                $(this).removeAttr("data-oldhref");
-            });
-            $timeout(function () {
-                if (prevElement.closest('html').length) {
-                    prevElement.focus();
-                } else {
-                    $rootScope.$broadcast("refocus");
-                }
-            }, 0);
-        }
-
-        function showDialogTemplate(args) {
-            var element = angular.element(args.template);
-            var dialog = {};
-            var dialogScope = args.scope || $rootScope.$new(true);
-            if ($.isEmptyObject(dialogMap)) {
-                disableUI();
-            }
-
-            dialog.id = "lmDialog_" + nextId++;
-            dialog.element = element;
-            dialog.scope = dialogScope;
-            dialogScope.dismiss = function() {
-                element.modal("hide");
-            };
-
-            var link = $compile(element.contents());
-            if (args.controller) {
-                var locals = args.locals || {};
-                locals.$scope = dialogScope;
-                locals.dialog = dialog;
-                var controller = $controller(args.controller, locals);
-                element.contents().data('$ngControllerController', controller);
-            }
-            dialogMap[dialog.id] = dialog;
-            link(dialogScope);
-            element.on(jQuery.support.transition && 'hidden' || 'hide', function() {
-                if (!dialogMap[dialog.id]) {
-                    return;
-                }
-                dialog.scope.finalize && dialog.scope.finalize();
-                delete dialogMap[dialog.id];
-                dialog.element.remove();
-                if ($.isEmptyObject(dialogMap)) {
-                    enableUI();
-                }
-                $timeout(function() {
-                    dialog.scope.$destroy();
-                    dialog = null;
+    function showDialog(args) {
+        if (args.templateUrl) {
+            $http.get(args.templateUrl, {cache: $templateCache}).then(
+                function(response) {
+                    args.template = response.data;
+                    showDialogTemplate(args);
                 });
-            });
-            element.on(jQuery.support.transition && 'shown' || 'shown', function () {
-                var focusElement = $('input:text:visible:first', element);
-                if (!focusElement.length) {
-                    focusElement = $(".lmdialogfocus" + dialog.id + ":first");
-                }
-                focusElement.focus();
-            });
+        } else {
+            showDialogTemplate(args);
+        }
+    }
+
+    function disableUI() {
+        prevElement = $(document.activeElement);
+        enabledElements = $('button:enabled, selector:enabled, input:enabled, textarea:enabled');
+        enabledLinks = $('a[href]');
+        enabledElements.attr('disabled', true);
+        enabledLinks.each(function() {
+            $(this).attr("data-oldhref", $(this).attr("href"));
+            $(this).removeAttr("href");
+        })
+    }
+
+    function enableUI() {
+        enabledElements.removeAttr('disabled');
+        enabledLinks.each(function() {
+            $(this).attr("href", $(this).attr("data-oldhref"));
+            $(this).removeAttr("data-oldhref");
+        });
+        $timeout(function () {
+            if (prevElement.closest('html').length) {
+                prevElement.focus();
+            } else {
+                $rootScope.$broadcast("refocus");
+            }
+        }, 0);
+    }
+
+    function showDialogTemplate(args) {
+        var element = angular.element(args.template);
+        var dialog = {};
+        var dialogScope = args.scope || $rootScope.$new(true);
+        if ($.isEmptyObject(dialogMap)) {
+            disableUI();
+        }
+
+        dialog.id = "lmDialog_" + nextId++;
+        dialog.element = element;
+        dialog.scope = dialogScope;
+        dialogScope.dismiss = function() {
+            element.modal("hide");
+        };
+
+        var link = $compile(element.contents());
+        if (args.controller) {
+            var locals = args.locals || {};
+            locals.$scope = dialogScope;
+            locals.dialog = dialog;
+            var controller = $controller(args.controller, locals);
+            element.contents().data('$ngControllerController', controller);
+        }
+        dialogMap[dialog.id] = dialog;
+        link(dialogScope);
+        element.on(jQuery.support.transition && 'hidden' || 'hide', function() {
+            if (!dialogMap[dialog.id]) {
+                return;
+            }
+            dialog.scope.finalize && dialog.scope.finalize();
+            delete dialogMap[dialog.id];
+            dialog.element.remove();
+            if ($.isEmptyObject(dialogMap)) {
+                enableUI();
+            }
             $timeout(function() {
-                var modalOptions = {show: true, keyboard: !args.noEscape,
-                    backdrop: args.noBackdrop ? false : (args.noEscape ? "static" : true)};
-                element.modal(modalOptions);
+                dialog.scope.$destroy();
+                dialog = null;
             });
-            return dialog.id;
-        }
-
-        function closeDialog(dialogId) {
-            var dialog = dialogMap[dialogId];
-            if (dialog) {
-                dialog.element.modal("hide");
+        });
+        element.on(jQuery.support.transition && 'shown' || 'shown', function () {
+            var focusElement = $('input:text:visible:first', element);
+            if (!focusElement.length) {
+                focusElement = $(".lmdialogfocus" + dialog.id + ":first");
             }
-        }
+            focusElement.focus();
+        });
+        $timeout(function() {
+            var modalOptions = {show: true, keyboard: !args.noEscape,
+                backdrop: args.noBackdrop ? false : (args.noEscape ? "static" : true)};
+            element.modal(modalOptions);
+        });
+        return dialog.id;
+    }
 
-        function onShowDialog(args) {
-            if (args.dialog_type == 1) {
-                $rootScope.$apply(
-                    self.showOk(args.dialog_title, args.dialog_msg));
-            } else if (args.dialog_type == 0) {
-                $rootScope.$apply(
-                    self.showConfirm(args.dialog_title, args.dialog_msg));
-            }
+    function closeDialog(dialogId) {
+        var dialog = dialogMap[dialogId];
+        if (dialog) {
+            dialog.element.modal("hide");
         }
+    }
 
-        this.show = function (args) {
-            showDialog(args);
+    function onShowDialog(args) {
+        if (args.dialog_type == 1) {
+            $rootScope.$apply(
+                self.showOk(args.dialog_title, args.dialog_msg));
+        } else if (args.dialog_type == 0) {
+            $rootScope.$apply(
+                self.showConfirm(args.dialog_title, args.dialog_msg));
+        }
+    }
+
+    this.show = function (args) {
+        showDialog(args);
+    };
+
+    this.removeAll = function () {
+        for (var dialogId in dialogMap) {
+            closeDialog(dialogId);
+        }
+    };
+
+    this.showOk = function (title, msg) {
+        var scope = $rootScope.$new();
+        scope.buttons = [
+            {label:'OK', default:true, dismiss:true, class:"btn-primary"}
+        ];
+        scope.title = title;
+        scope.body = msg;
+        showDialog({templateUrl:'dialogs/alert.html', scope:scope,
+            controller:AlertController});
+    };
+
+    this.showConfirm = function (title, msg, confirm) {
+        var scope = $rootScope.$new();
+        var yesButton = {label:"Yes", dismiss:true, click:confirm};
+        var noButton = {label:"No", dismiss:true, class:"btn-primary", default:true};
+        scope.buttons = [yesButton, noButton];
+        scope.title = title;
+        scope.body = msg;
+
+        showDialog({templateUrl:'dialogs/alert.html', scope:scope,
+            controller:AlertController, noEscape:true});
+    };
+
+    lmBus.register("show_dialog", onShowDialog);
+
+    function AlertController($scope, dialog) {
+        $scope.click = function (button) {
+            button.click && button.click();
+            button.dismiss && $scope.dismiss();
         };
 
-        this.removeAll = function () {
-            for (var dialogId in dialogMap) {
-                closeDialog(dialogId);
-            }
-        };
-
-        this.showOk = function (title, msg) {
-            var scope = $rootScope.$new();
-            scope.buttons = [
-                {label:'OK', default:true, dismiss:true, class:"btn-primary"}
-            ];
-            scope.title = title;
-            scope.body = msg;
-            showDialog({templateUrl:'dialogs/alert.html', scope:scope,
-                controller:AlertController});
-        };
-
-        this.showConfirm = function (title, msg) {
-            var scope = $rootScope.$new();
-            var yesButton = {label:"Yes", dismiss:true, click:function () {
-                lmBus.dispatch("server_request", "dialog", {response:"yes"});
-            }};
-            var noButton = {label:"No", dismiss:true, click:function () {
-                lmBus.dispatch("server_request", "dialog", {response:"no"});
-            },
-                class:"btn-primary", default:true};
-            scope.buttons = [yesButton, noButton];
-            scope.title = title;
-            scope.body = msg;
-
-            showDialog({templateUrl:'dialogs/alert.html', scope:scope,
-                controller:AlertController, noEscape:true});
-        };
-
-        lmBus.register("show_dialog", onShowDialog);
-
-        function AlertController($scope, dialog) {
-            $scope.click = function (button) {
-                button.click && button.click();
-                button.dismiss && $scope.dismiss();
-            };
-
-            for (var i = 0; i < $scope.buttons.length; i++) {
-                var button = $scope.buttons[i];
-                if (button.default) {
-                    var focusClass = " lmdialogfocus" + dialog.id;
-                    button.class = button.class && button.class + focusClass || focusClass;
-                }
+        for (var i = 0; i < $scope.buttons.length; i++) {
+            var button = $scope.buttons[i];
+            if (button.default) {
+                var focusClass = " lmdialogfocus" + dialog.id;
+                button.class = button.class && button.class + focusClass || focusClass;
             }
         }
+    }
 
-    }]);
+}]);
+
+angular.module('lampost_svc').service('lmArrays', [function() {
+    this.stringSort = function(array, field) {
+        array.sort(function SortByName(a, b){
+            var aField = a[field].toLowerCase();
+            var bField = b[field].toLowerCase();
+            return ((aField < bField) ? -1 : ((aField > bField) ? 1 : 0));
+        });
+    }
+}]);
 
 
 

@@ -1,9 +1,9 @@
 <div ng-controller="AreasEditorController" ng-show="ready">
     <div class="span1">
         <h4>Areas</h4>
-        <button ng-click="addNew()" class="btn btn-small btn-success">New Area</button>
+        <button ng-click="showNewDialog()" class="btn btn-small btn-success">New Area</button>
     </div>
-    <div class="span8">
+    <div class="span10">
         <table class="span12 table table-condensed" ng-controller="TableController" edit-list="areas">
             <thead>
             <tr>

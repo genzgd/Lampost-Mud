@@ -3,16 +3,20 @@
         <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
         <h3>Create New Area</h3>
     </div>
-    <form>
+    <form ng-submit="createArea()" >
         <div class="modal-body">
             <label>Area Id</label>
-            <input type="text" ng-model="id" required/>
+            <input type="text" ng-model="newArea.id" ng-change="areaExists = false" required/>
+            <div class="alert alert-error" ng-show="areaExists">
+                <button type="button" class="close" ng-click="areaExists = false">×</button>
+                Area id already exists.
+            </div>
             <label>Area Name</label>
-            <input type="text" ng-modal="name" required/>
+            <input type="text" ng-model="newArea.name" required/>
         </div>
         <div class="modal-footer">
+            <button class="btn btn-success">Create Area</button>
             <button ng-click="dismiss()" class="btn">Cancel</button>
-            <button class="btn btn-primary" ng-submit="createArea()">Create Area</button>
         </div>
     </form>
 </div>

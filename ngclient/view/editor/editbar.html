@@ -1,5 +1,5 @@
-<a title="Save Changes" class="icon-link" ng-class="rowForm.$pristine && 'default-cursor'" ng-disabled="rowForm.$pristine"><i class="icon-check"
-        ng-class="rowForm.$pristine && 'icon-gray'"></i></a>
-<a title="Delete Item" class="icon-link"><i class="icon-remove"></i></a>
+<a title="Save Changes" class="icon-link" ng-class="rowForm.$pristine && 'default-cursor'" ng-disabled="rowForm.$pristine" ng-click="updateRow($index)"><i
+        class="icon-check" ng-class="rowForm.$pristine && 'icon-gray'"></i></a>
+<a title="Delete Item" ng-click="deleteRow($index)" class="icon-link"><i class="icon-remove"></i></a>
 <a title="Undo Edits" ng-class="rowForm.$pristine && 'default-cursor'" ng-disabled="rowForm.$pristine" class="icon-link" ng-click="revertRow($index)"><i
         class="icon-backward" ng-class="rowForm.$pristine && 'icon-gray'"></i></a>

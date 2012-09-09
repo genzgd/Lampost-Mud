@@ -3,7 +3,7 @@ from lampost.context.resource import provides, requires, m_requires
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
 from lampost.action.emote import Emotes, Socials
-from lampost.immortal.immortal import CreatePlayer, DeletePlayer, CreateArea,\
+from lampost.immortal.immortal import CreatePlayer, DeletePlayer,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
     ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
     AllPlayers
@@ -32,7 +32,7 @@ class MudNature():
         look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
         self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
                            ShowInventory(), Socials(), GetAction(), DropAction()}
-        self.imm_commands = CreatePlayer(), DeletePlayer(), CreateArea(), DeleteArea(), GoToArea(), Citadel(),\
+        self.imm_commands = CreatePlayer(), DeletePlayer(),  DeleteArea(), GoToArea(), Citadel(),\
                        RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
                        AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
                        BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(),\

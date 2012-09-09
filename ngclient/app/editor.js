@@ -58,7 +58,7 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
 }]);
 
 
-angular.module('lampost_edit').controller('TableController', ['$scope', function($scope) {
+angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemote', function($scope) {
     var self = this;
     $scope.rowClass = function(rowForm)  {
         if (rowForm.$invalid) {
@@ -73,30 +73,78 @@ angular.module('lampost_edit').controller('TableController', ['$scope', function
     $scope.revertRow = function(rowIx) {
         $scope[self.list_id][rowIx] = jQuery.extend(true, {}, $scope[self.list_id + '_copy'][rowIx]);
     };
+    $scope.deleteRow = function(rowIx) {
+        $scope[self.list_id + "Delete"](rowIx);
+    };
+    $scope.updateRow = function(rowIx) {
+        $scope[self.list_id + "Update"](rowIx);
+    }
 }]);
 
 
-angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog',
-    function ($scope, lmRemote, lmDialog) {
-    this.editor = $scope.$parent.editor;
-    $scope.model = this.editor.model;
+angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmArrays',
+    function ($scope, lmRemote, lmDialog, lmArrays) {
+
+    $scope.editor = $scope.currentEditor;
+    $scope.model = $scope.editor.model;
     $scope.ready = false;
-    var listPromise = lmRemote.request(this.editor.url + "/list").then(function(areas) {
+    var listPromise = lmRemote.request($scope.editor.url + "/list").then(function(areas) {
+        lmArrays.stringSort(areas, 'id');
         $scope.model.areas = areas;
         $scope.areas = areas;
         $scope.areas_copy = jQuery.extend(true, [], areas);
     });
     listPromise.then(function() {$scope.ready = true});
-    $scope.addNew = function() {lmDialog.show({templateUrl:"dialogs/newarea.html"})};
+    $scope.showNewDialog = function() {lmDialog.show({templateUrl:"dialogs/newarea.html",
+        controller:"NewAreaController", locals:{parentScope:$scope}})};
+
+    $scope.addNew = function (newArea) {
+        $scope.areas.push(newArea);
+        lmArrays.stringSort($scope.areas, 'id');
+        $scope.areas_copy.push(jQuery.extend(true, {}, newArea));
+    };
+
+    $scope.areasDelete = function(rowIx) {
+        var area = $scope.areas[rowIx];
+        lmDialog.showConfirm("Confirm Delete",
+            "Are you certain you want to delete area " + area.id + "?",
+            function() {
+                lmRemote.request($scope.editor.url + "/delete", {areaId:area.id}).then(function(result) {
+                if (result == "OK") {
+                    $scope.areas.splice(rowIx,  1);
+                    $scope.areas_copy.splic(rowIx, 1);
+                }
+            });
+        });
+    };
+
+    $scope.areasUpdate = function(rowIx) {
+        var area = $scope.areas[rowIx];
+        lmRemote.request($scope.editor.url + "/update", {area:area}).then(function(result) {
+            $scope.areas[rowIx] = result;
+            $scope.areas_copy[rowIx] = jQuery.extends(true, {}, result);
+        });
+    }
 
 }]);
 
 
-angular.module('lampost_edit').controller('NewAreaController', ['$scope', function($scope) {
+angular.module('lampost_edit').controller('NewAreaController', ['$scope', 'lmRemote', 'parentScope',
+    function($scope, lmRemote, parentScope) {
+
+    $scope.newArea = {};
+    $scope.areaExists = false;
     $scope.createArea = function() {
-        $scope.dismiss();
-        alert("CREATING")
+        lmRemote.request("editor/area/new", $scope.newArea).then(function(newAreaResult) {
+            if (newAreaResult == "AREA_EXISTS") {
+                $scope.areaExists = true;
+            } else {
+                $scope.dismiss();
+                parentScope.addNew(newAreaResult);
+            }
+        });
     };
+
 }]);
 
 
