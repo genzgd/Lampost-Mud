@@ -23,8 +23,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
         registry[event_type].sort(function(a, b) {return a.priority - b.priority});
         if (scope) {
             registration.scope = scope;
-            if (!scope['lm_regs'])
-            {
+            if (!scope['lm_regs']) {
                 scope.lm_regs = [];
                 scope.$on('$destroy', function(event) {
                     var copy = event.currentScope.lm_regs.slice();
@@ -52,7 +51,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
                 found = true;
                 break;
             }
-            if (!registrations) {
+            if (!registrations.length) {
                 delete registry[registration.event_type];
             }
         }
@@ -68,7 +67,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
                     break;
                 }
             }
-            if (!listeners) {
+            if (!listeners.length) {
                 delete registration.scope.lm_regs;
             }
         }

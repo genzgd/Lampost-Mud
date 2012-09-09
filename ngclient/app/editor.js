@@ -17,39 +17,66 @@ angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
         var types = {
             config: {label: "Mud Config",  url:"mud"},
             players: {label: "Players",  url:"players"},
-            areas: {label:"Areas", url:"area"}
+            areas: {label:"Areas", url:"area"},
+            rooms: {label:"Rooms", url:"room"},
+            room: {label:"", url:"room"}
         };
 
         var eType = types[type];
 
-        this.label = eType.label + " " + (parent ? parent : "");
+        this.label = eType.label ? eType.label : parent;
+        this.label_class = parent ? "small" : "";
         this.controller = eType.controller;
         this.include = "view/editor/" + type + ".html";
         this.dirty = false;
         this.id = type + parent ? ":" + parent : "";
         this.model = {initialized: false};
         this.url = "editor/" + eType.url;
+        this.parent = parent;
     }
 
     var self = this;
+    var currentMap = {};
     lmBus.register("login", configEditors);
     function configEditors(loginData) {
         self.editors = [];
         var ids = loginData.editors;
         for (var i = 0; i < ids.length; i++) {
-            self.editors.push(new Editor(ids[i]));
+            var editor = new Editor(ids[i]);
+            self.editors.push(editor);
+            currentMap[editor.id] = i;
         }
         self.currentEditor = self.editors[0];
+    }
+
+    this.addEditor = function(type, areaId) {
+        var editor = new Editor(type, areaId);
+        if (currentMap.hasOwnProperty(editor.id)) {
+            editor = self.editors[currentMap[editor.id]];
+        } else {
+            currentMap[editor.id] = self.editors.length;
+            self.editors.push(editor);
+        }
+        self.currentEditor = editor;
+        lmBus.dispatch('editor_change');
     }
 }]);
 
 
-angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEditor', function ($scope, lmEditor) {
+angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEditor', 'lmBus', function ($scope, lmEditor, lmBus) {
+
+    lmBus.register('editor_change', editorChange);
+
     $scope.editors = lmEditor.editors;
-    $scope.currentEditor = lmEditor.currentEditor;
     $scope.tabClass = function(editor) {
-        return editor == $scope.currentEditor ? "active" : "";
+        return (editor == $scope.currentEditor ? "active " : " ") + editor.label_class;
     };
+
+    editorChange();
+
+    function editorChange() {
+        $scope.currentEditor = lmEditor.currentEditor;
+    }
 
     $scope.click = function(editor) {
         $scope.currentEditor = editor;
@@ -82,10 +109,9 @@ angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemot
 }]);
 
 
-angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmArrays',
-    function ($scope, lmRemote, lmDialog, lmArrays) {
+angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmArrays', 'lmEditor',
+    function ($scope, lmRemote, lmDialog, lmArrays, lmEditor) {
 
-    $scope.editor = $scope.currentEditor;
     $scope.model = $scope.editor.model;
     $scope.ready = false;
     var listPromise = lmRemote.request($scope.editor.url + "/list").then(function(areas) {
@@ -124,7 +150,11 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
             $scope.areas[rowIx] = result;
             $scope.areas_copy[rowIx] = jQuery.extends(true, {}, result);
         });
-    }
+    };
+
+    $scope.showRooms = function(area) {
+        lmEditor.addEditor('rooms', area.id);
+    };
 
 }]);
 

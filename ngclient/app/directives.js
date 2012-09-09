@@ -79,3 +79,13 @@ angular.module('lampost_dir').directive("prefFocus", ['$rootScope', '$timeout', 
         }
     }
 }]);
+
+angular.module('lampost_dir').directive("altText", [function() {
+    return {
+        restrict: "A",
+        link: function(scope, element, attrs) {
+            element.attr("title", scope.$eval(attrs.altText));
+        }
+    }
+
+}]);

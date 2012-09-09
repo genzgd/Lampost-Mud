@@ -2,12 +2,11 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.dto.rootdto import RootDTO
-from lampost.player.player import Player
 from lampost.mud.area import Area
 
 __author__ = 'Geoff'
 
-m_requires('datastore', 'mud', 'perm',__name__)
+m_requires('datastore', 'mud', 'perm', __name__)
 
 class AreaDTO(RootDTO):
     def __init__(self, area):
@@ -31,14 +30,7 @@ class AreaResource(Resource):
 class AreaList(Resource):
     @request
     def render_POST(self, content, session):
-        list = []
-        for area in mud.area_map.itervalues():
-            player = datastore.load_object(Player, area.owner_id)
-            privilege = player.imm_level if player else perm.level('supreme')
-            if session.privilege < privilege:
-                continue
-            list.append(AreaDTO(area))
-        return list
+        return [AreaDTO(area) for area in mud.area_map.itervalues() if has_perm(session.player, area)]
 
 @requires('mud')
 class AreaNew(Resource):
@@ -62,6 +54,7 @@ class AreaDelete(Resource):
         area_id = content.areaId.lower()
         area = datastore.load_object(Area, area_id)
         if area:
+            check_perm(session, area)
             self.dispatcher.detach_events(area)
             datastore.delete_object(area)
             del self.mud.area_map[area_id]
@@ -75,6 +68,7 @@ class AreaUpdate(Resource):
         area = datastore.load_object(Area, area_dto['id'])
         if not area:
             return "ERROR_NOT_FOUND"
+        check_perm(session, area)
         area.name = area_dto['name']
         area.next_room_id = area_dto['next_room_id']
         datastore.save_object(area, True)

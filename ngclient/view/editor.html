@@ -2,7 +2,7 @@
   <div class="row-fluid">
     <div class="tabbable tabs-left span12">
       <ul class="nav nav-tabs">
-        <li ng-repeat="editor in editors" ng-class="tabClass(editor)">
+        <li alt-text="editor.parent" ng-repeat="editor in editors" ng-class="tabClass(editor)">
           <a ng-click="click(editor)">{{editor.label}}</a></li>
       </ul>
 

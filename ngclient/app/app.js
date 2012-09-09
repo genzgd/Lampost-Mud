@@ -1,11 +1,13 @@
 angular.module('lampost', ['lampost_dir', 'lampost_svc', 'lampost_edit']);
 
-angular.module('lampost').config(['$routeProvider', function($routeProvider) {
+angular.module('lampost').config(['$routeProvider', '$locationProvider', function($routeProvider,
+    $locationProvider) {
     $routeProvider.
         when('/game', {templateUrl: 'view/main.html', controller: 'GameController'}).
         when('/editor', {templateUrl: 'view/editor.html'}).
         when('/settings', {templateUrl: 'view/settings.html'}).
         otherwise({redirectTo: '/game'});
+    $locationProvider.hashPrefix('!');
 }]);
 
 
@@ -56,8 +58,12 @@ angular.module('lampost').controller('NavController', ['$scope', '$location', 'l
                 return;
             }
         }
-        $location.path('/' + baseLinks[0].name);
+        $location.path(baseLinks[0].name);
     }
+
+    $scope.changeLocation = function(name) {
+        $location.path(name);
+    };
 
     validatePath();
     lmBus.register("login", function() {
@@ -72,13 +78,19 @@ angular.module('lampost').controller('NavController', ['$scope', '$location', 'l
 }]);
 
 
-angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmData', function($scope, lmBus, lmData) {
+angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmData', 'lmDialog',
+    function($scope, lmBus, lmData, lmDialog) {
 
     update();
     resize();
 
     lmBus.register("login", update, $scope);
-    lmBus.register("logout", update, $scope);
+    lmBus.register("logout", function(reason) {
+        if (reason == "invalid_session") {
+            lmDialog.showOk("Session Lost", "Your session has been disconnected.");
+        }
+        update();
+    }, $scope);
     $(window).on("resize", function() {
         $scope.$apply(resize);
     });

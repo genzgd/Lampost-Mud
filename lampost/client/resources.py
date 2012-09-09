@@ -9,6 +9,7 @@ from lampost.dto.link import *
 from lampost.dto.rootdto import RootDTO
 from lampost.util.lmlog import logged
 from lampost.context.resource import provides, m_requires
+from lampost.util.lmutil import PermError
 
 __author__ = 'Geoff'
 
@@ -24,9 +25,13 @@ def request(func):
         session = sm.get_session(session_id)
         if not session:
             return LinkError(ERROR_NO_SESSION_ID).json
-        if getattr(self, 'Raw', False):
-            return func(self, request, session)
-        result = func(self, content, session)
+        try:
+            if getattr(self, 'Raw', False):
+                return func(self, request, session)
+            result = func(self, content, session)
+        except PermError:
+            request.setResponseCode(403)
+            return "<html><body>Permission Denied.</body></html>"
         try:
             return result.json
         except AttributeError:

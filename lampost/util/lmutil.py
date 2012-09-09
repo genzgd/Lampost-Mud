@@ -1,6 +1,6 @@
 def ljust(value, size):
     return value.ljust(size).replace(' ', '&nbsp;')
-   
+
 def pronouns(sex):
     if not sex or sex == 'none':
         return 'it', 'it', 'its', 'itself'
@@ -8,18 +8,18 @@ def pronouns(sex):
         return 'he', 'him', 'his', 'himself'
     if sex == "female":
         return 'she', 'her', 'hers', 'herself'
-        
+
 def find_nth(haystack, needle, n):
     start = haystack.find(needle)
     while start >= 0 and n > 1:
         start = haystack.find(needle, start+len(needle))
         n -= 1
     return start
-    
+
 def find_extra_prep(prep, command):
     start_ix = find_nth(command, prep, 1)
     return command[start_ix + len(prep) + 1:]
-    
+
 def find_extra(verb, used_args, command):
     verb_len = len(verb)
     try:
@@ -30,7 +30,10 @@ def find_extra(verb, used_args, command):
     if find_loc == -1:
         return None
     return command[find_loc + 1:]
-    
+
+class PermError(Exception):
+    pass
+
 class PatchError(Exception):
     def __init__(self, message):
         self.message = message
