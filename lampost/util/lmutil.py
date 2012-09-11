@@ -34,6 +34,10 @@ def find_extra(verb, used_args, command):
 class PermError(Exception):
     pass
 
+class DataError(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class PatchError(Exception):
     def __init__(self, message):
         self.message = message

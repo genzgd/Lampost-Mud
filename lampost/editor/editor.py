@@ -5,7 +5,7 @@ from lampost.editor.rooms import RoomResource
 
 __author__ = 'Geoff'
 
-m_requires('datastore', 'encode', __name__)
+m_requires('datastore', 'encode', 'log', __name__)
 
 @provides('editor')
 @requires('nature')

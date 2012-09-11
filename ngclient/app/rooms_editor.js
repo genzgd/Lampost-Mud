@@ -1,17 +1,126 @@
-angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmArrays', 'lmEditor',
-    function ($scope, lmRemote, lmDialog, lmArrays, lmEditor) {
+angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmEditor',
+    function ($scope, lmRemote, lmEditor) {
 
         $scope.areaId = $scope.editor.parent;
-        $scope.model = $scope.editor.model;
         $scope.ready = false;
-        var listPromise = lmRemote.request($scope.editor.url + "/list", {area_id:$scope.editor.parent}).then(function (rooms) {
-            $scope.model.rooms = rooms;
+        lmRemote.request($scope.editor.url + "/list", {area_id:$scope.areaId}).then(function (rooms) {
             $scope.rooms = rooms;
-            $scope.rooms_copy = jQuery.extend(true, [], rooms);
             $scope.ready = true;
         });
-        $scope.editRoom = function() {
+        $scope.editRoom = function (room) {
+            lmEditor.addEditor('room', room.id);
+        }
 
+    }]);
+
+
+angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor',
+    function ($scope, lmRemote, lmEditor) {
+
+
+        function showResult(type, message) {
+            $scope.showResult = true;
+            $scope.resultMessage = message;
+            $scope.resultType = 'alert-' + type;
+        }
+
+        $scope.roomId = $scope.editor.parent;
+        $scope.ready = false;
+        lmRemote.request($scope.editor.url + "/get", {room_id:$scope.roomId}).then(function (room) {
+            if (room.basic.dbo_rev > $scope.editor.model_rev) {
+                $scope.basic = room.basic;
+                $scope.basic_copy = jQuery.extend(true, {}, room.basic);
+                $scope.extras = room.extras;
+                $scope.extras_copy = jQuery.extend(true, [], room.extras);
+                $scope.editor.copyToModel($scope);
+                $scope.editor.model_rev = room.basic.dbo_rev;
+             } else {
+                $scope.editor.copyFromModel($scope);
+            }
+            $scope.ready = true;
+        });
+
+        $scope.updateBasic = function() {
+            $scope.basic.desc = lmEditor.sanitize($scope.basic.desc);
+            lmRemote.request($scope.editor.url + "/update_basic", $scope.basic).then(function (basic) {
+                $scope.basic = basic;
+                $scope.basic_copy = jQuery.extend(true, {}, basic);
+                $scope.editor.copyToModel($scope);
+                showResult("success", "Room basic information updated.");
+            })
+        };
+
+        $scope.addNewExtra = function() {
+            var newExtra = {title:"", desc:"", aliases:""};
+            $scope.extras.push(newExtra);
+            $scope.showDesc(newExtra);
+        };
+
+        $scope.deleteExtra = function(extraIx) {
+            if ($scope.extras[extraIx] == $scope.currentExtra) {
+                $scope.currentExtra = null;
+            }
+            $scope.extras.splice(extraIx, 1);
+        };
+
+        $scope.showDesc = function(extra) {
+            $scope.currentExtra = extra;
+            $scope.extraDisplay = 'desc';
+        };
+
+        $scope.newAlias = function() {
+            $scope.currentExtra.editAliases.push({title:""});
+        };
+
+        $scope.extraRowClass = function(extra) {
+            if (extra == $scope.currentExtra) {
+                return 'info';
+            }
+            return '';
+        };
+
+        $scope.deleteAlias = function(ix) {
+            $scope.currentExtra.editAliases.splice(ix, 1);
+        };
+
+        $scope.revertExtras = function() {
+            $scope.extras = jQuery.extend(true, [], $scope.extras_copy);
+            $scope.editor.model.extras = $scope.extras;
+            $scope.currentExtra = null;
+        };
+
+        $scope.updateExtras = function() {
+            for (var i = 0; i < $scope.extras.length; i++) {
+                var extra = $scope.extras[i];
+                if (extra.hasOwnProperty('editAliases')) {
+                    extra.aliases = [];
+                    for (var j = 0; j < extra.editAliases.length; j++) {
+                        var editAlias = extra.editAliases[j];
+                        if (editAlias) {
+                            extra.aliases.push(extra.editAliases[j].title);
+                        }
+                    }
+                }
+            }
+            lmRemote.request($scope.editor.url + "/update_extras", {room_id:$scope.roomId, extras:$scope.extras})
+                .then(function(extras) {
+                    $scope.extras = extras;
+                    $scope.extras_copy = jQuery.extend(true, [], extras);
+                    $scope.editor.copyToModel($scope);
+                    showResult("success", "Room extra descriptions updated.");
+                });
+        };
+
+        $scope.showAliases = function(extra) {
+            if (!extra.hasOwnProperty('editAliases')) {
+                var editAliases = [];
+                for (var i = 0; i < extra.aliases.length; i++) {
+                    editAliases.push({title:extra.aliases[i]});
+                }
+                extra.editAliases = editAliases;
+            }
+            $scope.currentExtra = extra;
+            $scope.extraDisplay = 'aliases';
         }
 
     }]);

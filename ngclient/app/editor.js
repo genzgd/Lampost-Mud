@@ -13,38 +13,56 @@ angular.module('lampost_edit').directive('editList', [function() {
 angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
 
     function Editor(type, parent) {
-
-        var types = {
-            config: {label: "Mud Config",  url:"mud"},
-            players: {label: "Players",  url:"players"},
-            areas: {label:"Areas", url:"area"},
-            rooms: {label:"Rooms", url:"room"},
-            room: {label:"", url:"room"}
-        };
-
-        var eType = types[type];
-
+        var eType = this.types[type];
         this.label = eType.label ? eType.label : parent;
         this.label_class = parent ? "small" : "";
         this.controller = eType.controller;
         this.include = "view/editor/" + type + ".html";
         this.dirty = false;
         this.id = type + parent ? ":" + parent : "";
-        this.model = {initialized: false};
+        this.model = {};
+        this.model_rev = -1;
         this.url = "editor/" + eType.url;
         this.parent = parent;
+        this.type = type;
     }
+
+    Editor.prototype.types = {
+        config: {label: "Mud Config",  url:"mud"},
+        players: {label: "Players",  url:"players"},
+        areas: {label:"Areas", url:"area"},
+        rooms: {label:"Rooms", url:"room"},
+        room: {label:"", url:"room", model_props:['basic', 'extras']}
+    };
+
+    Editor.prototype.copyFromModel = function(target) {
+        var type = this.types[this.type];
+        for (var i = 0; i < type.model_props.length; i++) {
+            var prop = type.model_props[i];
+            target[prop] = this.model[prop];
+        }
+    };
+
+    Editor.prototype.copyToModel = function(source) {
+        var type = this.types[this.type];
+        for (var i = 0; i < type.model_props.length; i++) {
+            var prop = type.model_props[i];
+            this.model[prop] = source[prop];
+        }
+    };
 
     var self = this;
     var currentMap = {};
     lmBus.register("login", configEditors);
+
     function configEditors(loginData) {
         self.editors = [];
+        currentMap = {};
         var ids = loginData.editors;
         for (var i = 0; i < ids.length; i++) {
             var editor = new Editor(ids[i]);
             self.editors.push(editor);
-            currentMap[editor.id] = i;
+            currentMap[editor.id] = editor;
         }
         self.currentEditor = self.editors[0];
     }
@@ -52,14 +70,34 @@ angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
     this.addEditor = function(type, areaId) {
         var editor = new Editor(type, areaId);
         if (currentMap.hasOwnProperty(editor.id)) {
-            editor = self.editors[currentMap[editor.id]];
+            editor = currentMap[editor.id];
         } else {
-            currentMap[editor.id] = self.editors.length;
+            currentMap[editor.id] = editor;
             self.editors.push(editor);
         }
+        editor.prevEditor = self.currentEditor;
         self.currentEditor = editor;
         lmBus.dispatch('editor_change');
-    }
+    };
+
+    this.closeEditor = function(editor) {
+        delete currentMap[editor.id];
+        var ix = self.editors.indexOf(editor);
+        self.editors.splice(ix, 1);
+        if (editor == self.currentEditor) {
+            var newEditor = editor.prevEditor;
+            if (!currentMap[newEditor.id]) {
+                newEditor = self.editors[0];
+            }
+            self.currentEditor = newEditor;
+            lmBus.dispatch('editor_change');
+        }
+    };
+
+    this.sanitize = function(text) {
+        text = text.replace(/(\r\n|\n|\r)/gm," ");
+        return text.replace(/\s+/g," ");
+    };
 }]);
 
 
@@ -79,9 +117,13 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
     }
 
     $scope.click = function(editor) {
+        lmEditor.lastEditor = lmEditor.currentEditor;
         $scope.currentEditor = editor;
         lmEditor.currentEditor = editor;
-    }
+    };
+    $scope.closeEditor = function(editor) {
+        lmEditor.closeEditor(editor);
+    };
 }]);
 
 
@@ -138,7 +180,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
                 lmRemote.request($scope.editor.url + "/delete", {areaId:area.id}).then(function(result) {
                 if (result == "OK") {
                     $scope.areas.splice(rowIx,  1);
-                    $scope.areas_copy.splic(rowIx, 1);
+                    $scope.areas_copy.splice(rowIx, 1);
                 }
             });
         });

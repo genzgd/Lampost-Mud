@@ -16,24 +16,24 @@ class Entity(BaseItem):
     entry_msg = Broadcast(s="{n} arrives.")
     exit_msg = Broadcast(s="{n} leaves.")
     current_target = None
-      
+
     def baptise(self, soul):
         self.registrations = set()
         self.soul = soul
         self.clear_all()
         self.refresh_soul()
-        
+
     def refresh_soul(self):
         for action in self.soul:
             self.add_action(action)
-  
+
     def equip(self, inven):
         self.inven = inven
         for action in inven:
             self.add_action(action)
         for target in inven:
             self.add_target(target, self)
-            
+
     def add_inven(self, article):
         if article in self.inven:
             return "You already have that."
@@ -42,7 +42,7 @@ class Entity(BaseItem):
         self.add_actions(article)
         self.add_target(article, self.inven)
         return Broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article, source=self)
-        
+
     def drop_inven(self, article):
         if not article in self.inven:
             return "You don't have that."
@@ -51,25 +51,25 @@ class Entity(BaseItem):
         self.remove_target(article)
         article.enter_env(self.env)
         return Broadcast(s="You drop {N}", e="{n} drops {N}", target=article, source=self)
-            
+
     def enhance_soul(self, actions):
         for action in actions:
             self.add_action(action)
-        self.soul.update(set(actions))    
- 
+        self.soul.update(set(actions))
+
     def rec_entity_enter_env(self, entity):
         self.add_target(entity, self.env)
         self.add_actions(entity)
-    
+
     def rec_entity_leave_env(self, entity):
         self.remove_target(entity)
         self.remove_action(entity)
-                
+
     def add_targets(self, target, parent=None):
         self.add_target(target, parent)
         for child_target in getattr(target, "children", []):
             self.add_target(child_target, target)
-    
+
     def add_target(self, target, parent=None):
         if target == self:
             return
@@ -84,7 +84,7 @@ class Entity(BaseItem):
         self.add_target_key_set(target, target_id, parent)
         for target_id in getattr(target, "target_aliases", []):
             self.add_target_key_set(target, target_id, parent)
-            
+
     def add_target_key_set(self, target, target_id, parent):
         if parent == self.env:
             prefix = "the",
@@ -94,8 +94,8 @@ class Entity(BaseItem):
             prefix = ()
         target_keys = list(self.gen_ids(prefix + target_id))
         self.add_target_keys(target_keys, target)
-    
-    
+
+
     def add_target_keys(self, target_keys, target):
         for target_key in target_keys:
             self.target_map[target].append(target_key)
@@ -108,23 +108,23 @@ class Entity(BaseItem):
                 self.target_key_map[target_key + (unicode(new_count),)] = [target]
             else:
                 self.target_key_map[target_key] = [target]
-            
+
 
     def gen_ids(self, target_id):
-        pcnt = len(target_id) - 1
-        target = target_id[pcnt],
-        for x in range(0, int(math.pow(2, pcnt))):
+        prefix_count = len(target_id) - 1
+        target = target_id[prefix_count],
+        for x in range(0, int(math.pow(2, prefix_count))):
             next_prefix = []
-            for y in range(0, pcnt):
+            for y in range(0, prefix_count):
                 if int(math.pow(2, y)) & x:
                     next_prefix.append(target_id[y])
             yield tuple(next_prefix) + target
-            
+
     def remove_targets(self, target):
         self.remove_target(target)
         for child_target in getattr(target, "children", []):
             self.remove_target(child_target)
-                
+
     def remove_target(self, target):
         if self == target:
             return
@@ -140,8 +140,8 @@ class Entity(BaseItem):
                 target_loc = key_data.index(target)
                 key_data.pop(target_loc)
                 self.renumber_keys(target_key, key_data)
-       
-    
+
+
     def renumber_keys(self, target_key, key_data):
         for ix in range(len(key_data) + 1):
             number_key = target_key + (unicode(ix + 1),)
@@ -150,13 +150,13 @@ class Entity(BaseItem):
             return
         for ix, target in enumerate(key_data):
             self.target_key_map[target_key + (unicode(ix + 1),)] = [target]
-            
-    
+
+
     def add_actions(self, provider):
         self.add_action(provider)
         for child_provider in getattr(provider, "children", []):
             self.add_actions(child_provider)
-    
+
     def add_action(self, provider):
         for verb in getattr(provider, "verbs", []):
             bucket = self.actions.get(verb)
@@ -164,12 +164,12 @@ class Entity(BaseItem):
                 bucket = set()
                 self.actions[verb] = bucket
             bucket.add(provider)
-           
+
     def remove_actions(self, provider):
         self.remove_action(provider)
         for child_provider in getattr(provider, "children", []):
             self.remove_action(child_provider)
-             
+
     def remove_action(self, provider):
         for verb in getattr(provider, "verbs", []):
             bucket = self.actions.get(verb, None)
@@ -179,28 +179,28 @@ class Entity(BaseItem):
                     del self.actions[verb]
             else:
                 debug("Removing action " + unicode(verb) + " that does not exist from " + self.short_desc(self))
-          
+
     def parse_command(self, command):
         words = command.lower().split()
         matches = list(self.match_actions(words))
         if not matches:
             return None, None
         if len(matches) > 1:
-            return matches, None    
+            return matches, None
         action, verb, args, target, target_method, obj, obj_method = matches[0]
         return matches, action.execute(source=self, target=target, verb=verb, args=args,
             target_method=target_method, command=command, obj=obj, obj_method=obj_method)
-  
-              
+
+
     def match_actions(self, words):
         for verb_size in range(1, len(words) + 1):
             verb = tuple(words[:verb_size])
-            args = words[verb_size:]    
+            args = words[verb_size:]
             for action in self.actions.get(verb, []):
                 msg_class = getattr(action, "msg_class", None)
                 if not msg_class:
                     yield action, verb, tuple(args), action, None, None, None
-                    continue 
+                    continue
                 if action.prep:
                     try:
                         prep_loc = args.index(action.prep)
@@ -223,7 +223,7 @@ class Entity(BaseItem):
                                 yield action, verb, args, target, target_method, obj, obj_method
                         else:
                             yield action, verb, args, target, target_method, None, None
-                            
+
     def matching_targets(self, target_args, msg_class):
         target_list = self.target_key_map.get(target_args, []) if target_args else [self.env]
         for target in target_list:
@@ -231,32 +231,32 @@ class Entity(BaseItem):
             if target_method != None:
                 yield target, target_method
                 return
-                      
-         
+
+
     def change_env(self, new_env):
         self.leave_env()
         self.enter_env(new_env)
-        
+
     def leave_env(self):
         if self.env:
             self.remove_actions(self.env)
             self.remove_targets(self.env)
             self.env.rec_entity_leaves(self)
-        
+
     def enter_env(self, new_env):
         self.env = new_env
         self.room_id = new_env.room_id
-        self.add_actions(new_env)      
+        self.add_actions(new_env)
         self.add_targets(new_env)
         self.env.rec_entity_enters(self)
-        
+
     def clear_all(self):
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
         self.target_map[self] = []
-        self.add_target_keys([self.target_id], self) 
-        
+        self.add_target_keys([self.target_id], self)
+
     def refresh_all(self):
         self.refresh_soul()
         self.equip(self.inven)

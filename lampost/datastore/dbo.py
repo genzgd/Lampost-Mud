@@ -1,5 +1,6 @@
 from lampost.context.resource import requires
 
+
 class RootDBOMeta(type):
     def __new__(mcs, class_name, bases, new_attrs):
         cls = type.__new__(mcs, class_name, bases, new_attrs)
@@ -93,6 +94,7 @@ class RootDBO(object):
             else:
                 append(col.field_name, "None")
         return display
+
 
     def _to_json_obj(self):
         json_obj = {}

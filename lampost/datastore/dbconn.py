@@ -49,14 +49,14 @@ class RedisStore():
         dbo = self._load_class(json_obj, base_class)(key)
         if dbo.dbo_key_type:
             self.object_map[dbo.dbo_key] = dbo
-        self._load_json(dbo, json_obj)
+        self.load_json(dbo, json_obj)
         return dbo
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
 
     def update_object(self, dbo, json_obj):
-        self._load_json(dbo, json_obj)
+        self.load_json(dbo, json_obj)
         self.save_object(dbo, True)
 
     def delete_object(self, dbo):
@@ -101,7 +101,7 @@ class RedisStore():
         self.class_map[class_path] = clazz
         return clazz
 
-    def _load_json(self, dbo, json_obj):
+    def load_json(self, dbo, json_obj):
         for field_name in dbo.dbo_fields:
             try:
                 setattr(dbo, field_name, json_obj[field_name])
@@ -116,7 +116,7 @@ class RedisStore():
                             child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
                         else:
                             child_dbo = self._load_class(child_json, dbo_col.base_class)()
-                            self._load_json(child_dbo, child_json)
+                            self.load_json(child_dbo, child_json)
                         coll.append(child_dbo)
                     except AttributeError:
                         db_log("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)))

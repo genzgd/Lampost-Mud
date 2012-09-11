@@ -9,7 +9,7 @@ from lampost.dto.link import *
 from lampost.dto.rootdto import RootDTO
 from lampost.util.lmlog import logged
 from lampost.context.resource import provides, m_requires
-from lampost.util.lmutil import PermError
+from lampost.util.lmutil import PermError, DataError
 
 __author__ = 'Geoff'
 
@@ -32,6 +32,9 @@ def request(func):
         except PermError:
             request.setResponseCode(403)
             return "<html><body>Permission Denied.</body></html>"
+        except DataError as de:
+            request.setResponseCode(410)
+            return "<html><body>" + de.message + "</body></html>"
         try:
             return result.json
         except AttributeError:

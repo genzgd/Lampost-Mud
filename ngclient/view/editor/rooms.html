@@ -1,5 +1,5 @@
 <div ng-controller="RoomsEditorController" ng-show="ready">
-    <div class="span1">
+    <div class="span2">
         <h4>Rooms - {{areaId}}</h4>
         <button ng-click="showNewDialog()" class="btn btn-small btn-success">New Room</button>
     </div>
@@ -17,8 +17,8 @@
             </tr>
             </thead>
             <tbody>
-            <tr class="edit-row table-bordered" ng-repeat="room in rooms" ng-form="rowForm" ng-class="rowClass(rowForm)">
-                <td class="span1 cell-right">{{$index + 1}} <a title="Edit Room" ng-click="editRoom($index)" class="icon-link"><i class="icon-wrench"></i></a></td>
+            <tr class="edit-row table-bordered" ng-click="editRoom(room)" ng-repeat="room in rooms" ng-form="rowForm" ng-class="rowClass(rowForm)">
+                <td class="span1 cell-right">{{$index + 1}} <a title="Edit Room"  class="icon-link"><i class="icon-wrench"></i></a></td>
                 <td class="span1">{{room.id}}</td>
                 <td class="span2 edit-cell">{{room.title}}</td>
                 <td class="span1 cell-right">{{room.exit_count}}</td>
@@ -29,4 +29,5 @@
             </tbody>
         </table>
     </div>
+    <div class="span2"><button ng-click="closeEditor(editor)" class="btn btn-info pull-right">Close</button> </div>
 </div>
