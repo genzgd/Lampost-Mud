@@ -3,6 +3,7 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires
 from lampost.dto.rootdto import RootDTO
+from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import DataError
@@ -44,6 +45,15 @@ class RoomStubDTO(RootDTO):
         self.mobile_count = len(room.mobile_resets)
         self.extra_count = len(room.extras)
 
+class ExitDTO(RootDTO):
+    def __init__(self, exit):
+        self.dest_id = exit.destination.dbo_id
+        self.dest_title = exit.destination.title
+        self.dir = exit.dir_name
+        self.two_way = False
+        if (exit.destination.find_exit(exit.direction.rev_dir)):
+            self.two_way = True
+
 class RoomDTO(RootDTO):
     def __init__(self, room):
         self.basic = RootDTO()
@@ -52,6 +62,7 @@ class RoomDTO(RootDTO):
         self.basic.desc = room.desc
         self.basic.dbo_rev = room.dbo_rev
         self.extras = [extra.json_obj for extra in room.extras]
+        self.exits = [ExitDTO(exit) for exit in room.exits]
 
 
 class RoomResource(Resource):
@@ -61,6 +72,13 @@ class RoomResource(Resource):
         self.putChild('get', RoomGet())
         self.putChild('update_basic', RoomUpdateBasic())
         self.putChild('update_extras', RoomUpdateExtras())
+        self.putChild('dir_list', DirList())
+
+class DirList(Resource):
+    @request
+    def render_Post(self, content, session):
+        return [{'key':dir.key, 'name':dir.name} for dir in Direction.ref_map.itervalues()]
+
 
 class RoomList(Resource):
     @request

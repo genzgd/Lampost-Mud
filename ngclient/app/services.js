@@ -457,14 +457,42 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
 
 }]);
 
-angular.module('lampost_svc').service('lmArrays', [function() {
+angular.module('lampost_svc').service('lmUtil', [function() {
     this.stringSort = function(array, field) {
         array.sort(function SortByName(a, b){
             var aField = a[field].toLowerCase();
             var bField = b[field].toLowerCase();
             return ((aField < bField) ? -1 : ((aField > bField) ? 1 : 0));
         });
-    }
+    };
+
+    this.getScrollBarSizes = function() {
+        var inner = $('<p></p>').css({
+            'width':'100%',
+            'height':'100%'
+        });
+        var outer = $('<div></div>').css({
+            'position':'absolute',
+            'width':'100px',
+            'height':'100px',
+            'top':'0',
+            'left':'0',
+            'visibility':'hidden',
+            'overflow':'hidden'
+        }).append(inner);
+        $(document.body).append(outer);
+        var w1 = inner.width(), h1 = inner.height();
+        outer.css('overflow','scroll');
+        var w2 = inner.width(), h2 = inner.height();
+        if (w1 == w2 && outer[0].clientWidth) {
+            w2 = outer[0].clientWidth;
+        }
+        if (h1 == h2 && outer[0].clientHeight) {
+            h2 = outer[0].clientHeight;
+        }
+        outer.detach();
+        return [(w1 - w2),(h1 - h2)];
+    };
 }]);
 
 

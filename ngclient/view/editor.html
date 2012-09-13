@@ -1,16 +1,16 @@
-<div class="container-fluid" ng-controller="EditorController" style="overflow-y: scroll" ng-style="gameHeight">
-  <div class="row-fluid">
-    <div class="tabbable tabs-left span12">
+<div class="container-fluid" ng-controller="EditorController" style="overflow-y: auto" ng-style="editorHeight" ng-switch="loadStatus">
+  <div ng-switch-when="loading">Loading Data From Server</div>
+  <div ng-switch-when="loaded" class="row-fluid wrapper">
+    <div class="tabbable tabs-left span12 wrapper">
       <ul class="nav nav-tabs">
         <li alt-text="editor.parent" ng-repeat="editor in editors" ng-class="tabClass(editor)">
           <a ng-click="click(editor)">{{editor.label}}</a></li>
       </ul>
 
-      <div class="tab-content">
-        <div ng-repeat="editor in editors" ng-show="currentEditor == editor" class="tab-pane active" ng-include="editor.include">
+      <div class="tab-content wrapper">
+        <div style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor" class="tab-pane active" ng-include="editor.include">
         </div>
       </div>
     </div>
   </div>
-  <div style="height: 8px">&nbsp</div>
 </div>

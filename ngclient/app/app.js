@@ -26,16 +26,19 @@ angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmD
     }]);
 
 
-angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData',
-    function ($rootScope, $scope, $location, lmBus, lmData) {
+angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil',
+    function ($rootScope, $scope, $location, lmBus, lmData, lmUtil) {
 
         $(window).on("resize", function () {
             $rootScope.$apply(resize);
         });
 
         function resize() {
-            var newHeight = $(window).height() - $('#lm-navbar').height() - 18;
-            $rootScope.gameHeight = {height:newHeight.toString() + "px"};
+            var navBarMargin = parseInt(jQuery('#lm-navbar').css('marginBottom').replace('px', ''));
+            var gameHeight = jQuery(window).height() - jQuery('#lm-navbar').height() - navBarMargin;
+            $rootScope.gameHeight = {height:gameHeight.toString() + 'px'};
+            var editorHeight = gameHeight - lmUtil.getScrollBarSizes()[1];
+            $rootScope.editorHeight = {height:editorHeight.toString() + 'px'};
         }
 
         resize();
@@ -97,6 +100,7 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
         lmBus.register("login", update, $scope);
         lmBus.register("logout", function (reason) {
             if (reason == "invalid_session") {
+                lmDialog.removeAll();
                 lmDialog.showOk("Session Lost", "Your session has been disconnected.");
             }
             update();

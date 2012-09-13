@@ -1,0 +1,24 @@
+<div class="modal" ng-class="modalClass">
+    <div class="modal-header">
+        <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+        <h3>Create New Room (Area: {{areaId}})</h3>
+    </div>
+    <form ng-submit="createRoom()" >
+        <div class="modal-body">
+            <label>Room Id</label>
+            <input type="text" ng-model="newRoom.id" ng-change="roomExists = false" required/>
+            <div class="alert alert-error" ng-show="areaExists">
+                <button type="button" class="close" ng-click="roomExists = false">×</button>
+                Room id already in use.
+            </div>
+            <label>Room Title</label>
+            <input type="text" ng-model="newRoom.title" required/>
+            <label>Room Description</label>
+            <textarea rows="8" style="width: 90%" ng-model="newRoom.desc"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-success">Create Area</button>
+            <button ng-click="dismiss()" class="btn">Cancel</button>
+        </div>
+    </form>
+</div>

@@ -9,15 +9,16 @@ __author__ = 'Geoff'
 m_requires('datastore', 'mud', 'perm', __name__)
 
 class AreaDTO(RootDTO):
-    def __init__(self, area):
+    def __init__(self, area, can_write):
         self.id = area.dbo_id
-        self.dbo_rev = getattr(area, 'dbo_rev', 0)
+        self.dbo_rev = area.dbo_rev
         self.name = area.name
         self.owner_id = area.owner_id
         self.rooms = len(area.rooms)
         self.items = len(area.articles)
         self.mobiles = len(area.mobiles)
         self.next_room_id = area.next_room_id
+        self.can_write = can_write
 
 class AreaResource(Resource):
     def __init__(self):
@@ -30,7 +31,7 @@ class AreaResource(Resource):
 class AreaList(Resource):
     @request
     def render_POST(self, content, session):
-        return [AreaDTO(area) for area in mud.area_map.itervalues() if has_perm(session.player, area)]
+        return [AreaDTO(area, has_perm(session.player, area)) for area in mud.area_map.itervalues()]
 
 @requires('mud')
 class AreaNew(Resource):

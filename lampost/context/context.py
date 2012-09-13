@@ -24,7 +24,7 @@ class Context():
         Permissions()
         SessionManager()
         UserManager()
-        web_server = WebServer(port)
+        web_server = WebServer(int(port))
         MudNature()
 
 

@@ -10,7 +10,7 @@ angular.module('lampost_edit').directive('editList', [function() {
     }
 }]);
 
-angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
+angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', function($q, lmBus, lmRemote) {
 
     function Editor(type, parent) {
         var eType = this.types[type];
@@ -32,7 +32,7 @@ angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
         players: {label: "Players",  url:"players"},
         areas: {label:"Areas", url:"area"},
         rooms: {label:"Rooms", url:"room"},
-        room: {label:"", url:"room", model_props:['basic', 'extras']}
+        room: {label:"", url:"room", model_props:['basic', 'extras', 'exits']}
     };
 
     Editor.prototype.copyFromModel = function(target) {
@@ -53,6 +53,9 @@ angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
 
     var self = this;
     var currentMap = {};
+    this.areasMaster = {};
+    this.loadStatus = "loading";
+
     lmBus.register("login", configEditors);
 
     function configEditors(loginData) {
@@ -65,7 +68,21 @@ angular.module('lampost_edit').service('lmEditor', ['lmBus', function(lmBus) {
             currentMap[editor.id] = editor;
         }
         self.currentEditor = self.editors[0];
+        self.refreshData();
     }
+
+    this.refreshData = function() {
+        self.loadStatus = "loading";
+        var areaPromise = lmRemote.request("editor/area/list").then(function(areas) {
+            angular.forEach(areas, function(value) {
+                self.areasMaster[value.id] = value;
+            })
+        });
+        $q.all([areaPromise]).then(function() {
+            self.loadStatus = "loaded";
+            lmBus.dispatch('editor_change');
+        });
+    };
 
     this.addEditor = function(type, areaId) {
         var editor = new Editor(type, areaId);
@@ -106,13 +123,14 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
     lmBus.register('editor_change', editorChange);
 
     $scope.editors = lmEditor.editors;
+    editorChange();
+
     $scope.tabClass = function(editor) {
         return (editor == $scope.currentEditor ? "active " : " ") + editor.label_class;
     };
 
-    editorChange();
-
     function editorChange() {
+        $scope.loadStatus = lmEditor.loadStatus;
         $scope.currentEditor = lmEditor.currentEditor;
     }
 
@@ -151,25 +169,24 @@ angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemot
 }]);
 
 
-angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmArrays', 'lmEditor',
-    function ($scope, lmRemote, lmDialog, lmArrays, lmEditor) {
+angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmUtil', 'lmEditor',
+    function ($scope, lmRemote, lmDialog, lmUtil, lmEditor) {
 
-    $scope.model = $scope.editor.model;
-    $scope.ready = false;
-    var listPromise = lmRemote.request($scope.editor.url + "/list").then(function(areas) {
-        lmArrays.stringSort(areas, 'id');
-        $scope.model.areas = areas;
-        $scope.areas = areas;
-        $scope.areas_copy = jQuery.extend(true, [], areas);
-    });
-    listPromise.then(function() {$scope.ready = true});
+    $scope.areas = [];
+    for (var areaId in lmEditor.areasMaster) {
+        $scope.areas.push(lmEditor.areasMaster[areaId]);
+    }
+    lmUtil.stringSort($scope.areas, 'name');
+    $scope.areas_copy = jQuery.extend(true, [], $scope.areas);
+
     $scope.showNewDialog = function() {lmDialog.show({templateUrl:"dialogs/newarea.html",
         controller:"NewAreaController", locals:{parentScope:$scope}})};
 
     $scope.addNew = function (newArea) {
         $scope.areas.push(newArea);
-        lmArrays.stringSort($scope.areas, 'id');
+        lmUtil.stringSort($scope.areas, 'id');
         $scope.areas_copy.push(jQuery.extend(true, {}, newArea));
+        lmEditors.areasMaster[newArea.id] = newArea;
     };
 
     $scope.areasDelete = function(rowIx) {
@@ -181,6 +198,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
                 if (result == "OK") {
                     $scope.areas.splice(rowIx,  1);
                     $scope.areas_copy.splice(rowIx, 1);
+                    delete lmEditor.areasMaster[area.id];
                 }
             });
         });

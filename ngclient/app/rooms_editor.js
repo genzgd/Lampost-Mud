@@ -1,5 +1,5 @@
-angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmEditor',
-    function ($scope, lmRemote, lmEditor) {
+angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog',
+    function ($scope, lmRemote, lmEditor, lmDialog) {
 
         $scope.areaId = $scope.editor.parent;
         $scope.ready = false;
@@ -9,13 +9,25 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
         });
         $scope.editRoom = function (room) {
             lmEditor.addEditor('room', room.id);
-        }
+        };
+        $scope.showNewDialog = function() {
+            lmDialog.showDialog({templateUrl:"dialog/new_room.html", controller:"NewRoomController", locals:{parentScope:$scope}});
+        };
 
     }]);
 
+angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRemote', 'parentScope',
+    function($scope, lmRemote, parentScope) {
+        $scope.areaId = parentScope.areaId;
+        $scope.
+        $scope.createRoom = function() {
 
-angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor',
-    function ($scope, lmRemote, lmEditor) {
+        }
+    }
+]);
+
+angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor', '$timeout',
+    function ($scope, lmRemote, lmEditor, $timeout) {
 
 
         function showResult(type, message) {
@@ -32,6 +44,8 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                 $scope.basic_copy = jQuery.extend(true, {}, room.basic);
                 $scope.extras = room.extras;
                 $scope.extras_copy = jQuery.extend(true, [], room.extras);
+                $scope.exits = room.exits;
+                $scope.exits_copy = jQuery.extend(true, [], room.exits);
                 $scope.editor.copyToModel($scope);
                 $scope.editor.model_rev = room.basic.dbo_rev;
              } else {
@@ -54,6 +68,9 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             var newExtra = {title:"", desc:"", aliases:""};
             $scope.extras.push(newExtra);
             $scope.showDesc(newExtra);
+            $timeout(function() {
+                jQuery('.extra-title-edit:last').focus();
+            })
         };
 
         $scope.deleteExtra = function(extraIx) {
@@ -70,6 +87,9 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
 
         $scope.newAlias = function() {
             $scope.currentExtra.editAliases.push({title:""});
+            $timeout(function() {
+                jQuery('.extra-alias-edit:last').focus();
+            })
         };
 
         $scope.extraRowClass = function(extra) {
