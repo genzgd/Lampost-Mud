@@ -161,9 +161,9 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
             error(function(data, status) {
                 dialogId && lmDialog.close(dialogId);
                 if (status == 403) {
-                    lmDialog.showOk("You do not have permission for that action");
+                    lmDialog.showOk("Denied", "You do not have permission for that action");
                 } else if (status != 410) {
-                    lmDialog.showOk("Server Error: " + status + " " + data);
+                    lmDialog.showOk("Server Error: " + status, data);
                 }
             }).then(function(result) {
                 dialogId && lmDialog.close(dialogId);
@@ -442,7 +442,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
 
     this.showConfirm = function (title, msg, confirm) {
         var scope = $rootScope.$new();
-        var yesButton = {label:"Yes", dismiss:true, click:confirm};
+        var yesButton = {label:"Yes", dismiss:true, class:"btn-danger", click:confirm};
         var noButton = {label:"No", dismiss:true, class:"btn-primary", default:true};
         scope.buttons = [yesButton, noButton];
         scope.title = title;

@@ -35,6 +35,8 @@ def request(func):
         except DataError as de:
             request.setResponseCode(410)
             return de.message
+        if not result:
+            return "OK"
         try:
             return result.json
         except AttributeError:

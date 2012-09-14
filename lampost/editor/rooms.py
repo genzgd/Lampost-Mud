@@ -12,18 +12,128 @@ __author__ = 'Geoff'
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
-def get_room(room_id):
+class RoomResource(Resource):
+    def __init__(self):
+        Resource.__init__(self)
+        self.putChild('list', RoomList())
+        self.putChild('get', RoomGet())
+        self.putChild('create', RoomCreate())
+        self.putChild('delete', RoomDelete())
+        self.putChild('update_basic', RoomUpdateBasic())
+        self.putChild('update_extras', RoomUpdateExtras())
+        self.putChild('visit', RoomVisit())
+        self.putChild('dir_list', DirList())
+
+class DirList(Resource):
+    @request
+    def render_Post(self, content, session):
+        return [{'key':dir.key, 'name':dir.name} for dir in Direction.ref_map.itervalues()]
+
+
+class RoomList(Resource):
+    @request
+    def render_POST(self, content, session):
+        area = mud.get_area(content.area_id)
+        if not area:
+            raise DataError("Missing Area")
+        return [RoomStubDTO(room) for room in area.rooms.values()]
+
+
+class RoomGet(Resource):
+    @request
+    def render_POST(self, content, session):
+        return RoomDTO(get_room(session, content.room_id)[1])
+
+class RoomCreate(Resource):
+    @request
+    def render_POST(self, content, session):
+        area = mud.get_area(content.area_id)
+        check_perm(session, area)
+        room_dto = content.room
+        room_id = content.area_id + ':'+ str(room_dto['id'])
+        if area.get_room(room_id):
+            raise DataError("ROOM_EXISTS")
+
+        room = Room(room_id, room_dto['title'], room_dto['desc'])
+        save_object(room)
+        area.rooms.append(room)
+        if area.next_room_id == room_dto['id']:
+            next_room_id = content.area_id + ':' + str(area.next_room_id)
+            while area.get_room(next_room_id):
+                area.next_room_id += 1
+                next_room_id = content.area_id + ':' + str(area.next_room_id)
+        save_object(area)
+        return RootDTO(next_room_id=area.next_room_id, room=RoomStubDTO(room))
+
+class RoomDelete(Resource):
+    @request
+    def render_POST(self, content, session):
+        area, room = get_room(session, content.room_id)
+        main_contents = save_contents(room)
+        for my_exit in room.exits:
+            other_room = my_exit.destination
+            for other_exit in other_room.exits:
+                if other_exit.destination == room:
+                    other_contents = save_contents(other_room)
+                    other_room.exits.remove(other_exit)
+                    save_object(other_room, True)
+                    restore_contents(other_room, other_contents)
+        delete_object(room)
+        area.rooms.remove(room)
+        save_object(area)
+        for player in main_contents:
+            if player.dbo_key_type == 'player':
+               mud.start_player(player)
+
+class RoomVisit(Resource):
+    @request
+    def render_POST(self, content, session):
+        room = mud.find_room(content.room_id)
+        if not Room:
+            raise DataError("ROOM_MISSING")
+        session.player.change_env(room)
+        session.append(session.player.parse('look'))
+
+class RoomUpdateBasic(Resource):
+    @request
+    def render_POST(self, content, session):
+        area, room = get_room(session, content.id)
+        contents = save_contents(room)
+        room.title = content.title
+        room.desc = content.desc
+        save_object(room, True)
+        restore_contents(room, contents)
+        return RoomDTO(room).basic
+
+class RoomUpdateExtras(Resource):
+    @request
+    def render_POST(self, content, session):
+        room = get_room(session, content.room_id)
+        check_perm(session, room)
+        contents = save_contents(room)
+        room.extras = []
+        for extra_json in content.extras:
+            if extra_json.get('title', None):
+                extra = BaseItem()
+                load_json(extra, extra_json)
+                room.extras.append(extra)
+        save_object(room, True)
+        restore_contents(room, contents)
+        return RoomDTO(room).extras
+
+def get_room(session, room_id):
     area_id = room_id.split(":")[0]
     area = mud.get_area(area_id)
     if not area:
-        raise DataError("Missing Area")
+        raise DataError("AREA_MISSING")
     room = area.get_room(room_id)
     if not room:
-        raise DataError("Missing Room")
-    return room
+        raise DataError("ROOM_MISSING")
+    check_perm(session, area)
+    return area, room
 
 def save_contents(start_room):
-    safe_room = Room("safe_room")
+    safe_room = Room("safe_room", "A Temporary Safe Room")
     contents = []
     for entity in start_room.contents:
         if hasattr(entity, 'change_env'):
@@ -63,83 +173,6 @@ class RoomDTO(RootDTO):
         self.basic.dbo_rev = room.dbo_rev
         self.extras = [extra.json_obj for extra in room.extras]
         self.exits = [ExitDTO(exit) for exit in room.exits]
-
-
-class RoomResource(Resource):
-    def __init__(self):
-        Resource.__init__(self)
-        self.putChild('list', RoomList())
-        self.putChild('get', RoomGet())
-        self.putChild('create', RoomCreate())
-        self.putChild('update_basic', RoomUpdateBasic())
-        self.putChild('update_extras', RoomUpdateExtras())
-        self.putChild('dir_list', DirList())
-
-class DirList(Resource):
-    @request
-    def render_Post(self, content, session):
-        return [{'key':dir.key, 'name':dir.name} for dir in Direction.ref_map.itervalues()]
-
-
-class RoomList(Resource):
-    @request
-    def render_POST(self, content, session):
-        area = mud.get_area(content.area_id)
-        if not area:
-            raise DataError("Missing Area")
-        return [RoomStubDTO(room) for room in area.rooms.values()]
-
-
-class RoomGet(Resource):
-    @request
-    def render_POST(self, content, session):
-        return RoomDTO(get_room(content.room_id))
-
-class RoomCreate(Resource):
-    @request
-    def render_POST(self, content, session):
-        area = mud.get_area(content.area_id)
-        check_perm(session, area)
-        room_dto = content.room
-        room_id = content.area_id + ":" + str(room_dto['id'])
-        if area.get_room(room_id):
-            raise DataError("ROOM_EXISTS")
-
-        room = Room(room_id, room_dto['title'], room_dto['desc'])
-        save_object(room)
-        area.rooms.append(room)
-        if area.next_room_id == room_dto['id']:
-            area.next_room_id += 1
-        save_object(area)
-        return RoomStubDTO(room)
-
-class RoomUpdateBasic(Resource):
-    @request
-    def render_POST(self, content, session):
-        room = get_room(content.id)
-        check_perm(session, room)
-        contents = save_contents(room)
-        room.title = content.title
-        room.desc = content.desc
-        save_object(room, True)
-        restore_contents(room, contents)
-        return RoomDTO(room).basic
-
-class RoomUpdateExtras(Resource):
-    @request
-    def render_POST(self, content, session):
-        room = get_room(content.room_id)
-        check_perm(session, room)
-        contents = save_contents(room)
-        room.extras = []
-        for extra_json in content.extras:
-            if extra_json.get('title', None):
-                extra = BaseItem()
-                load_json(extra, extra_json)
-                room.extras.append(extra)
-        save_object(room, True)
-        restore_contents(room, contents)
-        return RoomDTO(room).extras
 
 
 

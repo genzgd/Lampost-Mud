@@ -19,7 +19,9 @@
             <tbody>
             <tr class="edit-row table-bordered" ng-click="editRoom(room)" ng-repeat="room in rooms" ng-form="rowForm" ng-class="rowClass(rowForm)">
                 <td class="span1">{{$index + 1}}<div class="pull-right">
-                  <a title="Edit Room"  class="icon-link"><i class="icon-wrench"></i></a>
+                  <a ng-click="deleteRoom($event, room)" title="Delete Room" class="icon-link"><i class="icon-remove"></i></a>
+                  <a ng-click="visitRoom($event, room)" title="Visit Room" class="icon-link"><i class="icon-road"></i></a>
+                  <a title="Edit Room" class="icon-link"><i class="icon-wrench"></i></a>
                 </div></td>
                 <td class="span1 unselectable">{{room.id}}</td>
                 <td class="span2 unselectable edit-cell">{{room.title}}</td>

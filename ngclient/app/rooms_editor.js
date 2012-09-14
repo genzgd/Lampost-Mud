@@ -7,6 +7,7 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
 
         function loadRooms() {
             lmRemote.request($scope.editor.url + "/list", {area_id:$scope.areaId}).then(function (rooms) {
+                lmEditor.roomsMaster[$scope.areaId] = rooms;
                 $scope.rooms = rooms;
                 sortRooms();
                 $scope.ready = true;
@@ -34,10 +35,25 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
                 lmEditor.closeEditor($scope.editor);
             }
         };
-        $scope.roomCreated = function (room) {
-            $scope.rooms.push(room);
+
+        $scope.roomCreated = function (roomData) {
+            var area = lmEditor.areasMaster[$scope.areaId];
+            area.next_room_id = roomData.next_room_id;
+            $scope.rooms.push(roomData.room);
             sortRooms();
-            $scope.editRoom(room);
+            $scope.editRoom(roomData.room);
+        };
+
+        $scope.deleteRoom = function(event, room) {
+            event.preventDefault();
+            event.stopPropagation();
+            lmEditor.deleteRoom(room.id);
+        };
+
+        $scope.visitRoom = function(event, room) {
+            event.preventDefault();
+            event.stopPropagation();
+            lmEditor.visitRoom(room.id);
         }
     }]);
 
@@ -45,10 +61,10 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
 angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRemote', 'parentScope', 'lmEditor', 'nextRoomId',
     function ($scope, lmRemote, parentScope, lmEditor, nextRoomId) {
         $scope.areaId = parentScope.areaId;
-        $scope.newRoom = {id:nextRoomId, title:'', desc:''}
+        $scope.newRoom = {id:nextRoomId, title:'', desc:''};
         $scope.createRoom = function () {
-            lmRemote.request('editor/room/create', {area_id:$scope.areaId, room:$scope.newRoom}).then(function (room) {
-                parentScope.roomCreated(room);
+            lmRemote.request('editor/room/create', {area_id:$scope.areaId, room:$scope.newRoom}).then(function (roomData) {
+                parentScope.roomCreated(roomData);
                 $scope.dismiss();
             }, function (error) {
                 if (error.data == "ROOM_EXISTS") {
@@ -61,7 +77,6 @@ angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRem
 
 angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor', '$timeout',
     function ($scope, lmRemote, lmEditor, $timeout) {
-
 
         function showResult(type, message) {
             $scope.showResult = true;
@@ -86,6 +101,14 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             }
             $scope.ready = true;
         });
+
+        $scope.deleteRoom = function() {
+            lmEditor.deleteRoom($scope.roomId);
+        };
+
+        $scope.visitRoom = function() {
+            lmEditor.visitRoom($scope.roomId);
+        };
 
         $scope.updateBasic = function () {
             $scope.basic.desc = lmEditor.sanitize($scope.basic.desc);

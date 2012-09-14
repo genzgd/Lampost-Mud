@@ -9,7 +9,7 @@ __author__ = 'Geoff'
 m_requires('datastore', 'mud', 'perm', __name__)
 
 class AreaDTO(RootDTO):
-    def __init__(self, area, can_write):
+    def __init__(self, area, can_write=True):
         self.id = area.dbo_id
         self.dbo_rev = area.dbo_rev
         self.name = area.name

@@ -7,9 +7,8 @@ from immortal import IMM_LEVELS
 from lampost.env.movement import Direction
 from lampost.player.player import Player
 from lampost.env.room import Room, Exit
-from lampost.util.lmutil import ljust, find_extra, find_extra_prep
+from lampost.util.lmutil import ljust, find_extra_prep
 from lampost.dto.display import Display, DisplayLine
-from lampost.client.dialog import Dialog, DIALOG_TYPE_CONFIRM
 from lampost.action.action import Action
 from lampost.mobile.mobile import MobileTemplate, MobileReset
 from lampost.model.article import ArticleTemplate, ArticleReset
@@ -442,82 +441,6 @@ class ResetRoom(Action):
         area = Action.mud.get_area(source.env.area_id) #@UndefinedVariable
         source.env.reset(area)
         return "Room reset"
-
-class CreateRoom(Action):
-    def __init__(self):
-        Action.__init__(self, ("createroom", "cr"))
-        self.imm_level = IMM_LEVELS["creator"]
-
-    def execute(self, source, verb, args, command, **ignored):
-        if not args:
-            return "Room id must be specified for create"
-        if ":" in args[0]:
-            area_id, room_id = tuple(args[0].split(":"))
-        else:
-            area_id = source.env.area_id
-            room_id = args[0]
-        try:
-            area = check_area(source, area_id)
-        except BuildError as exp:
-            return exp.msg
-        if len(args) > 1:
-            title = find_extra(verb, 1, command)
-        else:
-            title = "Area " + area_id + " room " + room_id
-        room_id = area_id + ":" + room_id
-        if area.get_room(room_id):
-            return "That room id already exists"
-
-        room = Room(room_id, title, title)
-        self.save_object(room)
-        area.rooms.append(room)
-        self.save_object(area)
-        source.change_env(room)
-        return source.parse("look")
-
-
-class DelRoom(Action):
-    def __init__(self):
-        self.imm_level = IMM_LEVELS["creator"]
-        Action.__init__(self, "delroom")
-
-    def execute(self, source, args, **ignored):
-        if not args:
-            return "Room id must be specified for delete"
-        try:
-            area, room = find_room(source, args, source.env.area_id)
-        except BuildError as exp:
-            return exp.msg
-
-        if room.dbo_rev:
-            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to delete room " + room.title, "Confirm Delete", self.confirm_delete)
-            confirm_dialog.area = area
-            confirm_dialog.room = room
-            return confirm_dialog
-        else:
-            return self.del_room(source, area,  room)
-
-    def confirm_delete(self, dialog):
-        if dialog.data["response"] == "no":
-            return
-        return self.del_room(dialog.player, dialog.area, dialog.room)
-
-    def del_room(self, builder, area, room):
-        for my_exit in room.exits:
-            other_room = my_exit.destination
-            for other_exit in other_room.exits:
-                if other_exit.destination == room:
-                    other_room.exits.remove(other_exit)
-                    self.save_object(other_room)
-                    other_room.refresh()
-        self.delete_object(room)
-        area.rooms.remove(room)
-        self.save_object(area)
-        display = Display("Room " + room.dbo_id + " deleted")
-
-        if builder.env == room:
-            display.merge(builder.parse("home"))
-        return display
 
 
 class DirectionAction(BuildAction):

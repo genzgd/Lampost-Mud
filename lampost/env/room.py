@@ -163,12 +163,6 @@ class Room(RootDBO):
             if curr_count >= a_reset.article_count and curr_count < a_reset.article_max:
                 area.create_article(a_reset.article_id, self)
 
-    def refresh(self):
-        for entity in self.contents:
-            try:
-                entity.refresh_env()
-            except AttributeError:
-                pass
 
 
 Exit.dbo_refs = DBORef("destination", Room, "room"),
