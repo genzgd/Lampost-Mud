@@ -31,10 +31,10 @@ def request(func):
             result = func(self, content, session)
         except PermError:
             request.setResponseCode(403)
-            return "<html><body>Permission Denied.</body></html>"
+            return "Permission Denied."
         except DataError as de:
             request.setResponseCode(410)
-            return "<html><body>" + de.message + "</body></html>"
+            return de.message
         try:
             return result.json
         except AttributeError:

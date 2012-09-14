@@ -109,5 +109,9 @@ div.wrapper, table.wrapper {
   height: 100%;
 }
 
+.modal-backdrop {
+  opacity: 0.1;
+}
+
 
 

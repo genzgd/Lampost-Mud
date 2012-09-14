@@ -151,13 +151,22 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         });
     }
 
-    function resourceRequest(resource, data) {
+    function resourceRequest(resource, data, showWait) {
         data = data ? data : {};
         data.session_id = sessionId;
+        if (showWait) {
+            var dialogId = lmDialog.show({templateUrl:'dialogs/loading.html', noEscape:true});
+        }
         return $http({method: 'POST', url: '/' + resource, data:data}).
             error(function(data, status) {
-                linkFailure(status);
+                dialogId && lmDialog.close(dialogId);
+                if (status == 403) {
+                    lmDialog.showOk("You do not have permission for that action");
+                } else if (status != 410) {
+                    lmDialog.showOk("Server Error: " + status + " " + data);
+                }
             }).then(function(result) {
+                dialogId && lmDialog.close(dialogId);
                 var data = result.data;
                 $timeout(function() {
                     serverResult(data)}, 0);
@@ -232,8 +241,8 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         }
     }
 
-    this.request = function(resource, args) {
-        return resourceRequest(resource, args);
+    this.request = function(resource, args, showWait) {
+        return resourceRequest(resource, args, showWait);
     };
 
     this.connect = function() {
@@ -405,8 +414,13 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         }
     }
 
+
     this.show = function (args) {
-        showDialog(args);
+        return showDialog(args);
+    };
+
+    this.close = function(dialogId) {
+        closeDialog(dialogId);
     };
 
     this.removeAll = function () {
@@ -459,11 +473,17 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
 
 angular.module('lampost_svc').service('lmUtil', [function() {
     this.stringSort = function(array, field) {
-        array.sort(function SortByName(a, b){
+        array.sort(function (a, b){
             var aField = a[field].toLowerCase();
             var bField = b[field].toLowerCase();
             return ((aField < bField) ? -1 : ((aField > bField) ? 1 : 0));
         });
+    };
+
+    this.intSort = function(array, field) {
+        array.sort(function(a, b) {
+            return a[field] - b[field];
+        })
     };
 
     this.getScrollBarSizes = function() {

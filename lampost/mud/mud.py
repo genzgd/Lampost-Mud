@@ -9,7 +9,7 @@ from lampost.immortal.immortal import CreatePlayer, DeletePlayer,\
     AllPlayers
 from area import Area
 from lampost.comm.chat import TellAction, ReplyAction, SayAction
-from lampost.immortal.builder import Dig, RoomList, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
+from lampost.immortal.builder import Dig, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
     FTH, DelRoom, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob, EditAlias,\
     CreateRoom, ItemList, CreateItem,\
     EditAreaItem, AddItem, DelItem
@@ -33,7 +33,7 @@ class MudNature():
         self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
                            ShowInventory(), Socials(), GetAction(), DropAction()}
         self.imm_commands = CreatePlayer(), DeletePlayer(), GoToArea(), Citadel(),\
-                       RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), RoomList(), ListCommands(),\
+                       RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), ListCommands(),\
                        AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
                        BuildMode(), FTH(), DelRoom(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(),\
                        DelMob(), PatchTarget(), PatchDB(), CreateRoom(), GotoPlayer(),\

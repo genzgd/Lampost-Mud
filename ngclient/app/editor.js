@@ -54,6 +54,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', f
     var self = this;
     var currentMap = {};
     this.areasMaster = {};
+    this.roomsMaster = {};
     this.loadStatus = "loading";
 
     lmBus.register("login", configEditors);

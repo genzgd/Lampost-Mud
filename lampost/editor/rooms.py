@@ -70,6 +70,7 @@ class RoomResource(Resource):
         Resource.__init__(self)
         self.putChild('list', RoomList())
         self.putChild('get', RoomGet())
+        self.putChild('create', RoomCreate())
         self.putChild('update_basic', RoomUpdateBasic())
         self.putChild('update_extras', RoomUpdateExtras())
         self.putChild('dir_list', DirList())
@@ -86,7 +87,7 @@ class RoomList(Resource):
         area = mud.get_area(content.area_id)
         if not area:
             raise DataError("Missing Area")
-        return [RoomStubDTO(room) for room in area.sorted_rooms]
+        return [RoomStubDTO(room) for room in area.rooms.values()]
 
 
 class RoomGet(Resource):
@@ -94,6 +95,23 @@ class RoomGet(Resource):
     def render_POST(self, content, session):
         return RoomDTO(get_room(content.room_id))
 
+class RoomCreate(Resource):
+    @request
+    def render_POST(self, content, session):
+        area = mud.get_area(content.area_id)
+        check_perm(session, area)
+        room_dto = content.room
+        room_id = content.area_id + ":" + str(room_dto['id'])
+        if area.get_room(room_id):
+            raise DataError("ROOM_EXISTS")
+
+        room = Room(room_id, room_dto['title'], room_dto['desc'])
+        save_object(room)
+        area.rooms.append(room)
+        if area.next_room_id == room_dto['id']:
+            area.next_room_id += 1
+        save_object(area)
+        return RoomStubDTO(room)
 
 class RoomUpdateBasic(Resource):
     @request

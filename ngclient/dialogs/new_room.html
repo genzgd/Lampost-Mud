@@ -6,8 +6,8 @@
     <form ng-submit="createRoom()" >
         <div class="modal-body">
             <label>Room Id</label>
-            <input type="text" ng-model="newRoom.id" ng-change="roomExists = false" required/>
-            <div class="alert alert-error" ng-show="areaExists">
+            <input type="number" ng-model="newRoom.id" ng-change="roomExists = false" required/>
+            <div class="alert alert-error" ng-show="roomExists">
                 <button type="button" class="close" ng-click="roomExists = false">×</button>
                 Room id already in use.
             </div>
@@ -17,7 +17,7 @@
             <textarea rows="8" style="width: 90%" ng-model="newRoom.desc"></textarea>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-success">Create Area</button>
+            <button class="btn btn-success">Create Room</button>
             <button ng-click="dismiss()" class="btn">Cancel</button>
         </div>
     </form>

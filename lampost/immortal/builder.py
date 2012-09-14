@@ -28,26 +28,6 @@ class BuildMode(Action):
         return "Build Mode is {0}".format("On" if source.build_mode else "Off")
 
 
-class RoomList(Action):
-    imm_level = IMM_LEVELS["creator"]
-
-    def __init__(self):
-        Action.__init__(self, "roomlist")
-
-    def execute(self, source, args, **ignored):
-        if args:
-            area_id = args[0]
-        else:
-            area_id = source.env.area_id
-        area = self.mud.get_area(area_id)
-        if not area:
-            return "Invalid area"
-        display = Display()
-        for room in area.sorted_rooms:
-            display.append(DisplayLine(ljust(room.dbo_id, 20) + ljust(room.title, 20) + room.short_exits()))
-        return display
-
-
 class MobList(Action):
     imm_level = IMM_LEVELS["creator"]
 
