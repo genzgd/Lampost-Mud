@@ -8,8 +8,6 @@ from lampost.env.room import Room
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import DataError
 
-__author__ = 'Geoff'
-
 m_requires('datastore', 'perm', 'mud', __name__)
 
 class RoomResource(Resource):
@@ -19,8 +17,7 @@ class RoomResource(Resource):
         self.putChild('get', RoomGet())
         self.putChild('create', RoomCreate())
         self.putChild('delete', RoomDelete())
-        self.putChild('update_basic', RoomUpdateBasic())
-        self.putChild('update_extras', RoomUpdateExtras())
+        self.putChild('update', RoomUpdate())
         self.putChild('visit', RoomVisit())
         self.putChild('dir_list', DirList())
 
@@ -53,7 +50,6 @@ class RoomCreate(Resource):
         room_id = content.area_id + ':'+ str(room_dto['id'])
         if area.get_room(room_id):
             raise DataError("ROOM_EXISTS")
-
         room = Room(room_id, room_dto['title'], room_dto['desc'])
         save_object(room)
         area.rooms.append(room)
@@ -80,10 +76,12 @@ class RoomDelete(Resource):
                     restore_contents(other_room, other_contents)
         delete_object(room)
         area.rooms.remove(room)
-        save_object(area)
-        for player in main_contents:
-            if player.dbo_key_type == 'player':
-               mud.start_player(player)
+        save_object(area, True)
+        for entity in main_contents:
+            if entity.dbo_key_type == 'player':
+                mud.start_player(entity)
+            else:
+                entity.detach()
 
 class RoomVisit(Resource):
     @request
@@ -94,23 +92,13 @@ class RoomVisit(Resource):
         session.player.change_env(room)
         session.append(session.player.parse('look'))
 
-class RoomUpdateBasic(Resource):
+class RoomUpdate(Resource):
     @request
     def render_POST(self, content, session):
         area, room = get_room(session, content.id)
         contents = save_contents(room)
         room.title = content.title
         room.desc = content.desc
-        save_object(room, True)
-        restore_contents(room, contents)
-        return RoomDTO(room).basic
-
-class RoomUpdateExtras(Resource):
-    @request
-    def render_POST(self, content, session):
-        room = get_room(session, content.room_id)
-        check_perm(session, room)
-        contents = save_contents(room)
         room.extras = []
         for extra_json in content.extras:
             if extra_json.get('title', None):
@@ -119,7 +107,7 @@ class RoomUpdateExtras(Resource):
                 room.extras.append(extra)
         save_object(room, True)
         restore_contents(room, contents)
-        return RoomDTO(room).extras
+        return RoomDTO(room)
 
 def get_room(session, room_id):
     area_id = room_id.split(":")[0]
@@ -166,11 +154,10 @@ class ExitDTO(RootDTO):
 
 class RoomDTO(RootDTO):
     def __init__(self, room):
-        self.basic = RootDTO()
-        self.basic.id = room.dbo_id
-        self.basic.title = room.title
-        self.basic.desc = room.desc
-        self.basic.dbo_rev = room.dbo_rev
+        self.id = room.dbo_id
+        self.title = room.title
+        self.desc = room.desc
+        self.dbo_rev = room.dbo_rev
         self.extras = [extra.json_obj for extra in room.extras]
         self.exits = [ExitDTO(exit) for exit in room.exits]
 

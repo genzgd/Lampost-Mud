@@ -1,15 +1,15 @@
 <div ng-controller="RoomEditorController" ng-show="ready" style="height: 100%; overflow-y: auto">
   <div class="row-fluid">
-    <h4 class="span3">Room Id: {{basic.id}}</h4>
-    <h5 class="span1">Rev: {{basic.dbo_rev}}</h5>
+    <h4 class="span3">Room Id: {{room.id}}</h4>
+    <h5 class="span1">Rev: {{room.dbo_rev}}</h5>
 
     <div class="span4">
-      <h5 class="span3">Exits ({{exits.length}})</h5>
+      <h5 class="span3">Exits ({{room.exits.length}})</h5>
     </div>
     <div class="span4">
       <div class="row-fluid">
-        <button ng-click="updateRoom()" class="btn btn-primary">Update</button>
-        <button ng-click="revertRoom()" class="btn">Revert</button>
+        <button ng-disabled="!roomDirty" ng-click="updateRoom()" class="btn btn-primary">Update</button>
+        <button ng-disabled="!roomDirty" ng-click="revertRoom()" class="btn">Revert</button>
         <button ng-click="deleteRoom()" class="btn btn-danger" style="margin-left: 6px;">Delete</button>
         <div class="pull-right">
           <button ng-click="visitRoom()" class="btn btn-warning" style="margin-right: 6px;">Visit</button>
@@ -19,12 +19,12 @@
     </div>
   </div>
   <div class="row-fluid">
-    <form class="span4" name="basicForm" ng-submit="updateBasic(basicForm)">
+    <div class="span4">
       <label>Title</label>
-      <input class="span10" type="text" ng-model="basic.title"/>
+      <input class="span10" type="text" ng-change="dirty()" ng-model="room.title"/>
       <label>Description</label>
-      <textarea class="span12" rows="10" ng-model="basic.desc"></textarea>
-    </form>
+      <textarea class="span12" rows="10" ng-change="dirty()" ng-model="room.desc"></textarea>
+    </div>
     <div class="span3">
       <table style="width: 100%; height:60%; table-layout: fixed;">
         <thead>
@@ -35,7 +35,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr class="table-bordered" ng-repeat="exit in exits">
+        <tr class="table-bordered" ng-repeat="exit in room.exits">
           <td style="width: 10%;">{{exit.dir}}</td>
           <td class="use-ellipses" style="width: 60%;">{{exit.dest_id}} ({{exit.dest_title}})</td>
           <td style="width: 30%;">
@@ -73,11 +73,11 @@
           </tr>
           </thead>
           <tbody>
-          <tr class="edit-row table-bordered" ng-repeat="extra in extras" ng-class="extraRowClass(extra)">
-            <td class="edit-cell"><input class="span12 edit-cell extra-title-edit" type="text" ng-model="extra.title"/></td>
-            <td><a title="Show Description" ng-click="showDesc(extra)" class="icon-link"><i class="icon-eye-open"></i></a>
-              <a title="Show Aliases" ng-click="showAliases(extra)" class="icon-link"><i class="icon-align-justify"></i></a>
-              <a title="Delete Item" ng-click="deleteExtra($index)" class="icon-link"><i class="icon-remove"></i></a>
+          <tr class="edit-row table-bordered" ng-repeat="extra in room.extras" ng-class="extraRowClass(extra)">
+            <td class="edit-cell"><input ng-change="dirty()" class="span12 edit-cell extra-title-edit" type="text" ng-model="extra.title"/></td>
+            <td><a title="Show Description" tabIndex="-1" ng-click="showDesc(extra)" class="icon-link"><i class="icon-eye-open"></i></a>
+              <a title="Show Aliases" tabIndex="-1" ng-click="showAliases(extra)" class="icon-link"><i class="icon-align-justify"></i></a>
+              <a title="Delete Item" tabIndex="-1" ng-click="deleteExtra($index)" class="icon-link"><i class="icon-remove"></i></a>
             </td>
           </tr>
           </tbody>
@@ -96,7 +96,7 @@
           <table class="table table-condensed" style="width: 90%">
             <tbody>
             <tr class="table-bordered" ng-repeat="alias in currentExtra.editAliases">
-              <td class="edit-cell" style="width: 85%"><input class="span12 edit-cell extra-alias-edit" type="text" ng-model="alias.title"/></td>
+              <td class="edit-cell" style="width: 85%"><input ng-change="dirty()" class="span12 edit-cell extra-alias-edit" type="text" ng-model="alias.title"/></td>
               <td><a title="Delete Alias" ng-click="deleteAlias($index)" class="icon-link"><i class="icon-remove"></i></a></td>
             </tr>
             </tbody>

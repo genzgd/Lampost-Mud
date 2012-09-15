@@ -217,7 +217,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
 
         $scope.addNew = function (newArea) {
             $scope.areas.push(newArea);
-            lmUtil.stringSort($scope.areas, 'id');
+            lmUtil.stringSort($scope.areas, 'name');
             $scope.areas_copy.push(jQuery.extend(true, {}, newArea));
             lmEditors.areasMaster[newArea.id] = newArea;
         };

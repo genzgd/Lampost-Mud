@@ -78,24 +78,26 @@ angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRem
 angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor', '$timeout',
     function ($scope, lmRemote, lmEditor, $timeout) {
 
+        var roomCopy = {};
+
         function showResult(type, message) {
             $scope.showResult = true;
             $scope.resultMessage = message;
             $scope.resultType = 'alert-' + type;
         }
 
+        $scope.roomDirty = false;
+        $scope.dirty = function() {
+            $scope.roomDirty = true;
+        };
         $scope.roomId = $scope.editor.parent;
         $scope.ready = false;
         lmRemote.request($scope.editor.url + "/get", {room_id:$scope.roomId}).then(function (room) {
-            if (room.basic.dbo_rev > $scope.editor.model_rev) {
-                $scope.basic = room.basic;
-                $scope.basic_copy = jQuery.extend(true, {}, room.basic);
-                $scope.extras = room.extras;
-                $scope.extras_copy = jQuery.extend(true, [], room.extras);
-                $scope.exits = room.exits;
-                $scope.exits_copy = jQuery.extend(true, [], room.exits);
+            if (room.dbo_rev > $scope.editor.model_rev) {
+                $scope.room = room;
+                roomCopy = jQuery.extend(true, {}, room);
                 $scope.editor.copyToModel($scope);
-                $scope.editor.model_rev = room.basic.dbo_rev;
+                $scope.editor.model_rev = room.dbo_rev;
             } else {
                 $scope.editor.copyFromModel($scope);
             }
@@ -110,19 +112,21 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             lmEditor.visitRoom($scope.roomId);
         };
 
-        $scope.updateBasic = function () {
-            $scope.basic.desc = lmEditor.sanitize($scope.basic.desc);
-            lmRemote.request($scope.editor.url + "/update_basic", $scope.basic).then(function (basic) {
-                $scope.basic = basic;
-                $scope.basic_copy = jQuery.extend(true, {}, basic);
+        $scope.updateRoom = function () {
+            $scope.room.desc = lmEditor.sanitize($scope.room.desc);
+            updateExtras();
+            lmRemote.request($scope.editor.url + "/update", $scope.room).then(function (room) {
+                roomCopy = jQuery.extend(true, {}, room);
+                $scope.room = room;
                 $scope.editor.copyToModel($scope);
-                showResult("success", "Room basic information updated.");
+                $scope.roomDirty = false;
+                showResult("success", "Room data updated.");
             })
         };
 
         $scope.addNewExtra = function () {
             var newExtra = {title:"", desc:"", aliases:""};
-            $scope.extras.push(newExtra);
+            $scope.room.extras.push(newExtra);
             $scope.showDesc(newExtra);
             $timeout(function () {
                 jQuery('.extra-title-edit:last').focus();
@@ -130,10 +134,11 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         };
 
         $scope.deleteExtra = function (extraIx) {
-            if ($scope.extras[extraIx] == $scope.currentExtra) {
+            if ($scope.room.extras[extraIx] == $scope.currentExtra) {
                 $scope.currentExtra = null;
             }
-            $scope.extras.splice(extraIx, 1);
+            $scope.roomDirty = true;
+            $scope.room.extras.splice(extraIx, 1);
         };
 
         $scope.showDesc = function (extra) {
@@ -145,7 +150,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.currentExtra.editAliases.push({title:""});
             $timeout(function () {
                 jQuery('.extra-alias-edit:last').focus();
-            })
+            });
         };
 
         $scope.extraRowClass = function (extra) {
@@ -156,36 +161,29 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         };
 
         $scope.deleteAlias = function (ix) {
+            $scope.roomDirty = true;
             $scope.currentExtra.editAliases.splice(ix, 1);
         };
 
-        $scope.revertExtras = function () {
-            $scope.extras = jQuery.extend(true, [], $scope.extras_copy);
-            $scope.editor.model.extras = $scope.extras;
+        $scope.revertRoom = function () {
+            $scope.room = roomCopy;
             $scope.currentExtra = null;
+            $scope.roomDirty = false;
         };
 
-        $scope.updateExtras = function () {
-            for (var i = 0; i < $scope.extras.length; i++) {
-                var extra = $scope.extras[i];
+        function updateExtras () {
+            angular.forEach($scope.room.extras, function(extra) {
                 if (extra.hasOwnProperty('editAliases')) {
                     extra.aliases = [];
-                    for (var j = 0; j < extra.editAliases.length; j++) {
-                        var editAlias = extra.editAliases[j];
-                        if (editAlias) {
-                            extra.aliases.push(extra.editAliases[j].title);
+                    angular.forEach(extra.editAliases, function(editAlias) {
+                            if (editAlias) {
+                                extra.aliases.push(editAlias.title)
+                            }
                         }
-                    }
+                    )
                 }
-            }
-            lmRemote.request($scope.editor.url + "/update_extras", {room_id:$scope.roomId, extras:$scope.extras})
-                .then(function (extras) {
-                    $scope.extras = extras;
-                    $scope.extras_copy = jQuery.extend(true, [], extras);
-                    $scope.editor.copyToModel($scope);
-                    showResult("success", "Room extra descriptions updated.");
-                });
-        };
+            })
+        }
 
         $scope.showAliases = function (extra) {
             if (!extra.hasOwnProperty('editAliases')) {
