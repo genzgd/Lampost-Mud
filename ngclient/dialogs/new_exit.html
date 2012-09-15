@@ -1,0 +1,58 @@
+<div class="modal" ng-class="modalClass">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="dismiss()">×</button>
+    <h4>Dig New Exit</h4>
+  </div>
+  <form ng-submit="digExit()">
+    <div class="modal-body">
+      <div class="row-fluid">
+        <div class="span6">
+          <h6 style="padding-top: 0; margin-top: 0">Direction</h6>
+          <select class="span8" ng-model="direction" ng-options="direction.name for direction in directions" required="true" autofocus>
+          </select>
+        </div>
+        <div class="span6">
+          <label class="radio">
+            <input type="radio" ng-model="useNew" ng-change="changeType()" value="new">
+            To New Room
+          </label>
+          <label class="radio">
+            <input type="radio" ng-model="useNew" ng-change="changeType()" value="existing">
+            To Existing Room
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" ng-model="oneWay">
+            One Way
+          </label>
+        </div>
+
+      </div>
+      <div class="row-fluid">
+        <h6>Destination</h6>
+      </div>
+      <div class="row-fluid">
+        <div class="span6">
+          <label>Area</label>
+          <select class="span10" ng-change="changeArea()" ng-model="destAreaId" ng-disabled="useNew == 'new'" ng-options="area for area in areaList" required="true">
+          </select>
+          <label>Room</label>
+          <input type="number" class="span6" min="0" ng-model="destId" ng-change="changeId()">
+        </div>
+        <div class="span6">
+          <div class="span12 control-group">
+            <label>Title</label>
+            <input class="span12" ng-model="destTitle" ng-change="titleEdited = true" ng-disabled="useNew == 'existing'">
+          </div>
+          <div class="span12 alert alert-error" ng-show="hasError" style="margin-left: 0; margin-top: 6px;">
+            <button type="button" class="close" ng-click="hasError = false">×</button>
+            {{lastError}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success">Dig Exit</button>
+      <button ng-click="dismiss()" class="btn">Cancel</button>
+    </div>
+  </form>
+</div>

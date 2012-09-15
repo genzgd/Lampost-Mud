@@ -6,41 +6,27 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
         loadRooms();
 
         function loadRooms() {
-            lmRemote.request($scope.editor.url + "/list", {area_id:$scope.areaId}).then(function (rooms) {
-                lmEditor.roomsMaster[$scope.areaId] = rooms;
+            lmEditor.loadRooms($scope.areaId).then(function(rooms) {
                 $scope.rooms = rooms;
-                sortRooms();
                 $scope.ready = true;
-            });
-        }
-
-        function sortRooms() {
-            $scope.rooms.sort(function(a, b) {
-                var aid = parseInt(a.id.split(':')[1]);
-                var bid = parseInt(b.id.split(':')[1]);
-                return aid - bid;
             });
         }
 
         $scope.editRoom = function (room) {
             lmEditor.addEditor('room', room.id);
         };
+
         $scope.showNewDialog = function () {
             var area = lmEditor.areasMaster[$scope.areaId];
-            if (area) {
-                lmDialog.show({templateUrl:"dialogs/new_room.html", controller:"NewRoomController",
-                    locals:{parentScope:$scope, nextRoomId:area.next_room_id}});
-            } else {
-                lmDialog.showOk("Area invalid");
-                lmEditor.closeEditor($scope.editor);
-            }
+            lmDialog.show({templateUrl:"dialogs/new_room.html", controller:"NewRoomController",
+                locals:{parentScope:$scope, nextRoomId:area.next_room_id}});
         };
 
         $scope.roomCreated = function (roomData) {
             var area = lmEditor.areasMaster[$scope.areaId];
             area.next_room_id = roomData.next_room_id;
             $scope.rooms.push(roomData.room);
-            sortRooms();
+            lmEditor.sortRooms($scope.areaId);
             $scope.editRoom(roomData.room);
         };
 
@@ -75,8 +61,8 @@ angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRem
     }
 ]);
 
-angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor', '$timeout',
-    function ($scope, lmRemote, lmEditor, $timeout) {
+angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
+    function ($scope, lmRemote, lmEditor, $timeout, lmDialog) {
 
         var roomCopy = {};
 
@@ -92,6 +78,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         };
         $scope.roomId = $scope.editor.parent;
         $scope.ready = false;
+        $scope.directions = lmEditor.directions;
         lmRemote.request($scope.editor.url + "/get", {room_id:$scope.roomId}).then(function (room) {
             if (room.dbo_rev > $scope.editor.model_rev) {
                 $scope.room = room;
@@ -122,6 +109,11 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                 $scope.roomDirty = false;
                 showResult("success", "Room data updated.");
             })
+        };
+
+        $scope.addNewExit = function() {
+            lmDialog.show({templateUrl:"dialogs/new_exit.html", controller:"NewExitController",
+                locals:{parentScope:$scope, roomId:$scope.roomId}});
         };
 
         $scope.addNewExtra = function () {
@@ -198,3 +190,109 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         }
 
     }]);
+
+angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEditor', 'lmRemote', 'parentScope', 'roomId',
+    function ($scope, lmEditor, lmRemote, parentScope, roomId) {
+
+        var area;
+        var roomAreaId;
+        var roomList;
+        var roomTitles;
+
+        $scope.titleEdited = false;
+        $scope.hasError = false;
+        $scope.directions = lmEditor.directions;
+        $scope.direction = $scope.directions[0];
+        $scope.useNew = "new";
+        $scope.areaList = [];
+        angular.forEach(lmEditor.areasMaster, function (value, key) {
+            $scope.areaList.push(key);
+            $scope.areaList.sort();
+        });
+
+        $scope.changeType = function() {
+            if ($scope.useNew == "existing") {
+                $scope.titleEdited = false;
+                refreshDestId();
+            } else {
+                $scope.hasError = false;
+                $scope.destAreaId = roomAreaId;
+                loadArea();
+            }
+        };
+
+        $scope.changeId = function() {
+            $scope.hasError = false;
+            updateTitle();
+        };
+
+        $scope.changeArea = function() {
+            loadArea($scope.destAreaId);
+        };
+
+        $scope.digExit = function() {
+            alert("SUBMITTED");
+        };
+
+        roomAreaId = roomId.split(':')[0];
+        $scope.destAreaId = roomAreaId;
+        loadArea();
+
+        function updateTitle() {
+            $scope.hasError = false;
+            if ($scope.useNew == "new") {
+                if (!$scope.titleEdited) {
+                    $scope.destTitle = area.name + " Room " + $scope.destId;
+                }
+                if (roomTitles[$scope.destId]) {
+                    $scope.hasError = true;
+                    $scope.lastError = "Room already exists";
+                }
+            } else {
+                var roomTitle = roomTitles[$scope.destId];
+                if (roomTitle) {
+                    $scope.destTitle = roomTitle;
+                } else {
+                    $scope.destTitle = "";
+                    $scope.hasError = true;
+                    $scope.lastError = "Invalid Room";
+                }
+            }
+        }
+
+        function refreshDestId() {
+            if ($scope.useNew == "new") {
+                $scope.destId = area.next_room_id;
+            } else {
+                $scope.destId = parseInt(roomList[0].id.split(':')[1]);
+            }
+            updateTitle();
+        }
+
+        function loadArea() {
+            area = lmEditor.areasMaster[$scope.destAreaId];
+            lmEditor.loadRooms($scope.destAreaId).then(function(rooms) {
+                roomList = rooms;
+                roomTitles = {};
+                angular.forEach(rooms, function (room) {
+                    roomTitles[room.id.split(':')[1]] = room.title;
+                });
+                refreshDestId();
+            })
+        }
+
+
+
+        /*$scope.newRoom = {id:nextRoomId, title:'', desc:''};
+        $scope.createRoom = function () {
+            lmRemote.request('editor/room/create', {area_id:$scope.areaId, room:$scope.newRoom}).then(function (roomData) {
+                parentScope.roomCreated(roomData);
+                $scope.dismiss();
+            }, function (error) {
+                if (error.data == "ROOM_EXISTS") {
+                    $scope.roomExists = true;
+                }
+            })
+        }*/
+    }
+]);

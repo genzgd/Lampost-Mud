@@ -46,9 +46,10 @@
         </tr>
         </tbody>
       </table>
+      <button style="margin-top: 8px" ng-click="addNewExit()" class="btn btn-success btn-small">Dig</button>
     </div>
-    <div class="span4">
-      <div class="alert" ng-class="resultType" ng-show="showResult">{{resultMessage}}
+    <div class="offset1 span4">
+      <div class="span6 alert" ng-class="resultType" ng-show="showResult">{{resultMessage}}
         <button type="button" class="close" ng-click="showResult = false">×</button>
       </div>
       <!-- Future map? -->
@@ -61,7 +62,7 @@
       <div class="span1">
         <h5>Extras</h5>
         <div class="column-button">
-          <button ng-click="addNewExtra()" class="btn btn-success btn-mini">New</button>
+          <button ng-click="addNewExtra()" class="btn btn-success btn-small">New</button>
         </div>
       </div>
 

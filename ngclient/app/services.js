@@ -131,6 +131,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
     var sessionId = '';
     var playerId = '';
     var connected = true;
+    var loadingTemplate;
     var reconnectTemplate = '<div class="modal fade hide">' +
         '<div class="modal-header"><h3>Reconnecting To Server</h3></div>' +
         '<div class="modal-body"><p>Reconnecting in {{time}} seconds.</p></div>' +
@@ -152,11 +153,10 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
     }
 
     function resourceRequest(resource, data, showWait) {
+        var dialogId = showWait && lmDialog.show({template:loadingTemplate, noEscape:true});
         data = data ? data : {};
         data.session_id = sessionId;
-        if (showWait) {
-            var dialogId = lmDialog.show({templateUrl:'dialogs/loading.html', noEscape:true});
-        }
+
         return $http({method: 'POST', url: '/' + resource, data:data}).
             error(function(data, status) {
                 dialogId && lmDialog.close(dialogId);
@@ -254,7 +254,11 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
                 data.player_id = cookie[1];
             }
         }
-        linkRequest("connect", data);
+        $http.get('dialogs/loading.html').then(function(template) {
+            loadingTemplate = template.data;
+            linkRequest("connect", data);
+        })
+
     };
 
     lmBus.register("connect", onConnect);
@@ -305,15 +309,17 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
     var enabledLinks;
 
     function showDialog(args) {
+        var dialogId = "lmDialog_" + nextId++;
         if (args.templateUrl) {
             $http.get(args.templateUrl, {cache: $templateCache}).then(
                 function(response) {
                     args.template = response.data;
-                    showDialogTemplate(args);
+                    showDialogTemplate(args, dialogId);
                 });
         } else {
-            showDialogTemplate(args);
+            showDialogTemplate(args, dialogId);
         }
+        return dialogId;
     }
 
     function disableUI() {
@@ -342,7 +348,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         }, 0);
     }
 
-    function showDialogTemplate(args) {
+    function showDialogTemplate(args, dialogId) {
         var element = angular.element(args.template);
         var dialog = {};
         var dialogScope = args.scope || $rootScope.$new(true);
@@ -350,7 +356,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             disableUI();
         }
 
-        dialog.id = "lmDialog_" + nextId++;
+        dialog.id = dialogId;
         dialog.element = element;
         dialog.scope = dialogScope;
         dialogScope.dismiss = function() {
@@ -390,11 +396,13 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             focusElement.focus();
         });
         $timeout(function() {
+            if (!dialogMap[dialogId]) {
+                return;
+            }
             var modalOptions = {show: true, keyboard: !args.noEscape,
                 backdrop: args.noBackdrop ? false : (args.noEscape ? "static" : true)};
             element.modal(modalOptions);
         });
-        return dialog.id;
     }
 
     function closeDialog(dialogId) {
@@ -413,7 +421,6 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
                 self.showConfirm(args.dialog_title, args.dialog_msg));
         }
     }
-
 
     this.show = function (args) {
         return showDialog(args);

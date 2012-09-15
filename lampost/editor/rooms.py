@@ -23,8 +23,8 @@ class RoomResource(Resource):
 
 class DirList(Resource):
     @request
-    def render_Post(self, content, session):
-        return [{'key':dir.key, 'name':dir.name} for dir in Direction.ref_map.itervalues()]
+    def render_POST(self, content, session):
+        return [{'key':dir.key, 'name':dir.desc} for dir in Direction.ordered]
 
 
 class RoomList(Resource):

@@ -16,7 +16,7 @@ class Area(RootDBO):
     dbo_collections = DBORef("rooms", Room, "room"),  DBORef("mobiles", MobileTemplate, "mobile"), \
         DBORef("articles", ArticleTemplate, "article")
 
-    next_room_id = 1
+    next_room_id = 0
     dbo_rev = 0
 
     reset_time = 180 # reset every 3 minutes

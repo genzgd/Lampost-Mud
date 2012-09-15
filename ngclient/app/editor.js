@@ -32,7 +32,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         players:{label:"Players", url:"players"},
         areas:{label:"Areas", url:"area"},
         rooms:{label:"Rooms", url:"room"},
-        room:{label:"", url:"room", model_props:['basic', 'extras', 'exits']}
+        room:{label:"", url:"room", model_props:['room']}
     };
 
     Editor.prototype.copyFromModel = function (target) {
@@ -72,14 +72,24 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         self.refreshData();
     }
 
+    this.sortRooms = function(areaId) {
+        self.roomsMaster[areaId].sort(function(a, b) {
+            var aid = parseInt(a.id.split(':')[1]);
+            var bid = parseInt(b.id.split(':')[1]);
+            return aid - bid;});
+    };
+
     this.refreshData = function () {
         self.loadStatus = "loading";
-        var areaPromise = lmRemote.request("editor/area/list").then(function (areas) {
+        var areaPromise = lmRemote.request('editor/area/list').then(function (areas) {
             angular.forEach(areas, function (value) {
                 self.areasMaster[value.id] = value;
             })
         });
-        $q.all([areaPromise]).then(function () {
+        var dirPromise = lmRemote.request('editor/room/dir_list').then(function (directions) {
+            self.directions = directions;
+        });
+        $q.all([areaPromise, dirPromise]).then(function () {
             self.loadStatus = "loaded";
             lmBus.dispatch('editor_change');
         });
@@ -124,6 +134,20 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         })
     };
 
+    this.loadRooms = function(areaId) {
+        var rooms = self.roomsMaster[areaId];
+        if (rooms) {
+            var deferred = $q.defer();
+            deferred.resolve(rooms);
+            return deferred.promise;
+        }
+        return lmRemote.request('editor/room/list', {area_id:areaId}, true).then(function (rooms) {
+            self.roomsMaster[areaId] = rooms;
+            self.sortRooms(areaId);
+            return rooms;
+        });
+    };
+
     this.deleteRoom = function (roomId) {
         lmDialog.showConfirm("Confirm Delete",
             "Are you sure you want to delete " + roomId + "?<br>(One way exits into this room will need to be deleted separately)",
@@ -140,6 +164,15 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
                 })
             }
         );
+    };
+
+    this.deleteArea = function(areaId) {
+        delete self.areasMaster[areaId];
+        angular.forEach(self.editors.slice(), function(editor) {
+            if (editor.parent && (editor.parent == areaId || editor.parent.split(':')[0] == areaId)) {
+                self.closeEditor(editor);
+            }
+        })
     };
 
     this.sanitize = function (text) {
@@ -211,7 +244,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
         $scope.areas_copy = jQuery.extend(true, [], $scope.areas);
 
         $scope.showNewDialog = function () {
-            lmDialog.show({templateUrl:"dialogs/newarea.html",
+            lmDialog.show({templateUrl:"dialogs/new_area.html",
                 controller:"NewAreaController", locals:{parentScope:$scope}})
         };
 
@@ -219,7 +252,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
             $scope.areas.push(newArea);
             lmUtil.stringSort($scope.areas, 'name');
             $scope.areas_copy.push(jQuery.extend(true, {}, newArea));
-            lmEditors.areasMaster[newArea.id] = newArea;
+            lmEditor.areasMaster[newArea.id] = newArea;
         };
 
         $scope.areasDelete = function (rowIx) {
@@ -227,12 +260,10 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
             lmDialog.showConfirm("Confirm Delete",
                 "Are you certain you want to delete area " + area.id + "?",
                 function () {
-                    lmRemote.request($scope.editor.url + "/delete", {areaId:area.id}).then(function (result) {
-                        if (result == "OK") {
-                            $scope.areas.splice(rowIx, 1);
-                            $scope.areas_copy.splice(rowIx, 1);
-                            delete lmEditor.areasMaster[area.id];
-                        }
+                    lmRemote.request($scope.editor.url + "/delete", {areaId:area.id}).then(function () {
+                        $scope.areas.splice(rowIx, 1);
+                        $scope.areas_copy.splice(rowIx, 1);
+                        lmEditor.deleteArea(area.id);
                     });
                 });
         };

@@ -1,8 +1,3 @@
-'''
-Created on Feb 26, 2012
-
-@author: Geoff
-'''
 from lampost.dto.display import Display, DisplayLine
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction

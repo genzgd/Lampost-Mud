@@ -28,6 +28,21 @@ angular.module('lampost_dir').directive('lmBlur', function() {
 
 });
 
+angular.module('lampost_dir').directive('autoComplete', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModel) {
+            var opts = {};
+            opts.source = scope.$eval(attrs.autoComplete);
+            opts.updater = function(item) {
+                ngModel.$setViewValue(item);
+            };
+            element.typeahead(opts);
+        }
+    }
+});
+
 angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function($timeout) {
     return {
         restrict: 'A',

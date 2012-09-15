@@ -20,8 +20,8 @@
             </thead>
             <tbody>
             <tr class="edit-row table-bordered" ng-repeat="area in areas" ng-form="rowForm" ng-class="rowClass(rowForm)">
-                <td class="span1">{{$index + 1}}</td>
-                <td class="span2">{{area.id}}</td>
+                <td class="span1" ng-click="showRooms(area)">{{$index + 1}}</td>
+                <td class="span2" ng-click="showRooms(area)">{{area.id}}</td>
                 <td class="span1">{{area.owner_id}}</td>
                 <td class="span2 edit-cell"><input class="span12 edit-cell" type="text" ng-model="area.name"/></td>
                 <td class="span1 cell-right" ng-click="showRooms(area)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.rooms}}</td>

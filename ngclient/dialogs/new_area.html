@@ -1,18 +1,19 @@
 <div class="modal" ng-class="modalClass">
     <div class="modal-header">
         <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
-        <h3>Create New Area</h3>
+        <h4>Create New Area</h4>
     </div>
     <form ng-submit="createArea()" >
         <div class="modal-body">
+
             <label>Area Id</label>
-            <input type="text" ng-model="newArea.id" ng-change="areaExists = false" required/>
+            <input type="text" ng-model="newArea.id" ng-change="areaExists = false" required="true"/>
             <div class="alert alert-error" ng-show="areaExists">
                 <button type="button" class="close" ng-click="areaExists = false">×</button>
                 Area id already exists.
             </div>
             <label>Area Name</label>
-            <input type="text" ng-model="newArea.name" required/>
+            <input type="text" ng-model="newArea.name" required="true"/>
         </div>
         <div class="modal-footer">
             <button class="btn btn-success">Create Area</button>

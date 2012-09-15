@@ -61,7 +61,6 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
 
         var baseLinks = [new Link("game", "Mud", "icon-leaf", 0)];
         var settingsLink = new Link("settings", "Settings", "icon-user", 50);
-
         var editorLink = new Link("editor", "Editor", "icon-wrench", 100);
 
         function validatePath() {
