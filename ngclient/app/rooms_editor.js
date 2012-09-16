@@ -1,9 +1,11 @@
-angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog',
-    function ($scope, lmRemote, lmEditor, lmDialog) {
+angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
+    function ($scope, lmRemote, lmEditor, lmDialog, lmBus) {
 
         $scope.areaId = $scope.editor.parent;
         $scope.ready = false;
         loadRooms();
+
+        lmBus.register('area_change', function() {}, $scope);
 
         function loadRooms() {
             lmEditor.loadRooms($scope.areaId).then(function(rooms) {
@@ -61,35 +63,40 @@ angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRem
     }
 ]);
 
-angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
-    function ($scope, lmRemote, lmEditor, $timeout, lmDialog) {
+angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
+    function ($scope, lmBus, lmRemote, lmEditor, $timeout, lmDialog) {
 
         var roomCopy = {};
+        lmBus.register("exit_added", exitAdded);
+        lmBus.register("exit_deleted", exitRemoved);
+        $scope.roomDirty = false;
+        $scope.dirty = function() {
+            $scope.roomDirty = true;
+        };
+        $scope.roomId = $scope.editor.parent;
+        $scope.directions = lmEditor.directions;
+
+        updateData();
+        function updateData() {
+            $scope.ready = false;
+            lmRemote.request($scope.editor.url + "/get", {room_id:$scope.roomId}).then(function (room) {
+                if (room.dbo_rev > $scope.editor.model_rev) {
+                    $scope.room = room;
+                    roomCopy = jQuery.extend(true, {}, room);
+                    $scope.editor.copyToModel($scope);
+                    $scope.editor.model_rev = room.dbo_rev;
+                } else {
+                    $scope.editor.copyFromModel($scope);
+                }
+                $scope.ready = true;
+            });
+        }
 
         function showResult(type, message) {
             $scope.showResult = true;
             $scope.resultMessage = message;
             $scope.resultType = 'alert-' + type;
         }
-
-        $scope.roomDirty = false;
-        $scope.dirty = function() {
-            $scope.roomDirty = true;
-        };
-        $scope.roomId = $scope.editor.parent;
-        $scope.ready = false;
-        $scope.directions = lmEditor.directions;
-        lmRemote.request($scope.editor.url + "/get", {room_id:$scope.roomId}).then(function (room) {
-            if (room.dbo_rev > $scope.editor.model_rev) {
-                $scope.room = room;
-                roomCopy = jQuery.extend(true, {}, room);
-                $scope.editor.copyToModel($scope);
-                $scope.editor.model_rev = room.dbo_rev;
-            } else {
-                $scope.editor.copyFromModel($scope);
-            }
-            $scope.ready = true;
-        });
 
         $scope.deleteRoom = function() {
             lmEditor.deleteRoom($scope.roomId);
@@ -118,16 +125,16 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
 
         $scope.deleteExit = function(exit, bothSides) {
             var exitData = {start_room:$scope.roomId, both_sides:bothSides,  dir:exit.dir};
-            lmRemote.request($scope.editor.url + "/del_exit", exitData, true).then(function() {
-                    $scope.room.exits.splice($scope.room.exits.indexOf(exit), 1);
-                    showResult("success", "Exit Deleted");
+            lmRemote.request($scope.editor.url + "/delete_exit", exitData, true).then(function(result) {
+                    lmEditor.exitDeleted(result.exit);
+                    if (result.other_exit) {
+                        lmEditor.exitDeleted(result.other_exit);
+                    }
+                    if (result.room_deleted) {
+                        lmEditor.roomDeleted(result.room_deleted);
+                    }
                 }
             )
-        };
-
-        $scope.exitAdded = function(exit) {
-            $scope.room.exits.push(exit);
-            showResult("success", "Exit Added");
         };
 
         $scope.addNewExtra = function () {
@@ -177,6 +184,22 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.roomDirty = false;
         };
 
+        function exitAdded(exit) {
+            if (exit.start_id == $scope.roomId) {
+                $scope.room.exits.push(exit);
+            }
+        }
+
+        function exitRemoved(exit) {
+            if (exit.start_id == $scope.roomId) {
+                angular.forEach($scope.room.exits.slice(), function(value, index) {
+                    if (value.dir == exit.dir) {
+                        $scope.room.exits.splice(index, 1);
+                    }
+                })
+            }
+        }
+
         function updateExtras () {
             angular.forEach($scope.room.extras, function(extra) {
                 if (extra.hasOwnProperty('editAliases')) {
@@ -205,8 +228,8 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
 
     }]);
 
-angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEditor', 'lmRemote', 'parentScope', 'roomId',
-    function ($scope, lmEditor, lmRemote, parentScope, roomId) {
+angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEditor', 'lmRemote', 'roomId',
+    function ($scope, lmEditor, lmRemote, roomId) {
 
         var area;
         var roomAreaId;
@@ -299,15 +322,19 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
                 dest_area:$scope.destAreaId, dest_id:$scope.destId, one_way:$scope.oneWay,
                 dest_title:$scope.destTitle};
             lmRemote.request('editor/room/create_exit', newExit).then(function (result) {
-                area.next_room_id = result.next_room_id;
-                if ($scope.useNew == 'new') {
-                    roomList.push(result.new_room);
-                    lmEditor.sortRooms(roomAreaId);
+                lmEditor.exitAdded(result.exit);
+                if (result.other_exit) {
+                    lmEditor.exitAdded(result.other_exit);
                 }
-                parentScope.exitAdded(result.exit);
+                if ($scope.useNew == 'new') {
+                    area.next_room_id = result.next_room_id;
+                    lmEditor.roomAdded(result.new_room)
+                }
                 $scope.dismiss();
-            }, function (error) {
-                $scope.lastError = error.data;
+            }, function (error, status) {
+                if (status == 410) {
+                    $scope.lastError = error.data;
+                }
             })
         }
     }

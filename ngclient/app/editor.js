@@ -148,17 +148,61 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         });
     };
 
+    this.roomAdded = function(room) {
+        var areaId = room.id.split(':')[0];
+        self.roomsMaster[areaId].push(room);
+        self.sortRooms(areaId);
+        lmBus.dispatch('area_change', areaId);
+    };
+
+    this.exitAdded = function(exit) {
+        lmBus.dispatch("exit_added", exit);
+        var areaId = exit.start_id.split(':')[0];
+        angular.forEach(self.roomsMaster[areaId], function(value) {
+            if (value.id == exit.start_id) {
+                value.exit_count++;
+            }
+        })
+    };
+
+    this.exitDeleted = function(exit) {
+        lmBus.dispatch("exit_deleted", exit);
+        var areaId = exit.start_id.split(':')[0];
+        angular.forEach(self.roomsMaster[areaId], function(value) {
+            if (value.id == exit.start_id) {
+                value.exit_count--;
+            }
+        })
+    };
+
+    this.roomDeleted = function(roomId) {
+        var areaId = roomId.split(':')[0];
+        var rooms = self.roomsMaster[areaId];
+        if (rooms) {
+            angular.forEach(rooms.slice(), function(value, index) {
+                if (value.id == roomId) {
+                    rooms.splice(index, 1);
+                    lmBus.dispatch('area_change', areaId);
+                }
+            })
+        }
+        self.closeEditorId('room:' + roomId);
+    };
+
     this.deleteRoom = function (roomId) {
         lmDialog.showConfirm("Confirm Delete",
             "Are you sure you want to delete " + roomId + "?<br>(One way exits into this room will need to be deleted separately)",
             function () {
-                lmRemote.request('editor/room/delete', {room_id:roomId}).then(function () {
+                lmRemote.request('editor/room/delete', {room_id:roomId}).then(function (deleted_exits) {
                     var areaId = roomId.split(':')[0];
                     var rooms = self.roomsMaster[areaId];
-                    angular.forEach(rooms, function (room, index) {
+                    angular.forEach(rooms.slice(), function (room, index) {
                         if (room.id == roomId) {
                             rooms.splice(index, 1);
                         }
+                    });
+                    angular.forEach(deleted_exits, function(exit) {
+                        self.exitDeleted(exit);
                     });
                     self.closeEditorId('room:' + roomId);
                 })

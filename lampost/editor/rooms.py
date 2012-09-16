@@ -64,6 +64,7 @@ class RoomDelete(Resource):
     def render_POST(self, content, session):
         area, room = get_room(session, content.room_id)
         main_contents = save_contents(room)
+        deleted_exits = []
         for my_exit in room.exits:
             other_room = my_exit.destination
             for other_exit in other_room.exits:
@@ -72,6 +73,7 @@ class RoomDelete(Resource):
                     other_room.exits.remove(other_exit)
                     save_object(other_room, True)
                     restore_contents(other_room, other_contents)
+                    deleted_exits.append(ExitDTO(other_exit, other_room.dbo_id))
         delete_object(room)
         area.rooms.remove(room)
         save_object(area, True)
@@ -80,6 +82,7 @@ class RoomDelete(Resource):
                 mud.start_player(entity)
             else:
                 entity.detach()
+        return deleted_exits
 
 class RoomVisit(Resource):
     @request
@@ -121,7 +124,6 @@ class CreateExit(Resource):
             if area.get_room(other_id):
                 raise DataError("Room " + other_id + " already exists")
             other_room = Room(other_id, content.dest_title, content.dest_title)
-            area.inc_next_room(content.dest_id)
         else:
             other_area, other_room = get_room(session, other_id)
             if not content.one_way and other_room.find_exit(rev_dir):
@@ -133,29 +135,30 @@ class CreateExit(Resource):
         save_object(room, True)
         restore_contents(room, contents)
 
+        result = RootDTO()
         if not content.one_way:
             contents = save_contents(other_room)
             other_exit = Exit(rev_dir, room)
             other_room.exits.append(other_exit)
             restore_contents(other_room, contents)
+            result.other_exit = ExitDTO(other_exit, other_id)
         if content.is_new:
             save_object(other_room)
             area.rooms.append(other_room)
+            area.inc_next_room(content.dest_id)
+            result.next_room_id = area.next_room_id
+            result.new_room = RoomStubDTO(other_room)
             save_object(area, True)
         elif not content.one_way:
             save_object(other_room, True)
-        result = RootDTO()
-        result.next_room_id = area.next_room_id
-        result.exit = ExitDTO(this_exit)
-        if content.is_new:
-            result.new_room = RoomStubDTO(other_room)
-        return result;
+        result.exit = ExitDTO(this_exit, room.dbo_id)
+        return result
 
 class DeleteExit(Resource):
     @request
     def render_POST(self, content, session):
         area, room = get_room(session, content.start_room)
-        direction = Direction.ref_map(content.dir)
+        direction = Direction.ref_map[content.dir]
         local_exit = room.find_exit(direction)
         if not local_exit:
             raise DataError('Exit does not exist')
@@ -163,20 +166,26 @@ class DeleteExit(Resource):
         room.exits.remove(local_exit)
         save_object(room, True)
         restore_contents(room, contents)
-        if not content.both_ways:
-            return
+
+        result = RootDTO()
+        result.exit = ExitDTO(local_exit, room.dbo_id)
+        if not content.both_sides:
+            return result
         other_room = local_exit.destination
         other_exit = other_room.find_exit(direction.rev_dir)
         if not other_exit:
-            return
+            return result
         other_room.exits.remove(other_exit)
         if not other_room.dbo_rev and not other_room.exits:
             other_room.dbo_rev = -1
             delete_object(other_room)
             area.rooms.remove(other_room)
+            result.room_deleted = other_room.dbo_id
             save_object(area)
         else:
+            result.other_exit = ExitDTO(other_exit, other_room.dbo_id)
             save_object(other_room)
+        return result
 
 def get_room(session, room_id):
     area_id = room_id.split(":")[0]
@@ -213,7 +222,8 @@ class RoomStubDTO(RootDTO):
         self.extra_count = len(room.extras)
 
 class ExitDTO(RootDTO):
-    def __init__(self, exit):
+    def __init__(self, exit, start_id=None):
+        self.start_id = start_id
         self.dest_id = exit.destination.dbo_id
         self.dest_title = exit.destination.title
         self.dir = exit.dir_name

@@ -84,7 +84,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
         if (registrations) {
             for (i = 0; i < registrations.length; i++) {
                 var registration = registrations[i];
-                if (registration.scope) {
+                if (registration.scope && !registration.scope.$$phase) {
                     registration.scope.$apply(registration.callback.apply(registration.scope, args));
                 } else {
                     registration.callback.apply(this, args);
