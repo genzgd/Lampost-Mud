@@ -40,6 +40,11 @@ class Area(RootDBO):
     def get_room(self, room_id):
         return self.rooms.get(room_id)
 
+    def inc_next_room(self, room_id):
+        if self.next_room_id == room_id:
+            while self.get_room(self.dbo_id + ':' + str(self.next_room_id)):
+                self.next_room_id += 1
+
     def get_mobile(self, mobile_id):
         if not ":" in mobile_id:
             mobile_id = ":".join([self.dbo_id, mobile_id])

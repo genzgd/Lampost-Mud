@@ -21,7 +21,8 @@ class Permissions(object):
             player_level = player.imm_level
         except AttributeError:
             try:
-                player_level = player.player.imm_level
+                player = player.player
+                player_level = player.imm_level
             except AttributeError:
                 raise PermError
         if player_level >= self.perm_level('supreme'):

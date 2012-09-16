@@ -43,15 +43,15 @@
             <label>Title</label>
             <input class="span12" ng-model="destTitle" ng-change="titleEdited = true" ng-disabled="useNew == 'existing'">
           </div>
-          <div class="span12 alert alert-error" ng-show="hasError" style="margin-left: 0; margin-top: 6px;">
-            <button type="button" class="close" ng-click="hasError = false">×</button>
+          <div class="span12 alert alert-error" ng-show="lastError != null" style="margin-left: 0; margin-top: 6px;">
+            <button type="button" class="close" ng-click="lastError = null">×</button>
             {{lastError}}
           </div>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-success">Dig Exit</button>
+      <button ng-disabled="hasError" class="btn btn-success">Dig Exit</button>
       <button ng-click="dismiss()" class="btn">Cancel</button>
     </div>
   </form>

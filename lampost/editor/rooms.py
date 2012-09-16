@@ -4,7 +4,7 @@ from lampost.client.resources import request
 from lampost.context.resource import m_requires
 from lampost.dto.rootdto import RootDTO
 from lampost.env.movement import Direction
-from lampost.env.room import Room
+from lampost.env.room import Room, Exit
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import DataError
 
@@ -20,6 +20,8 @@ class RoomResource(Resource):
         self.putChild('update', RoomUpdate())
         self.putChild('visit', RoomVisit())
         self.putChild('dir_list', DirList())
+        self.putChild('create_exit', CreateExit())
+        self.putChild('delete_exit', DeleteExit())
 
 class DirList(Resource):
     @request
@@ -53,11 +55,7 @@ class RoomCreate(Resource):
         room = Room(room_id, room_dto['title'], room_dto['desc'])
         save_object(room)
         area.rooms.append(room)
-        if area.next_room_id == room_dto['id']:
-            next_room_id = content.area_id + ':' + str(area.next_room_id)
-            while area.get_room(next_room_id):
-                area.next_room_id += 1
-                next_room_id = content.area_id + ':' + str(area.next_room_id)
+        area.inc_next_room(room_dto['id'])
         save_object(area)
         return RootDTO(next_room_id=area.next_room_id, room=RoomStubDTO(room))
 
@@ -108,6 +106,77 @@ class RoomUpdate(Resource):
         save_object(room, True)
         restore_contents(room, contents)
         return RoomDTO(room)
+
+class CreateExit(Resource):
+    @request
+    def render_POST(self, content, session):
+        area, room = get_room(session, content.start_room)
+        new_dir = Direction.ref_map[content.direction]
+        rev_dir = new_dir.rev_dir
+        other_id = content.dest_area + ':' + str(content.dest_id)
+        if room.find_exit(new_dir):
+            raise DataError("Room already has " + new_dir.key + " exit.")
+
+        if content.is_new:
+            if area.get_room(other_id):
+                raise DataError("Room " + other_id + " already exists")
+            other_room = Room(other_id, content.dest_title, content.dest_title)
+            area.inc_next_room(content.dest_id)
+        else:
+            other_area, other_room = get_room(session, other_id)
+            if not content.one_way and other_room.find_exit(rev_dir):
+                raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
+
+        contents = save_contents(room)
+        this_exit = Exit(new_dir, other_room)
+        room.exits.append(this_exit)
+        save_object(room, True)
+        restore_contents(room, contents)
+
+        if not content.one_way:
+            contents = save_contents(other_room)
+            other_exit = Exit(rev_dir, room)
+            other_room.exits.append(other_exit)
+            restore_contents(other_room, contents)
+        if content.is_new:
+            save_object(other_room)
+            area.rooms.append(other_room)
+            save_object(area, True)
+        elif not content.one_way:
+            save_object(other_room, True)
+        result = RootDTO()
+        result.next_room_id = area.next_room_id
+        result.exit = ExitDTO(this_exit)
+        if content.is_new:
+            result.new_room = RoomStubDTO(other_room)
+        return result;
+
+class DeleteExit(Resource):
+    @request
+    def render_POST(self, content, session):
+        area, room = get_room(session, content.start_room)
+        direction = Direction.ref_map(content.dir)
+        local_exit = room.find_exit(direction)
+        if not local_exit:
+            raise DataError('Exit does not exist')
+        contents = save_contents(room)
+        room.exits.remove(local_exit)
+        save_object(room, True)
+        restore_contents(room, contents)
+        if not content.both_ways:
+            return
+        other_room = local_exit.destination
+        other_exit = other_room.find_exit(direction.rev_dir)
+        if not other_exit:
+            return
+        other_room.exits.remove(other_exit)
+        if not other_room.dbo_rev and not other_room.exits:
+            other_room.dbo_rev = -1
+            delete_object(other_room)
+            area.rooms.remove(other_room)
+            save_object(area)
+        else:
+            save_object(other_room)
 
 def get_room(session, room_id):
     area_id = room_id.split(":")[0]

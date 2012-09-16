@@ -359,6 +359,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         dialog.id = dialogId;
         dialog.element = element;
         dialog.scope = dialogScope;
+        dialog.valid = true;
         dialogScope.dismiss = function() {
             element.modal("hide");
         };
@@ -373,7 +374,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         }
         dialogMap[dialog.id] = dialog;
         link(dialogScope);
-        element.on(jQuery.support.transition && 'hidden' || 'hide', function() {
+        function destroy() {
             if (!dialogMap[dialog.id]) {
                 return;
             }
@@ -387,6 +388,10 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
                 dialog.scope.$destroy();
                 dialog = null;
             });
+        }
+
+        element.on(jQuery.support.transition && 'hidden' || 'hide', function() {
+           destroy();
         });
         element.on(jQuery.support.transition && 'shown' || 'shown', function () {
             var focusElement = $('input:text:visible:first', element);
@@ -396,7 +401,8 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             focusElement.focus();
         });
         $timeout(function() {
-            if (!dialogMap[dialogId]) {
+            if (!dialog.valid) {
+                destroy();
                 return;
             }
             var modalOptions = {show: true, keyboard: !args.noEscape,
@@ -408,6 +414,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
     function closeDialog(dialogId) {
         var dialog = dialogMap[dialogId];
         if (dialog) {
+            dialog.valid = false;
             dialog.element.modal("hide");
         }
     }

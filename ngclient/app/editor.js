@@ -168,6 +168,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
 
     this.deleteArea = function(areaId) {
         delete self.areasMaster[areaId];
+        delete self.roomsMaster[areaId];
         angular.forEach(self.editors.slice(), function(editor) {
             if (editor.parent && (editor.parent == areaId || editor.parent.split(':')[0] == areaId)) {
                 self.closeEditor(editor);
@@ -272,7 +273,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
             var area = $scope.areas[rowIx];
             lmRemote.request($scope.editor.url + "/update", {area:area}).then(function (result) {
                 $scope.areas[rowIx] = result;
-                $scope.areas_copy[rowIx] = jQuery.extends(true, {}, result);
+                $scope.areas_copy[rowIx] = jQuery.extend(true, {}, result);
             });
         };
 

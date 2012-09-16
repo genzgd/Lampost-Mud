@@ -40,8 +40,8 @@
           <td class="use-ellipses" style="width: 60%;">{{exit.dest_id}} ({{exit.dest_title}})</td>
           <td style="width: 30%;">
             <a title="Show Description" ng-click="showDestination(exit)" class="icon-link"><i class="icon-eye-open"></i></a>
-            <a title="Delete Exit" ng-click="deleteExit($index)" class="icon-link"><i class="icon-remove"></i></a>
-            <a title="Delete Exit (one way)" ng-show="exit.two_way" ng-click="deleteOneWay($index)" class="icon-link"><i class="icon-circle-arrow-left"></i></a>
+            <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
+            <a title="Delete Exit (one way)" ng-show="exit.two_way" ng-click="deleteExit(exit, false)" class="icon-link"><i class="icon-circle-arrow-left"></i></a>
           </td>
         </tr>
         </tbody>

@@ -1,8 +1,3 @@
-'''
-Created on Apr 8, 2012
-
-@author: Geoffrey
-'''
 from immortal import IMM_LEVELS
 from lampost.env.movement import Direction
 from lampost.player.player import Player
