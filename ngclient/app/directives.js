@@ -1,10 +1,10 @@
 angular.module('lampost_dir', []);
 
-angular.module('lampost_dir').directive("enterKey", function() {
+angular.module('lampost_dir').directive("enterKey", function () {
     return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-            element.bind('keypress', function(event) {
+        restrict:'A',
+        link:function (scope, element, attrs) {
+            element.bind('keypress', function (event) {
                 if (event.keyCode == 13) {
                     scope.$eval(attrs.enterKey);
                     event.preventDefault();
@@ -16,11 +16,11 @@ angular.module('lampost_dir').directive("enterKey", function() {
     }
 });
 
-angular.module('lampost_dir').directive('lmBlur', function() {
+angular.module('lampost_dir').directive('lmBlur', function () {
     return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-            element.bind('blur', function() {
+        restrict:'A',
+        link:function (scope, element, attrs) {
+            element.bind('blur', function () {
                 scope.$eval(attrs.lmBlur);
             });
         }
@@ -28,14 +28,14 @@ angular.module('lampost_dir').directive('lmBlur', function() {
 
 });
 
-angular.module('lampost_dir').directive('autoComplete', function() {
+angular.module('lampost_dir').directive('autoComplete', function () {
     return {
-        restrict: 'A',
-        require: 'ngModel',
-        link: function(scope, element, attrs, ngModel) {
+        restrict:'A',
+        require:'ngModel',
+        link:function (scope, element, attrs, ngModel) {
             var opts = {};
             opts.source = scope.$eval(attrs.autoComplete);
-            opts.updater = function(item) {
+            opts.updater = function (item) {
                 ngModel.$setViewValue(item);
             };
             element.typeahead(opts);
@@ -43,11 +43,39 @@ angular.module('lampost_dir').directive('autoComplete', function() {
     }
 });
 
-angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function($timeout) {
+angular.module('lampost_dir').directive('popover', function () {
     return {
-        restrict: 'A',
-        link: function(scope, element, attrs) {
-            scope.$watch(attrs.scrollBottom, function() {
+        restrict:'A',
+        link:function (scope, element, attrs) {
+            var vals = attrs.popover.split('|');
+            var opts = {};
+            opts.content = scope.$eval(vals[0]);
+            if (vals.length > 1) {
+                opts.placement = vals[1];
+            }
+            if (vals.length > 2) {
+                opts.trigger = vals[2];
+            }
+            element.popover(opts);
+        }
+    }
+});
+
+angular.module('lampost_dir').directive('popoverTitle', function () {
+    return {
+        restrict:'A',
+        link:function (scope, element, attrs) {
+            element.attr('title', scope.$eval(attrs.popoverTitle));
+        }
+    }
+
+});
+
+angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function ($timeout) {
+    return {
+        restrict:'A',
+        link:function (scope, element, attrs) {
+            scope.$watch(attrs.scrollBottom, function () {
                 $timeout(function () {
                     var scrollHeight = element[0].scrollHeight;
                     if (scrollHeight) {
@@ -59,16 +87,20 @@ angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function($t
     };
 }]);
 
-angular.module('lampost_dir').directive('history', function() {
+angular.module('lampost_dir').directive('history', function () {
     return {
-        restrict: 'A',
-        link: function(scope, element) {
-            element.bind('keydown', function(event) {
+        restrict:'A',
+        link:function (scope, element) {
+            element.bind('keydown', function (event) {
                 var apply = null;
                 if (event.keyCode == 38) {
-                    apply = function() {scope.historyUp()};
+                    apply = function () {
+                        scope.historyUp()
+                    };
                 } else if (event.keyCode == 40) {
-                    apply = function() {scope.historyDown()};
+                    apply = function () {
+                        scope.historyDown()
+                    };
                 }
                 if (apply) {
                     scope.$apply(apply);
@@ -81,12 +113,13 @@ angular.module('lampost_dir').directive('history', function() {
     }
 });
 
-angular.module('lampost_dir').directive("prefFocus", ['$rootScope', '$timeout', function($rootScope, $timeout) {
+angular.module('lampost_dir').directive("prefFocus", ['$rootScope', '$timeout', function ($rootScope, $timeout) {
     return {
-        restrict: "A",
-        link: function(scope, element) {
+        restrict:"A",
+        link:function (scope, element) {
             scope.$on("refocus", forceFocus);
             var timer = $timeout(forceFocus);
+
             function forceFocus() {
                 $timeout.cancel(timer);
                 $(element)[0].focus();
@@ -95,10 +128,10 @@ angular.module('lampost_dir').directive("prefFocus", ['$rootScope', '$timeout', 
     }
 }]);
 
-angular.module('lampost_dir').directive("altText", [function() {
+angular.module('lampost_dir').directive("altText", [function () {
     return {
-        restrict: "A",
-        link: function(scope, element, attrs) {
+        restrict:"A",
+        link:function (scope, element, attrs) {
             element.attr("title", scope.$eval(attrs.altText));
         }
     }

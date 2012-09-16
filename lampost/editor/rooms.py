@@ -41,7 +41,8 @@ class RoomList(Resource):
 class RoomGet(Resource):
     @request
     def render_POST(self, content, session):
-        return RoomDTO(get_room(session, content.room_id)[1])
+        return RoomDTO(get_room(content.room_id, session)[1])
+
 
 class RoomCreate(Resource):
     @request
@@ -62,7 +63,7 @@ class RoomCreate(Resource):
 class RoomDelete(Resource):
     @request
     def render_POST(self, content, session):
-        area, room = get_room(session, content.room_id)
+        area, room = get_room(content.room_id, session)
         main_contents = save_contents(room)
         deleted_exits = []
         for my_exit in room.exits:
@@ -96,7 +97,7 @@ class RoomVisit(Resource):
 class RoomUpdate(Resource):
     @request
     def render_POST(self, content, session):
-        area, room = get_room(session, content.id)
+        area, room = get_room(content.id, session)
         contents = save_contents(room)
         room.title = content.title
         room.desc = content.desc
@@ -113,7 +114,7 @@ class RoomUpdate(Resource):
 class CreateExit(Resource):
     @request
     def render_POST(self, content, session):
-        area, room = get_room(session, content.start_room)
+        area, room = get_room(content.start_room, session)
         new_dir = Direction.ref_map[content.direction]
         rev_dir = new_dir.rev_dir
         other_id = content.dest_area + ':' + str(content.dest_id)
@@ -125,7 +126,7 @@ class CreateExit(Resource):
                 raise DataError("Room " + other_id + " already exists")
             other_room = Room(other_id, content.dest_title, content.dest_title)
         else:
-            other_area, other_room = get_room(session, other_id)
+            other_area, other_room = get_room(other_id, session)
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
 
@@ -157,7 +158,7 @@ class CreateExit(Resource):
 class DeleteExit(Resource):
     @request
     def render_POST(self, content, session):
-        area, room = get_room(session, content.start_room)
+        area, room = get_room(content.start_room, session)
         direction = Direction.ref_map[content.dir]
         local_exit = room.find_exit(direction)
         if not local_exit:
@@ -187,7 +188,7 @@ class DeleteExit(Resource):
             save_object(other_room)
         return result
 
-def get_room(session, room_id):
+def get_room(room_id, session=None):
     area_id = room_id.split(":")[0]
     area = mud.get_area(area_id)
     if not area:
@@ -195,7 +196,8 @@ def get_room(session, room_id):
     room = area.get_room(room_id)
     if not room:
         raise DataError("ROOM_MISSING")
-    check_perm(session, area)
+    if session:
+        check_perm(session, area)
     return area, room
 
 def save_contents(start_room):
@@ -226,6 +228,7 @@ class ExitDTO(RootDTO):
         self.start_id = start_id
         self.dest_id = exit.destination.dbo_id
         self.dest_title = exit.destination.title
+        self.dest_desc = exit.destination.desc
         self.dir = exit.dir_name
         self.two_way = False
         if (exit.destination.find_exit(exit.direction.rev_dir)):

@@ -173,6 +173,10 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             return '';
         };
 
+        $scope.editDest = function(exit) {
+            lmEditor.addEditor('room', exit.dest_id);
+        };
+
         $scope.deleteAlias = function (ix) {
             $scope.roomDirty = true;
             $scope.currentExtra.editAliases.splice(ix, 1);
