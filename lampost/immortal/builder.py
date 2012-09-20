@@ -1,11 +1,10 @@
 from immortal import IMM_LEVELS
-from lampost.env.movement import Direction
 from lampost.player.player import Player
-from lampost.env.room import Room, Exit
+from lampost.env.room import Room
 from lampost.util.lmutil import ljust, find_extra_prep
 from lampost.dto.display import Display, DisplayLine
 from lampost.action.action import Action
-from lampost.mobile.mobile import MobileTemplate, MobileReset
+from lampost.mobile.mobile import MobileReset
 from lampost.model.article import ArticleTemplate, ArticleReset
 
 BUILD_ROOM = Room("buildroom")
@@ -21,27 +20,6 @@ class BuildMode(Action):
         source.build_mode = not current
         return "Build Mode is {0}".format("On" if source.build_mode else "Off")
 
-
-class MobList(Action):
-    imm_level = IMM_LEVELS["creator"]
-
-    def __init__(self):
-        Action.__init__(self, "moblist")
-
-    def execute(self, source, args, **ignored):
-        if args:
-            area_id = args[0]
-        else:
-            area_id = source.env.area_id
-        area = self.mud.get_area(area_id)
-        if not area:
-            return "Invalid area"
-        if not area.mobiles:
-            return "No mobiles defined"
-        display = Display()
-        for mobile in area.mobiles:
-            display.append(DisplayLine(ljust(mobile.dbo_id.split(":")[1], 20) + ljust(mobile.title, 20) + unicode(mobile.level)))
-        return display
 
 class ItemList(Action):
     imm_level = IMM_LEVELS["creator"]
@@ -97,32 +75,6 @@ def find_room(builder, room_id, start_area):
         raise BuildError("Invalid room id")
     return area, room
 
-class CreateMob(Action):
-    imm_level = IMM_LEVELS["creator"]
-
-    def __init__(self):
-        Action.__init__(self, "areamob")
-
-    def execute(self, source, args, command, **ignored):
-        area_id = source.env.area_id
-        if not args:
-            return "mob id required"
-        try:
-            area = check_area(source, area_id)
-        except BuildError as exp:
-            return exp.msg
-
-        mobile_id = ":".join([area_id, args[0]])
-        if area.get_mobile(mobile_id):
-            return mobile_id + " already exists in this area"
-
-        title = command.partition(args[0])[2][1:]
-        if not title:
-            title = area.name + " " + args[0]
-        template = MobileTemplate(mobile_id, title)
-        self.save_object(template)
-        area.mobiles.append(template)
-        self.save_object(area)
 
 class EditAreaMob(Action):
     imm_level = IMM_LEVELS["creator"]
@@ -438,125 +390,7 @@ class ResetRoom(Action):
         return "Room reset"
 
 
-class DirectionAction(BuildAction):
-    def find_target(self, builder, args):
-        direction = Direction.find_dir(args[0])
-        if direction:
-            return direction
-        raise BuildError("No direction specified")
-
-class Dig(DirectionAction):
-    def __init__(self):
-        Action.__init__(self, "dig")
-
-    def build(self, builder, room, area, new_dir, args):
-
-        if room.find_exit(new_dir):
-            raise BuildError("This room already has a " + new_dir.desc + " exit.")
-
-        desc = area.name + " Room " + str(area.next_room_id)
-        new_area, new_room = find_room(builder, args[1:], room.area_id)
-        if new_room:
-            if new_room.find_exit(new_dir.rev_dir):
-                raise BuildError("The other room already has a {0} exit".format(new_dir.rev_key))
-        else:
-            if len(args) > 1:
-                raise BuildError("Other room not found")
-            room_id = area.dbo_id + ":" + str(area.next_room_id)
-            while area.get_room(room_id):
-                area.next_room_id += 1
-                room_id = area.dbo_id + ":" + str(area.next_room_id)
-            new_room = Room(room_id, desc, desc)
-            new_area = area
-            new_area.rooms.append(new_room)
-
-        this_exit = Exit(new_dir, new_room)
-        room.exits.append(this_exit)
-        room.refresh()
-        self.save_object(room)
-
-        other_exit = Exit(new_dir.rev_dir, room)
-        new_room.exits.append(other_exit)
-        new_room.refresh()
-        self.save_object(new_room)
-
-        area.next_room_id += 1
-        self.save_object(area)
 
 
-class UnDig(DirectionAction):
-    remove_other_exit = True
-    remove_other_room = True
-
-    def __init__(self):
-        Action.__init__(self, "undig")
-
-    def build(self, builder, room, area, target_dir, args):
-
-        my_exit = room.find_exit(target_dir)
-        other_room = my_exit.destination
-
-        room.exits.remove(my_exit)
-        room.refresh()
-        self.save_object(room)
-
-        if not self.remove_other_exit:
-            return
-
-        other_exit = other_room.find_exit(target_dir.rev_dir)
-
-        if not other_exit:
-            return
-
-        other_room.exits.remove(other_exit)
-        if self.remove_other_room and not other_room.dbo_rev and not other_room.exits:
-            other_room.dbo_rev = -1
-            self.delete_object(other_room)
-            area.rooms.remove(other_room)
-            self.save_object(area)
-        else:
-            self.save_object(other_room)
-            other_room.refresh()
 
 
-class FTH(UnDig):
-    def __init__(self):
-        Action.__init__(self, "fth")
-        self.remove_other_room = False
-
-
-class BackFill(UnDig):
-    def __init__(self):
-        Action.__init__(self, "backfill")
-        self.remove_other_exit = False
-
-class SetDesc(Action):
-    def __init__(self):
-        Action.__init__(self, ("rdesc",  "setdesc"))
-
-    def execute(self, source, args, command, **ignored):
-        try:
-            if not args:
-                return "Set description to what?"
-            check_room(source, source.env)
-            source.env.desc = command.partition(" ")[2]
-            self.save_object(source.env, True)
-        except BuildError as exp:
-            return exp.msg
-        return source.parse("look")
-
-
-class SetTitle(Action):
-    def __init__(self):
-        Action.__init__(self, ("rname", "settitle"))
-
-    def execute(self, source, args, command, **ignored):
-        try:
-            check_room(source, source.env)
-            if not args:
-                return "Set title to what?"
-            source.env.title = command.partition(" ")[2]
-            self.save_object(source.env, True)
-        except BuildError as exp:
-            return exp.msg
-        return source.parse("look")

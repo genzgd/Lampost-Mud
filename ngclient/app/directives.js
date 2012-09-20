@@ -47,28 +47,26 @@ angular.module('lampost_dir').directive('popover', function () {
     return {
         restrict:'A',
         link:function (scope, element, attrs) {
-            var vals = attrs.popover.split('|');
+            var args = attrs.popover.split('|');
             var opts = {};
-            opts.content = scope.$eval(vals[0]);
-            if (vals.length > 1) {
-                opts.placement = vals[1];
+            if (args.length > 1) {
+                opts.placement = args[1];
             }
-            if (vals.length > 2) {
-                opts.trigger = vals[2];
+            if (args.length > 2) {
+                opts.trigger = args[2];
             }
             element.popover(opts);
+
+            scope.$watch(attrs.popoverTitle + ' + ' + args[0],
+                configPopover);
+            configPopover();
+            function configPopover() {
+                var popover = element.data('popover');
+                popover.options.title = scope.$eval(attrs.popoverTitle);
+                popover.options.content = scope.$eval(args[0]);
+            }
         }
     }
-});
-
-angular.module('lampost_dir').directive('popoverTitle', function () {
-    return {
-        restrict:'A',
-        link:function (scope, element, attrs) {
-            element.attr('title', scope.$eval(attrs.popoverTitle));
-        }
-    }
-
 });
 
 angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function ($timeout) {

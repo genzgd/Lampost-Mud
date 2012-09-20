@@ -8,7 +8,7 @@
       </ul>
 
       <div class="tab-content wrapper">
-        <div style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor" class="tab-pane active" ng-include="editor.include">
+        <div ng-class="editor.parentClass" style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor" class="tab-pane active" ng-include="editor.include">
         </div>
       </div>
     </div>

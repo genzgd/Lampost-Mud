@@ -5,7 +5,7 @@ from lampost.context.resource import requires
 from lampost.dto.display import Display, DisplayLine
 from lampost.dto.rootdto import RootDTO
 from lampost.player.player import Player
-from lampost.util.lmutil import ljust, find_extra, patch_object, PatchError
+from lampost.util.lmutil import find_extra, patch_object, PatchError
 
 IMM_LEVELS = {"none": 0, "creator": 1000, "admin": 10000, "supreme": 100000}
 
@@ -117,17 +117,6 @@ class PatchDB(Action):
 
         self.save_object(obj)
         return "Object " + key + " patched"
-
-class AreaList(Action):
-    def __init__(self):
-        Action.__init__(self, ("arealist", "alist"))
-        self.imm_level = IMM_LEVELS["creator"]
-
-    def execute(self, source, **ignored):
-        display = Display()
-        for area in sorted(self.mud.area_map.itervalues()):
-            display.append(DisplayLine(ljust(area.name, 20) + ljust(area.owner_id, 20) + str(len(area.rooms)) + " rooms"))
-        return display
 
 
 class SetHome(Action):

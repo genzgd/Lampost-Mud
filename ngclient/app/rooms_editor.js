@@ -6,6 +6,7 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
         loadRooms();
 
         lmBus.register('area_change', function() {}, $scope);
+        lmBus.register('room_updated', function() {}, $scope);
 
         function loadRooms() {
             lmEditor.loadRooms($scope.areaId).then(function(rooms) {
@@ -27,8 +28,7 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
         $scope.roomCreated = function (roomData) {
             var area = lmEditor.areasMaster[$scope.areaId];
             area.next_room_id = roomData.next_room_id;
-            $scope.rooms.push(roomData.room);
-            lmEditor.sortRooms($scope.areaId);
+            lmEditor.roomAdded(roomData.room);
             $scope.editRoom(roomData.room);
         };
 
@@ -46,8 +46,8 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
     }]);
 
 
-angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRemote', 'parentScope', 'lmEditor', 'nextRoomId',
-    function ($scope, lmRemote, parentScope, lmEditor, nextRoomId) {
+angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRemote', 'parentScope',  'nextRoomId',
+    function ($scope, lmRemote, parentScope, nextRoomId) {
         $scope.areaId = parentScope.areaId;
         $scope.newRoom = {id:nextRoomId, title:'', desc:''};
         $scope.createRoom = function () {
@@ -69,9 +69,12 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         var roomCopy = {};
         lmBus.register("exit_added", exitAdded);
         lmBus.register("exit_deleted", exitRemoved);
+        lmBus.register("room_updated", roomUpdated);
+        lmBus.register("mobile_updated", mobileUpdated);
         $scope.roomDirty = false;
         $scope.dirty = function() {
             $scope.roomDirty = true;
+            $scope.showResult = false;
         };
         $scope.roomId = $scope.editor.parent;
         $scope.directions = lmEditor.directions;
@@ -85,6 +88,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                     roomCopy = jQuery.extend(true, {}, room);
                     $scope.editor.copyToModel($scope);
                     $scope.editor.model_rev = room.dbo_rev;
+                    lmEditor.updateRoom(room);
                 } else {
                     $scope.editor.copyFromModel($scope);
                 }
@@ -113,6 +117,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                 roomCopy = jQuery.extend(true, {}, room);
                 $scope.room = room;
                 $scope.editor.copyToModel($scope);
+                lmEditor.updateRoom(room);
                 $scope.roomDirty = false;
                 showResult("success", "Room data updated.");
             })
@@ -127,12 +132,8 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             var exitData = {start_room:$scope.roomId, both_sides:bothSides,  dir:exit.dir};
             lmRemote.request($scope.editor.url + "/delete_exit", exitData, true).then(function(result) {
                     lmEditor.exitDeleted(result.exit);
-                    if (result.other_exit) {
-                        lmEditor.exitDeleted(result.other_exit);
-                    }
-                    if (result.room_deleted) {
-                        lmEditor.roomDeleted(result.room_deleted);
-                    }
+                    result.other_exit && lmEditor.exitDeleted(result.other_exit);
+                    result.room_deleted && lmEditor.roomDeleted(result.room_deleted);
                 }
             )
         };
@@ -142,7 +143,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.room.extras.push(newExtra);
             $scope.showDesc(newExtra);
             $timeout(function () {
-                jQuery('.extra-title-edit:last').focus();
+                jQuery('.extra-title-edit:last', '.' + $scope.editor.parentClass).focus();
             })
         };
 
@@ -154,6 +155,11 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.room.extras.splice(extraIx, 1);
         };
 
+        $scope.deleteMobile = function(mobileIx) {
+            $scope.roomDirty = true;
+            $scope.room.mobiles.splice(mobileIx);
+        };
+
         $scope.showDesc = function (extra) {
             $scope.currentExtra = extra;
             $scope.extraDisplay = 'desc';
@@ -162,7 +168,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         $scope.newAlias = function () {
             $scope.currentExtra.editAliases.push({title:""});
             $timeout(function () {
-                jQuery('.extra-alias-edit:last').focus();
+                jQuery('.extra-alias-edit:last', '.' + $scope.editor.parentClass).focus();
             });
         };
 
@@ -175,6 +181,10 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
 
         $scope.editDest = function(exit) {
             lmEditor.addEditor('room', exit.dest_id);
+        };
+
+        $scope.editMobile = function(mobile) {
+            lmEditor.addEditor('mobile', mobile.mobile_id);
         };
 
         $scope.deleteAlias = function (ix) {
@@ -204,7 +214,28 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             }
         }
 
+        function roomUpdated(room) {
+            angular.forEach($scope.room.exits, function(exit) {
+                if (exit.dest_id == room.id) {
+                    exit.dest_title = room.title;
+                    exit.dest_desc = room.desc;
+                }
+            });
+        }
+
+        function mobileUpdated(newmobile) {
+            angular.forEach($scope.room.mobiles, function(mobile) {
+               if (mobile.mobile_id == newmobile.dbo_id) {
+                   mobile.title = newmobile.title;
+                   mobile.desc = newmobile.desc;
+               }
+            });
+        }
+
         function updateExtras () {
+            if ($scope.currentExtra && !$scope.currentExtra.title) {
+                $scope.currentExtra = null;
+            }
             angular.forEach($scope.room.extras, function(extra) {
                 if (extra.hasOwnProperty('editAliases')) {
                     extra.aliases = [];

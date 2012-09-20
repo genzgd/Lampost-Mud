@@ -34,7 +34,7 @@ def request(func):
             return "Permission Denied."
         except DataError as de:
             request.setResponseCode(410)
-            return de.message
+            return str(de.message)
         if result is None:
             return "OK"
         try:

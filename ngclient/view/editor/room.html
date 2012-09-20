@@ -37,10 +37,10 @@
         <tbody>
         <tr class="table-bordered" ng-repeat="exit in room.exits">
           <td style="width: 10%;">{{exit.dir}}</td>
-          <td class="use-ellipses" style="width: 60%;">{{exit.dest_id}} ({{exit.dest_title}})</td>
+          <td class="use-ellipses" style="width: 60%;">{{exit.dest_id}} {{exit.dest_title}}</td>
           <td style="width: 30%;">
             <a title="Edit Room" ng-click="editDest(exit)" class="icon-link"><i class="icon-wrench"></i></a>
-            <a popover-title="exit.dest_title"  popover="exit.dest_desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+            <a popover-title="exit.dest_title" popover="exit.dest_desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
             <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
             <a title="Delete Exit (one way)" ng-show="exit.two_way" ng-click="deleteExit(exit, false)" class="icon-link"><i class="icon-circle-arrow-left"></i></a>
           </td>
@@ -49,7 +49,7 @@
       </table>
       <button style="margin-top: 8px" ng-click="addNewExit()" class="btn btn-success btn-small">Dig</button>
     </div>
-    <div class="offset1 span4">
+    <div class="span4">
       <div class="span6 alert" ng-class="resultType" ng-show="showResult">{{resultMessage}}
         <button type="button" class="close" ng-click="showResult = false">×</button>
       </div>
@@ -107,7 +107,7 @@
             </div>
             <div class="span1">
               <a title="Show Description" tabIndex="-1" ng-click="showDesc(currentExtra)" class="icon-link"><i class="icon-eye-open"></i></a>
-          </div>
+            </div>
           </div>
           <div class="clearfix"></div>
           <table class="table table-condensed" style="width: 90%">
@@ -122,8 +122,38 @@
         </div>
       </div>
     </div>
-    <div class="span4">
-      <!-- Future resets -->
+    <div class="span5">
+      <div class="span2">
+        <h5>Mobiles</h5>
+
+        <div class="column-button">
+          <button ng-click="addNewMobile()" class="btn btn-success btn-small">New</button>
+        </div>
+      </div>
+      <div class="span9">
+        <table style="width: 100%; height:60%; table-layout: fixed;">
+          <thead>
+          <tr>
+            <th style="width: 50%;">Mobile id</th>
+            <th style="width: 15%;">Count</th>
+            <th style="width: 15%;">Max</th>
+            <th style="width: 20%;"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="table-bordered" ng-repeat="mobile in room.mobiles">
+            <td class="use-ellipses" style="width: 70%;">{{mobile.mobile_id}} {{mobile.title}}</td>
+            <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_count"/></td>
+            <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_max"/></td>
+            <td style="width: 20%;">
+              <a title="Edit Mobile" ng-click="editMobile(mobile)" class="icon-link"><i class="icon-wrench"></i></a>
+              <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+              <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

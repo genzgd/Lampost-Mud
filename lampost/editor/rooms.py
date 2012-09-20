@@ -41,7 +41,8 @@ class RoomList(Resource):
 class RoomGet(Resource):
     @request
     def render_POST(self, content, session):
-        return RoomDTO(get_room(content.room_id, session)[1])
+        area, room = get_room(content.room_id, session)
+        return RoomDTO(area, room)
 
 
 class RoomCreate(Resource):
@@ -109,7 +110,7 @@ class RoomUpdate(Resource):
                 room.extras.append(extra)
         save_object(room, True)
         restore_contents(room, contents)
-        return RoomDTO(room)
+        return RoomDTO(area, room)
 
 class CreateExit(Resource):
     @request
@@ -234,14 +235,22 @@ class ExitDTO(RootDTO):
         if (exit.destination.find_exit(exit.direction.rev_dir)):
             self.two_way = True
 
+class MobileDTO(RootDTO):
+    def __init__(self, area, mobile_reset):
+        self.merge_dict(mobile_reset.json_obj)
+        mobile = area.get_mobile(mobile_reset.mobile_id)
+        self.desc = mobile.desc if mobile.desc else mobile.title
+        self.title = mobile.title
+
 class RoomDTO(RootDTO):
-    def __init__(self, room):
+    def __init__(self, area, room):
         self.id = room.dbo_id
         self.title = room.title
         self.desc = room.desc
         self.dbo_rev = room.dbo_rev
         self.extras = [extra.json_obj for extra in room.extras]
         self.exits = [ExitDTO(exit) for exit in room.exits]
+        self.mobiles = [MobileDTO(area, mobile_reset) for mobile_reset in room.mobile_resets]
 
 
 

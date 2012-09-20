@@ -1,0 +1,55 @@
+<div ng-controller="MobileEditorController" style="height: 100%; overflow-y: auto">
+  <div class="row-fluid">
+    <h4 class="span3">Mobile Id: {{mobile.dbo_id}}</h4>
+    <h5 class="span1">Rev: {{mobile.dbo_rev}}</h5>
+    <div class="offset4 span4">
+      <div class="row-fluid">
+        <button ng-disabled="!mobileDirty" ng-click="updateMobile()" class="btn btn-primary">Update</button>
+        <button ng-disabled="!mobileDirty" ng-click="revertMobile()" class="btn">Revert</button>
+        <button ng-click="deleteMobile()" class="btn btn-danger" style="margin-left: 6px;">Delete</button>
+        <div class="pull-right">
+          <button ng-click="closeEditor(editor)" class="btn btn-info">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span3">
+      <label>Title</label>
+      <input type="text" ng-model="mobile.title" ng-change="dirty()" required="true"/>
+    </div>
+    <div class="span3">
+      <label>Level</label>
+      <input class="input-small" type="number" ng-model="mobile.level" ng-change="dirty()" required="true" min="1"/>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span4">
+      <label>Description</label>
+      <textarea class="span12" rows="8" ng-model="mobile.desc" ng-change="dirty()"></textarea>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span4">
+      <div class="span2">
+        <h5>Aliases</h5>
+
+        <div class="column-button">
+          <button ng-click="addNewAlias()" class="btn btn-success btn-small">New</button>
+        </div>
+      </div>
+      <div class="span10">
+        <table class="table table-condensed" style="width: 100%">
+          <tbody>
+            <tr class="table-bordered" ng-repeat="alias in editAliases">
+              <td class="edit-cell" style="width: 85%"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="text" ng-model="alias.title"/>
+              </td>
+            <td><a title="Delete Alias" ng-click="deleteAlias($index)" class="icon-link"><i class="icon-remove"></i></a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

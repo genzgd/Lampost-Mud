@@ -26,7 +26,7 @@
                 <td class="span2 edit-cell"><input class="span12 edit-cell" type="text" ng-model="area.name"/></td>
                 <td class="span1 cell-right" ng-click="showRooms(area)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.rooms}}</td>
                 <td class="span1 cell-right">{{area.items}}</td>
-                <td class="span1 cell-right">{{area.mobiles}}</td>
+                <td class="span1 cell-right" ng-click="showMobiles(area)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.mobiles}}</td>
                 <td class="span1 edit-cell"><input class="span12 edit-cell cell-right" type="number" ng-model="area.next_room_id"/></td>
                 <td class="span2 cell-centered" ng-include="'view/editor/editbar.html'"></td>
             </tr>

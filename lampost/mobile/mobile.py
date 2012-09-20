@@ -13,6 +13,7 @@ class Mobile(Creature):
 
 class MobileTemplate(RootDBO, Template):
     dbo_key_type = "mobile"
+    dbo_rev = 0
     instance_class = ".".join([Mobile.__module__, Mobile.__name__])
     aliases= []
 

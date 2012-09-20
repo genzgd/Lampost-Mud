@@ -5,14 +5,12 @@ from lampost.comm.channel import Channel
 from lampost.action.emote import Emotes, Socials
 from lampost.immortal.immortal import CreatePlayer, DeletePlayer,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
-    ListCommands, AreaList, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
+    ListCommands, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
     AllPlayers
 from area import Area
 from lampost.comm.chat import TellAction, ReplyAction, SayAction
-from lampost.immortal.builder import Dig, UnDig, SetDesc, SetTitle, BackFill, BuildMode,\
-    FTH, MobList, ResetRoom, CreateMob, AddMob, DelMob, EditAreaMob, EditAlias,\
-    ItemList, CreateItem,\
-    EditAreaItem, AddItem, DelItem
+from lampost.immortal.builder import  BuildMode, ResetRoom, AddMob, DelMob, EditAreaMob, EditAlias,\
+    ItemList, CreateItem, EditAreaItem, AddItem, DelItem
 from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
@@ -33,9 +31,8 @@ class MudNature():
         self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
                            ShowInventory(), Socials(), GetAction(), DropAction()}
         self.imm_commands = CreatePlayer(), DeletePlayer(), GoToArea(), Citadel(),\
-                       RegisterDisplay(), UnregisterDisplay(), Describe(), Dig(), ListCommands(),\
-                       AreaList(), GotoRoom(), UnDig(), SetHome(), GoHome(), SetDesc(), SetTitle(), BackFill(),\
-                       BuildMode(), FTH(), MobList(), Zap(), ResetRoom(), CreateMob(), AddMob(), EditAreaMob(),\
+                       RegisterDisplay(), UnregisterDisplay(), Describe(), ListCommands(),\
+                       GotoRoom(), SetHome(), GoHome(), BuildMode(),  Zap(), ResetRoom(),  AddMob(), EditAreaMob(),\
                        DelMob(), PatchTarget(), PatchDB(), GotoPlayer(),\
                        EditAlias(), AllPlayers(), ItemList(), CreateItem(), EditAreaItem(), AddItem(), DelItem()
 

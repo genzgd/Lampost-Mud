@@ -12,6 +12,8 @@ angular.module('lampost_edit').directive('editList', [function () {
 
 angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', function ($q, lmBus, lmRemote, lmDialog, $location) {
 
+    var rawId = 0;
+
     function Editor(type, parent) {
         var eType = this.types[type];
         this.label = eType.label ? eType.label : parent;
@@ -25,6 +27,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         this.url = "editor/" + eType.url;
         this.parent = parent;
         this.type = type;
+        this.parentClass = "editor" + rawId++ + "parent";
     }
 
     Editor.prototype.types = {
@@ -32,7 +35,9 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         players:{label:"Players", url:"players"},
         areas:{label:"Areas", url:"area"},
         rooms:{label:"Rooms", url:"room"},
-        room:{label:"", url:"room", model_props:['room']}
+        room:{label:"", url:"room", model_props:['room']},
+        mobiles:{label:"Mobiles", url:'mobile'},
+        mobile:{label:"", url:"mobile", model_props:['mobile']}
     };
 
     Editor.prototype.copyFromModel = function (target) {
@@ -55,6 +60,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
     var currentMap = {};
     this.areasMaster = {};
     this.roomsMaster = {};
+    this.mobilesMaster = {};
     this.loadStatus = "loading";
 
     lmBus.register("login", configEditors);
@@ -72,12 +78,14 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         self.refreshData();
     }
 
-    this.sortRooms = function(areaId) {
-        self.roomsMaster[areaId].sort(function(a, b) {
-            var aid = parseInt(a.id.split(':')[1]);
-            var bid = parseInt(b.id.split(':')[1]);
-            return aid - bid;});
-    };
+    function idSort(values, field) {
+        values.sort(function(a, b) {
+            var aid = parseInt(a[field].split(':')[1]);
+            var bid = parseInt(b[field].split(':')[1]);
+            return aid - bid;
+        })
+
+    }
 
     this.refreshData = function () {
         self.loadStatus = "loading";
@@ -95,8 +103,8 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         });
     };
 
-    this.addEditor = function (type, areaId) {
-        var editor = new Editor(type, areaId);
+    this.addEditor = function (type, parent) {
+        var editor = new Editor(type, parent);
         if (currentMap.hasOwnProperty(editor.id)) {
             editor = currentMap[editor.id];
         } else {
@@ -142,16 +150,32 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
             return deferred.promise;
         }
         return lmRemote.request('editor/room/list', {area_id:areaId}, true).then(function (rooms) {
+            idSort(rooms,  'id');
             self.roomsMaster[areaId] = rooms;
-            self.sortRooms(areaId);
             return rooms;
         });
+    };
+
+    this.loadMobiles = function(areaId) {
+        return lmRemote.request('editor/mobile/list', {area_id:areaId}, true).then(function (mobiles) {
+            self.mobilesMaster[areaId] = mobiles;
+            idSort(mobiles, 'dbo_id');
+            return mobiles;
+        });
+    };
+
+    this.mobileAdded = function(mobile) {
+        var areaId = mobile.dbo_id.split(':')[0];
+        self.mobilesMaster[areaId].push(mobile);
+        idSort(self.mobilesMaster[areaId], 'dbo_id');
+        self.areasMaster[areaId].mobiles = self.mobilesMaster[areaId].length;
     };
 
     this.roomAdded = function(room) {
         var areaId = room.id.split(':')[0];
         self.roomsMaster[areaId].push(room);
-        self.sortRooms(areaId);
+        idSort(self.roomsMaster[areaId],  'id');
+        self.areasMaster[areaId].rooms = self.roomsMaster[areaId].length;
         lmBus.dispatch('area_change', areaId);
     };
 
@@ -186,8 +210,24 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
                 }
             })
         }
+        self.areasMaster[areaId].rooms = self.roomsMaster[areaId].length;
         self.closeEditorId('room:' + roomId);
     };
+
+    function mobileDeleted(mobileId) {
+        var areaId = mobileId.split(':')[0];
+        var mobiles = self.mobilesMaster[areaId];
+        if (mobiles) {
+            angular.forEach(mobiles.slice(), function(value, index) {
+                if (value.dbo_id == mobileId) {
+                    mobiles.splice(index, 1);
+                    lmBus.dispatch('area_change', areaId);
+                }
+            })
+        }
+        self.areasMaster[areaId].mobiles = self.mobilesMaster[areaId].length;
+        self.closeEditorId('mobile:' + mobileId);
+    }
 
     this.deleteRoom = function (roomId) {
         lmDialog.showConfirm("Confirm Delete",
@@ -210,6 +250,24 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         );
     };
 
+    this.deleteMobile = function(mobileId) {
+        lmDialog.showConfirm("Confirm Delete",
+            "Are you sure you want to delete " + mobileId + "?", function() {
+            lmRemote.request('editor/mobile/delete', {mobile_id:mobileId, force:false}).then(function ()
+                    {mobileDeleted(mobileId);},
+                function(error) {
+                    if (error.data == 'IN_USE') {
+                        lmDialog.showConfirm("Mobile in Use", "This mobile is in use.  Delete anyway?", function () {
+                            lmRemote.request('editor/mobile/delete', {mobile_id:mobileId, force:true}).then( function() {
+                                mobileDeleted(mobileId);
+                            });
+                        });
+                    }
+                }
+            )}
+        )
+    };
+
     this.deleteArea = function(areaId) {
         delete self.areasMaster[areaId];
         delete self.roomsMaster[areaId];
@@ -218,6 +276,31 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
                 self.closeEditor(editor);
             }
         })
+    };
+
+    this.updateRoom = function(room) {
+        var areaId = room.id.split(':')[0];
+        angular.forEach(self.roomsMaster[areaId], function(roomStub) {
+           if (roomStub.id == room.id) {
+               roomStub.title = room.title;
+               roomStub.extra_count = room.extras.length;
+               roomStub.mobile_count = room.mobiles.length;
+           }
+        });
+        lmBus.dispatch("room_updated", room);
+    };
+
+    this.updateMobile = function(mobile) {
+        var areaId = mobile.dbo_id.split(':')[0];
+        var mobiles = self.mobilesMaster[areaId];
+        if (mobiles) {
+            angular.forEach(self.mobilesMaster[areaId].slice(), function(existing, index) {
+                if (existing.dbo_id == mobile.dbo_id) {
+                self.mobilesMaster[areaId][index] = mobile;
+                }
+            })
+        }
+        lmBus.dispatch("mobile_updated", mobile);
     };
 
     this.sanitize = function (text) {
@@ -251,6 +334,10 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
     $scope.closeEditor = function (editor) {
         lmEditor.closeEditor(editor);
     };
+
+    $scope.addEditor = function(type, parent) {
+        lmEditor.addEditor(type, parent);
+    }
 }]);
 
 
@@ -324,6 +411,10 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
         $scope.showRooms = function (area) {
             lmEditor.addEditor('rooms', area.id);
         };
+
+        $scope.showMobiles = function(area) {
+            lmEditor.addEditor('mobiles', area.id);
+        }
 
     }]);
 
