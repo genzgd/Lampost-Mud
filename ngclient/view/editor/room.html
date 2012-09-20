@@ -39,7 +39,7 @@
           <td style="width: 10%;">{{exit.dir}}</td>
           <td class="use-ellipses" style="width: 60%;">{{exit.dest_id}} {{exit.dest_title}}</td>
           <td style="width: 30%;">
-            <a title="Edit Room" ng-click="editDest(exit)" class="icon-link"><i class="icon-wrench"></i></a>
+            <a title="Edit Room" ng-click="addEditor('room', exit.dest_id)" class="icon-link"><i class="icon-wrench"></i></a>
             <a popover-title="exit.dest_title" popover="exit.dest_desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
             <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
             <a title="Delete Exit (one way)" ng-show="exit.two_way" ng-click="deleteExit(exit, false)" class="icon-link"><i class="icon-circle-arrow-left"></i></a>
@@ -146,7 +146,7 @@
             <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_count"/></td>
             <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_max"/></td>
             <td style="width: 20%;">
-              <a title="Edit Mobile" ng-click="editMobile(mobile)" class="icon-link"><i class="icon-wrench"></i></a>
+              <a title="Edit Mobile" ng-click="addEditor('mobile', mobile.mobile_id)" class="icon-link"><i class="icon-wrench"></i></a>
               <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
               <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
             </td>

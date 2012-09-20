@@ -363,6 +363,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         dialogScope.dismiss = function() {
             element.modal("hide");
         };
+        dialogMap[dialog.id] = dialog;
 
         var link = $compile(element.contents());
         if (args.controller) {
@@ -372,7 +373,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             var controller = $controller(args.controller, locals);
             element.contents().data('$ngControllerController', controller);
         }
-        dialogMap[dialog.id] = dialog;
+
         link(dialogScope);
         function destroy() {
             if (!dialogMap[dialog.id]) {

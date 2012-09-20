@@ -78,6 +78,7 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         };
         $scope.roomId = $scope.editor.parent;
         $scope.directions = lmEditor.directions;
+        var areaId = $scope.roomId.split(':')[0];
 
         updateData();
         function updateData() {
@@ -155,6 +156,17 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.room.extras.splice(extraIx, 1);
         };
 
+        $scope.addNewMobile = function() {
+            lmEditor.loadMobiles(areaId).then(function(mobiles) {
+                if (mobiles.length == 0) {
+                    lmDialog.showOk("No Mobiles", "No mobiles defined for this area.");
+                } else {
+                    lmDialog.show({templateUrl:"dialogs/mobile_reset.html", controller:"MobileResetController",
+                        locals:{parentScope:$scope, roomId:$scope.roomId, mobiles:mobiles}});
+                }
+            });
+        };
+
         $scope.deleteMobile = function(mobileIx) {
             $scope.roomDirty = true;
             $scope.room.mobiles.splice(mobileIx);
@@ -177,14 +189,6 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                 return 'info';
             }
             return '';
-        };
-
-        $scope.editDest = function(exit) {
-            lmEditor.addEditor('room', exit.dest_id);
-        };
-
-        $scope.editMobile = function(mobile) {
-            lmEditor.addEditor('mobile', mobile.mobile_id);
         };
 
         $scope.deleteAlias = function (ix) {
@@ -259,7 +263,14 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             }
             $scope.currentExtra = extra;
             $scope.extraDisplay = 'aliases';
-        }
+        };
+
+        $scope.addMobileReset = function(reset) {
+            var newReset = {mobile_id:reset.mobile.dbo_id, mob_count:reset.count, mob_max:reset.max,
+                title:reset.mobile.title, desc:reset.mobile.desc};
+            $scope.room.mobiles.push(newReset);
+            $scope.dirty();
+        };
 
     }]);
 
@@ -374,3 +385,17 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
         }
     }
 ]);
+
+angular.module('lampost_edit').controller('MobileResetController', ['$scope', 'parentScope', 'roomId', 'mobiles',
+    function ($scope, parentScope, roomId, mobiles) {
+
+        $scope.roomId = roomId;
+        $scope.mobiles = mobiles;
+        $scope.reset = {count:1, max:1, mobile:mobiles[0]};
+
+        $scope.createReset = function() {
+            parentScope.addMobileReset($scope.reset);
+            $scope.dismiss();
+        };
+
+}]);

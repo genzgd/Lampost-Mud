@@ -5,6 +5,7 @@ from lampost.context.resource import m_requires
 from lampost.dto.rootdto import RootDTO
 from lampost.env.movement import Direction
 from lampost.env.room import Room, Exit
+from lampost.mobile.mobile import MobileReset
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import DataError
 
@@ -109,6 +110,11 @@ class RoomUpdate(Resource):
                 load_json(extra, extra_json)
                 room.extras.append(extra)
         save_object(room, True)
+        room.mobile_resets = []
+        for mobile_json in content.mobiles:
+            mobile_reset = MobileReset()
+            load_json(mobile_reset, mobile_json)
+            room.mobile_resets.append(mobile_reset)
         restore_contents(room, contents)
         return RoomDTO(area, room)
 

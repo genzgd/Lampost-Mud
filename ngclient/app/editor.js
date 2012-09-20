@@ -157,6 +157,12 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
     };
 
     this.loadMobiles = function(areaId) {
+        var mobiles = self.mobilesMaster[areaId];
+        if (mobiles) {
+            var deferred = $q.defer();
+            deferred.resolve(mobiles);
+            return deferred.promise;
+        }
         return lmRemote.request('editor/mobile/list', {area_id:areaId}, true).then(function (mobiles) {
             self.mobilesMaster[areaId] = mobiles;
             idSort(mobiles, 'dbo_id');
