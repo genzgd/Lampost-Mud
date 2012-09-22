@@ -123,36 +123,71 @@
       </div>
     </div>
     <div class="span5">
-      <div class="span2">
-        <h5>Mobiles</h5>
+      <div class="row-fluid">
+        <div class="span2">
+          <h5>Mobiles</h5>
 
-        <div class="column-button">
-          <button ng-click="addNewMobile()" class="btn btn-success btn-small">New</button>
+          <div class="column-button">
+            <button ng-click="addNewMobile()" class="btn btn-success btn-small">New</button>
+          </div>
+        </div>
+        <div class="span9">
+          <table style="width: 100%; height:60%; table-layout: fixed;">
+            <thead>
+            <tr>
+              <th style="width: 50%;">Mobile id</th>
+              <th style="width: 15%;">Count</th>
+              <th style="width: 15%;">Max</th>
+              <th style="width: 20%;"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="table-bordered" ng-repeat="mobile in room.mobiles">
+              <td class="use-ellipses" style="width: 70%;">{{mobile.mobile_id}} {{mobile.title}}</td>
+              <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_count"/></td>
+              <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_max"/></td>
+              <td style="width: 20%;">
+                <a title="Edit Mobile" ng-click="addEditor('mobile', mobile.mobile_id)" class="icon-link"><i class="icon-wrench"></i></a>
+                <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+                <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="span9">
-        <table style="width: 100%; height:60%; table-layout: fixed;">
-          <thead>
-          <tr>
-            <th style="width: 50%;">Mobile id</th>
-            <th style="width: 15%;">Count</th>
-            <th style="width: 15%;">Max</th>
-            <th style="width: 20%;"></th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr class="table-bordered" ng-repeat="mobile in room.mobiles">
-            <td class="use-ellipses" style="width: 70%;">{{mobile.mobile_id}} {{mobile.title}}</td>
-            <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_count"/></td>
-            <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_max"/></td>
-            <td style="width: 20%;">
-              <a title="Edit Mobile" ng-click="addEditor('mobile', mobile.mobile_id)" class="icon-link"><i class="icon-wrench"></i></a>
-              <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
-              <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+      <div class="row-fluid" style="padding-top: 16px">
+        <div class="span2">
+          <h5>Articles</h5>
+
+          <div class="column-button">
+            <button ng-click="addNewArticle()" class="btn btn-success btn-small">New</button>
+          </div>
+        </div>
+        <div class="span9">
+          <table style="width: 100%; height:60%; table-layout: fixed;">
+            <thead>
+            <tr>
+              <th style="width: 50%;">Article id</th>
+              <th style="width: 15%;">Count</th>
+              <th style="width: 15%;">Max</th>
+              <th style="width: 20%;"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="table-bordered" ng-repeat="article in room.articles">
+              <td class="use-ellipses" style="width: 70%;">{{article.article_id}} {{article.title}}</td>
+              <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="article.article_count"/></td>
+              <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="article.article_max"/></td>
+              <td style="width: 20%;">
+                <a title="Edit Article" ng-click="addEditor('article', article.article_id)" class="icon-link"><i class="icon-wrench"></i></a>
+                <a popover-title="article.title" popover="article.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+                <a title="Delete Article" ng-click="deleteArticle($index)" class="icon-link"><i class="icon-remove"></i></a>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

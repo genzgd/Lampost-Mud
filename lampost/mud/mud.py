@@ -6,11 +6,9 @@ from lampost.action.emote import Emotes, Socials
 from lampost.immortal.immortal import CreatePlayer, DeletePlayer,\
     GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
     ListCommands, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
-    AllPlayers
+    AllPlayers, BuildMode, ResetRoom
 from area import Area
 from lampost.comm.chat import TellAction, ReplyAction, SayAction
-from lampost.immortal.builder import  BuildMode, ResetRoom, AddMob, DelMob, EditAreaMob, EditAlias,\
-    ItemList, CreateItem, EditAreaItem, AddItem, DelItem
 from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
@@ -31,11 +29,8 @@ class MudNature():
         self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
                            ShowInventory(), Socials(), GetAction(), DropAction()}
         self.imm_commands = CreatePlayer(), DeletePlayer(), GoToArea(), Citadel(),\
-                       RegisterDisplay(), UnregisterDisplay(), Describe(), ListCommands(),\
-                       GotoRoom(), SetHome(), GoHome(), BuildMode(),  Zap(), ResetRoom(),  AddMob(), EditAreaMob(),\
-                       DelMob(), PatchTarget(), PatchDB(), GotoPlayer(),\
-                       EditAlias(), AllPlayers(), ItemList(), CreateItem(), EditAreaItem(), AddItem(), DelItem()
-
+                       RegisterDisplay(), UnregisterDisplay(), Describe(), ListCommands(), AllPlayers(),\
+                       GotoRoom(), SetHome(), GoHome(), BuildMode(),  Zap(), ResetRoom(), PatchTarget(), PatchDB(), GotoPlayer()
         self.mud = Mud()
         Action.mud = self.mud
         self.citadel = ImmortalCitadel()

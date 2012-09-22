@@ -66,11 +66,15 @@ angular.module('lampost_edit').controller('NewRoomController', ['$scope', 'lmRem
 angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
     function ($scope, lmBus, lmRemote, lmEditor, $timeout, lmDialog) {
 
-        var roomCopy = {};
         lmBus.register("exit_added", exitAdded);
         lmBus.register("exit_deleted", exitRemoved);
         lmBus.register("room_updated", roomUpdated);
         lmBus.register("mobile_updated", mobileUpdated);
+        lmBus.register("mobile_deleted", mobileDeleted);
+        lmBus.register("article_updated", articleUpdated);
+        lmBus.register("article_deleted", articleDeleted);
+
+        var roomCopy = {};
         $scope.roomDirty = false;
         $scope.dirty = function() {
             $scope.roomDirty = true;
@@ -157,12 +161,12 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         };
 
         $scope.addNewMobile = function() {
-            lmEditor.loadMobiles(areaId).then(function(mobiles) {
+            lmEditor.loadObjects('mobile', areaId).then(function(mobiles) {
                 if (mobiles.length == 0) {
                     lmDialog.showOk("No Mobiles", "No mobiles defined for this area.");
                 } else {
-                    lmDialog.show({templateUrl:"dialogs/mobile_reset.html", controller:"MobileResetController",
-                        locals:{parentScope:$scope, roomId:$scope.roomId, mobiles:mobiles}});
+                    lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
+                        locals:{addFunc:addMobileReset, roomId:$scope.roomId, objects:mobiles, resetType:'Mobile'}});
                 }
             });
         };
@@ -170,6 +174,22 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         $scope.deleteMobile = function(mobileIx) {
             $scope.roomDirty = true;
             $scope.room.mobiles.splice(mobileIx);
+        };
+
+        $scope.addNewArticle = function() {
+            lmEditor.loadObjects('article', areaId).then(function(articles) {
+                if (articles.length == 0) {
+                    lmDialog.showOk("No Articles", "No articles defined for this area.");
+                } else {
+                    lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
+                        locals:{addFunc:addArticleReset, roomId:$scope.roomId, objects:articles, resetType:'Article'}});
+                }
+            });
+        };
+
+        $scope.deleteArticle = function(articleIx) {
+            $scope.roomDirty = true;
+            $scope.room.articles.splice(articleIx);
         };
 
         $scope.showDesc = function (extra) {
@@ -236,6 +256,41 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             });
         }
 
+        function mobileDeleted(mobileId) {
+            angular.forEach($scope.room.mobiles.slice(),  function(mobile) {
+                if (mobile.mobile_id = mobileId) {
+                    $scope.room.mobiles.splice($scope.room.mobiles.indexOf(mobile), 1);
+                }
+            });
+            angular.forEach(roomCopy.mobiles.slice(), function(mobile) {
+               if (mobile.mobile_id = mobileId) {
+                   roomCopy.mobiles.splice(roomCopy.mobiles.indexOf(mobile), 1);
+               }
+            });
+        }
+
+        function articleUpdated(newarticle) {
+            angular.forEach($scope.room.articles, function(article) {
+                if (article.article_id == newarticle.dbo_id) {
+                    article.title = newarticle.title;
+                    article.desc = newarticle.desc;
+                }
+            });
+        }
+
+        function articleDeleted(articleId) {
+            angular.forEach($scope.room.articles.slice(),  function(article) {
+                if (article.article_id = articleId) {
+                    $scope.room.articles.splice($scope.room.articles.indexOf(article), 1);
+                }
+            });
+            angular.forEach(roomCopy.articles.slice(), function(article) {
+                if (article.article_id = articleId) {
+                    roomCopy.articles.splice(roomCopy.articles.indexOf(article), 1);
+                }
+            });
+        }
+
         function updateExtras () {
             if ($scope.currentExtra && !$scope.currentExtra.title) {
                 $scope.currentExtra = null;
@@ -265,12 +320,19 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.extraDisplay = 'aliases';
         };
 
-        $scope.addMobileReset = function(reset) {
-            var newReset = {mobile_id:reset.mobile.dbo_id, mob_count:reset.count, mob_max:reset.max,
-                title:reset.mobile.title, desc:reset.mobile.desc};
+        function addMobileReset(reset) {
+            var newReset = {mobile_id:reset.object.dbo_id, mob_count:reset.count, mob_max:reset.max,
+                title:reset.object.title, desc:reset.object.desc};
             $scope.room.mobiles.push(newReset);
             $scope.dirty();
-        };
+        }
+
+        function addArticleReset(reset) {
+            var newReset = {article_id:reset.object.dbo_id, article_count:reset.count, article_max:reset.max,
+                title:reset.object.title, desc:reset.object.desc};
+            $scope.room.articles.push(newReset);
+            $scope.dirty();
+        }
 
     }]);
 
@@ -386,15 +448,16 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
     }
 ]);
 
-angular.module('lampost_edit').controller('MobileResetController', ['$scope', 'parentScope', 'roomId', 'mobiles',
-    function ($scope, parentScope, roomId, mobiles) {
+angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addFunc', 'roomId', 'objects', 'resetType',
+    function ($scope, addFunc, roomId, objects, resetType) {
 
         $scope.roomId = roomId;
-        $scope.mobiles = mobiles;
-        $scope.reset = {count:1, max:1, mobile:mobiles[0]};
+        $scope.resetType = resetType;
+        $scope.objects = objects;
+        $scope.reset = {count:1, max:1, object:objects[0]};
 
         $scope.createReset = function() {
-            parentScope.addMobileReset($scope.reset);
+            addFunc($scope.reset);
             $scope.dismiss();
         };
 

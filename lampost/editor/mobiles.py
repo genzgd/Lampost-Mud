@@ -25,7 +25,7 @@ class MobileList(Resource):
 class MobileGet(Resource):
     @request
     def render_POST(self, content, session):
-        area, mobile = get_mobile(content.mobile_id)
+        area, mobile = get_mobile(content.object_id)
         if not mobile.desc:
             mobile.desc = mobile.title
         return MobileDTO(mobile)
@@ -33,15 +33,15 @@ class MobileGet(Resource):
 class MobileUpdate(Resource):
     @request
     def render_POST(self, content, session):
-        area, mobile = get_mobile(content.mobile_id)
-        update_object(mobile, content.mobile)
+        area, mobile = get_mobile(content.object_id)
+        update_object(mobile, content.model)
         return MobileDTO(mobile)
 
 class MobileCreate(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
-        mobile = RootDTO().merge_dict(content.mobile)
+        mobile = RootDTO().merge_dict(content.object)
         check_perm(session, area)
         mobile_id = ":".join([area.dbo_id, mobile.id])
         if area.get_mobile(mobile_id):
@@ -57,7 +57,7 @@ class MobileCreate(Resource):
 class MobileDelete(Resource):
     @request
     def render_POST(self, content, session):
-        area, mobile = get_mobile(content.mobile_id, session)
+        area, mobile = get_mobile(content.object_id, session)
         mobile_resets = list(area.find_mobile_resets(mobile.dbo_id))
         if mobile_resets:
             if not content.force:

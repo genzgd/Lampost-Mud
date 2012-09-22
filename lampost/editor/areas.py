@@ -14,9 +14,9 @@ class AreaDTO(RootDTO):
         self.dbo_rev = area.dbo_rev
         self.name = area.name
         self.owner_id = area.owner_id
-        self.rooms = len(area.rooms)
-        self.items = len(area.articles)
-        self.mobiles = len(area.mobiles)
+        self.room = len(area.rooms)
+        self.article = len(area.articles)
+        self.mobile = len(area.mobiles)
         self.next_room_id = area.next_room_id
         self.can_write = can_write
 

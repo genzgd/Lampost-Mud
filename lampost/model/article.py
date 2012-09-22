@@ -56,6 +56,7 @@ class Container(Article):
 
 class ArticleTemplate(RootDBO, Template):
     dbo_key_type = "article"
+    dbo_rev = 0
     instance_class = ".".join([Article.__module__, Article.__name__]) #@UndefinedVariable
     aliases= []
 

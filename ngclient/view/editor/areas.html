@@ -12,7 +12,7 @@
                 <th class="span1">Owner</th>
                 <th class="span2">Name</th>
                 <th class="span1 cell-right">Rooms</th>
-                <th class="span1 cell-right">Items</th>
+                <th class="span1 cell-right">Articles</th>
                 <th class="span1 cell-right">Mobiles</th>
                 <th class="span1 cell-right">Next Room</th>
                 <th class="span2"></th>
@@ -24,9 +24,9 @@
                 <td class="span2" ng-click="showRooms(area)">{{area.id}}</td>
                 <td class="span1">{{area.owner_id}}</td>
                 <td class="span2 edit-cell"><input class="span12 edit-cell" type="text" ng-model="area.name"/></td>
-                <td class="span1 cell-right" ng-click="showRooms(area)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.rooms}}</td>
-                <td class="span1 cell-right">{{area.items}}</td>
-                <td class="span1 cell-right" ng-click="showMobiles(area)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.mobiles}}</td>
+                <td class="span1 cell-right" ng-click="addEditor('rooms', area.id)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.room}}</td>
+                <td class="span1 cell-right" ng-click="addEditor('articles', area.id)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.article}}</td>
+                <td class="span1 cell-right" ng-click="addEditor('mobiles', area.id)"><a class="pull-left"><i class="icon-wrench"></i></a>{{area.mobile}}</td>
                 <td class="span1 edit-cell"><input class="span12 edit-cell cell-right" type="number" ng-model="area.next_room_id"/></td>
                 <td class="span2 cell-centered" ng-include="'view/editor/editbar.html'"></td>
             </tr>

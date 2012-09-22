@@ -1,6 +1,7 @@
 from twisted.web.resource import Resource
 from lampost.context.resource import m_requires, provides, requires
 from lampost.editor.areas import AreaResource
+from lampost.editor.articles import ArticleResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.rooms import RoomResource
 
@@ -20,6 +21,7 @@ class EditorResource(Resource):
         self.putChild('area', AreaResource())
         self.putChild('room', RoomResource())
         self.putChild('mobile', MobileResource())
+        self.putChild('article', ArticleResource())
 
 
 

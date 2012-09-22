@@ -1,10 +1,10 @@
-<div ng-controller="MobilesEditorController" ng-show="ready" class="wrapper">
+<div ng-controller="ObjectListController" ng-show="ready" class="wrapper">
     <div class="span2">
         <h4>Mobiles - {{areaId}}</h4>
         <button ng-click="showNewDialog()" class="btn btn-small btn-success">New Mobile</button>
     </div>
     <div class="span6" style="height: 100%; overflow-y: auto; overflow-x: hidden">
-        <table class="table table-condensed" ng-controller="TableController" edit-list="rooms" >
+        <table class="table table-condensed">
             <thead>
             <tr>
                 <th class="span1"></th>
@@ -14,10 +14,10 @@
             </tr>
             </thead>
             <tbody>
-            <tr class="edit-row table-bordered" ng-click="editMobile(mobile)" ng-repeat="mobile in mobiles" >
+            <tr class="edit-row table-bordered" ng-click="addEditor(type, mobile.dbo_id)" ng-repeat="mobile in objects" >
                 <td class="span1">{{$index + 1}}<div class="pull-right">
-                  <a ng-click="deleteMobile($event, mobile)" title="Delete Mobile" class="icon-link"><i class="icon-remove"></i></a>
-                  <a ng-click="editMobile(mobile)" title="Edit Mobile" class="icon-link"><i class="icon-wrench"></i></a>
+                  <a ng-click="deleteObject($event, mobile)" title="Delete Mobile" class="icon-link"><i class="icon-remove"></i></a>
+                  <a title="Edit Mobile" class="icon-link"><i class="icon-wrench"></i></a>
                 </div></td>
                 <td class="span1 unselectable">{{mobile.dbo_id}}</td>
                 <td class="span2 unselectable edit-cell">{{mobile.title}}</td>
@@ -30,6 +30,9 @@
       <button ng-click="closeEditor(editor)" class="btn btn-info">Close</button>
       <div class="column-button">
         <button ng-click="addEditor('rooms', areaId)" class="btn">Rooms</button>
+      </div>
+      <div class="column-button">
+        <button ng-click="addEditor('articles', areaId)" class="btn">Articles</button>
       </div>
   </div>
 </div>

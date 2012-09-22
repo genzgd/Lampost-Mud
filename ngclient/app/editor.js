@@ -10,12 +10,24 @@ angular.module('lampost_edit').directive('editList', [function () {
     }
 }]);
 
-angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', function ($q, lmBus, lmRemote, lmDialog, $location) {
+angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil',
+    function ($q, lmBus, lmRemote, lmDialog, $location, lmUtil) {
 
     var rawId = 0;
+    var types = {
+        config:{label:"Mud Config", url:"mud"},
+        players:{label:"Players", url:"players"},
+        areas:{label:"Areas", url:"area"},
+        rooms:{label:"Rooms", url:"room", childType:'mobile'},
+        room:{label:"", url:"room", model_props:['room']},
+        mobiles:{label:"Mobiles", url:'mobile', childType:'mobile'},
+        mobile:{label:"", url:"mobile", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1}},
+        articles:{label:"Articles", url:"article", childType:'article'},
+        article:{label:"", url:"article", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1, weight: 1}}
+    };
 
     function Editor(type, parent) {
-        var eType = this.types[type];
+        var eType = types[type];
         this.label = eType.label ? eType.label : parent;
         this.label_class = parent ? "small" : "";
         this.controller = eType.controller;
@@ -27,21 +39,12 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         this.url = "editor/" + eType.url;
         this.parent = parent;
         this.type = type;
+        this.childType = eType.childType;
         this.parentClass = "editor" + rawId++ + "parent";
     }
 
-    Editor.prototype.types = {
-        config:{label:"Mud Config", url:"mud"},
-        players:{label:"Players", url:"players"},
-        areas:{label:"Areas", url:"area"},
-        rooms:{label:"Rooms", url:"room"},
-        room:{label:"", url:"room", model_props:['room']},
-        mobiles:{label:"Mobiles", url:'mobile'},
-        mobile:{label:"", url:"mobile", model_props:['mobile']}
-    };
-
-    Editor.prototype.copyFromModel = function (target) {
-        var type = this.types[this.type];
+   Editor.prototype.copyFromModel = function (target) {
+        var type = types[this.type];
         for (var i = 0; i < type.model_props.length; i++) {
             var prop = type.model_props[i];
             target[prop] = this.model[prop];
@@ -49,7 +52,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
     };
 
     Editor.prototype.copyToModel = function (source) {
-        var type = this.types[this.type];
+        var type = types[this.type];
         for (var i = 0; i < type.model_props.length; i++) {
             var prop = type.model_props[i];
             this.model[prop] = source[prop];
@@ -58,9 +61,11 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
 
     var self = this;
     var currentMap = {};
-    this.areasMaster = {};
+    var master = {};
+    var areaMaster = {};
+
+    this.areaList = [];
     this.roomsMaster = {};
-    this.mobilesMaster = {};
     this.loadStatus = "loading";
 
     lmBus.register("login", configEditors);
@@ -84,20 +89,27 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
             var bid = parseInt(b[field].split(':')[1]);
             return aid - bid;
         })
-
     }
 
     this.refreshData = function () {
         self.loadStatus = "loading";
+        master = {};
+        master.mobile = {};
+        master.item = {};
+        master.article = {};
+        self.areaList = [];
+        self.roomsMaster = {};
         var areaPromise = lmRemote.request('editor/area/list').then(function (areas) {
             angular.forEach(areas, function (value) {
-                self.areasMaster[value.id] = value;
+                areaMaster[value.id] = value;
+                self.areaList.push(value);
             })
         });
         var dirPromise = lmRemote.request('editor/room/dir_list').then(function (directions) {
             self.directions = directions;
         });
         $q.all([areaPromise, dirPromise]).then(function () {
+            lmUtil.stringSort(self.areaList, 'name');
             self.loadStatus = "loaded";
             lmBus.dispatch('editor_change');
         });
@@ -156,32 +168,32 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         });
     };
 
-    this.loadMobiles = function(areaId) {
-        var mobiles = self.mobilesMaster[areaId];
-        if (mobiles) {
+    this.loadObjects = function(type, areaId) {
+        var objects = master[type][areaId];
+        if (objects) {
             var deferred = $q.defer();
-            deferred.resolve(mobiles);
+            deferred.resolve(objects);
             return deferred.promise;
         }
-        return lmRemote.request('editor/mobile/list', {area_id:areaId}, true).then(function (mobiles) {
-            self.mobilesMaster[areaId] = mobiles;
-            idSort(mobiles, 'dbo_id');
-            return mobiles;
+        return lmRemote.request('editor/' + type + '/list', {area_id:areaId}, true).then(function (objects) {
+            master[type][areaId] = objects;
+            lmUtil.stringSort(objects, 'dbo_id');
+            return objects;
         });
     };
 
-    this.mobileAdded = function(mobile) {
-        var areaId = mobile.dbo_id.split(':')[0];
-        self.mobilesMaster[areaId].push(mobile);
-        idSort(self.mobilesMaster[areaId], 'dbo_id');
-        self.areasMaster[areaId].mobiles = self.mobilesMaster[areaId].length;
+    this.objectAdded = function(type, object) {
+        var areaId = object.dbo_id.split(':')[0];
+        master[type][areaId].push(object);
+        lmUtil.stringSort(master[type][areaId], 'dbo_id');
+        areaMaster[areaId][type] = master[type][areaId].length;
     };
 
     this.roomAdded = function(room) {
         var areaId = room.id.split(':')[0];
         self.roomsMaster[areaId].push(room);
         idSort(self.roomsMaster[areaId],  'id');
-        self.areasMaster[areaId].rooms = self.roomsMaster[areaId].length;
+        areaMaster[areaId].room = self.roomsMaster[areaId].length;
         lmBus.dispatch('area_change', areaId);
     };
 
@@ -216,23 +228,24 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
                 }
             })
         }
-        self.areasMaster[areaId].rooms = self.roomsMaster[areaId].length;
+        areaMaster[areaId].room = self.roomsMaster[areaId].length;
         self.closeEditorId('room:' + roomId);
     };
 
-    function mobileDeleted(mobileId) {
-        var areaId = mobileId.split(':')[0];
-        var mobiles = self.mobilesMaster[areaId];
-        if (mobiles) {
-            angular.forEach(mobiles.slice(), function(value, index) {
-                if (value.dbo_id == mobileId) {
-                    mobiles.splice(index, 1);
+    function objectDeleted(type, objectId) {
+        var areaId = objectId.split(':')[0];
+        var objects = master[type][areaId];
+        if (objects) {
+            angular.forEach(objects.slice(), function(object) {
+                if (object.dbo_id == objectId) {
+                    objects.splice(objects.indexOf(object), 1);
                     lmBus.dispatch('area_change', areaId);
                 }
             })
         }
-        self.areasMaster[areaId].mobiles = self.mobilesMaster[areaId].length;
-        self.closeEditorId('mobile:' + mobileId);
+        areaMaster[areaId][type] = master[type][areaId].length;
+        self.closeEditorId(type + ':' + objectId);
+        lmBus.dispatch(type + "_deleted", objectId);
     }
 
     this.deleteRoom = function (roomId) {
@@ -256,16 +269,16 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         );
     };
 
-    this.deleteMobile = function(mobileId) {
+    this.deleteObject = function(type, objectId) {
         lmDialog.showConfirm("Confirm Delete",
-            "Are you sure you want to delete " + mobileId + "?", function() {
-            lmRemote.request('editor/mobile/delete', {mobile_id:mobileId, force:false}).then(function ()
-                    {mobileDeleted(mobileId);},
+            "Are you sure you want to delete " + objectId + "?", function() {
+            lmRemote.request('editor/' + type + '/delete', {object_id:objectId, force:false}).then(function ()
+                    {objectDeleted(type, objectId);},
                 function(error) {
                     if (error.data == 'IN_USE') {
-                        lmDialog.showConfirm("Mobile in Use", "This mobile is in use.  Delete anyway?", function () {
-                            lmRemote.request('editor/mobile/delete', {mobile_id:mobileId, force:true}).then( function() {
-                                mobileDeleted(mobileId);
+                        lmDialog.showConfirm('Object in Use', 'This ' + type + ' is in use.  Delete anyway?', function () {
+                            lmRemote.request('editor/' + type + '/delete', {object_id:objectId, force:true}).then( function() {
+                                objectDeleted(type, objectId);
                             });
                         });
                     }
@@ -274,9 +287,23 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         )
     };
 
+    this.addArea = function(area) {
+        areaMaster[area.id] = area;
+        self.areaList.push(area);
+        lmUtil.stringSort(self.areaList, 'name');
+    };
+
     this.deleteArea = function(areaId) {
-        delete self.areasMaster[areaId];
+        delete areaMaster[areaId];
+        angular.forEach(master, function(value, key) {
+            delete master[key];
+        });
         delete self.roomsMaster[areaId];
+        angular.forEach(self.areaList, function(area, index) {
+           if (area.id == areaId) {
+               self.areaList.splice(index, 1);
+           }
+        });
         angular.forEach(self.editors.slice(), function(editor) {
             if (editor.parent && (editor.parent == areaId || editor.parent.split(':')[0] == areaId)) {
                 self.closeEditor(editor);
@@ -296,17 +323,21 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         lmBus.dispatch("room_updated", room);
     };
 
-    this.updateMobile = function(mobile) {
-        var areaId = mobile.dbo_id.split(':')[0];
-        var mobiles = self.mobilesMaster[areaId];
-        if (mobiles) {
-            angular.forEach(self.mobilesMaster[areaId].slice(), function(existing, index) {
-                if (existing.dbo_id == mobile.dbo_id) {
-                self.mobilesMaster[areaId][index] = mobile;
+    this.newObject = function(type) {
+        return jQuery.extend(true, {}, types[type].newObject);
+    };
+
+    this.updateObject = function(type, object) {
+        var areaId = object.dbo_id.split(':')[0];
+        var objects = master[type][areaId];
+        if (objects) {
+            angular.forEach(objects.slice(), function(existing, index) {
+                if (existing.dbo_id == object.dbo_id) {
+                    objects[index] = object;
                 }
             })
         }
-        lmBus.dispatch("mobile_updated", mobile);
+        lmBus.dispatch(type + '_updated', object);
     };
 
     this.sanitize = function (text) {
@@ -360,7 +391,7 @@ angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemot
     };
 
     $scope.revertRow = function (rowIx) {
-        $scope[self.list_id][rowIx] = jQuery.extend(true, {}, $scope[self.list_id + '_copy'][rowIx]);
+        $scope[self.list_id + "Revert"](rowIx);
     };
     $scope.deleteRow = function (rowIx) {
         $scope[self.list_id + "Delete"](rowIx);
@@ -374,12 +405,12 @@ angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemot
 angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmUtil', 'lmEditor',
     function ($scope, lmRemote, lmDialog, lmUtil, lmEditor) {
 
-        $scope.areas = [];
-        for (var areaId in lmEditor.areasMaster) {
-            $scope.areas.push(lmEditor.areasMaster[areaId]);
+        var originals = {};
+        function updateOriginal(area) {
+            originals[area.id] = jQuery.extend(true, {}, area);
         }
-        lmUtil.stringSort($scope.areas, 'name');
-        $scope.areas_copy = jQuery.extend(true, [], $scope.areas);
+        $scope.areas = lmEditor.areaList;
+        angular.forEach($scope.areas, updateOriginal);
 
         $scope.showNewDialog = function () {
             lmDialog.show({templateUrl:"dialogs/new_area.html",
@@ -387,10 +418,12 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
         };
 
         $scope.addNew = function (newArea) {
-            $scope.areas.push(newArea);
-            lmUtil.stringSort($scope.areas, 'name');
-            $scope.areas_copy.push(jQuery.extend(true, {}, newArea));
-            lmEditor.areasMaster[newArea.id] = newArea;
+            lmEditor.addArea(newArea);
+            updateOriginal(newArea);
+        };
+
+        $scope.areasRevert = function (rowIx) {
+            $scope.areas[rowIx] = jQuery.extend(true, {}, originals[$scope.areas[rowIx].id]);
         };
 
         $scope.areasDelete = function (rowIx) {
@@ -399,9 +432,8 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
                 "Are you certain you want to delete area " + area.id + "?",
                 function () {
                     lmRemote.request($scope.editor.url + "/delete", {areaId:area.id}).then(function () {
-                        $scope.areas.splice(rowIx, 1);
-                        $scope.areas_copy.splice(rowIx, 1);
                         lmEditor.deleteArea(area.id);
+                        delete originals[area.id];
                     });
                 });
         };
@@ -410,17 +442,10 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
             var area = $scope.areas[rowIx];
             lmRemote.request($scope.editor.url + "/update", {area:area}).then(function (result) {
                 $scope.areas[rowIx] = result;
-                $scope.areas_copy[rowIx] = jQuery.extend(true, {}, result);
+                lmUtil.stringSort($scope.areas, 'name');
+                updateOriginal(result);
             });
         };
-
-        $scope.showRooms = function (area) {
-            lmEditor.addEditor('rooms', area.id);
-        };
-
-        $scope.showMobiles = function(area) {
-            lmEditor.addEditor('mobiles', area.id);
-        }
 
     }]);
 

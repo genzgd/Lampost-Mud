@@ -1,23 +1,31 @@
 <div class="modal">
   <div class="modal-header">
     <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
-    <h4>Create New Mobile (Area: {{areaId}})</h4>
+    <h4>Create New Article (Area: {{areaId}})</h4>
   </div>
   <form ng-submit="createObject()">
     <div class="modal-body">
       <div class="row-fluid">
         <div class="span6">
-          <label>Mobile Id</label>
+          <label>Article Id</label>
           <input class="input-small" type="text" ng-model="newObject.id" ng-change="dirty()" required="true"/>
         </div>
         <div class="span6">
-          <label>Mobile Level</label>
+          <label>Article Level</label>
           <input class="input-small" type="number" ng-model="newObject.level" required="true" min="1"/>
         </div>
         <div class="row-fluid">
-          <label>Mobile Title</label>
-          <input type="text" ng-model="newObject.title" required="true"/>
-          <label>Mobile Description</label>
+          <div class="span6">
+            <label>Article Title</label>
+            <input type="text" ng-model="newObject.title" required="true"/>
+          </div>
+          <div class="span6">
+            <label>Article Weight</label>
+            <input class="input-small" type="number" ng-model="newObject.weight" required="true"/>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <label>Article Description</label>
           <textarea rows="8" style="width: 90%" ng-model="newObject.desc"></textarea>
 
           <div class="alert alert-error" ng-show="errorText">
@@ -29,7 +37,7 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-success">Create Mobile</button>
+      <button class="btn btn-success">Create Article</button>
       <button ng-click="dismiss()" class="btn">Cancel</button>
     </div>
   </form>

@@ -19,7 +19,8 @@ class RedisStore():
 
     def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:
-            dbo.dbo_rev = getattr(dbo, "dbo_rev", 0) + 1
+            rev = getattr(dbo, "dbo_rev", None)
+            dbo.dbo_rev = 1 if not rev else rev + 1
         dbo.before_save()
         key = dbo.dbo_key
         self.redis.set(key, dbo.json)

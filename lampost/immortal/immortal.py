@@ -275,6 +275,29 @@ class GoToArea(Action):
         return source.parse("look")
 
 
+class BuildMode(Action):
+    imm_level = IMM_LEVELS["creator"]
+
+    def __init__(self):
+        Action.__init__(self, "buildmode")
+
+    def execute(self, source, **ignored):
+        current = getattr(source, "build_mode", False)
+        source.build_mode = not current
+        return "Build Mode is {0}".format("On" if source.build_mode else "Off")
+
+
+class ResetRoom(Action):
+    def __init__(self):
+        Action.__init__(self, "reset")
+
+    def execute(self, source, args, **ignored):
+        area = Action.mud.get_area(source.env.area_id) #@UndefinedVariable
+        source.env.reset(area)
+        return "Room reset"
+
+
+
 class Citadel(GoToArea):
     def __init__(self):
         Action.__init__(self, "citadel")

@@ -20,7 +20,7 @@
       </div>
       <div ng-switch-default ng-controller="ActionController" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12">
-          <div ng-repeat="line in display" ng-style="line.style">{{line.text}}</div>
+          <div ng-repeat="line in display" ng-style="line.style" ng-bind-html-unsafe="line.text"></div>
         </div>
         <div class="telnet-input">
           <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus></textarea>

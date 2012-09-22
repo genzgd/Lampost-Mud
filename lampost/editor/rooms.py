@@ -6,6 +6,7 @@ from lampost.dto.rootdto import RootDTO
 from lampost.env.movement import Direction
 from lampost.env.room import Room, Exit
 from lampost.mobile.mobile import MobileReset
+from lampost.model.article import ArticleReset
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import DataError
 
@@ -115,6 +116,11 @@ class RoomUpdate(Resource):
             mobile_reset = MobileReset()
             load_json(mobile_reset, mobile_json)
             room.mobile_resets.append(mobile_reset)
+        room.article_resets = []
+        for article_json in content.articles:
+            article_reset = ArticleReset()
+            load_json(article_reset, article_json)
+            room.article_resets.append(article_reset)
         restore_contents(room, contents)
         return RoomDTO(area, room)
 
@@ -248,6 +254,13 @@ class MobileDTO(RootDTO):
         self.desc = mobile.desc if mobile.desc else mobile.title
         self.title = mobile.title
 
+class ArticleDTO(RootDTO):
+    def __init__(self, area, article_reset):
+        self.merge_dict(article_reset.json_obj)
+        article = area.get_article(article_reset.article_id)
+        self.desc = article.desc if article.desc else article.title
+        self.title = article.title
+
 class RoomDTO(RootDTO):
     def __init__(self, area, room):
         self.id = room.dbo_id
@@ -257,6 +270,7 @@ class RoomDTO(RootDTO):
         self.extras = [extra.json_obj for extra in room.extras]
         self.exits = [ExitDTO(exit) for exit in room.exits]
         self.mobiles = [MobileDTO(area, mobile_reset) for mobile_reset in room.mobile_resets]
+        self.articles = [ArticleDTO(area, article_reset) for article_reset in room.article_resets]
 
 
 
