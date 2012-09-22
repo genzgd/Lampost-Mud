@@ -148,6 +148,10 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         }
     };
 
+    this.getArea = function(areaId) {
+        return areaMaster[areaId];
+    };
+
     this.visitRoom = function (roomId) {
         lmRemote.request('editor/room/visit', {room_id:roomId}).then(function () {
             $location.path('game');

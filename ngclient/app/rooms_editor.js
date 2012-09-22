@@ -20,13 +20,13 @@ angular.module('lampost_edit').controller('RoomsEditorController', ['$scope', 'l
         };
 
         $scope.showNewDialog = function () {
-            var area = lmEditor.areasMaster[$scope.areaId];
+            var area = lmEditor.getArea($scope.areaId);
             lmDialog.show({templateUrl:"dialogs/new_room.html", controller:"NewRoomController",
                 locals:{parentScope:$scope, nextRoomId:area.next_room_id}});
         };
 
         $scope.roomCreated = function (roomData) {
-            var area = lmEditor.areasMaster[$scope.areaId];
+            var area = lmEditor.getArea($scope.areaId);
             area.next_room_id = roomData.next_room_id;
             lmEditor.roomAdded(roomData.room);
             $scope.editRoom(roomData.room);
@@ -352,8 +352,8 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
         $scope.direction = $scope.directions[0];
         $scope.useNew = "new";
         $scope.areaList = [];
-        angular.forEach(lmEditor.areasMaster, function (value, key) {
-            $scope.areaList.push(key);
+        angular.forEach(lmEditor.areaList, function (value) {
+            $scope.areaList.push(value.id);
             $scope.areaList.sort();
         });
 
@@ -414,7 +414,7 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
         }
 
         function loadArea() {
-            area = lmEditor.areasMaster[$scope.destAreaId];
+            area = lmEditor.getArea($scope.destAreaId);
             lmEditor.loadRooms($scope.destAreaId).then(function(rooms) {
                 roomList = rooms;
                 roomTitles = {};
@@ -439,8 +439,8 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
                     lmEditor.roomAdded(result.new_room)
                 }
                 $scope.dismiss();
-            }, function (error, status) {
-                if (status == 410) {
+            }, function (error) {
+                if (error.status == 410) {
                     $scope.lastError = error.data;
                 }
             })
