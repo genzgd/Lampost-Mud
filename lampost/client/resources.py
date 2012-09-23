@@ -9,7 +9,7 @@ from lampost.dto.link import *
 from lampost.dto.rootdto import RootDTO
 from lampost.util.lmlog import logged
 from lampost.context.resource import provides, m_requires
-from lampost.util.lmutil import PermError, DataError
+from lampost.util.lmutil import PermError, DataError, StateError
 
 __author__ = 'Geoff'
 
@@ -28,13 +28,16 @@ def request(func):
         try:
             if getattr(self, 'Raw', False):
                 return func(self, request, session)
-            result = func(self, content, session)
+            result = func(self, content=content, session=session)
         except PermError:
             request.setResponseCode(403)
             return "Permission Denied."
         except DataError as de:
             request.setResponseCode(410)
             return str(de.message)
+        except StateError as se:
+            request.setResponseCode(400)
+            return str(se.message)
         if result is None:
             return "OK"
         try:

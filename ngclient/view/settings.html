@@ -8,57 +8,63 @@
       </ul>
     </div>
     <div class="span8" ng-switch="headingId">
-      <form ng-controller="AccountFormController" name="accountForm"
-          ng-submit="submitAccount()" ng-switch-when="account" class="well span6 form-horizontal form-padding">
-        <div class="control-group">
-          <label class="control-label">Account Name</label>
+      <div class="row-fluid" ng-switch-when="account">
+        <div class="span6">
+          <form ng-controller="AccountFormController" name="accountForm" ng-submit="submitAccount()"  class="well span12 form-horizontal">
+            <div class="control-group">
+              <label class="control-label">Account Name</label>
 
-          <div class="controls">
-            <input class="span8" name="name" ng-change="inUse = false"
-                type="text" ng-model="user.user_name" ng-minlength="2" ng-maxlength="20" required/>
+              <div class="controls">
+                <input class="span8" name="name" ng-change="inUse = false"
+                    type="text" ng-model="user.user_name" ng-minlength="2" ng-maxlength="20" required/>
 
-            <div class="alert alert-error" ng-show="inUse">
-              <button type="button" class="close" ng-click="inUse = false">×</button>
-              Account name in use
-            </div>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <label class="control-label">Email Address</label>
-
-          <div class="controls">
-            <input class="span10" type="text" ng-model="user.email" name="email"/>
-          </div>
-        </div>
-        <div class="control-group">
-          <label class="control-label">New Password</label>
-
-          <div class="controls">
-            <input class="span6" type="password" ng-minlength="4" ng-maxlength="20" ng-model="user.password"/>
-          </div>
-        </div>
-
-        <div class="control-group">
-          <label class="control-label">Confirm Password</label>
-
-          <div class="controls">
-            <input class="span6" type="password" ng-minlength="4" ng-maxlength="20" ng-model="user.confirm"/>
-            <button class="btn btn-primary" type="submit">Update Account</button>
-            <div class="alert alert-error" ng-show="passwordMismatch">
-              <button type="button" class="close" ng-click="passwordMismatch = false">×</button>
-              Passwords do not match
+                <div class="alert alert-error" ng-show="inUse">
+                  <button type="button" class="close" ng-click="inUse = false">×</button>
+                  Account name in use
+                </div>
+              </div>
             </div>
 
-          </div>
-        </div>
+            <div class="control-group">
+              <label class="control-label">Email Address</label>
 
-        <div class="alert alert-success" ng-show="showSuccess">
-          <button type="button" class="close" ng-click="showSuccess = false">×</button>
-          Your account has been updated
-        </div>
+              <div class="controls">
+                <input class="span10" type="text" ng-model="user.email" name="email"/>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">New Password</label>
 
-      </form>
+              <div class="controls">
+                <input class="span6" type="password" ng-minlength="4" ng-maxlength="20" ng-model="user.password"/>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label">Confirm Password</label>
+
+              <div class="controls">
+                <input class="span6" type="password" ng-minlength="4" ng-maxlength="20" ng-model="user.confirm"/>
+                <button class="btn btn-primary" type="submit">Update Account</button>
+                <div class="alert alert-error" ng-show="passwordMismatch">
+                  <button type="button" class="close" ng-click="passwordMismatch = false">×</button>
+                  Passwords do not match
+                </div>
+
+              </div>
+            </div>
+
+            <div class="alert alert-success" ng-show="showSuccess">
+              <button type="button" class="close" ng-click="showSuccess = false">×</button>
+              Your account has been updated
+            </div>
+
+          </form>
+        </div>
+        <div class="span2">
+          <button ng-click="deleteAccount()" class="btn btn-danger">Delete My Account</button>
+        </div>
+      </div>
 
       <div ng-switch-when="colors">
         <form class="form-horizontal">

@@ -1,6 +1,27 @@
-<div class="span6 pagination-centered">
-  <h3>Zeee first header</h3>
-</div>
-<div class="span6 pagination-right" style="background: #0044cc">
-  <h3>Zeee second header</h3>
+<div class="container_fluid" ng-controller="MudConfigController" ng-show="ready">
+  <div class="row-fluid">
+    <form >
+      <div class="span4">
+        <label>Mud Title</label>
+        <input class="span10" type="text" ng-model="config.title" required="true"/>
+        <label>Mud Description</label>
+        <textarea class="span10" rows="10"  ng-model="config.description" required="true"></textarea>
+      </div>
+      <div class="span3">
+        <label>Start Area</label>
+        <select class="span10" ng-change="changeArea()" ng-model="startAreaId" ng-options="areaId for areaId in areaList" required="true">
+        </select>
+        <label>Start Room</label>
+        <select class="span10" ng-change="changeRoom()" ng-model="startRoom" ng-options="room.label for room in rooms" required="true">
+        </select>
+        <label>Next User Id</label>
+        <input class="span4 pagination-right" type="number" ng-model="config.next_user_id" required="true"/>
+      </div>
+    </form>
+  </div>
+  <div class="row-fluid">
+    <button  ng-click="updateConfig()" class="btn btn-primary">Update</button>
+    <button n ng-click="revertConfig()" class="btn">Revert</button>
+
+  </div>
 </div>

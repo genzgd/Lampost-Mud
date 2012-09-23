@@ -1,4 +1,5 @@
-function SettingsController($scope) {
+angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote', 'lmDialog',
+    function ($scope, lmRemote, lmDialog) {
 
     $scope.headings = [{id:"account", label:"Account", class:"active"}];
        // {id:"colors", label:"Colors", class:""}];
@@ -10,11 +11,20 @@ function SettingsController($scope) {
             heading.class = headingId == heading.id ? "active" : "";
         }
     };
-}
-SettingsController.$inject = ['$scope'];
 
+    $scope.deleteAccount = function() {
+        lmDialog.showPrompt({title:"Confirm Account Deletion", prompt:"Account Password: ", password:true,
+                submit:function(password) {
+                    lmRemote.request("settings/delete_account", {password:password}).then(function() {
+                        lmDialog.showOk("Account Deleted", "Your account has been deleted");
+                    });
+            }
+        });
+    };
+}]);
 
-function AccountFormController($scope, $timeout, lmData, lmRemote) {
+angular.module('lampost').controller('AccountFormController', ['$scope', '$timeout', 'lmData', 'lmRemote',
+    function ($scope, $timeout, lmData, lmRemote) {
     $scope.inUse = false;
     $scope.passwordMismatch = false;
 
@@ -55,6 +65,5 @@ function AccountFormController($scope, $timeout, lmData, lmRemote) {
 
 
 
-}
-AccountFormController.$inject = ['$scope', '$timeout', 'lmData', 'lmRemote'];
+}]);
 

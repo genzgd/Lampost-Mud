@@ -63,6 +63,8 @@ class UserManager(object):
     def attach_user(self, player, user_name=None, password="password", email="email"):
         player.user_id = str(self.config.next_user_id)
         self.config.next_user_id += 1
+        while object_exists('user', self.config.next_user_id):
+            self.config.next_user_id += 1
         user = User(player.user_id)
         user.user_name = user_name if user_name else player.name
         user.password = password

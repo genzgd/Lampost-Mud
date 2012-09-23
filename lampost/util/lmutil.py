@@ -38,6 +38,10 @@ class DataError(Exception):
     def __init__(self, message):
         self.message = message
 
+class StateError(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class PatchError(Exception):
     def __init__(self, message):
         self.message = message

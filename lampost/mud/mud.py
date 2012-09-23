@@ -106,6 +106,7 @@ class Mud():
 
     def init_player(self, player):
         player.flavor = self.flavor.flavor
+        player.room_id = self.config.start_room
         self.flavor.init_player(player)
 
     def enhance_player(self, player):

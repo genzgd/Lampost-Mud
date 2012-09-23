@@ -15,7 +15,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
 
     var rawId = 0;
     var types = {
-        config:{label:"Mud Config", url:"mud"},
+        config:{label:"Mud Config", url:"config"},
         players:{label:"Players", url:"player"},
         areas:{label:"Areas", url:"area"},
         rooms:{label:"Rooms", url:"room", childType:'mobile'},
@@ -475,6 +475,71 @@ angular.module('lampost_edit').controller('NewAreaController', ['$scope', 'lmRem
     }]);
 
 
-angular.module('lampost_edit').controller('MudConfigController', ['$scope', function ($scope) {
-    $scope.data = '';
+angular.module('lampost_edit').controller('MudConfigController', ['$rootScope', '$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
+    function ($rootScope, $scope, lmBus, lmRemote, lmEditor, $timeout) {
+
+    var configCopy;
+    $scope.ready = false;
+    $scope.areaList = [];
+    angular.forEach(lmEditor.areaList, function (value) {
+        $scope.areaList.push(value.id);
+        $scope.areaList.sort();
+    });
+    if (lmEditor.currentEditor == $scope.editor) {
+        loadConfig();
+    }
+
+    $scope.changeArea = function() {
+        lmEditor.loadRooms($scope.startAreaId).then(function(rooms) {
+            $scope.rooms = [];
+            $scope.startRoom = null;
+            angular.forEach(rooms, function(room) {
+                var roomStub = {id:room.id, label:room.id.split(':')[1] + ': ' + room.title};
+                $scope.rooms.push(roomStub);
+                if (roomStub.id == $scope.config.start_room) {
+                    $scope.startRoom = roomStub;
+                }
+            });
+            if (!$scope.startRoom) {
+                $scope.startRoom = $scope.rooms[0];
+            }
+            $scope.ready = true;
+        });
+    };
+    lmBus.register("editor_activated", function(editor) {
+        if (editor == $scope.editor) {
+            loadConfig();
+        }
+    });
+
+    $scope.updateConfig = function() {
+        $scope.config.start_room = $scope.startRoom.id;
+        lmRemote.request($scope.editor.url + "/update", {config:$scope.config}).then(function(config) {
+            prepare(config);
+            lampost_config.title = config.title;
+            lampost_config.description = config.description;
+            $timeout(function() {
+                $rootScope.siteTitle = config.title;
+            });
+            $('title').text(lampost_config.title);
+        });
+    };
+
+    $scope.revertConfig = function() {
+        $scope.config = configCopy;
+        $scope.startAreaId = $scope.config.start_room.split(':')[0];
+        $scope.changeArea();
+    };
+
+    function loadConfig() {
+        lmRemote.request($scope.editor.url + "/get").then(prepare);
+    }
+
+    function prepare(config) {
+        configCopy = jQuery.extend(true, {}, config);
+        $scope.config = config;
+        $scope.startAreaId = config.start_room.split(':')[0];
+        $scope.changeArea();
+    }
+
 }]);

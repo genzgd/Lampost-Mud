@@ -3,9 +3,7 @@ from lampost.client.resources import request
 from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
 from lampost.player.player import Player
-from lampost.util.lmutil import DataError
-
-__author__ = 'Geoff'
+from lampost.util.lmutil import DataError, StateError
 
 m_requires('datastore', 'user_manager', 'perm', __name__)
 
@@ -15,6 +13,7 @@ class SettingsResource(Resource):
         self.putChild('get', SettingsGet())
         self.putChild("create_account", AccountCreate())
         self.putChild('update_account', AccountUpdate())
+        self.putChild('delete_account', AccountDelete())
 
 class SettingsGet(Resource):
     @request
@@ -65,4 +64,19 @@ class AccountUpdate(Resource):
             delete_index("user_name_index", old_user.user_name.lower())
         set_index("user_name_index", user.user_name.lower(), user_id)
         return "success"
+
+@requires('sm')
+class AccountDelete(Resource):
+    @request
+    def render_POST(self, content, session):
+        player = session.player
+        user = load_object(User, player.user_id)
+        if not user:
+            raise StateError("User missing")
+        if content.password != user.password:
+            raise StateError("Incorrect password.")
+        response = self.sm.logout(session)
+        user_manager.delete_player(user, player)
+        return response
+
 

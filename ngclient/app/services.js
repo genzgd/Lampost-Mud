@@ -467,6 +467,25 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             controller:AlertController, noEscape:true});
     };
 
+    this.showPrompt = function(args) {
+        var scope = $rootScope.$new();
+        var submitButton = {label:'Submit', dismiss:true, class:"btn-primary", click:doSubmit};
+        var cancelButton = {label:'Cancel', dismiss:true};
+
+        scope.buttons = [submitButton,  cancelButton];
+        scope.title = args.title;
+        var type = args.password ? "password": "text";
+        scope.body = '<label>' + args.prompt + '</label><input id="prompt-dialog-input" type="' + type +
+            '" autofocus />';
+
+        showDialog({templateUrl:'dialogs/alert.html', scope:scope,
+            controller:AlertController, noEscape:true});
+
+        function doSubmit() {
+            args.submit.call(scope, $('#prompt-dialog-input').val());
+        }
+    };
+
     lmBus.register("show_dialog", onShowDialog);
 
     function AlertController($scope, dialog) {
