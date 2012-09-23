@@ -69,16 +69,6 @@ class LinkResource(Resource):
         session.attach(request)
         return NOT_DONE_YET
 
-class DialogResource(Resource):
-    @request
-    def render_POST(self, content, session):
-        feedback = session.dialog_response(content)
-        if not feedback:
-            return RootDTO(silent=True)
-        if getattr(feedback, "json", None):
-            return feedback
-        return Display(feedback)
-
 class ActionResource(Resource):
     @request
     def render_POST(self, content, session):

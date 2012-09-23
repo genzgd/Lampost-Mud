@@ -298,12 +298,11 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
 }]);
 
 
-angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache',
-    '$timeout',  '$http', 'lmBus', function($rootScope, $compile, $controller, $templateCache,
-                                   $timeout, $http, lmBus) {
+angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout',  '$http',
+    function($rootScope, $compile, $controller, $templateCache, $timeout, $http) {
+
     var dialogMap = {};
     var nextId = 0;
-    var self = this;
     var prevElement;
     var enabledElements;
     var enabledLinks;
@@ -420,15 +419,6 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         }
     }
 
-    function onShowDialog(args) {
-        if (args.dialog_type == 1) {
-            $rootScope.$apply(
-                self.showOk(args.dialog_title, args.dialog_msg));
-        } else if (args.dialog_type == 0) {
-            $rootScope.$apply(
-                self.showConfirm(args.dialog_title, args.dialog_msg));
-        }
-    }
 
     this.show = function (args) {
         return showDialog(args);
@@ -485,8 +475,6 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             args.submit.call(scope, $('#prompt-dialog-input').val());
         }
     };
-
-    lmBus.register("show_dialog", onShowDialog);
 
     function AlertController($scope, dialog) {
         $scope.click = function (button) {

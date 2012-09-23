@@ -6,7 +6,6 @@ from lampost.dto.link import LinkCancel, LinkGood
 from lampost.dto.rootdto import RootDTO
 from os import urandom
 from base64 import b64encode
-from dialog import DIALOG_TYPE_OK, Dialog, DialogDTO
 
 LINK_DEAD_INTERVAL = timedelta(seconds=15)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
@@ -63,10 +62,7 @@ class SessionManager():
             old_session.player = None
             old_session.user_id = 0
             del self.player_session_map[player.dbo_id]
-            kill_message = RootDTO(logout="logout")
-            kill_dialog = Dialog(DIALOG_TYPE_OK, player.name + " logged in from another location", "Logged Out")
-            kill_message.merge(DialogDTO(kill_dialog))
-            old_session.append(kill_message)
+            old_session.append(RootDTO(logout="other_location"))
         else:
             player.last_login = int(time.time())
             if not player.created:
@@ -136,7 +132,6 @@ class UserSession():
         self.ld_time = None
         self.request = None
         self.pulse_reg = None
-        self.dialog = None
         self.user = None
 
     def login(self, player, user):
@@ -181,15 +176,6 @@ class UserSession():
         display = Display()
         display.append(display_line)
         self.append(display)
-
-    def dialog_response(self, data):
-        dialog = self.dialog
-        if not dialog:
-            return Display("Dialog Error", 0xff0000)
-        self.dialog = None
-        dialog.data = data
-        dialog.player = self.player
-        return dialog.callback(dialog)
 
     def push_output(self):
         if self.request:

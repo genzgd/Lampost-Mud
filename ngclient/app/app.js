@@ -26,8 +26,8 @@ angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmD
     }]);
 
 
-angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil',
-    function ($rootScope, $scope, $location, lmBus, lmData, lmUtil) {
+angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil', 'lmDialog',
+    function ($rootScope, $scope, $location, lmBus, lmData, lmUtil, lmDialog) {
 
         $(window).on("resize", function () {
             $rootScope.$apply(resize);
@@ -94,7 +94,13 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
             $scope.loggedIn = true;
         }, $scope);
 
-        lmBus.register("logout", validatePath, $scope);
+        lmBus.register("logout", function(reason) {
+            if (reason == "other_location") {
+                var player = lmData.player ? lmData.player.name : "Unknown";
+                lmDialog.showOk("Logged Out", player + " logged in from another location.");
+            }
+            validatePath();
+        }, $scope, -500);
     }]);
 
 

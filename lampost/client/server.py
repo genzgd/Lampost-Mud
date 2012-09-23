@@ -18,7 +18,6 @@ URL_WEB_CLIENT = "ngclient"
 URL_LOGIN = "login"
 URL_ACTION = "action"
 URL_LINK = "link"
-URL_DIALOG = "dialog"
 URL_CONNECT = "connect"
 URL_GENERATED = "lsp"
 URL_EDITOR = "editor"
@@ -36,7 +35,6 @@ class WebServer(Resource):
         self.putChild(URL_LINK, LinkResource())
         self.putChild(URL_ACTION, ActionResource())
         self.putChild(URL_CONNECT, ConnectResource())
-        self.putChild(URL_DIALOG, DialogResource())
         self.putChild(URL_GENERATED, GeneratedResource())
         self.putChild(URL_EDITOR, EditorResource())
         self.putChild(URL_SETTINGS, SettingsResource())

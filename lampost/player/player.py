@@ -55,11 +55,6 @@ class Player(Creature, RootDBO):
                 feedback.merge(Display)
             else:
                 feedback = display
-        try:
-            if response.dialog:
-                self.session.dialog = response.dialog
-        except AttributeError:
-            pass
         return feedback
 
     def display_channel(self, message):

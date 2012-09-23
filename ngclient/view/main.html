@@ -13,7 +13,7 @@
         </div>
         <div class="row-fluid">
           <div class="span6">
-            <p>{{siteDescription}}</p>
+            <p ng-bind-html-unsafe="siteDescription"></p>
           </div>
           <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
             <label>Player or Account Name:</label>

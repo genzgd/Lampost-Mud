@@ -1,10 +1,8 @@
 from lampost.context.resource import provides, requires
 from lampost.datastore.dbo import RootDBO
 
-__author__ = "Geoff"
-
 @provides('config')
-@requires('lsp')
+@requires('lsp', 'encode')
 class Config(RootDBO):
     dbo_key_type = "config"
     dbo_fields = ('title', 'description', 'start_room', 'next_user_id')
@@ -17,7 +15,13 @@ class Config(RootDBO):
         self.dbo_id = dbo_id
 
     def on_loaded(self):
-        self.lsp.add_js("config.js", "var lampost_config = {{title:'{0}', description:'{1}'}};".format(self.title, self.description))
+        title = self.title.replace('"', '\\\"')
+        title = title.replace("'", "\\'")
+        title = title.replace("\n", "")
+        description = self.description.replace('"', '\\\"')
+        description = description.replace("'", "\\'")
+        description = description.replace("\n", "")
+        self.lsp.add_js("config.js", "var lampost_config = {{title:'{0}', description:'{1}'}};".format(title, description))
 
 
 
