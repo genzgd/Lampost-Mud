@@ -3,10 +3,9 @@ from lampost.context.resource import provides, requires, m_requires
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
 from lampost.action.emote import Emotes, Socials
-from lampost.immortal.immortal import CreatePlayer, DeletePlayer,\
-    GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
+from lampost.immortal.immortal import GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
     ListCommands, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
-    AllPlayers, BuildMode, ResetRoom
+    BuildMode, ResetRoom
 from area import Area
 from lampost.comm.chat import TellAction, ReplyAction, SayAction
 from lampost.merc.flavor import MercFlavor
@@ -17,7 +16,7 @@ from lampost.model.article import Article, ArticleTemplate
 
 m_requires('log', __name__)
 
-@requires('sm')
+@requires('sm', 'datastore')
 @provides('nature')
 class MudNature():
 
@@ -28,8 +27,7 @@ class MudNature():
         look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
         self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
                            ShowInventory(), Socials(), GetAction(), DropAction()}
-        self.imm_commands = CreatePlayer(), DeletePlayer(), GoToArea(), Citadel(),\
-                       RegisterDisplay(), UnregisterDisplay(), Describe(), ListCommands(), AllPlayers(),\
+        self.imm_commands = GoToArea(), Citadel(), RegisterDisplay(), UnregisterDisplay(), Describe(), ListCommands(),\
                        GotoRoom(), SetHome(), GoHome(), BuildMode(),  Zap(), ResetRoom(), PatchTarget(), PatchDB(), GotoPlayer()
         self.mud = Mud()
         Action.mud = self.mud
@@ -40,20 +38,19 @@ class MudNature():
 
     def editors(self, player):
         editors = []
-        if player.imm_level >= IMM_LEVELS['admin']:
-            editors.append('areas')
         if player.imm_level >= IMM_LEVELS['supreme']:
             editors.append('config')
-        #    editors.append('users')
-        #if player.imm_level >= IMM_LEVELS['admin']:
-        #    editors.append('players')
-        #    editors.append('socials')
-        #if player.imm_level >= IMM_LEVELS['creator']:
+
+        if player.imm_level >= IMM_LEVELS['admin']:
+            editors.append('areas')
+            editors.append('players')
+
         return editors
 
     def baptise(self, player):
-        if not getattr(player, "mudflavor", None):
+        if not getattr(player, "flavor", None):
             self.mud.init_player(player)
+            self.datastore.save_object(player)
 
         new_soul = self.basic_soul.copy()
         for cmd in self.imm_commands:

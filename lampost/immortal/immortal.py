@@ -1,9 +1,7 @@
 from lampost.action.action import Action
-from lampost.client.dialog import Dialog, DIALOG_TYPE_CONFIRM
 from lampost.comm.broadcast import SingleBroadcast
 from lampost.context.resource import requires
 from lampost.dto.display import Display, DisplayLine
-from lampost.dto.rootdto import RootDTO
 from lampost.player.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
@@ -18,15 +16,6 @@ class ListCommands(Action):
         soul_actions = [action for action in source.soul if action.imm_level]
         verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in soul_actions]
         return ", ".join(sorted(verb_lists))
-
-class AllPlayers(Action):
-    def __init__(self):
-        Action.__init__(self, "allplayers")
-        self.imm_level = IMM_LEVELS["admin"]
-
-    def execute(self, **ignored):
-        player_keys = self.datastore.fetch_set_keys("players")
-        return " ".join([player.split(":")[1] for player in player_keys])
 
 @requires('sm')
 class GotoPlayer(Action):
@@ -46,7 +35,7 @@ class GotoPlayer(Action):
 class PatchTarget(Action):
     def __init__(self):
         Action.__init__(self, "patch")
-        self.imm_level = IMM_LEVELS["admin"]
+        self.imm_level = IMM_LEVELS["supreme"]
 
     def execute(self, source, verb, args, command, **ignored):
         try:
@@ -80,7 +69,7 @@ class PatchTarget(Action):
 class PatchDB(Action):
     def __init__(self):
         Action.__init__(self, "patchdb")
-        self.imm_level = IMM_LEVELS["admin"]
+        self.imm_level = IMM_LEVELS["supreme"]
 
     def execute(self, source, verb, args, command, **ignored):
         if len(args) == 0:
@@ -164,33 +153,6 @@ class GoHome(GotoRoom):
         return goto_room(source, source.home_room)
 
 
-class CreatePlayer(Action):
-    def __init__(self):
-        Action.__init__(self, "create player")
-        self.imm_level = IMM_LEVELS["creator"]
-
-    def execute(self, source, args, **ignored):
-        if not len(args):
-            return "Name not specified"
-
-        if self.load_object(Player, args[0]):
-            return "That player already exists"
-        player = Player(args[0])
-        if len(args) > 1:
-            imm_level = IMM_LEVELS.get(args[1])
-            if not imm_level:
-                return "Invalid Immortal Level"
-            title = args[1]
-            if imm_level >= source.imm_level:
-                return "Cannot create player with a higher level or the same level as yourself"
-            player.imm_level = imm_level
-        else:
-            title = "player"
-
-        self.save_object(player)
-        return title + " " + player.name + " created."
-
-
 class RegisterDisplay(Action):
     def __init__(self):
         Action.__init__(self, "register display")
@@ -209,35 +171,6 @@ class UnregisterDisplay(Action):
 
     def execute(self, source, args, **ignored):
         source.unregister_type(args[0], source.display_line)
-
-@requires('sm')
-class DeletePlayer(Action):
-    def __init__(self):
-        Action.__init__(self, "delete player")
-        self.imm_level = IMM_LEVELS["creator"]
-
-    def execute(self, source, args, **ignored):
-        if not args:
-            return "Player name not specified"
-        player_id = args[0].lower()
-        if self.sm.user_session(player_id): #@UndefinedVariable
-            return "Player " + player_id + " logged in, cannot delete."
-        todie = self.load_object(Player, player_id)
-        if todie:
-            if todie.imm_level >= source.imm_level:
-                return "Cannot delete player of same or lower level."
-            confirm_dialog = Dialog(DIALOG_TYPE_CONFIRM, "Are you sure you want to permanently remove " + todie.name, "Confirm Delete", self.finish_delete)
-            confirm_dialog.player_id = player_id
-            return confirm_dialog
-        return "Player " + player_id + " does not exist."
-
-    def finish_delete(self, dialog):
-        if dialog.data["response"] == "no":
-            return RootDTO(silent=True)
-        todie = self.load_object(Player, dialog.player_id)
-        if todie:
-            self.delete_object(todie)
-            return Display(dialog.player_id + " deleted.")
 
 
 class Describe(Action):

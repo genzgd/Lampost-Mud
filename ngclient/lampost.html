@@ -14,17 +14,21 @@
 <div ng-controller="NavController" id="lm-navbar" class="navbar navbar-inverse">
   <div class="navbar-inner">
     <a class="brand">{{siteTitle}}</a>
+
     <ul class="nav">
       <li ng-repeat="link in links | orderBy:'priority'" ng-class="link.class()">
         <a ng-click="changeLocation(link.name)">{{link.label}} <i ng-class="link.iconClass()"></i></a>
       </li>
     </ul>
     <div class="pull-right">
-        <div>{{welcome}}</div>
-        <div class="pagination-right">
-          <a class="pagination-right" id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>
-        </div>
+      <a id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>
+
+    </div>
+    <div class="pagination-right" style="position: absolute; right: 250px; display:inline-block">
+        <div style="color: white;">{{welcome}}</div>
+        <label style="cursor: pointer;" ng-show="loggedIn" ng-click="logout()">Log Out</label>
      </div>
+
   </div>
 </div>
 <div ng-view ng-style="gameHeight"></div>
@@ -37,6 +41,7 @@
 <script src="app/settings.js"></script>
 <script src="app/rooms_editor.js"></script>
 <script src="app/object_editor.js"></script>
+<script src="app/player_editor.js"></script>
 <script src="/lsp/config.js"></script>
 </body>
 </html>

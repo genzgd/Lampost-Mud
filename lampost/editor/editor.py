@@ -1,19 +1,9 @@
 from twisted.web.resource import Resource
-from lampost.context.resource import m_requires, provides, requires
 from lampost.editor.areas import AreaResource
 from lampost.editor.articles import ArticleResource
 from lampost.editor.mobiles import MobileResource
+from lampost.editor.players import PlayerResource
 from lampost.editor.rooms import RoomResource
-
-__author__ = 'Geoff'
-
-m_requires('datastore', 'encode', 'log', __name__)
-
-@provides('editor')
-@requires('nature')
-class Editor(object):
-    pass
-
 
 class EditorResource(Resource):
     def __init__(self):
@@ -22,6 +12,7 @@ class EditorResource(Resource):
         self.putChild('room', RoomResource())
         self.putChild('mobile', MobileResource())
         self.putChild('article', ArticleResource())
+        self.putChild('player', PlayerResource())
 
 
 

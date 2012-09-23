@@ -1,1 +1,31 @@
-<h1>players</h1>
+<div ng-controller="PlayersEditorController" ng-show="ready" class="wrapper">
+  <div class="span2">
+    <h4>Players {{players.length}}</h4>
+  </div>
+  <div class="span8 scrollable">
+    <table class="table table-condensed" ng-controller="TableController" edit-list="rooms" >
+      <thead>
+      <tr>
+        <th class="span1"></th>
+        <th class="span2">Name</th>
+        <th class="span2">User</th>
+        <th class="span1">Imm Level</th>
+        <th class="span1 cell-right">Level</th>
+        <th class="span1 cell-right">Logged In</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="edit-row table-bordered" ng-repeat="player in players">
+        <td class="span1">{{$index + 1}}<div class="pull-right">
+          <a ng-click="deletePlayer($index)" title="Delete Player" class="icon-link"><i class="icon-remove"></i></a>
+        </div></td>
+        <td class="span2 unselectable">{{player.id}}</td>
+        <td class="span2 unselectable">{{player.user_id}}</td>
+        <td class="span2 unselectable">{{player.imm_level}}</td>
+        <td class="span1 unselectable cell-right">{{player.level}}</td>
+        <td class="span1 unselectable cell-right">{{player.logged_in}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

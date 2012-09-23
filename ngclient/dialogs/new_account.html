@@ -1,0 +1,46 @@
+<div class="modal">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+    <h4>Create New Account</h4>
+  </div>
+  <form ng-submit="createAccount()" >
+    <div class="modal-body">
+
+      <div class="row-fluid">
+        <div class="span5">
+          <label>Account Name</label>
+          <input class="span11" type="text" ng-model="accountName" ng-change="accountChange()" required/>
+          <label>Player Name</label>
+          <input class="span11" type="text" ng-model="playerName" required/>
+          <div style="margin-top: 16px">
+            <label>Email</label>
+            <input class="span11" type="text" ng-model="email" name="email"/>
+          </div>
+          <label>Account Password</label>
+          <input class="span11" type="password" ng-model="password" required/>
+          <label>Confirm Password</label>
+          <input class="span11" type="password" ng-model="passwordCopy" required/>
+        </div>
+        <div class="span7">
+           <p><small>The name associated with your account. Once you reach a certain level, multiple players may be associated with your account.</small></p>
+          <p><small>Your first player's name. This is the name other players will know you by in the game. No spaces are permitted.
+            Use common sense. Players with inappropriate names will be deleted.
+          </small></p>
+          <p><small>Your email is not required, but it can be helpful to give the admins a way to contact you.</small></p>
+          <p><small>We're not picky about passwords (yet).  Be lazy at your own risk.</small></p>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="alert alert-error" ng-show="errorText">
+          <button type="button" class="close" ng-click="errorText = null">×</button>
+          {{errorText}}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-success">Create Account</button>
+      <button ng-click="dismiss()" class="btn">Cancel</button>
+    </div>
+  </form>
+</div>

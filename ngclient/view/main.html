@@ -1,22 +1,33 @@
 <div class="container-fluid" ng-style="gameHeight">
   <div class="row-fluid main-display">
     <div ng-switch="actionPane" class="span6 v-full">
-      <div class="row-fluid" ng-switch-when="login" ng-controller="LoginController">
-        <div class="span6">
-          <h4>Welcome to {{siteTitle}}</h4>
-          <p>{{siteDescription}}</p>
-        </div>
-        <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
-          <label>Player or Account Name:</label>
-          <input class="span11" type="text" ng-change="loginError = false" ng-model="userId" pref-focus required/>
-          <label>Account Password:</label>
-          <input class="span11" type="password" ng-change="loginError = false" ng-model="password" required/>
-          <div class="alert alert-error" ng-show="loginError">
-            <button type="button" class="close" ng-click="loginError = false">×</button>
-            Invalid user name or password
+      <div ng-switch-when="login" ng-controller="LoginController">
+        <div class="row-fluid">
+          <div class="span6">
+            <h4>Welcome to {{siteTitle}}</h4>
           </div>
-          <button class="btn btn-small btn-primary" type="submit">Enter {{siteTitle}}</button>
-        </form>
+          <div class="offset2 span3">
+            <div style="padding-bottom: 6px;"><em>New Here?</em></div>
+            <button ng-click="newAccountDialog()" class="btn btn-primary btn-small">Create An Account</button>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span6">
+            <p>{{siteDescription}}</p>
+          </div>
+          <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
+            <label>Player or Account Name:</label>
+            <input class="span11" type="text" ng-change="loginError = false" ng-model="userId" pref-focus required/>
+            <label>Account Password:</label>
+            <input class="span11" type="password" ng-change="loginError = false" ng-model="password" required/>
+
+            <div class="alert alert-error" ng-show="loginError">
+              <button type="button" class="close" ng-click="loginError = false">×</button>
+              Invalid user name or password
+            </div>
+            <button class="btn btn-small btn-primary" type="submit">Enter {{siteTitle}}</button>
+          </form>
+        </div>
       </div>
       <div ng-switch-default ng-controller="ActionController" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12">
@@ -26,6 +37,7 @@
           <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus></textarea>
         </div>
       </div>
+
     </div>
     <div class="span6 tabbable">
       <ul class="nav nav-tabs" id="myTabs">

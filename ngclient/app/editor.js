@@ -16,7 +16,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
     var rawId = 0;
     var types = {
         config:{label:"Mud Config", url:"mud"},
-        players:{label:"Players", url:"players"},
+        players:{label:"Players", url:"player"},
         areas:{label:"Areas", url:"area"},
         rooms:{label:"Rooms", url:"room", childType:'mobile'},
         room:{label:"", url:"room", model_props:['room']},
@@ -365,12 +365,14 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
     function editorChange() {
         $scope.loadStatus = lmEditor.loadStatus;
         $scope.currentEditor = lmEditor.currentEditor;
+        lmBus.dispatch('editor_activated', $scope.currentEditor);
     }
 
     $scope.click = function (editor) {
         lmEditor.lastEditor = lmEditor.currentEditor;
         $scope.currentEditor = editor;
         lmEditor.currentEditor = editor;
+        lmBus.dispatch('editor_activated', editor);
     };
     $scope.closeEditor = function (editor) {
         lmEditor.closeEditor(editor);

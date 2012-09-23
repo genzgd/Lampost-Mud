@@ -1,5 +1,5 @@
-angular.module('lampost_edit').controller('ObjectListController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
-    function ($scope, lmRemote, lmEditor, lmDialog, lmBus) {
+angular.module('lampost_edit').controller('ObjectListController', ['$scope', 'lmEditor', 'lmDialog', 'lmBus',
+    function ($scope, lmEditor, lmDialog, lmBus) {
 
         $scope.type = $scope.editor.childType;
         $scope.areaId = $scope.editor.parent;

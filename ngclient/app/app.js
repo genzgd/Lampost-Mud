@@ -34,8 +34,9 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
         });
 
         function resize() {
-            var navBarMargin = parseInt(jQuery('#lm-navbar').css('marginBottom').replace('px', ''));
-            var gameHeight = jQuery(window).height() - jQuery('#lm-navbar').height() - navBarMargin;
+            var navbar = jQuery('#lm-navbar');
+            var navBarMargin = parseInt(navbar.css('marginBottom').replace('px', ''));
+            var gameHeight = jQuery(window).height() - navbar.height() - navBarMargin;
             $rootScope.gameHeight = {height:gameHeight.toString() + 'px'};
             var editorHeight = gameHeight - lmUtil.getScrollBarSizes()[1];
             $rootScope.editorHeight = {height:editorHeight.toString() + 'px'};
@@ -65,6 +66,7 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
 
         function validatePath() {
             $scope.welcome = 'Please Log In';
+            $scope.loggedIn = false;
             $scope.links = baseLinks.slice();
             for (var i = 0; i < $scope.links.length; i++) {
                 if ($scope.links[i].active()) {
@@ -78,6 +80,10 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
             $location.path(name);
         };
 
+        $scope.logout = function() {
+            lmBus.dispatch("server_request", "action", {action:"quit"});
+        };
+
         validatePath();
         lmBus.register("login", function () {
             if (lmData.player.editors.length) {
@@ -85,6 +91,7 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
             }
             $scope.links.push(settingsLink);
             $scope.welcome = 'Welcome ' + lmData.player.name;
+            $scope.loggedIn = true;
         }, $scope);
 
         lmBus.register("logout", validatePath, $scope);
@@ -111,13 +118,18 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
     }]);
 
 
-angular.module('lampost').controller('LoginController', ['$scope', 'lmRemote', function ($scope, lmRemote) {
+angular.module('lampost').controller('LoginController', ['$scope', 'lmRemote', 'lmDialog',
+    function ($scope, lmRemote, lmDialog) {
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
         lmRemote.request("login", {user_id:this.userId,
             password:this.password}).then(loginError);
 
+    };
+
+    $scope.newAccountDialog = function() {
+        lmDialog.show({templateUrl:"dialogs/new_account.html", controller:"NewAccountController"});
     };
 
     function loginError(response) {
@@ -127,6 +139,37 @@ angular.module('lampost').controller('LoginController', ['$scope', 'lmRemote', f
     }
 }]);
 
+angular.module('lampost').controller('NewAccountController', ['$scope', 'lmRemote', function($scope, lmRemote) {
+
+    $scope.accountName = "";
+    $scope.playerName = "";
+    $scope.password = "";
+    $scope.passwordCopy = "";
+    $scope.email = "";
+    $scope.dirty = function() {
+        $scope.errorText = null;
+    };
+
+    $scope.createAccount = function() {
+        if ($scope.password != $scope.passwordCopy) {
+            $scope.errorText = "Passwords don't match.";
+            return;
+        }
+        if ($scope.accountName.indexOf(" ") > -1 ||
+            $scope.playerName.indexOf(" ") > -1) {
+            $scope.errorText = "Spaces not permitted in player or account names";
+            return;
+        }
+        lmRemote.request("settings/create_account", {account_name:$scope.accountName,
+            player_name:$scope.playerName,  password:$scope.password,  email:$scope.email}).then(function() {
+                $scope.dismiss();
+            }, function(error) {
+                if (error.status == 410) {
+                    $scope.errorText = error.data;
+                }
+            });
+    }
+}]);
 
 angular.module('lampost').controller('ActionController', ['$scope', 'lmBus', 'lmData', function ($scope, lmBus, lmData) {
     var curAction;

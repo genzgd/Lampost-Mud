@@ -1,30 +1,52 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.client.user import User
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, requires
+from lampost.player.player import Player
+from lampost.util.lmutil import DataError
 
 __author__ = 'Geoff'
 
 m_requires('datastore', 'user_manager', 'perm', __name__)
 
-class GetSettings(Resource):
+class SettingsResource(Resource):
+    def __init__(self):
+        Resource.__init__(self)
+        self.putChild('get', SettingsGet())
+        self.putChild("create_account", AccountCreate())
+        self.putChild('update_account', AccountUpdate())
+
+class SettingsGet(Resource):
     @request
     def render_POST(self, content, session):
-        if session.user.dbo_id != content.user_id and not can_do(session, 'admin'):
-            return "Permission denied"
-        user = datastore.load_object(User, content.user_id)
+        if session.user.dbo_id != content.user_id:
+            check_perm(session, 'admin')
+        user = load_object(User, content.user_id)
         user_json = user.json_obj
         user_json['password'] = ''
         return user_json
 
+@requires('sm')
+class AccountCreate(Resource):
+    @request
+    def render_POST(self, content, session):
+        account_name = content.account_name.lower()
+        player_name = content.player_name.lower()
+        if get_index("user_name_index", account_name) or object_exists('player', account_name):
+            raise DataError(content.account_name + " is in use.")
+        if get_index("user_name_index", player_name) or object_exists('player', player_name):
+            raise DataError(content.player_name + " is in use.")
+        player = Player(player_name)
+        user_manager.attach_user(player, account_name, content.password, content.email)
+        return self.sm.login(session, account_name, content.password)
 
-class UpdateAccount(Resource):
+class AccountUpdate(Resource):
     @request
     def render_POST(self, content, session):
         user_json = content.user
         user_id = content.user_id
-        if session.user.dbo_id != content.user_id and not can_do(session, 'admin'):
-            return "Permission denied"
+        if session.user.dbo_id != content.user_id:
+            check_perm(session, 'admin')
 
         old_user = None
         if user_id:
@@ -32,25 +54,15 @@ class UpdateAccount(Resource):
             if not old_user:
                 return "User does not exist"
 
-        name_check = user_manager.check_name(user_json['user_name'], old_user)
-        if name_check != "ok":
+        if user_manager.check_name(user_json['user_name'], old_user) != "ok":
             return "name_in_use"
         user = User(user_id)
         if not user_json['password']:
             user_json['password'] = old_user.password
 
-        datastore.update_object(user, user_json)
+        update_object(user, user_json)
         if old_user:
-            datastore.delete_index("user_name_index", old_user.user_name.lower())
-        datastore.set_index("user_name_index", user.user_name.lower(), user_id)
+            delete_index("user_name_index", old_user.user_name.lower())
+        set_index("user_name_index", user.user_name.lower(), user_id)
         return "success"
-
-
-class SettingsResource(Resource):
-
-    def __init__(self):
-        Resource.__init__(self)
-        self.putChild('get', GetSettings())
-        self.putChild('update_account', UpdateAccount())
-
 

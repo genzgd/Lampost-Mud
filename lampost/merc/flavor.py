@@ -26,6 +26,7 @@ class MercFlavor():
         player.max_health = 20
         player.health = 20
         player.experience = 0
+        player.level = 1
         player.perm_str = player.perm_wis = player.perm_int = player.perm_con = player.perm_dex = 13
 
     def enhance_player(self, player):

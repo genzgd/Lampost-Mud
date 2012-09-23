@@ -5,10 +5,13 @@ from lampost.model.creature import Creature
 class Player(Creature, RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor", "user_id")
-
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor",
+                                        "user_id", "created", "last_login", "last_logout")
     imm_level = 0
     user_id = 0
+    last_login = 0
+    created = 0
+    last_logout = 0
     build_mode = False
 
     def __init__(self, dbo_id):

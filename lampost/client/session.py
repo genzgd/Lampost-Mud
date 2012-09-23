@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from lampost.context.resource import requires, provides
 from lampost.dto.display import Display, DisplayLine
@@ -50,7 +51,7 @@ class SessionManager():
         return self._respond(LoginResult(session.player).merge(RootDTO(connect=session_id)))
 
     def login(self, session, user_id, password):
-        result, user, player  = self.user_manager.validate_user(user_id.lower(), password)
+        result, user, player  = self.user_manager.validate_user(user_id, password)
         if result != "ok":
             return result
 
@@ -67,6 +68,9 @@ class SessionManager():
             kill_message.merge(DialogDTO(kill_dialog))
             old_session.append(kill_message)
         else:
+            player.last_login = int(time.time())
+            if not player.created:
+                player.created = player.last_login
             player.session = session
             self.nature.baptise(player)
             player.start()
@@ -81,6 +85,7 @@ class SessionManager():
 
     def logout(self, session):
         player = session.player
+        player.last_logout = int(time.time())
         player.leave_env()
         player.detach()
         session.player = None

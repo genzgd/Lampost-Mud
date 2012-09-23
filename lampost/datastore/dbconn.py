@@ -39,7 +39,7 @@ class RedisStore():
             db_log("Failed to evict " + dbo.dbo_key + " from db cache")
 
     def load_by_key(self, key_type, key, base_class=None):
-        dbo_key = key_type + ":" + key
+        dbo_key = '{0}:{1}'.format(key_type, key)
         cached_dbo = self.object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
@@ -52,6 +52,10 @@ class RedisStore():
             self.object_map[dbo.dbo_key] = dbo
         self.load_json(dbo, json_obj)
         return dbo
+
+    def object_exists(self, type, id):
+        key = '{0}:{1}'.format(type, id)
+        return self.redis.keys(key) == key
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
