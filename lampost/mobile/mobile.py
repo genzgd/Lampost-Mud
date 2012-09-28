@@ -28,6 +28,7 @@ class MobileTemplate(RootDBO, Template):
     def config_instance(self, instance):
         self.mud.init_mobile(instance)
         instance.baptise(set())
+        instance.equip(set())
 
 
 class MobileReset(RootDBO):

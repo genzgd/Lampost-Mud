@@ -1,38 +1,43 @@
-from lampost.context.resource import requires
+from types import MethodType
 
-@requires('dispatcher', 'datastore')
-class Action(object):
-    imm_level = 0
-    mud = None
-    prep = None
-    
-    def __init__(self, verbs, msg_class=None):
-        self.verbs = set()
-        try:
-            self.add_verb(verbs)
-        except AttributeError:
-            for verb in verbs:
-                self.add_verb(verb)
-        if msg_class:
-            self.msg_class = "rec_{0}".format(msg_class)
-                
-    def add_verb(self, verb):
-        self.verbs.add(tuple(verb.split(" ")))
-        
-    def execute(self, target_method, **kwargs):
+def simple_action(verbs, msg_class=None):
+    def execute(self, target_method, **kw_args):
         if target_method:
-            return target_method(**kwargs)
+            return target_method(**kw_args)
 
-            
-class HelpAction(Action):
-    def __init__(self):
-        Action.__init__(self, "help")
-        
-    def execute(self, source, args, **ignored):
-        action_set = source.actions.get(args)
-        if not action_set:
-            return "No matching command found"
-        if len(action_set) > 1:
-            return "Multiple matching commands"
-        action = iter(action_set).next()
-        return getattr(action, "help_text", "No help available.")
+    action = make_action(_ActionObject(), verbs, msg_class)
+    action.execute = MethodType(execute, action)
+    return action
+
+def add_action(verbs, method, msg_class=None):
+    owner = getattr(method, 'im_self')
+    try:
+        getattr(owner, 'providers')
+    except AttributeError:
+        owner.providers = set()
+    action = make_action(_ActionObject(), verbs, msg_class)
+    action.execute = MethodType(method, owner)
+    owner.providers.add(action)
+    return action
+
+def make_action(action, verbs, msg_class=None, fixed_targets=None):
+    def add_verb(verb):
+        action.verbs.add(tuple(verb.split(' ')))
+    try:
+        getattr(action, 'verbs')
+    except AttributeError:
+        action.verbs = set()
+    try:
+        add_verb(verbs)
+    except AttributeError:
+        for verb in verbs:
+            add_verb(verb)
+    if msg_class:
+        action.msg_class = "rec_{0}".format(msg_class)
+    if fixed_targets:
+        action.fixed_targets = fixed_targets
+    return action
+
+class _ActionObject(object):
+    def __call__(self, **kwargs):
+        return self.execute(**kwargs)

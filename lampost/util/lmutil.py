@@ -1,4 +1,4 @@
-def ljust(value, size):
+def l_just(value, size):
     return value.ljust(size).replace(' ', '&nbsp;')
 
 def pronouns(sex):

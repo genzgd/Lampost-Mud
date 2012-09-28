@@ -1,20 +1,22 @@
-from lampost.action.action import Action, HelpAction
+import lampost.immortal.immortal
+import lampost.comm.chat
+import lampost.action.inventory
+import lampost.action.emote
+
+from lampost.action.action import simple_action
+from lampost.mud.action import mud_actions, imm_actions
 from lampost.context.resource import provides, requires, m_requires
 from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
-from lampost.action.emote import Emotes, Socials
-from lampost.immortal.immortal import GoToArea, Citadel, RegisterDisplay, UnregisterDisplay, IMM_LEVELS, Describe,\
-    ListCommands, GotoRoom, SetHome, GoHome, Zap, PatchDB, PatchTarget, GotoPlayer,\
-    BuildMode, ResetRoom
+
 from area import Area
-from lampost.comm.chat import TellAction, ReplyAction, SayAction
+
 from lampost.merc.flavor import MercFlavor
 from lampost.mobile.mobile import MobileTemplate, Mobile
 from lampost.player.player import Player
-from lampost.action.inventory import GetAction, ShowInventory, DropAction
 from lampost.model.article import Article, ArticleTemplate
 
-m_requires('log', __name__)
+m_requires('log', 'perm', __name__)
 
 @requires('sm', 'datastore')
 @provides('nature')
@@ -24,13 +26,11 @@ class MudNature():
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
-        look_action = Action(("look", "l", "exa", "examine", "look at"), "examine")
-        self.basic_soul = {look_action, SayAction(), Emotes(), TellAction(), ReplyAction(), HelpAction(),
-                           ShowInventory(), Socials(), GetAction(), DropAction()}
-        self.imm_commands = GoToArea(), Citadel(), RegisterDisplay(), UnregisterDisplay(), Describe(), ListCommands(),\
-                       GotoRoom(), SetHome(), GoHome(), BuildMode(),  Zap(), ResetRoom(), PatchTarget(), PatchDB(), GotoPlayer()
+        look_action = simple_action(("look", "l", "exa", "examine", "look at"), "examine")
+        self.basic_soul = {look_action}
+        for action in mud_actions:
+            self.basic_soul.add(action)
         self.mud = Mud()
-        Action.mud = self.mud
         self.citadel = ImmortalCitadel()
         self.mud.add_area(self.citadel)
         self.citadel.on_loaded()
@@ -38,10 +38,10 @@ class MudNature():
 
     def editors(self, player):
         editors = []
-        if player.imm_level >= IMM_LEVELS['supreme']:
+        if has_perm(player, 'supreme'):
             editors.append('config')
 
-        if player.imm_level >= IMM_LEVELS['admin']:
+        if has_perm(player, 'admin'):
             editors.append('areas')
             editors.append('players')
 
@@ -53,21 +53,19 @@ class MudNature():
             self.datastore.save_object(player)
 
         new_soul = self.basic_soul.copy()
-        for cmd in self.imm_commands:
-            if player.imm_level >= cmd.imm_level:
-                new_soul.add(cmd)
 
         if player.imm_level:
             new_soul.add(self.imm_channel)
+            player.register_channel(self.imm_channel)
+            player.build_mode = True
+            for cmd in imm_actions:
+                if player.imm_level >= perm_level(cmd.imm_level):
+                    new_soul.add(cmd)
 
         player.baptise(new_soul)
         player.register_channel(self.shout_channel)
 
-        if player.imm_level:
-            player.register_channel(self.imm_channel)
-            player.build_mode = True
-
-        if player.imm_level == IMM_LEVELS["supreme"]:
+        if has_perm(player, 'supreme'):
             player.register("db_log", player.display_line)
             player.register("debug", player.display_line)
             player.register("error", player.display_line)
@@ -81,7 +79,6 @@ class MudNature():
 class Mud():
     def __init__(self):
         MobileTemplate.mud = self
-
         self.flavor = MercFlavor()
         self.flavor.apply_mobile(Mobile)
         self.flavor.apply_mobile_template(MobileTemplate)
@@ -100,8 +97,6 @@ class Mud():
         self.area_map[area.dbo_id] = area
 
     def get_area(self, area_id):
-        area_id = area_id.lower().split(" ")
-        area_id = "_".join(area_id)
         return self.area_map.get(area_id)
 
     def init_player(self, player):

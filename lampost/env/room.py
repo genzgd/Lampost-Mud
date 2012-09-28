@@ -31,7 +31,7 @@ class Exit(RootDBO):
         else:
             return self.direction.desc
 
-    def execute(self, source, **ignored):
+    def __call__(self, source, **ignored):
         source.change_env(self.destination)
         return self.destination.rec_examine(source)
 
@@ -100,7 +100,7 @@ class Room(RootDBO):
         pass
 
     @property
-    def children(self):
+    def elements(self):
         return self.contents + self.exits + self.extras
 
     def long_desc(self, observer):

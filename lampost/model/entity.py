@@ -15,26 +15,24 @@ class Entity(BaseItem):
     def baptise(self, soul):
         self.registrations = set()
         self.soul = soul
-        self.clear_all()
-        self.refresh_soul()
-
-    def refresh_soul(self):
-        for action in self.soul:
-            self.add_action(action)
+        self.target_map = {}
+        self.target_key_map = {}
+        self.actions = {}
+        self.target_map[self] = []
+        self.add_target_keys([self.target_id], self)
+        self.add_actions(soul)
 
     def equip(self, inven):
         self.inven = inven
-        for action in inven:
-            self.add_action(action)
-        for target in inven:
-            self.add_target(target, self)
+        self.add_actions(inven)
+        self.add_targets(inven, inven)
 
     def add_inven(self, article):
         if article in self.inven:
             return "You already have that."
         article.leave_env()
         self.inven.add(article)
-        self.add_actions(article)
+        self.add_action(article)
         self.add_target(article, self.inven)
         return Broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article, source=self)
 
@@ -42,28 +40,26 @@ class Entity(BaseItem):
         if not article in self.inven:
             return "You don't have that."
         self.inven.remove(article)
-        self.remove_actions(article)
+        self.remove_action(article)
         self.remove_target(article)
         article.enter_env(self.env)
         return Broadcast(s="You drop {N}", e="{n} drops {N}", target=article, source=self)
 
     def enhance_soul(self, actions):
-        for action in actions:
-            self.add_action(action)
+        self.add_actions(actions)
         self.soul.update(set(actions))
 
     def rec_entity_enter_env(self, entity):
-        self.add_target(entity, self.env)
-        self.add_actions(entity)
+        self.add_target(entity)
+        self.add_action(entity)
 
     def rec_entity_leave_env(self, entity):
         self.remove_target(entity)
         self.remove_action(entity)
 
-    def add_targets(self, target, parent=None):
-        self.add_target(target, parent)
-        for child_target in getattr(target, "children", []):
-            self.add_target(child_target, target)
+    def add_targets(self, targets, parent=None):
+        for target in targets:
+            self.add_target(target, parent)
 
     def add_target(self, target, parent=None):
         if target == self:
@@ -73,7 +69,7 @@ class Entity(BaseItem):
         except AttributeError:
             return
         if self.target_map.get(target):  #Should not happen
-            debug("Trying to add " + unicode(target_id) + " more than once")
+            error("Trying to add " + unicode(target_id) + " more than once")
             return
         self.target_map[target] = []
         self.add_target_key_set(target, target_id, parent)
@@ -115,10 +111,9 @@ class Entity(BaseItem):
                     next_prefix.append(target_id[y])
             yield tuple(next_prefix) + target
 
-    def remove_targets(self, target):
-        self.remove_target(target)
-        for child_target in getattr(target, "children", []):
-            self.remove_target(child_target)
+    def remove_targets(self, targets):
+        for target in targets:
+            self.remove_target(target)
 
     def remove_target(self, target):
         if self == target:
@@ -147,33 +142,35 @@ class Entity(BaseItem):
             self.target_key_map[target_key + (unicode(ix + 1),)] = [target]
 
 
-    def add_actions(self, provider):
-        self.add_action(provider)
-        for child_provider in getattr(provider, "children", []):
-            self.add_actions(child_provider)
+    def add_actions(self, actions):
+        for action in actions:
+            self.add_action(action)
 
-    def add_action(self, provider):
-        for verb in getattr(provider, "verbs", []):
+    def add_action(self, action):
+        for verb in getattr(action, "verbs", []):
             bucket = self.actions.get(verb)
             if not bucket:
                 bucket = set()
                 self.actions[verb] = bucket
-            bucket.add(provider)
+            bucket.add(action)
+        for sub_action in getattr(action, "sub_actions", []):
+            self.add_action(sub_action)
 
-    def remove_actions(self, provider):
-        self.remove_action(provider)
-        for child_provider in getattr(provider, "children", []):
-            self.remove_action(child_provider)
+    def remove_actions(self, actions):
+        for action in actions:
+            self.remove_action(action)
 
-    def remove_action(self, provider):
-        for verb in getattr(provider, "verbs", []):
+    def remove_action(self, action):
+        for verb in getattr(action, "verbs", []):
             bucket = self.actions.get(verb, None)
             if bucket:
-                bucket.remove(provider)
+                bucket.remove(action)
                 if len(bucket) == 0:
                     del self.actions[verb]
             else:
-                debug("Removing action " + unicode(verb) + " that does not exist from " + self.short_desc(self))
+                error("Removing action " + unicode(verb) + " that does not exist from " + self.short_desc(self))
+        for sub_action in getattr(action, "sub_providers", []):
+            self.remove_action(sub_action)
 
     def parse_command(self, command):
         words = command.lower().split()
@@ -183,7 +180,7 @@ class Entity(BaseItem):
         if len(matches) > 1:
             return matches, None
         action, verb, args, target, target_method, obj, obj_method = matches[0]
-        return matches, action.execute(source=self, target=target, verb=verb, args=args,
+        return matches, action(source=self, target=target, verb=verb, args=args,
             target_method=target_method, command=command, obj=obj, obj_method=obj_method)
 
 
@@ -196,7 +193,7 @@ class Entity(BaseItem):
                 if not msg_class:
                     yield action, verb, tuple(args), action, None, None, None
                     continue
-                if action.prep:
+                if getattr(action, 'prep', None):
                     try:
                         prep_loc = args.index(action.prep)
                     except ValueError:
@@ -223,10 +220,9 @@ class Entity(BaseItem):
         target_list = self.target_key_map.get(target_args, []) if target_args else [self.env]
         for target in target_list:
             target_method = getattr(target, msg_class, None)
-            if target_method != None:
+            if target_method:
                 yield target, target_method
                 return
-
 
     def change_env(self, new_env):
         self.leave_env()
@@ -234,28 +230,18 @@ class Entity(BaseItem):
 
     def leave_env(self):
         if self.env:
-            self.remove_actions(self.env)
-            self.remove_targets(self.env)
+            self.remove_actions(self.env.elements)
+            self.remove_target(self.env)
+            self.remove_targets(self.env.elements)
             self.env.rec_entity_leaves(self)
 
     def enter_env(self, new_env):
         self.env = new_env
         self.room_id = new_env.room_id
-        self.add_actions(new_env)
-        self.add_targets(new_env)
+        self.add_actions(self.env.elements)
+        self.add_target(new_env)
+        self.add_targets(new_env.elements, new_env)
         self.env.rec_entity_enters(self)
-
-    def clear_all(self):
-        self.target_map = {}
-        self.target_key_map = {}
-        self.actions = {}
-        self.target_map[self] = []
-        self.add_target_keys([self.target_id], self)
-
-    def refresh_all(self):
-        self.refresh_soul()
-        self.equip(self.inven)
-        self.change_env(self.env)
 
     def broadcast(self, broadcast):
         pass

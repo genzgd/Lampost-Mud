@@ -28,7 +28,7 @@ def request(func):
         try:
             if getattr(self, 'Raw', False):
                 return func(self, request, session)
-            result = func(self, content=content, session=session)
+            result = func(self, content, session)
         except PermError:
             request.setResponseCode(403)
             return "Permission Denied."
