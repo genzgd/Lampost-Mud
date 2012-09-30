@@ -10,8 +10,8 @@ angular.module('lampost_edit').directive('editList', [function () {
     }
 }]);
 
-angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil',
-    function ($q, lmBus, lmRemote, lmDialog, $location, lmUtil) {
+angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil', '$timeout',
+    function ($q, lmBus, lmRemote, lmDialog, $location, lmUtil, $timeout) {
 
     var rawId = 0;
     var types = {
@@ -69,6 +69,12 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
     this.loadStatus = "loading";
 
     lmBus.register("login", configEditors);
+    lmBus.register("start_room_edit", function(roomId) {
+        $timeout( function () {
+            $location.path('editor');
+            self.addEditor('room', roomId);
+        })
+    });
 
     function configEditors(loginData) {
         self.editors = [];
@@ -230,9 +236,9 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
                     rooms.splice(index, 1);
                     lmBus.dispatch('area_change', areaId);
                 }
-            })
+            });
+            areaMaster[areaId].room = rooms.length;
         }
-        areaMaster[areaId].room = self.roomsMaster[areaId].length;
         self.closeEditorId('room:' + roomId);
     };
 
@@ -245,9 +251,9 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
                     objects.splice(objects.indexOf(object), 1);
                     lmBus.dispatch('area_change', areaId);
                 }
-            })
+            });
+            areaMaster[areaId][type] = objects.length;
         }
-        areaMaster[areaId][type] = master[type][areaId].length;
         self.closeEditorId(type + ':' + objectId);
         lmBus.dispatch(type + "_deleted", objectId);
     }

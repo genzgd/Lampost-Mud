@@ -79,7 +79,10 @@ class ActionResource(Resource):
         if action in ["quit", "logout", "log out"]:
             return sm.logout(session)
         session.activity_time = datetime.now()
-        feedback = player.parse(action)
+        try:
+            feedback = player.parse(action)
+        except PermError:
+            feedback = "You do not have permission to do that."
         if not feedback:
             return Display("Nothing appears to happen.")
         if getattr(feedback, "json", None):

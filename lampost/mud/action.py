@@ -18,7 +18,7 @@ def imm_action(verbs, msg_class=None, imm_level='creator'):
 
 
 @mud_action('help')
-def help(self, source, args, **ignored):
+def help(source, args, **ignored):
     action_set = source.actions.get(args)
     if not action_set:
         return "No matching command found"

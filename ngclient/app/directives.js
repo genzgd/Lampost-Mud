@@ -6,8 +6,8 @@ angular.module('lampost_dir').directive("enterKey", function () {
         link:function (scope, element, attrs) {
             element.bind('keypress', function (event) {
                 if (event.keyCode == 13) {
-                    scope.$eval(attrs.enterKey);
                     event.preventDefault();
+                    scope.$apply(scope.$eval(attrs.enterKey));
                     return false;
                 }
                 return true;

@@ -5,7 +5,7 @@ from lampost.model.creature import Creature
 class Player(Creature, RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "flavor",
+    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room",
                                         "user_id", "created", "last_login", "last_logout")
     imm_level = 0
     user_id = 0
@@ -45,17 +45,18 @@ class Player(Creature, RootDBO):
         if isinstance(response, basestring):
             return response
         broadcast = getattr(response, "broadcast", None)
-        feedback = getattr(response, "feedback", None)
-        if isinstance(feedback, basestring):
-            feedback = Display(feedback)
         if broadcast:
+            feedback = getattr(response, "feedback", None)
+            if isinstance(feedback, basestring):
+                feedback = Display(feedback)
             self.env.rec_broadcast(broadcast, broadcast.source)
             display = Display(broadcast.translate(self), broadcast.color)
             if feedback:
                 feedback.merge(Display)
             else:
                 feedback = display
-        return feedback
+            return feedback
+        return response
 
     def display_channel(self, message):
         if message.source != self:

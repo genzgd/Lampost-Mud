@@ -1,69 +1,27 @@
-'''
-Created on Apr 20, 2012
+import lampost.player.player
+import lampost.model.article
+import lampost.mobile.mobile
 
-@author: Geoff
-'''
-from lampost.merc.util import nudge, scale32
-from lampost.merc.combat import mob_rec_violence, player_calc_damage, mob_calc_damage,  mob_rec_damage,\
-    player_rec_violence, mob_attack, player_rec_damage, player_auto_attack
-from lampost.merc.player import soul, curr_str, curr_dex
-from random import randint
-from lampost.mobile.mobile import Mobile
-from lampost.model.article import Article
-from lampost.merc.inventory import check_inven
+import lampost.merc.player
+import lampost.merc.article
+import lampost.merc.mobile
 
-class MercFlavor():
-    flavor = "merc2.2"
+from lampost.merc.combat import basic_hit
+from lampost.mud.action import mud_action
 
-    def init_mobile(self, mobile):
-        mobile.level = nudge(mobile.level if mobile.level else 1)
-        mobile.defense = scale32(mobile.level, 100, -100)
-        mobile.max_health = mobile.level * 8 + randint(mobile.level * mobile.level / 4, mobile.level * mobile.level)
-        mobile.health = mobile.max_health
+from lampost.context.resource import m_requires
 
-    def init_player(self, player):
-        player.defense = 100
-        player.max_health = 20
-        player.health = 20
-        player.experience = 0
-        player.level = 1
-        player.perm_str = player.perm_wis = player.perm_int = player.perm_con = player.perm_dex = 13
+m_requires('cls_registry', __name__)
 
-    def enhance_player(self, player):
-        player.enhance_soul(soul)
-        player.mod_str = player.mod_wis = player.mod_int = player.mod_con = player.mod_dex = 0
-        player.item_weight = 0
+cls_registry.set_class(lampost.player.player.Player, lampost.merc.player.PlayerMerc)
+cls_registry.set_class(lampost.model.article.ArticleTemplate, lampost.merc.article.ArticleTemplateMerc)
+cls_registry.set_class(lampost.mobile.mobile.MobileTemplate, lampost.merc.mobile.MobileTemplateMerc)
 
-    def apply_player(self, player_cls):
-        player_cls.dbo_fields += "level", "defense", "health", "max_health", "status", "experience", \
-            "perm_str", "perm_dex", "perm_wis", "perm_int", "perm_con"
-        player_cls.rec_violence = player_rec_violence
-        player_cls.calc_damage = player_calc_damage
-        player_cls.rec_damage = player_rec_damage
-        player_cls.auto_attack = player_auto_attack
-        player_cls.curr_str = property(curr_str)
-        player_cls.curr_dex = property(curr_dex)
-        player_cls.check_inven = check_inven
+@mud_action(('kill', 'attack'), 'violence')
+def kill(source, target, target_method, **ignored):
+    source.rec_violence(target)
+    target_method(source)
+    return basic_hit(source, target)
 
-    def apply_mobile(self, mobile_cls):
-        mobile_cls.dbo_fields += "level",
-        mobile_cls.rec_violence = mob_rec_violence
-        mobile_cls.calc_damage = mob_calc_damage
-        mobile_cls.rec_damage = mob_rec_damage
-        mobile_cls.mob_attack = mob_attack
-
-    def apply_mobile_template(self, mobile_template_cls):
-        mobile_template_cls.template_fields = Mobile.dbo_fields
-        mobile_template_cls.dbo_fields = Mobile.dbo_fields + ("dbo_rev", "instance_class", "world_max")
-        mobile_template_cls.level = 1
-
-    def apply_article(self, article_cls):
-        article_cls.dbo_fields += "level",
-
-    def apply_article_template(self, article_template_cls):
-        article_template_cls.template_fields = Article.dbo_fields
-        article_template_cls.dbo_fields = Article.dbo_fields + ("dbo_rev", "instance_class", "world_max")
-        article_template_cls.weight = 1
-        article_template_cls.level = 1
 
 

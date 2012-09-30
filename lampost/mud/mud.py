@@ -11,10 +11,7 @@ from lampost.comm.channel import Channel
 
 from area import Area
 
-from lampost.merc.flavor import MercFlavor
-from lampost.mobile.mobile import MobileTemplate, Mobile
-from lampost.player.player import Player
-from lampost.model.article import Article, ArticleTemplate
+from lampost.mobile.mobile import MobileTemplate
 
 m_requires('log', 'perm', __name__)
 
@@ -22,10 +19,12 @@ m_requires('log', 'perm', __name__)
 @provides('nature')
 class MudNature():
 
-    def __init__(self):
+    def __init__(self, flavor):
+        __import__('lampost.' + flavor + '.flavor', globals())
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
+
         look_action = simple_action(("look", "l", "exa", "examine", "look at"), "examine")
         self.basic_soul = {look_action}
         for action in mud_actions:
@@ -48,8 +47,8 @@ class MudNature():
         return editors
 
     def baptise(self, player):
-        if not getattr(player, "flavor", None):
-            self.mud.init_player(player)
+        if not getattr(player, "room_id", None):
+            player.room_id = self.config.start_room
             self.datastore.save_object(player)
 
         new_soul = self.basic_soul.copy()
@@ -71,7 +70,6 @@ class MudNature():
             player.register("error", player.display_line)
 
         player.equip(set())
-        self.mud.enhance_player(player)
         self.mud.start_player(player)
 
 @requires('datastore', 'dispatcher', 'config')
@@ -79,12 +77,6 @@ class MudNature():
 class Mud():
     def __init__(self):
         MobileTemplate.mud = self
-        self.flavor = MercFlavor()
-        self.flavor.apply_mobile(Mobile)
-        self.flavor.apply_mobile_template(MobileTemplate)
-        self.flavor.apply_player(Player)
-        self.flavor.apply_article(Article)
-        self.flavor.apply_article_template(ArticleTemplate)
 
         self.area_map = {}
         area_keys = self.datastore.fetch_set_keys("areas")
@@ -99,16 +91,10 @@ class Mud():
     def get_area(self, area_id):
         return self.area_map.get(area_id)
 
-    def init_player(self, player):
-        player.flavor = self.flavor.flavor
-        player.room_id = self.config.start_room
-        self.flavor.init_player(player)
-
-    def enhance_player(self, player):
-        self.flavor.enhance_player(player)
 
     def init_mobile(self, mobile):
-        self.flavor.init_mobile(mobile)
+        pass
+        #self.flavor.init_mobile(mobile)
 
     def find_room(self, room_id):
         try:

@@ -1,6 +1,6 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, requires
 from lampost.dto.rootdto import RootDTO
 from lampost.model.article import ArticleTemplate
 from lampost.util.lmutil import DataError
@@ -37,6 +37,7 @@ class ArticleUpdate(Resource):
         update_object(article, content.model)
         return ArticleDTO(article)
 
+@requires('cls_registry')
 class ArticleCreate(Resource):
     @request
     def render_POST(self, content, session):
@@ -45,7 +46,7 @@ class ArticleCreate(Resource):
         article_id = ":".join([area.dbo_id, content.object['id']])
         if area.get_article(article_id):
             raise DataError(article_id + " already exists in this area")
-        template = ArticleTemplate(article_id)
+        template = self.cls_registry(ArticleTemplate)(article_id)
         load_json(template, content.object)
         save_object(template)
         area.articles.append(template)

@@ -11,7 +11,7 @@ def register(name, service, export_methods=False):
     if export_methods:
         _methods[name] = {}
         for attr, value in service.__class__.__dict__.iteritems():
-            if not attr.startswith("_") and hasattr(value, '__call__'):
+            if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
                 _methods[name][attr] = value.__get__(service, service.__class__)
     for cls in _consumers.get(name, []):
         _inject(cls, name, service)

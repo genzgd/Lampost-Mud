@@ -1,4 +1,5 @@
 from lampost.action.action import  make_action
+from lampost.context.resource import requires
 from lampost.model.article import Article, ArticleTemplate, ArticleReset
 from lampost.env.room import Room, Exit
 from lampost.env.movement import UP, DOWN
@@ -6,6 +7,7 @@ from lampost.mobile.mobile import MobileTemplate, MobileReset
 from lampost.comm.broadcast import SingleBroadcast
 from lampost.model.item import BaseItem
 from lampost.mud.area import Area
+from lampost.util.lmutil import cls_name
 
 class MusicBox(Article):
     def __init__(self, article_id):
@@ -17,6 +19,7 @@ class MusicBox(Article):
     def __call__(self, source, **ignored):
         return SingleBroadcast(source, "The music box plays an eerie atonal tune.")
 
+@requires('cls_registry')
 class ImmortalCitadel(Area):
     def __init__(self):
         Area.__init__(self, "immortal_citadel")
@@ -35,14 +38,27 @@ class ImmortalCitadel(Area):
         self.rooms.append(cube)
         self.rooms.append(sphere)
 
-        music_box = ArticleTemplate("immortal_citadel:music_box", "Music Box", "An odd, translucent music box", MusicBox)
+        music_box = self.cls_registry(ArticleTemplate)("immortal_citadel:music_box")
+        music_box.title ="Music Box"
+        music_box.desc ="An odd, translucent music box"
+        music_box.instance_class = cls_name(MusicBox)
         self.articles.append(music_box)
-        sphere.article_resets.append(ArticleReset("immortal_citadel:music_box", 3, 3))
+        music_reset = ArticleReset()
+        music_reset.article_id = "immortal_citadel:music_box"
+        music_reset.article_max = 3
+        music_reset.article_count = 3
+        sphere.article_resets.append(music_reset)
 
-        guard = MobileTemplate("immortal_citadel:guard", "Citadel Guard", "The impassive, immaculate citadel guard")
+        guard = self.cls_registry(MobileTemplate)("immortal_citadel:guard")
+        guard.title = "Citadel Guard"
+        guard.desc = "The impassive, immaculate citadel guard"
         guard.level = 1
         self.mobiles.append(guard)
-        cube.mobile_resets.append(MobileReset("immortal_citadel:guard", 0, 7))
+        guard_reset = MobileReset()
+        guard_reset.mobile_id = "immortal_citadel:guard"
+        guard_reset.mob_count = 0
+        guard_reset.mob_max = 7
+        cube.mobile_resets.append(guard_reset)
 
 
 

@@ -5,7 +5,7 @@ from lampost.context.resource import requires, provides, m_requires
 m_requires('log', __name__)
 
 @provides('datastore', True)
-@requires('dispatcher', 'decode', 'encode')
+@requires('dispatcher', 'decode', 'encode', 'cls_registry')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
@@ -23,7 +23,7 @@ class RedisStore():
             dbo.dbo_rev = 1 if not rev else rev + 1
         dbo.before_save()
         key = dbo.dbo_key
-        self.redis.set(key, dbo.json)
+        self.redis.set(key, self.encode(dbo.save_json_obj))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, key)
         self.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
@@ -94,7 +94,7 @@ class RedisStore():
     def _load_class(self, json_obj, base_class):
         class_path = json_obj.get("class_name")
         if not class_path:
-            return base_class
+            return self.cls_registry(base_class)
         clazz = self.class_map.get(class_path)
         if clazz:
             return clazz
@@ -111,7 +111,7 @@ class RedisStore():
             try:
                 setattr(dbo, field_name, json_obj[field_name])
             except KeyError:
-                db_log("db: Object " + unicode(dbo.dbo_key) + " json missing field " + field_name)
+                debug("db: Object " + unicode(dbo.dbo_debug_key) + " json missing field " + field_name)
         for dbo_col in dbo.dbo_collections:
             coll = getattr(dbo, dbo_col.field_name, [])
             try:
@@ -127,7 +127,7 @@ class RedisStore():
                         db_log("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)))
             except KeyError:
                 if dbo.dbo_key_type:
-                    db_log("db: Object " + unicode(dbo.dbo_key) + " json missing collection " + dbo_col.field_name)
+                    db_log("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name)
 
         for dbo_ref in dbo.dbo_refs:
             try:
@@ -136,6 +136,6 @@ class RedisStore():
                 setattr(dbo, dbo_ref.field_name, ref_obj)
             except:
                 if dbo.dbo_key_type:
-                    db_log("db: Object " + unicode(dbo.dbo_key) + " json missing ref " + dbo_ref.field_name)
+                    db_log("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name)
         dbo.on_loaded()
         return True

@@ -1,6 +1,6 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, requires
 from lampost.dto.rootdto import RootDTO
 from lampost.mobile.mobile import MobileTemplate
 from lampost.util.lmutil import DataError
@@ -37,18 +37,17 @@ class MobileUpdate(Resource):
         update_object(mobile, content.model)
         return MobileDTO(mobile)
 
+@requires('cls_registry')
 class MobileCreate(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
-        mobile = RootDTO().merge_dict(content.object)
         check_perm(session, area)
-        mobile_id = ":".join([area.dbo_id, mobile.id])
+        mobile_id = ":".join([area.dbo_id, content.object['id']])
         if area.get_mobile(mobile_id):
             raise DataError(mobile_id + " already exists in this area")
-        template = MobileTemplate(mobile_id, mobile.title)
-        template.desc = mobile.desc
-        template.level = mobile.level
+        template = self.cls_registry(MobileTemplate)(mobile_id)
+        load_json(template, content.object)
         save_object(template)
         area.mobiles.append(template)
         save_object(area)

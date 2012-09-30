@@ -1,5 +1,7 @@
-from lampost.context.resource import requires
+from lampost.context.resource import m_requires
+from lampost.util.lmutil import cls_name
 
+m_requires('datastore', 'encode', 'cls_registry', __name__)
 
 class RootDBOMeta(type):
     def __new__(mcs, class_name, bases, new_attrs):
@@ -18,7 +20,6 @@ class DBODict(dict):
     def remove(self, dbo):
         del self[dbo.dbo_id]
 
-@requires('datastore', 'encode')
 class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
@@ -39,13 +40,22 @@ class RootDBO(object):
             return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
 
     @property
+    def dbo_debug_key(self):
+        if self.dbo_key_type:
+            return self.dbo_key
+        return '-embedded-'
+
+    @property
+    def save_json_obj(self):
+        return self._to_json_obj(True)
+
+    @property
     def json_obj(self):
         return self._to_json_obj()
 
     @property
     def json(self):
-        return self.encode(self._to_json_obj())
-
+        return encode(self._to_json_obj())
 
     def on_loaded(self):
         pass
@@ -54,7 +64,7 @@ class RootDBO(object):
         pass
 
     def autosave(self):
-        self.save_object(self, autosave=True)
+        save_object(self, autosave=True)
 
     def describe(self, level=0, follow_refs=True):
         display = []
@@ -64,8 +74,8 @@ class RootDBO(object):
 
         if self.dbo_id:
             append("key", self.dbo_key)
-        class_name =  self.__class__.__module__ + "." + self.__class__.__name__
-        base_class_name = self.dbo_base_class.__module__ + "." + self.dbo_base_class.__name__
+        class_name =  cls_name(self.__class__)
+        base_class_name = cls_name(cls_registry(self.dbo_base_class))
         if base_class_name != class_name:
             append("class", class_name)
         if self.dbo_set_key:
@@ -96,19 +106,25 @@ class RootDBO(object):
         return display
 
 
-    def _to_json_obj(self):
+    def _to_json_obj(self, use_defaults=False):
         json_obj = {}
-        if self.__class__ != self.dbo_base_class:
+        if self.__class__ != cls_registry(self.dbo_base_class):
             json_obj["class_name"] = self.__module__ + "." + self.__class__.__name__
         for field_name in self.dbo_fields:
-            json_obj[field_name] = getattr(self, field_name, None)
+            if use_defaults:
+                default = getattr(self.__class__, field_name, None)
+                instance = getattr(self, field_name, None)
+                if instance != default:
+                    json_obj[field_name] = getattr(self, field_name, None)
+            else:
+                json_obj[field_name] = getattr(self, field_name, None)
         for dbo_col in self.dbo_collections:
             coll_list = list()
             for child_dbo in getattr(self, dbo_col.field_name):
                 if dbo_col.key_type:
                     coll_list.append(child_dbo.dbo_id)
                 else:
-                    coll_list.append(child_dbo.json_obj)
+                    coll_list.append(child_dbo._to_json_obj(use_defaults))
             json_obj[dbo_col.field_name] = coll_list
         for dbo_ref in self.dbo_refs:
             ref = getattr(self, dbo_ref.field_name, None)

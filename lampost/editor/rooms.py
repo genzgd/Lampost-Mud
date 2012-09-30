@@ -110,7 +110,6 @@ class RoomUpdate(Resource):
                 extra = BaseItem()
                 load_json(extra, extra_json)
                 room.extras.append(extra)
-        save_object(room, True)
         room.mobile_resets = []
         for mobile_json in content.mobiles:
             mobile_reset = MobileReset()
@@ -121,6 +120,7 @@ class RoomUpdate(Resource):
             article_reset = ArticleReset()
             load_json(article_reset, article_json)
             room.article_resets.append(article_reset)
+        save_object(room, True)
         restore_contents(room, contents)
         return RoomDTO(area, room)
 

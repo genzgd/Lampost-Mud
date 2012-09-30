@@ -1,18 +1,13 @@
-'''
-Created on Apr 13, 2012
-
-@author: Geoff
-'''
 from item import BaseItem
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.template import Template
+from lampost.util.lmutil import cls_name
 
 VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 class Article(BaseItem):
     dbo_rev = 0
     dbo_fields = BaseItem.dbo_fields + ("weight",)
-    weight = 0
 
     def __init__(self, article_id):
         self.article_id = article_id
@@ -54,29 +49,16 @@ class Container(Article):
         self.contents = []
 
 
-class ArticleTemplate(RootDBO, Template):
+class ArticleTemplate(Template, RootDBO):
+    template_fields = Article.dbo_fields
+    dbo_fields = Template.dbo_fields + template_fields
     dbo_key_type = "article"
-    dbo_rev = 0
-    instance_class = ".".join([Article.__module__, Article.__name__]) #@UndefinedVariable
+    instance_class = cls_name(Article)
     aliases= []
-
-    def __init__(self, dbo_id, title=None, desc=None, instance_class=None):
-        self.dbo_id = dbo_id
-        self.article_id = dbo_id
-        self.title = title
-        self.desc = desc
-        if instance_class:
-            self.instance_class = ".".join([instance_class.__module__, instance_class.__name__])
+    weight = 0
 
 
 class ArticleReset(RootDBO):
     dbo_fields = "article_id", "article_count", "article_max"
     article_count = 1
     article_max = 1
-
-    def __init__(self, article_id=None, article_count=None, article_max=None):
-        self.article_id = article_id
-        if article_count is not None:
-            self.article_count = article_count
-        if article_max:
-            self.article_max = article_max

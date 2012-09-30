@@ -1,15 +1,17 @@
 from lampost.comm.broadcast import SingleBroadcast
 from lampost.context.resource import m_requires
 from lampost.dto.display import Display, DisplayLine
+from lampost.dto.rootdto import RootDTO
 from lampost.mud.action import imm_action
 from lampost.player.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
-m_requires('sm', 'mud', 'datastore', __name__)
+m_requires('sm', 'mud', 'datastore', 'perm', __name__)
 
-@imm_action('edit', imm_level='supreme')
+@imm_action('edit')
 def edit(source, **ignored):
-    return 'You tried to edit'
+    check_perm(source, mud.get_area(source.env.area_id))
+    return RootDTO(start_room_edit=source.env.dbo_id)
 
 
 @imm_action(('cmds', 'commands'))
@@ -43,6 +45,19 @@ def goto(source, args, **ignored):
         source.change_env(new_env)
         return source.parse("look")
     return "Cannot find " + dest
+
+
+@imm_action('summon')
+def summon(source, args, **ignored):
+    session = sm.user_session(args[0].lower())
+    if not session:
+        return "Player is not logged in"
+    player = session.player
+    check_perm(source, player)
+    player.change_env(source.env)
+    session.append(player.parse('look'))
+    session.append(Display("You have been summoned"))
+    return "You summon " + player.name + " into your presence."
 
 
 @imm_action('patch', imm_level='supreme')
@@ -112,6 +127,14 @@ def zap(source, target_method, **ignored):
     target_method(1000000)
     return SingleBroadcast(source, "An immortal recklessly wields power.")
 
+@imm_action('unmake', 'general')
+def unmake(source, target, **ignored):
+    if target.env == source.env:
+        target.leave_env()
+        title = target.title
+        del target
+        return title + " is no more."
+    return "Can only unmake things in the room."
 
 @imm_action('home')
 def home(source, **ignored):

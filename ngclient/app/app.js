@@ -187,11 +187,11 @@ angular.module('lampost').controller('ActionController', ['$scope', 'lmBus', 'lm
         $scope.update++;
     }, $scope);
     $scope.sendAction = function () {
-        if (this.action) {
-            lmBus.dispatch("server_request", "action", {action:this.action});
-            lmData.history.push(this.action);
+        if ($scope.action) {
+            lmBus.dispatch("server_request", "action", {action:$scope.action});
+            lmData.history.push($scope.action);
             lmData.historyIx = lmData.history.length;
-            this.action = "";
+            $scope.action = "";
         }
     };
     $scope.historyUp = function () {
