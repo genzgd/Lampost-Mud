@@ -1,4 +1,4 @@
-from lampost.comm.broadcast import SingleBroadcast
+from lampost.action.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.dto.display import Display, DisplayLine
 from lampost.dto.rootdto import RootDTO
@@ -24,14 +24,14 @@ def cmds(source, **ignored):
 @imm_action('goto')
 def goto(source, args, **ignored):
     if not args:
-        return "Go to whom? or to where?"
+        raise ActionError("Go to whom? or to where?")
     dest = args[0].lower()
     if dest == 'area' and len(args) > 1:
         area = mud.get_area(args[1])
         if not area:
-            return "Area does not exist"
+            raise ActionError("Area does not exist")
         if not area.rooms:
-            return "Area has no rooms!"
+            raise ActionError("Area has no rooms!")
         new_env = area.first_room
     else:
         session = sm.user_session(dest)
@@ -44,7 +44,7 @@ def goto(source, args, **ignored):
     if new_env:
         source.change_env(new_env)
         return source.parse("look")
-    return "Cannot find " + dest
+    raise ActionError("Cannot find " + dest)
 
 
 @imm_action('summon')
@@ -125,7 +125,7 @@ def sethome(source, **ignored):
 @imm_action('zap', msg_class='damage')
 def zap(source, target_method, **ignored):
     target_method(1000000)
-    return SingleBroadcast(source, "An immortal recklessly wields power.")
+    source.broadcast("An immortal recklessly wields power.")
 
 @imm_action('unmake', 'general')
 def unmake(source, target, **ignored):

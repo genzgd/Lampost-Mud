@@ -13,15 +13,16 @@ from lampost.gameops.permissions import Permissions
 from lampost.mud.mud import MudNature
 from lampost.util.lmlog import Log
 
-@provides('context')
-class Context():
+class Context(object):
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
                  flavor='merc', config='lampost'):
+        register('context', self)
+        self.properties = {}
         Log()
+        ClassRegistry()
         dispatcher = Dispatcher()
         register('decode', JSONDecoder().decode)
         register('encode', JSONEncoder().encode)
-        ClassRegistry()
         data_store = RedisStore(db_host, int(db_port), int(db_num), db_pw)
         Permissions()
         SessionManager()
@@ -32,13 +33,22 @@ class Context():
         dispatcher._start_service()
         web_server._start_service()
 
+    def set(self, key, value):
+        self.properties[key] = value
+
+    def get(self, key):
+        return self.properties.get(key, None)
+
+
 @provides('cls_registry')
-class ClassRegistry:
+class ClassRegistry(object):
     def __init__(self):
-        self.registry = dict()
+        self.registry = {}
 
     def __call__(self, cls):
         return self.registry.get(cls, cls)
 
     def set_class(self, base_cls, sub_cls):
         self.registry[base_cls] = sub_cls
+
+

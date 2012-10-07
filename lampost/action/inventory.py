@@ -1,4 +1,3 @@
-from lampost.dto.display import Display, DisplayLine
 from lampost.mud.action import mud_action
 
 @mud_action(('get', 'pick up'), 'get')
@@ -11,13 +10,11 @@ def drop(source, target_method, **ignored):
 
 @mud_action(('i', 'inven'))
 def inven(source, **ignored):
-    display = Display()
     if source.inven:
         for article in source.inven:
-            display.append(DisplayLine(article.title))
+            source.display_line(article.short_desc(source))
     else:
-        display.append(DisplayLine("You aren't carrying anything"))
-    return display
+        source.display_line("You aren't carrying anything.")
 
 class InvenContainer:
     def __init__(self):

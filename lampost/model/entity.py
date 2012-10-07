@@ -1,13 +1,16 @@
 import math
+from lampost.action.action import ActionError
 
-from lampost.comm.broadcast import Broadcast
+from lampost.comm.broadcast import Broadcast, SingleBroadcast
 from lampost.context.resource import m_requires
 from lampost.model.item import BaseItem
+from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
 
 class Entity(BaseItem):
     env = None
+    status = 'awake'
     entry_msg = Broadcast(s="{n} arrives.")
     exit_msg = Broadcast(s="{n} leaves.")
     current_target = None
@@ -34,7 +37,7 @@ class Entity(BaseItem):
         self.inven.add(article)
         self.add_action(article)
         self.add_target(article, self.inven)
-        return Broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article, source=self)
+        self.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article)
 
     def drop_inven(self, article):
         if not article in self.inven:
@@ -43,7 +46,7 @@ class Entity(BaseItem):
         self.remove_action(article)
         self.remove_target(article)
         article.enter_env(self.env)
-        return Broadcast(s="You drop {N}", e="{n} drops {N}", target=article, source=self)
+        self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
 
     def enhance_soul(self, actions):
         self.add_actions(actions)
@@ -172,6 +175,24 @@ class Entity(BaseItem):
         for sub_action in getattr(action, "sub_providers", []):
             self.remove_action(sub_action)
 
+    def parse(self, command):
+        try:
+            matches, response = self.parse_command(command)
+        except PermError:
+            return self.display_line("You do not have permission to do that.")
+        except ActionError as action_error:
+            return self.display_line(action_error.message, action_error.color)
+        if not matches:
+            matches, response = self.parse_command(" ".join(["say", command]))
+            if not matches:
+                return self.display_line("What?")
+        if len(matches) > 1:
+            return self.display_line("Ambiguous command.")
+        if isinstance(response, basestring):
+            return self.display_line(response)
+        if response:
+            self.output(response)
+
     def parse_command(self, command):
         words = command.lower().split()
         matches = list(self.match_actions(words))
@@ -243,5 +264,16 @@ class Entity(BaseItem):
         self.add_targets(new_env.elements, new_env)
         self.env.rec_entity_enters(self)
 
-    def broadcast(self, broadcast):
+    def broadcast(self, broadcast=None, color=0x000000, **kwargs):
+        if isinstance(broadcast, basestring):
+            broadcast = SingleBroadcast(broadcast, color)
+        elif not broadcast:
+            broadcast = Broadcast(color=color, **kwargs)
+        broadcast.source = self
+        self.env.rec_broadcast(broadcast)
+
+    def display_line(self, line, color=0x000000):
+        pass
+
+    def update_score(self):
         pass

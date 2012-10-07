@@ -71,17 +71,18 @@ class SessionManager():
             self.nature.baptise(player)
             player.start()
         if old_session:
-            session.display_line(DisplayLine("-- Existing Session Logged Out --", 0x002288))
+            player.display_line("-- Existing Session Logged Out --", 0x002288)
         else:
-            session.display_line(DisplayLine("Welcome " + player.name,  0x002288))
+            player.display_line("Welcome " + player.name,  0x002288)
         self.player_map[player.dbo_id] = session.login(player, user)
         self.player_session_map[player.dbo_id] = session
-        session.append(player.parse("look"))
+        player.parse("look")
         return self._respond(LoginResult(player))
 
     def logout(self, session):
         player = session.player
         player.last_logout = int(time.time())
+        player.age += player.last_logout - player.last_login
         player.leave_env()
         player.detach()
         session.player = None
@@ -140,6 +141,14 @@ class UserSession():
         player.session = self
         self.activity_time = datetime.now()
         return self.player_info(self.activity_time)
+
+    def pull_output(self):
+        output = self.output
+        if self.pulse_reg:
+            self.unregister(self.pulse_reg)
+            self.pulse_reg = None
+        self.output = RootDTO()
+        return output
 
     def player_info(self, now):
         if self.ld_time:

@@ -9,6 +9,9 @@ def pronouns(sex):
     if sex == "female":
         return 'she', 'her', 'hers', 'herself'
 
+def dump(dump_dict):
+    return ["{0}: {1}".format(key, str(value)) for key, value in dump_dict.iteritems()]
+
 def find_nth(haystack, needle, n):
     start = haystack.find(needle)
     while start >= 0 and n > 1:

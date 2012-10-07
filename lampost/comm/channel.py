@@ -1,6 +1,6 @@
 from lampost.action.action import make_action
 from lampost.context.resource import requires
-from lampost.dto.display import DisplayLine, Display
+from lampost.dto.display import DisplayLine
 
 @requires('dispatcher')
 class Channel():
@@ -11,10 +11,10 @@ class Channel():
     def __call__(self, source, command, **ignored):
         space_ix = command.find(" ")
         if space_ix == -1:
-            return "Say what?"
+            return source.display_line("Say what?")
         statement = source.name + ":" + command[space_ix:]
         self.dispatch(self, ChannelMessage(source, statement, self.color))
-        return Display(statement, self.color)
+        source.display_line(statement, self.color)
 
 class ChannelMessage():
     def __init__(self, source, message, color):

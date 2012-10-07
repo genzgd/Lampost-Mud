@@ -48,7 +48,6 @@ def m_requires(*resources):
     for name in resources[:-1]:
         inject(module, name)
 
-
 _registry = {}
 _consumers = {}
 _methods = {}

@@ -162,7 +162,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
                 dialogId && lmDialog.close(dialogId);
                 if (status == 403) {
                     lmDialog.showOk("Denied", "You do not have permission for that action");
-                } else if (status != 410) {
+                } else if (status != 409) {
                     lmDialog.showOk("Server Error: " + status, data);
                 }
             }).then(function(result) {

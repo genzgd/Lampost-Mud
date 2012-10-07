@@ -38,6 +38,11 @@ def make_action(action, verbs, msg_class=None, fixed_targets=None):
         action.fixed_targets = fixed_targets
     return action
 
+class ActionError(Exception):
+    def __init__(self, message, color=None):
+        self.message = message
+        self.color = color
+
 class _ActionObject(object):
     def __call__(self, **kwargs):
         return self.execute(**kwargs)

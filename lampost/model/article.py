@@ -1,4 +1,5 @@
 from item import BaseItem
+from lampost.action.action import ActionError
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.template import Template
 from lampost.util.lmutil import cls_name
@@ -6,8 +7,9 @@ from lampost.util.lmutil import cls_name
 VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 class Article(BaseItem):
-    dbo_rev = 0
-    dbo_fields = BaseItem.dbo_fields + ("weight",)
+    dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "type")
+    rec_wear = True
+    equip_slot = None
 
     def __init__(self, article_id):
         self.article_id = article_id
@@ -17,7 +19,8 @@ class Article(BaseItem):
             prefix = ""
         else:
             prefix = "An" if self.title[0] in VOWELS else "A"
-        return "{0} {1}.".format(prefix, self.title)
+        equipped = ' (equipped)' if self.equip_slot else ''
+        return "{0} {1}.{2}".format(prefix, self.title, equipped)
 
     @property
     def name(self):
@@ -42,7 +45,10 @@ class Article(BaseItem):
         return self.do_rec_drop
 
     def do_rec_drop(self, source):
+        if self.equip_slot:
+            raise ActionError("You must unequip the item before dropping it.")
         return source.drop_inven(self)
+
 
 class Container(Article):
     def __init__(self):
@@ -56,6 +62,8 @@ class ArticleTemplate(Template, RootDBO):
     instance_class = cls_name(Article)
     aliases= []
     weight = 0
+    slot = "none"
+    type = "treasure"
 
 
 class ArticleReset(RootDBO):

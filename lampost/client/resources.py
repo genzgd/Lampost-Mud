@@ -4,7 +4,6 @@ from datetime import datetime
 from twisted.web.resource import Resource, NoResource
 from twisted.web.server import NOT_DONE_YET
 
-from lampost.dto.display import Display
 from lampost.dto.link import *
 from lampost.dto.rootdto import RootDTO
 from lampost.util.lmlog import logged
@@ -33,7 +32,7 @@ def request(func):
             request.setResponseCode(403)
             return "Permission Denied."
         except DataError as de:
-            request.setResponseCode(410)
+            request.setResponseCode(409)
             return str(de.message)
         except StateError as se:
             request.setResponseCode(400)
@@ -79,15 +78,8 @@ class ActionResource(Resource):
         if action in ["quit", "logout", "log out"]:
             return sm.logout(session)
         session.activity_time = datetime.now()
-        try:
-            feedback = player.parse(action)
-        except PermError:
-            feedback = "You do not have permission to do that."
-        if not feedback:
-            return Display("Nothing appears to happen.")
-        if getattr(feedback, "json", None):
-            return feedback
-        return Display(feedback)
+        player.parse(action)
+        return session.pull_output()
 
 @provides('lsp')
 class GeneratedResource(Resource):

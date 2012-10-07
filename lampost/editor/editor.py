@@ -1,4 +1,6 @@
 from twisted.web.resource import Resource
+from lampost.client.resources import request
+from lampost.context.resource import requires
 from lampost.editor.areas import AreaResource
 from lampost.editor.articles import ArticleResource
 from lampost.editor.config import ConfigResource
@@ -15,6 +17,14 @@ class EditorResource(Resource):
         self.putChild('article', ArticleResource())
         self.putChild('player', PlayerResource())
         self.putChild('config', ConfigResource())
+        self.putChild('constants', PropertiesResource())
+
+@requires('context')
+class PropertiesResource(Resource):
+    @request
+    def render_POST(self, content, session):
+        return self.context.properties
+
 
 
 

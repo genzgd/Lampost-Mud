@@ -7,3 +7,8 @@ nudge_vals = [-1, 0, 0, 1]
 
 def nudge(value):
     return max(1, value + nudge_vals[randint(0, 3)])
+
+def range_limit(min, value, max):
+    if value < min:
+        return min
+    return max(value, max)

@@ -11,16 +11,16 @@ from lampost.comm.channel import Channel
 
 from area import Area
 
-from lampost.mobile.mobile import MobileTemplate
-
-m_requires('log', 'perm', __name__)
+m_requires('log', 'perm',  __name__)
 
 @requires('sm', 'datastore')
 @provides('nature')
 class MudNature():
 
     def __init__(self, flavor):
-        __import__('lampost.' + flavor + '.flavor', globals())
+
+        flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
+        flavor_module.init()
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
@@ -76,8 +76,6 @@ class MudNature():
 @provides('mud')
 class Mud():
     def __init__(self):
-        MobileTemplate.mud = self
-
         self.area_map = {}
         area_keys = self.datastore.fetch_set_keys("areas")
         for area_key in area_keys:
@@ -90,11 +88,6 @@ class Mud():
 
     def get_area(self, area_id):
         return self.area_map.get(area_id)
-
-
-    def init_mobile(self, mobile):
-        pass
-        #self.flavor.init_mobile(mobile)
 
     def find_room(self, room_id):
         try:
@@ -110,7 +103,6 @@ class Mud():
             return room
         except:
             error("Exception finding room " + room_id)
-            return None
 
     def start_player(self, player):
         if getattr(player, "room_id", None):
@@ -122,3 +114,5 @@ class Mud():
         if not room:
             room = self.find_room("immortal_citadel:0") #Last chance, if this fails something is really wrong
         player.change_env(room)
+
+

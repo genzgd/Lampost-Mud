@@ -4,14 +4,14 @@ Created on Apr 17, 2012
 @author: Geoff
 '''
 from lampost.util.lmutil import pronouns
-defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}    
+defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}
 
 class BroadcastMap(object):
     def __init__(self, def_msg=None, **kwargs):
-        self.s = def_msg;
+        self.s = def_msg
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
-            
+
     def __getitem__(self, msg_key):
         while True:
             msg = getattr(self, msg_key, None)
@@ -20,7 +20,7 @@ class BroadcastMap(object):
             msg_key = defaults[msg_key]
             if not msg_key:
                 return "Invalid message type"
-                
+
 class Broadcast(object):
     def __init__(self, broadcast_map=None, source=None, target=None, color=0x000000, **kwargs):
         if broadcast_map:
@@ -31,7 +31,7 @@ class Broadcast(object):
         self.target = target
         self.color = color
         self.broadcast = self
-        
+
     def translate(self, observer):
         if not self.target:
             if not self.source or self.source == observer:
@@ -47,7 +47,7 @@ class Broadcast(object):
         if self.source == observer:
             return self.substitute('st')
         return self.substitute('et')
-            
+
     def substitute(self, version):
         message = self.broadcast_map[version]
         if self.source:
@@ -60,31 +60,14 @@ class Broadcast(object):
             tsub, tobj, tposs, tself = pronouns(self.target.sex)
         else:
             tname = tsub = tobj = tposs = tself = None
-       
-        return message.format(n=sname, N=tname, e=ssub, E=tsub, \
+
+        return message.format(n=sname, N=tname, e=ssub, E=tsub,
             s=sposs, S=tposs, m=sobj, M=tobj, f=sself, F=tself).capitalize()
-          
+
 class SingleBroadcast():
-    def __init__(self, source, all_msg, color=0x00000):
-        self.source = source
-        self.target = None
+    def __init__(self, all_msg, color=0x00000):
         self.all_msg = all_msg
         self.color = color
-        self.broadcast = self
-                
+
     def translate(self, observer):
         return self.all_msg
-        
-class EnvBroadcast():
-    def __init__(self, source, self_msg, env_msg, color=0x000000):
-        self.target = None
-        self.source = source
-        self.self_msg = self_msg
-        self.env_msg = env_msg
-        self.color = color
-        self.broadcast = self
-        
-    def translate(self, observer):
-        if self.source == observer:
-            return self.self_msg
-        return self.env_msg 

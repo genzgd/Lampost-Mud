@@ -105,16 +105,20 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
         master.article = {};
         self.areaList = [];
         self.roomsMaster = {};
-        var areaPromise = lmRemote.request('editor/area/list').then(function (areas) {
-            angular.forEach(areas, function (value) {
-                areaMaster[value.id] = value;
-                self.areaList.push(value);
+        $q.all([
+            lmRemote.request('editor/area/list').then(function (areas) {
+                angular.forEach(areas, function (value) {
+                    areaMaster[value.id] = value;
+                    self.areaList.push(value);
+                })
+            }),
+            lmRemote.request('editor/room/dir_list').then(function (directions) {
+                self.directions = directions;
+            }),
+            lmRemote.request('editor/constants').then( function(constants) {
+                self.constants = constants;
             })
-        });
-        var dirPromise = lmRemote.request('editor/room/dir_list').then(function (directions) {
-            self.directions = directions;
-        });
-        $q.all([areaPromise, dirPromise]).then(function () {
+        ]).then(function () {
             lmUtil.stringSort(self.areaList, 'name');
             self.loadStatus = "loaded";
             lmBus.dispatch('editor_change');
@@ -362,6 +366,7 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
     lmBus.register('editor_change', editorChange);
 
     $scope.editors = lmEditor.editors;
+    $scope.constants = lmEditor.constants;
     editorChange();
 
     $scope.tabClass = function (editor) {

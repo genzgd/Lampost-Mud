@@ -29,3 +29,5 @@ STRENGTH_TABLE = [[-5, -4, 0, 0],
 
 def weight_capacity(str_value):
     return STRENGTH_TABLE[str_value][2]
+
+ARMOR_DESC = []
