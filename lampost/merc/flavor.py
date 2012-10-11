@@ -13,7 +13,6 @@ from lampost.context.resource import m_requires
 
 m_requires('cls_registry', 'context',  __name__)
 
-
 equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
 

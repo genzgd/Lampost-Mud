@@ -13,7 +13,9 @@ from area import Area
 
 m_requires('log', 'perm',  __name__)
 
-@requires('sm', 'datastore')
+article_load_types = ['equip', 'default']
+
+@requires('sm', 'datastore', 'context')
 @provides('nature')
 class MudNature():
 
@@ -21,15 +23,19 @@ class MudNature():
 
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
         flavor_module.init()
+        self.mud = Mud()
+
+    def bootstrap(self):
         self.shout_channel = Channel("shout", 0x109010)
-        self.imm_channel = Channel("imm", 0xed1c24)
+        self.imm_channel = Channel("imm.", 0xed1c24)
         self.pulse_interval = .25
+        self.context.set('article_load_types', article_load_types)
 
         look_action = simple_action(("look", "l", "exa", "examine", "look at"), "examine")
         self.basic_soul = {look_action}
         for action in mud_actions:
             self.basic_soul.add(action)
-        self.mud = Mud()
+        self.mud.load_areas()
         self.citadel = ImmortalCitadel()
         self.mud.add_area(self.citadel)
         self.citadel.on_loaded()
@@ -47,9 +53,6 @@ class MudNature():
         return editors
 
     def baptise(self, player):
-        if not getattr(player, "room_id", None):
-            player.room_id = self.config.start_room
-            self.datastore.save_object(player)
 
         new_soul = self.basic_soul.copy()
 
@@ -71,23 +74,43 @@ class MudNature():
 
         player.equip(set())
         self.mud.start_player(player)
+        if not getattr(player, "room_id", None):
+            player.room_id = player.env.dbo_id
+            self.datastore.save_object(player)
+
 
 @requires('datastore', 'dispatcher', 'config')
 @provides('mud')
 class Mud():
     def __init__(self):
         self.area_map = {}
+
+    def load_areas(self):
         area_keys = self.datastore.fetch_set_keys("areas")
         for area_key in area_keys:
             area_id = area_key.split(":")[1]
             area = self.datastore.load_object(Area, area_id)
             self.add_area(area)
+        for area in self.area_map.itervalues():
+            area.start()
 
     def add_area(self, area):
         self.area_map[area.dbo_id] = area
 
     def get_area(self, area_id):
         return self.area_map.get(area_id)
+
+    def get_mobile(self, mobile_id):
+        area = self.get_area(mobile_id.split(':')[0])
+        if area:
+            return area.get_mobile(mobile_id)
+        error('Requested invalid mobileId: {0}'.format(mobile_id))
+
+    def get_article(self, article_id):
+        area = self.get_area(article_id.split(':')[0])
+        if area:
+            return area.get_article(article_id)
+        error('Requested invalid articleId: {0}'.format(article_id))
 
     def find_room(self, room_id):
         try:

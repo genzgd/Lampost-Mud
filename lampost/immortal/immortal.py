@@ -1,6 +1,6 @@
 from lampost.action.action import ActionError
 from lampost.context.resource import m_requires
-from lampost.dto.display import Display, DisplayLine
+from lampost.dto.display import Display
 from lampost.dto.rootdto import RootDTO
 from lampost.mud.action import imm_action
 from lampost.player.player import Player
@@ -153,19 +153,10 @@ def unregister_display(source, args, **ignored):
     source.unregister_type(args[0], source.display_line)
 
 
-@imm_action('describe')
-def describe(source, args, **ignored):
-    if not args:
-        target = source.env
-    else:
-        target = load_cached(args[0])
-    if not target:
-        return "No object with that key found"
-    display = Display(" ")
-    for line in target.describe():
-        display.append(DisplayLine(line))
-    return display
-
+@imm_action('describe', 'describe')
+def describe(source, target, **ignored):
+    for line in target.rec_describe():
+        source.display_line(line)
 
 @imm_action('buildmode')
 def build_mode(source, **ignored):

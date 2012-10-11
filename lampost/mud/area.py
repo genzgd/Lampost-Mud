@@ -1,7 +1,6 @@
 from lampost.context.resource import requires, m_requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBODict
 from lampost.env.room import Room
-from lampost.gameops.template import TemplateException
 from lampost.mobile.mobile import MobileTemplate
 from random import randint
 from lampost.model.article import ArticleTemplate
@@ -27,7 +26,11 @@ class Area(RootDBO):
         self.rooms = DBODict()
         self.mobiles = DBODict()
         self.articles = DBODict()
-        self.reset_wait = 0
+        self.reset_wait = randint(-180, 0) #Start resets at staggered intervals
+
+    def start(self):
+        self.reset()
+        self.reset_reg = self.register_p(self.check_reset, seconds=self.reset_pulse, randomize=10)
 
     @property
     def first_room(self):
@@ -55,11 +58,6 @@ class Area(RootDBO):
             article_id = ":".join([self.dbo_id, article_id])
         return self.articles.get(article_id)
 
-    def on_loaded(self):
-        self.reset()
-        self.reset_wait = randint(-180, 0) #Start resets at staggered intervals
-        self.reset_reg = self.register_p(self.check_reset, seconds=self.reset_pulse, randomize=10)
-
     def check_reset(self):
         self.reset_wait += self.reset_pulse
         if self.reset_wait >= self.reset_time:
@@ -69,7 +67,7 @@ class Area(RootDBO):
         debug("{0} Area resetting".format(self.dbo_id))
         self.reset_wait = 0
         for room in self.rooms.itervalues():
-            room.reset(self)
+            room.reset()
 
     def find_mobile_resets(self, mobile_id):
         for room in self.rooms:
@@ -83,22 +81,3 @@ class Area(RootDBO):
                 if article_reset.article_id == article_id:
                     yield room, article_reset
 
-    def create_mob(self, mobile_id, env):
-        try:
-            template = self.get_mobile(mobile_id)
-            mob = template.create_instance()
-            mob.enter_env(env)
-        except KeyError:
-            debug("No template for " + mobile_id)
-        except TemplateException:
-            pass
-
-    def create_article(self, article_id, env):
-        try:
-            template = self.get_article(article_id)
-            article = template.create_instance()
-            article.enter_env(env)
-        except KeyError:
-            debug("No template for " + article_id)
-        except TemplateException:
-            pass

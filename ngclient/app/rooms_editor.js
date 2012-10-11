@@ -166,7 +166,8 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                     lmDialog.showOk("No Mobiles", "No mobiles defined for this area.");
                 } else {
                     lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
-                        locals:{addFunc:addMobileReset, roomId:$scope.roomId, objects:mobiles, resetType:'Mobile'}});
+                        locals:{addFunc:addMobileReset, roomId:$scope.roomId, objects:mobiles,
+                            resetType:'Mobile', areaId: areaId}});
                 }
             });
         };
@@ -182,7 +183,8 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
                     lmDialog.showOk("No Articles", "No articles defined for this area.");
                 } else {
                     lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
-                        locals:{addFunc:addArticleReset, roomId:$scope.roomId, objects:articles, resetType:'Article'}});
+                        locals:{addFunc:addArticleReset, roomId:$scope.roomId,
+                            objects:articles, resetType:'Article', areaId: areaId}});
                 }
             });
         };
@@ -354,8 +356,8 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
         $scope.areaList = [];
         angular.forEach(lmEditor.areaList, function (value) {
             $scope.areaList.push(value.id);
-            $scope.areaList.sort();
         });
+        $scope.areaList.sort();
 
         $scope.changeType = function() {
             if ($scope.useNew == "existing") {
@@ -448,13 +450,37 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
     }
 ]);
 
-angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addFunc', 'roomId', 'objects', 'resetType',
-    function ($scope, addFunc, roomId, objects, resetType) {
+angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addFunc', 'roomId', 'objects', 'resetType', 'lmEditor', 'areaId',
+    function ($scope, addFunc, roomId, objects, resetType, lmEditor, areaId) {
 
+        var previousAreaId = areaId;
         $scope.roomId = roomId;
         $scope.resetType = resetType;
         $scope.objects = objects;
-        $scope.reset = {count:1, max:1, object:objects[0]};
+        $scope.areaList = [];
+        angular.forEach(lmEditor.areaList, function (value) {
+            $scope.areaList.push(value.id);
+        });
+        $scope.areaList.sort();
+        $scope.areaId = areaId;
+        $scope.reset = {count:1, max:1, object:objects[0], article_loads:[]};
+
+        $scope.changeArea = function() {
+            lmEditor.loadObjects(resetType.toLowerCase(), $scope.areaId).then(function(objects) {
+               loadObjects(objects);
+            });
+        };
+
+        function loadObjects(objects) {
+            if (objects.length == 0) {
+                alert("No " + resetType + "s in " + $scope.areaId);
+                $scope.areaId = previousAreaId;
+            } else {
+                previousAreaId = $scope.areaId;
+                $scope.objects = objects;
+                $scope.reset.object = objects[0];
+            }
+        }
 
         $scope.createReset = function() {
             addFunc($scope.reset);

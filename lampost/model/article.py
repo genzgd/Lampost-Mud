@@ -70,3 +70,8 @@ class ArticleReset(RootDBO):
     dbo_fields = "article_id", "article_count", "article_max"
     article_count = 1
     article_max = 1
+
+class ArticleLoad(RootDBO):
+    dbo_fields = 'article_id', 'type', 'count'
+    count = 1
+    type = 'equip'

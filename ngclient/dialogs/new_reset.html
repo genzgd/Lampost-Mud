@@ -14,17 +14,22 @@
         <div class="span4">
           <label>Count</label>
           <input class="input-small" type="number" ng-model="reset.count" required="true" min="1"/>
-
         </div>
       </div>
       <div class="row-fluid">
         <div class="span8" style="min-height: 132px; padding-top:4px">
           <p><em>{{reset.objects.title}}</em></p>
           <p>{{reset.object.desc}}</p>
-        </div>
+         </div>
         <div class="span4">
           <label>Max</label>
           <input class="input-small" type="number" ng-model="reset.max" required="true" min="1"/>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span8">
+        <h6>Source Area</h6>
+         <select class="span6" ng-model="areaId" ng-change="changeArea()" ng-options="tempAreaId for tempAreaId in areaList" required="true"></select>
         </div>
       </div>
     </div>

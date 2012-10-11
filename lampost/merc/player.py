@@ -1,7 +1,7 @@
 from random import randint
 from lampost.action.action import ActionError
 from lampost.merc.combat import basic_hit
-from lampost.merc.constants import MAX_ITEMS, weight_capacity
+from lampost.merc.constants import MAX_ITEMS, weight_capacity, MAX_LEVEL, XP_PER_LEVEL
 from lampost.player.player import Player
 
 class PlayerMerc(Player):
@@ -38,7 +38,7 @@ class PlayerMerc(Player):
     def auto_attack(self):
         if self.current_target:
             if self.current_target.env == self.env:
-                self.env.rec_broadcast(basic_hit(self, self.current_target))
+                basic_hit(self, self.current_target)
             else:
                 self.current_target = None
                 self.unregister(self.combat_pulse)
@@ -132,7 +132,20 @@ class PlayerMerc(Player):
         score = super(PlayerMerc, self).get_score()
         score.level = self.level
         score.defense = self.defense
+        score.experience = self.experience
         return score
+
+    def add_exp(self, exp):
+        self.experience += exp
+        while self.level < MAX_LEVEL and self.experience < (self.level - 1) * XP_PER_LEVEL:
+            self.add_level()
+
+    def add_level(self):
+        self.level += 1
+        new_hp = randint(11, 15)
+        self.max_health += new_hp
+        self.health += new_hp
+        self.display_line("You have achieved level {0}!".format(self.level))
 
     @property
     def curr_dex(self):

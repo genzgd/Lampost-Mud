@@ -11,11 +11,14 @@ def basic_hit(source, target):
     dice_roll = randint(0, 19)
     if dice_roll == 19 or dice_roll >= to_hit_roll:
         damage = source.calc_damage(target)
-        target.rec_damage(damage)
         source.broadcast(s="You hit {N} for " + unicode(damage) + ".", e="{n} hits {N}", t="{n} hits you!", target=target)
+        target.rec_damage(damage)
+        if target.dead:
+            source.add_exp(calc_experience(source, target))
     else:
-        target.rec_damage(0)
         source.broadcast(s="You miss {N}.", e="{n} misses {N}", t="{n} misses you!", target=target)
+        target.rec_damage(0)
+
 
 def calc_experience(killer, killed):
     xp = 300 - range_limit(-3, killer.level - killed.level, 6) * 50

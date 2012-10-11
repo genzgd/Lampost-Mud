@@ -22,6 +22,9 @@ class MobileMerc(Mobile):
         if self.health < 0:
             self.die()
 
+    def add_exp(self):
+        pass
+
     def mob_attack(self):
         if self.current_target.env == self.env:
             self.env.rec_broadcast(basic_hit(self, self.current_target))

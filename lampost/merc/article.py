@@ -13,11 +13,11 @@ class ArticleTemplateMerc(ArticleTemplate):
         if instance.type == 'weapon':
             instance.damage_low = nudge(nudge(int(instance.level / 4 + 2)))
             instance.damage_high = nudge(nudge(int(3 * instance.level / 4 + 6)))
-        if instance.type == 'armor':
+        elif instance.type == 'armor':
             defense = nudge(int(instance.level / 4 + 2))
-            if instance.equip_slot == 'torso':
+            if instance.slot == 'torso':
                 defense *= 3
-            elif instance.equip_slot in ['head', 'legs', 'cloak']:
+            elif instance.slot in ['head', 'legs', 'cloak']:
                 defense *= 2
             instance.defense = defense
 

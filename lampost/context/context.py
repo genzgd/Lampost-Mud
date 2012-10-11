@@ -28,8 +28,9 @@ class Context(object):
         SessionManager()
         UserManager()
         web_server = WebServer(int(port))
-        MudNature(flavor)
+        nature = MudNature(flavor)
         data_store.load_object(Config, config)
+        nature.bootstrap()
         dispatcher._start_service()
         web_server._start_service()
 

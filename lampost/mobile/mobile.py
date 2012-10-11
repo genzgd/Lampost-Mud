@@ -1,5 +1,6 @@
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.gameops.template import Template
+from lampost.model.article import ArticleLoad
 from lampost.model.creature import Creature
 from lampost.util.lmutil import cls_name
 
@@ -26,5 +27,8 @@ class MobileTemplate(Template, RootDBO):
 
 class MobileReset(RootDBO):
     dbo_fields = "mobile_id", "mob_count", "mob_max"
+    dbo_collections = DBORef("article_loads", ArticleLoad),
+    article_loads = []
     mob_count = 1
     mob_max = 1
+

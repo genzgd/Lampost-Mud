@@ -103,6 +103,7 @@ class RedisStore():
         class_name = split_path[-1]
         module = __import__(module_name, globals(), locals(), [class_name])
         clazz = getattr(module, class_name)
+        clazz = self.cls_registry(clazz)
         self.class_map[class_path] = clazz
         return clazz
 

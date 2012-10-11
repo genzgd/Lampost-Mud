@@ -248,18 +248,26 @@ class ExitDTO(RootDTO):
             self.two_way = True
 
 class MobileDTO(RootDTO):
-    def __init__(self, area, mobile_reset):
+    def __init__(self, mobile_reset):
         self.merge_dict(mobile_reset.json_obj)
-        mobile = area.get_mobile(mobile_reset.mobile_id)
-        self.desc = mobile.desc if mobile.desc else mobile.title
-        self.title = mobile.title
+        mobile = mud.get_mobile(mobile_reset.mobile_id)
+        if mobile:
+            self.desc = mobile.desc if mobile.desc else mobile.title
+            self.title = mobile.title
+        else:
+            self.desc = '<MISSING>'
+            self.title = '<MISSING>'
 
 class ArticleDTO(RootDTO):
-    def __init__(self, area, article_reset):
+    def __init__(self, article_reset):
         self.merge_dict(article_reset.json_obj)
-        article = area.get_article(article_reset.article_id)
-        self.desc = article.desc if article.desc else article.title
-        self.title = article.title
+        article = mud.get_article(article_reset.article_id)
+        if article:
+            self.desc = article.desc if article.desc else article.title
+            self.title = article.title
+        else:
+            self.desc = '<MISSING>'
+            self.title = '<MISSING>'
 
 class RoomDTO(RootDTO):
     def __init__(self, area, room):
@@ -269,8 +277,8 @@ class RoomDTO(RootDTO):
         self.dbo_rev = room.dbo_rev
         self.extras = [extra.json_obj for extra in room.extras]
         self.exits = [ExitDTO(exit) for exit in room.exits]
-        self.mobiles = [MobileDTO(area, mobile_reset) for mobile_reset in room.mobile_resets]
-        self.articles = [ArticleDTO(area, article_reset) for article_reset in room.article_resets]
+        self.mobiles = [MobileDTO(mobile_reset) for mobile_reset in room.mobile_resets]
+        self.articles = [ArticleDTO(article_reset) for article_reset in room.article_resets]
 
 
 

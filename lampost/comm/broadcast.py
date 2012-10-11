@@ -1,8 +1,3 @@
-'''
-Created on Apr 17, 2012
-
-@author: Geoff
-'''
 from lampost.util.lmutil import pronouns
 defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}
 
@@ -51,18 +46,18 @@ class Broadcast(object):
     def substitute(self, version):
         message = self.broadcast_map[version]
         if self.source:
-            sname = self.source.name
-            ssub, sobj, sposs, sself = pronouns(self.source.sex)
+            s_name = self.source.name
+            s_sub, s_obj, s_poss, s_self = pronouns(self.source.sex)
         else:
-            sname = ssub = sobj = sposs = sself = None
+            s_name = s_sub = s_obj = s_poss = s_self = None
         if self.target:
-            tname = self.target.name
-            tsub, tobj, tposs, tself = pronouns(self.target.sex)
+            t_name = self.target.name
+            t_sub, t_obj, t_poss, t_self = pronouns(self.target.sex)
         else:
-            tname = tsub = tobj = tposs = tself = None
+            t_name = t_sub = t_obj = t_poss = t_self = None
 
-        return message.format(n=sname, N=tname, e=ssub, E=tsub,
-            s=sposs, S=tposs, m=sobj, M=tobj, f=sself, F=tself).capitalize()
+        return message.format(n=s_name, N=t_name, e=s_sub, E=t_sub,
+            s=s_poss, S=t_poss, m=s_obj, M=t_obj, f=s_self, F=t_self).capitalize()
 
 class SingleBroadcast():
     def __init__(self, all_msg, color=0x00000):

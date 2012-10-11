@@ -1,4 +1,6 @@
 MAX_ITEMS = 18
+MAX_LEVEL = 20
+XP_PER_LEVEL = 1000
 
 STRENGTH_TABLE = [[-5, -4, 0, 0],
                [-5, -4, 3, 1],

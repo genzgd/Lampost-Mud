@@ -34,5 +34,5 @@ def help(source, args, **ignored):
 
 @mud_action('score')
 def score(source, **ignored):
-    for line in dump(source.get_score):
+    for line in dump(source.get_score()):
         source.display_line(line)

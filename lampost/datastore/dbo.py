@@ -66,7 +66,7 @@ class RootDBO(object):
     def autosave(self):
         save_object(self, autosave=True)
 
-    def describe(self, level=0, follow_refs=True):
+    def rec_describe(self, level=0, follow_refs=True):
         display = []
 
         def append(key, value):
@@ -87,7 +87,7 @@ class RootDBO(object):
             child_dbo = getattr(self, ref.field_name, None)
             if child_dbo:
                 if follow_refs or not child_dbo.dbo_key_type:
-                    display.extend(child_dbo.describe(level + 1))
+                    display.extend(child_dbo.rec_describe(level + 1))
                 else:
                     append(ref.field_name, child_dbo.dbo_key)
             else:
@@ -98,7 +98,7 @@ class RootDBO(object):
                 append(col.field_name, "")
                 for child_dbo in child_coll:
                     if follow_refs or not child_dbo.dbo_key_type:
-                        display.extend(child_dbo.describe(level + 1, False))
+                        display.extend(child_dbo.rec_describe(level + 1, False))
                     else:
                         append(col.field_name, child_dbo.dbo_key)
             else:

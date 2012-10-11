@@ -25,7 +25,7 @@ class SettingsGet(Resource):
         user_json['password'] = ''
         return user_json
 
-@requires('sm')
+@requires('sm', 'cls_registry')
 class AccountCreate(Resource):
     @request
     def render_POST(self, content, session):
@@ -35,7 +35,7 @@ class AccountCreate(Resource):
             raise DataError(content.account_name + " is in use.")
         if get_index("user_name_index", player_name) or object_exists('player', player_name):
             raise DataError(content.player_name + " is in use.")
-        player = Player(player_name)
+        player = self.cls_registry(Player)(player_name)
         user_manager.attach_user(player, account_name, content.password, content.email)
         return self.sm.login(session, account_name, content.password)
 

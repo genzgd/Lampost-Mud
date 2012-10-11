@@ -1,3 +1,4 @@
+from lampost.context.resource import requires, m_requires
 from lampost.dto.display import Display, DisplayLine
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction
@@ -5,6 +6,7 @@ from lampost.mobile.mobile import MobileReset
 from lampost.model.item import BaseItem
 from lampost.model.article import ArticleReset
 
+m_requires('log', __name__)
 
 class Exit(RootDBO):
     dbo_fields = "dir_name",
@@ -36,6 +38,7 @@ class Exit(RootDBO):
         return self.destination.rec_examine(source)
 
 
+@requires('mud')
 class Room(RootDBO):
     ROOM_COLOR = 0xAD419A
     ROOM_SEP = "-=" * 30
@@ -144,19 +147,31 @@ class Room(RootDBO):
             if rec_method:
                 rec_method(*args)
 
-    def reset(self, area):
+    def reset(self):
         for m_reset in self.mobile_resets:
+            template = self.mud.get_mobile(m_reset.mobile_id)
+            if not template:
+                error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
+                continue
             curr_count = len([entity for entity in self.contents if getattr(entity, "mobile_id", None) == m_reset.mobile_id])
             for unused in range(m_reset.mob_count - curr_count):
-                area.create_mob(m_reset.mobile_id, self)
+                self.add_template(template)
             if curr_count >= m_reset.mob_count and curr_count < m_reset.mob_max:
-                area.create_mob(m_reset.mobile_id, self)
+                self.add_template(template)
         for a_reset in self.article_resets:
+            template = self.mud.get_article(a_reset.article_id)
+            if not template:
+                error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
+                continue
             curr_count = len([entity for entity in self.contents if getattr(entity, "article_id", None) == a_reset.article_id])
             for unused in range(a_reset.article_count - curr_count):
-                area.create_article(a_reset.article_id, self)
+                self.add_template(template)
             if curr_count >= a_reset.article_count and curr_count < a_reset.article_max:
-                area.create_article(a_reset.article_id, self)
+                self.add_template(template)
+
+    def add_template(self, template):
+        instance = template.create_instance()
+        instance.enter_env(self)
 
 
 
