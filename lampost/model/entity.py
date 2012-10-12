@@ -245,6 +245,9 @@ class Entity(BaseItem):
                 yield target, target_method
                 return
 
+    def rec_social(self):
+        pass
+
     def change_env(self, new_env):
         self.leave_env()
         self.enter_env(new_env)

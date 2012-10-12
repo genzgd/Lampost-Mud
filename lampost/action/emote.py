@@ -1,4 +1,4 @@
-from lampost.comm.broadcast import Broadcast, BroadcastMap
+from lampost.comm.broadcast import BroadcastMap
 from lampost.mud.action import mud_action
 
 
@@ -79,8 +79,7 @@ EMOTES =  {"dance": BroadcastMap(s="You gyrate lewdly!",
 
 @mud_action(EMOTES.keys(), 'social')
 def emote(source, target, verb, **ignored):
-    broadcast_map = EMOTES[verb[0]]
-    return Broadcast(broadcast_map, source, target)
+    source.broadcast(broadcast_map=EMOTES[verb[0]], target=target)
 
 @mud_action('socials')
 def socials(**ignored):

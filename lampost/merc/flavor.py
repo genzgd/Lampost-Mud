@@ -29,6 +29,9 @@ def init():
 
 @mud_action(('kill', 'attack'), 'violence')
 def kill(source, target, target_method, **ignored):
+    if source == target:
+        source.display_line("You cannot kill yourself.  This is a happy place.")
+        return
     source.rec_violence(target)
     target_method(source)
     basic_hit(source, target)
