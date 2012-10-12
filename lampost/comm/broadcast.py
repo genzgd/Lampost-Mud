@@ -17,7 +17,7 @@ class BroadcastMap(object):
                 return "Invalid message type"
 
 class Broadcast(object):
-    def __init__(self, broadcast_map=None, source=None, target=None, color=0x000000, **kwargs):
+    def __init__(self, broadcast_map=None, source=None, target=None, color=0x000000, silent=False, **kwargs):
         if broadcast_map:
             self.broadcast_map = broadcast_map
         else:
@@ -25,9 +25,11 @@ class Broadcast(object):
         self.source = source
         self.target = target
         self.color = color
-        self.broadcast = self
+        self.silent = silent
 
     def translate(self, observer):
+        if self.silent and observer == self.source:
+            return None
         if not self.target:
             if not self.source or self.source == observer:
                 return self.substitute('s')
@@ -47,7 +49,7 @@ class Broadcast(object):
         message = self.broadcast_map[version]
         if self.source:
             s_name = self.source.name
-            s_sub, s_obj, s_poss, s_self = pronouns(self.source.sex)
+            s_sub, s_obj, s_poss, s_self = pronouns(getattr(self.source, 'sex', None))
         else:
             s_name = s_sub = s_obj = s_poss = s_self = None
         if self.target:
@@ -64,5 +66,5 @@ class SingleBroadcast():
         self.all_msg = all_msg
         self.color = color
 
-    def translate(self, observer):
+    def translate(self, ignored):
         return self.all_msg

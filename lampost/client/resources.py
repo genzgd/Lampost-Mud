@@ -7,10 +7,8 @@ from twisted.web.server import NOT_DONE_YET
 from lampost.dto.link import *
 from lampost.dto.rootdto import RootDTO
 from lampost.util.lmlog import logged
-from lampost.context.resource import provides, m_requires
+from lampost.context.resource import m_requires
 from lampost.util.lmutil import PermError, DataError, StateError
-
-__author__ = 'Geoff'
 
 m_requires('sm', 'decode', 'encode', 'log', __name__)
 
@@ -81,8 +79,7 @@ class ActionResource(Resource):
         player.parse(action)
         return session.pull_output()
 
-@provides('lsp')
-class GeneratedResource(Resource):
+class LspServerResource(Resource):
     IsLeaf = True
     documents = {}
 

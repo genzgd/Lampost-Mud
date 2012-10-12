@@ -1,9 +1,9 @@
-from lampost.action.action import ActionError
+from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.dto.display import Display
 from lampost.dto.rootdto import RootDTO
 from lampost.mud.action import imm_action
-from lampost.player.player import Player
+from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
 m_requires('sm', 'mud', 'datastore', 'perm', __name__)
@@ -121,11 +121,11 @@ def patch_db(verb, args, command, **ignored):
 def sethome(source, **ignored):
     source.home_room = source.env.dbo_id
 
-
 @imm_action('zap', msg_class='damage')
-def zap(source, target_method, **ignored):
+def zap(source, target_method, target, **ignored):
+    source.broadcast(s="{n} calls forth mysterious power from the heavens, zapping {N}!", target=target)
     target_method(1000000)
-    source.broadcast("An immortal recklessly wields power.")
+
 
 @imm_action('unmake', 'general')
 def unmake(source, target, **ignored):
@@ -135,6 +135,7 @@ def unmake(source, target, **ignored):
         del target
         return title + " is no more."
     return "Can only unmake things in the room."
+
 
 @imm_action('home')
 def home(source, **ignored):
@@ -167,11 +168,6 @@ def build_mode(source, **ignored):
 
 @imm_action('reset')
 def reset(source, **ignored):
-    area = mud.get_area(source.env.area_id)
-    source.env.reset(area)
+    source.env.reset()
     return "Room reset"
 
-
-@imm_action('citadel')
-def citadel(source, **ignored):
-    return goto(source=source, args=('immortal_citadel:0',))

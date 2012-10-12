@@ -1,6 +1,6 @@
 from lampost.context.resource import requires, provides, m_requires
 from lampost.datastore.dbo import RootDBO
-from lampost.player.player import Player
+from lampost.model.player import Player
 
 m_requires('log', 'datastore', __name__)
 

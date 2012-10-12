@@ -1,5 +1,5 @@
 from item import BaseItem
-from lampost.action.action import ActionError
+from lampost.gameops.action import ActionError
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.template import Template
 from lampost.util.lmutil import cls_name

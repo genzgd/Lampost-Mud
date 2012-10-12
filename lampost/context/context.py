@@ -15,23 +15,24 @@ from lampost.util.lmlog import Log
 
 class Context(object):
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
-                 flavor='merc', config='lampost'):
-        register('context', self)
+                 flavor='merc', config_id='lampost'):
         self.properties = {}
+        register('context', self)
         Log()
         ClassRegistry()
         dispatcher = Dispatcher()
         register('decode', JSONDecoder().decode)
         register('encode', JSONEncoder().encode)
-        data_store = RedisStore(db_host, int(db_port), int(db_num), db_pw)
+        datastore = RedisStore(db_host, int(db_port), int(db_num), db_pw)
         Permissions()
         SessionManager()
         UserManager()
         web_server = WebServer(int(port))
         nature = MudNature(flavor)
-        data_store.load_object(Config, config)
-        nature.bootstrap()
+        datastore.load_object(Config, config_id)
+
         dispatcher._start_service()
+        nature._start_service()
         web_server._start_service()
 
     def set(self, key, value):

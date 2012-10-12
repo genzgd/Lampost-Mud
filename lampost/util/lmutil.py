@@ -34,6 +34,12 @@ def find_extra(verb, used_args, command):
         return None
     return command[find_loc + 1:]
 
+def javascript_safe(value):
+    value = value.replace('"', '\\\"')
+    value = value.replace("'", "\\'")
+    value = value.replace("\n", "")
+    return value
+
 class PermError(Exception):
     pass
 

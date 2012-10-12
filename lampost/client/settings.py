@@ -2,7 +2,7 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
-from lampost.player.player import Player
+from lampost.model.player import Player
 from lampost.util.lmutil import DataError, StateError
 
 m_requires('datastore', 'user_manager', 'perm', __name__)

@@ -1,4 +1,4 @@
-from lampost.action.action import make_action
+from lampost.gameops.action import make_action
 from lampost.context.resource import requires
 from lampost.dto.display import DisplayLine
 

@@ -1,7 +1,7 @@
 from random import randint
 from lampost.merc.combat import basic_hit
 from lampost.merc.util import nudge, scale32
-from lampost.mobile.mobile import MobileTemplate, Mobile
+from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.util.lmutil import cls_name
 
 class MobileMerc(Mobile):

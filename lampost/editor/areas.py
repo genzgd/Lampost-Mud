@@ -2,7 +2,7 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.dto.rootdto import RootDTO
-from lampost.mud.area import Area
+from lampost.model.area import Area
 
 __author__ = 'Geoff'
 
@@ -33,14 +33,14 @@ class AreaList(Resource):
     def render_POST(self, content, session):
         return [AreaDTO(area, has_perm(session.player, area)) for area in mud.area_map.itervalues()]
 
-@requires('mud')
+@requires('mud', 'cls_registry')
 class AreaNew(Resource):
     @request
     def render_POST(self, content, session):
         area_id = content.id.lower()
         if datastore.load_object(Area, area_id):
                 return "AREA_EXISTS"
-        area = Area(area_id)
+        area = self.cls_registry(Area)(area_id)
         area.name = content.name
         area.owner_id = session.player.dbo_id
         datastore.save_object(area)

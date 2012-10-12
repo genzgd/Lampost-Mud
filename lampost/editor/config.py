@@ -17,10 +17,11 @@ class ConfigGet(Resource):
         check_perm(session, 'supreme')
         return self.config.json_obj
 
-@requires('config')
+@requires('config', 'dispatcher')
 class ConfigUpdate(Resource):
     @request
     def render_POST(self, content, session):
         check_perm(session, 'supreme')
         update_object(self.config, content.config)
+        self.dispatcher.dispatch('config_updated')
         return self.config.json_obj

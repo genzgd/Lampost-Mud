@@ -5,7 +5,7 @@ from lampost.context.resource import m_requires
 from lampost.dto.rootdto import RootDTO
 from lampost.env.movement import Direction
 from lampost.env.room import Room, Exit
-from lampost.mobile.mobile import MobileReset
+from lampost.model.mobile import MobileReset
 from lampost.model.article import ArticleReset
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import DataError

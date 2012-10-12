@@ -2,7 +2,7 @@ from lampost.context.resource import requires, m_requires
 from lampost.dto.display import Display, DisplayLine
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction
-from lampost.mobile.mobile import MobileReset
+from lampost.model.mobile import MobileReset
 from lampost.model.item import BaseItem
 from lampost.model.article import ArticleReset
 
@@ -78,26 +78,26 @@ class Room(RootDBO):
 
     def rec_entity_enters(self, source):
         self.contents.append(source)
-        self.tell_contents("rec_entity_enter_env", source, source)
+        self.tell_contents("rec_entity_enter_env", source)
         entry_msg = getattr(source, "entry_msg", None)
         if entry_msg:
             source.entry_msg.source = source
-            self.rec_broadcast(entry_msg, source)
+            self.rec_broadcast(entry_msg)
 
     def rec_entity_leaves(self, source):
         self.contents.remove(source)
-        self.tell_contents("rec_entity_leave_env", source, source)
+        self.tell_contents("rec_entity_leave_env", source)
         exit_msg = getattr(source, "exit_msg", None)
         if exit_msg:
             source.exit_msg.source = source
-            self.rec_broadcast(exit_msg, source)
+            self.rec_broadcast(exit_msg)
 
-    def rec_broadcast(self, broadcast, exclude=None):
+    def rec_broadcast(self, broadcast):
         if not broadcast:
             return
-        if broadcast.target == self:
+        if getattr(broadcast, 'target', None) == self:
             broadcast.target = None
-        self.tell_contents("rec_broadcast", exclude, broadcast)
+        self.tell_contents("rec_broadcast", broadcast)
 
     def rec_social(self):
         pass
@@ -139,10 +139,8 @@ class Room(RootDBO):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-    def tell_contents(self, msg_type, exclude, *args):
+    def tell_contents(self, msg_type,  *args):
         for receiver in self.contents:
-            if receiver == exclude:
-                continue
             rec_method = getattr(receiver, msg_type, None)
             if rec_method:
                 rec_method(*args)

@@ -1,4 +1,4 @@
-from lampost.action.action import ActionError
+from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.mud.action import mud_action
 

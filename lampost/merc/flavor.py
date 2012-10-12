@@ -1,6 +1,6 @@
-import lampost.player.player
+import lampost.model.player
 import lampost.model.article
-import lampost.mobile.mobile
+import lampost.model.mobile
 
 import lampost.merc.player
 import lampost.merc.article
@@ -20,9 +20,9 @@ equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
 
 def init():
-    cls_registry.set_class(lampost.player.player.Player, lampost.merc.player.PlayerMerc)
+    cls_registry.set_class(lampost.model.player.Player, lampost.merc.player.PlayerMerc)
     cls_registry.set_class(lampost.model.article.ArticleTemplate, lampost.merc.article.ArticleTemplateMerc)
-    cls_registry.set_class(lampost.mobile.mobile.MobileTemplate, lampost.merc.mobile.MobileTemplateMerc)
+    cls_registry.set_class(lampost.model.mobile.MobileTemplate, lampost.merc.mobile.MobileTemplateMerc)
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)

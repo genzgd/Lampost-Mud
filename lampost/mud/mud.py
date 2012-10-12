@@ -1,15 +1,14 @@
-import lampost.immortal.immortal
+import lampost.mud.immortal
 import lampost.comm.chat
-import lampost.action.inventory
-import lampost.action.emote
+import lampost.mud.inventory
+import lampost.mud.emote
 
-from lampost.action.action import simple_action
+from lampost.gameops.action import simple_action
 from lampost.mud.action import mud_actions, imm_actions
 from lampost.context.resource import provides, requires, m_requires
-from lampost.immortal.citadel import ImmortalCitadel
 from lampost.comm.channel import Channel
 
-from area import Area
+from lampost.model.area import Area
 
 m_requires('log', 'perm',  __name__)
 
@@ -25,7 +24,7 @@ class MudNature():
         flavor_module.init()
         self.mud = Mud()
 
-    def bootstrap(self):
+    def _start_service(self):
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm.", 0xed1c24)
         self.pulse_interval = .25
@@ -36,9 +35,6 @@ class MudNature():
         for action in mud_actions:
             self.basic_soul.add(action)
         self.mud.load_areas()
-        self.citadel = ImmortalCitadel()
-        self.mud.add_area(self.citadel)
-        self.citadel.on_loaded()
         self.basic_soul.add(self.shout_channel)
 
     def editors(self, player):
@@ -131,11 +127,7 @@ class Mud():
         if getattr(player, "room_id", None):
             room = self.find_room(player.room_id)
         else:
-            room = None
-        if not room:
             room = self.find_room(self.config.start_room)
-        if not room:
-            room = self.find_room("immortal_citadel:0") #Last chance, if this fails something is really wrong
         player.change_env(room)
 
 

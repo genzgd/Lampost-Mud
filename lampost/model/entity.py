@@ -1,5 +1,5 @@
 import math
-from lampost.action.action import ActionError
+from lampost.gameops.action import ActionError
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
 from lampost.context.resource import m_requires
@@ -11,8 +11,8 @@ m_requires('log', __name__)
 class Entity(BaseItem):
     env = None
     status = 'awake'
-    entry_msg = Broadcast(s="{n} arrives.")
-    exit_msg = Broadcast(s="{n} leaves.")
+    entry_msg = Broadcast(e="{n} arrives.", silent=True)
+    exit_msg = Broadcast(e="{n} leaves.", silent=True)
     current_target = None
 
     def baptise(self, soul):

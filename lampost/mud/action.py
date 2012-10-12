@@ -1,4 +1,4 @@
-from lampost.action.action import make_action, ActionError
+from lampost.gameops.action import make_action, ActionError
 from lampost.util.lmutil import dump
 
 mud_actions = []

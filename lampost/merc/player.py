@@ -1,8 +1,8 @@
 from random import randint
-from lampost.action.action import ActionError
+from lampost.gameops.action import ActionError
 from lampost.merc.combat import basic_hit
 from lampost.merc.constants import MAX_ITEMS, weight_capacity, MAX_LEVEL, XP_PER_LEVEL
-from lampost.player.player import Player
+from lampost.model.player import Player
 
 class PlayerMerc(Player):
 

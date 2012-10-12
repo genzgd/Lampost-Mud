@@ -2,7 +2,7 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.dto.rootdto import RootDTO
-from lampost.mobile.mobile import MobileTemplate
+from lampost.model.mobile import MobileTemplate
 from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'mud', __name__)

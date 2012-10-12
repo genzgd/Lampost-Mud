@@ -1,5 +1,5 @@
 from lampost.context.resource import provides, requires
-from lampost.player.player import Player
+from lampost.model.player import Player
 from lampost.util.lmutil import PermError
 
 @provides('perm', True)

@@ -488,3 +488,41 @@ angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addF
         };
 
 }]);
+
+angular.module('lampost_edit').controller('ArticleLoadController', ['$scope', 'lmEditor', 'reset', 'areaId',
+    function ($scope, lmEditor, reset, areaId) {
+
+        var previousAreaId = areaId;
+        $scope.areaList = [];
+        angular.forEach(lmEditor.areaList, function (value) {
+            $scope.areaList.push(value.id);
+        });
+        $scope.areaList.sort();
+        $scope.areaId = areaId;
+        $scope.article_loads = jQuery.extend(true, [], reset.article_loads);
+
+        $scope.changeArea = function() {
+            lmEditor.loadObjects(resetType.toLowerCase(), $scope.areaId).then(function(objects) {
+                loadObjects(objects);
+            });
+        };
+
+        function loadObjects(objects) {
+            if (objects.length == 0) {
+                alert("No " + resetType + "s in " + $scope.areaId);
+                $scope.areaId = previousAreaId;
+            } else {
+                previousAreaId = $scope.areaId;
+                $scope.objects = objects;
+                $scope.reset.object = objects[0];
+            }
+        }
+
+        $scope.saveArticleLoads = function() {
+            reset.article_loads = $scope.article_loads;
+            $scope.dismiss();
+        }
+
+
+
+}]);

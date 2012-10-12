@@ -43,7 +43,8 @@ class Player(Creature, RootDBO):
             self.session.display_line(message.display_line)
 
     def display_line(self, text, color=0x000000):
-        self.session.display_line(DisplayLine(text, color))
+        if text:
+            self.session.display_line(DisplayLine(text, color))
 
     def output(self, output):
         self.session.append(output)

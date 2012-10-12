@@ -1,7 +1,7 @@
 from lampost.context.resource import requires, m_requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBODict
 from lampost.env.room import Room
-from lampost.mobile.mobile import MobileTemplate
+from lampost.model.mobile import MobileTemplate
 from random import randint
 from lampost.model.article import ArticleTemplate
 
