@@ -6,7 +6,7 @@ from lampost.mud.action import imm_action
 from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
-m_requires('sm', 'mud', 'datastore', 'perm', __name__)
+m_requires('sm', 'mud', 'datastore', 'perm', 'nature', __name__)
 
 @imm_action('edit')
 def edit(source, **ignored):
@@ -130,10 +130,9 @@ def zap(source, target_method, target, **ignored):
 @imm_action('unmake', 'general')
 def unmake(source, target, **ignored):
     if target.env == source.env:
+        source.broadcast(s="{N} is no more.", target=target)
         target.leave_env()
-        title = target.title
         del target
-        return title + " is no more."
     return "Can only unmake things in the room."
 
 
@@ -170,4 +169,20 @@ def build_mode(source, **ignored):
 def reset(source, **ignored):
     source.env.reset()
     return "Room reset"
+
+@imm_action('promote', 'player', prep='to', imm_level='admin')
+def promote(source, target, obj, **ignored):
+    if source == target:
+        return "Let someone else do that."
+    check_perm(source, target)
+    if not obj:
+        return "Promote {0} to what?".format(target.name)
+    imm_level = perm_to_level(obj[0])
+    if imm_level is None:
+        return "That is not a valid level"
+    target.imm_level = imm_level
+    nature.baptise_imm(target)
+    source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
+
+
 

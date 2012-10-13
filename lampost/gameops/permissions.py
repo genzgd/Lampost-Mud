@@ -52,3 +52,6 @@ class Permissions(object):
     def perm_level(self, label):
         return self.levels.get(label, self.levels['admin'])
 
+    def perm_to_level(self, label):
+        return self.levels.get(label)
+

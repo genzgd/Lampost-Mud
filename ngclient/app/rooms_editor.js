@@ -322,6 +322,10 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.extraDisplay = 'aliases';
         };
 
+        $scope.articleLoads = function(reset) {
+
+        };
+
         function addMobileReset(reset) {
             var newReset = {mobile_id:reset.object.dbo_id, mob_count:reset.count, mob_max:reset.max,
                 title:reset.object.title, desc:reset.object.desc};
@@ -450,20 +454,21 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
     }
 ]);
 
-angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addFunc', 'roomId', 'objects', 'resetType', 'lmEditor', 'areaId',
-    function ($scope, addFunc, roomId, objects, resetType, lmEditor, areaId) {
+angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addFunc', 'roomId', 'resetType', 'lmEditor', 'areaId',
+    function ($scope, addFunc, roomId, resetType, lmEditor, areaId) {
 
-        var previousAreaId = areaId;
+        var invalidObject = {dbo_id:'No ' + resetType + 's', title:'No ' + resetType + 's', desc:''};
         $scope.roomId = roomId;
         $scope.resetType = resetType;
-        $scope.objects = objects;
         $scope.areaList = [];
+        $scope.objects = [];
+        $scope.disabled = true;
         angular.forEach(lmEditor.areaList, function (value) {
             $scope.areaList.push(value.id);
         });
         $scope.areaList.sort();
         $scope.areaId = areaId;
-        $scope.reset = {count:1, max:1, object:objects[0], article_loads:[]};
+        $scope.reset = {count:1, max:1, object:invalidObject,  article_loads:[]};
 
         $scope.changeArea = function() {
             lmEditor.loadObjects(resetType.toLowerCase(), $scope.areaId).then(function(objects) {
@@ -471,15 +476,17 @@ angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addF
             });
         };
 
+        $scope.changeArea();
+
         function loadObjects(objects) {
             if (objects.length == 0) {
-                alert("No " + resetType + "s in " + $scope.areaId);
-                $scope.areaId = previousAreaId;
+                objects = [invalidObject];
+                $scope.disabled = true;
             } else {
-                previousAreaId = $scope.areaId;
-                $scope.objects = objects;
-                $scope.reset.object = objects[0];
+                $scope.disabled = false;
             }
+            $scope.objects = objects;
+            $scope.reset.object = objects[0];
         }
 
         $scope.createReset = function() {
@@ -492,7 +499,6 @@ angular.module('lampost_edit').controller('NewResetController', ['$scope', 'addF
 angular.module('lampost_edit').controller('ArticleLoadController', ['$scope', 'lmEditor', 'reset', 'areaId',
     function ($scope, lmEditor, reset, areaId) {
 
-        var previousAreaId = areaId;
         $scope.areaList = [];
         angular.forEach(lmEditor.areaList, function (value) {
             $scope.areaList.push(value.id);
@@ -510,7 +516,6 @@ angular.module('lampost_edit').controller('ArticleLoadController', ['$scope', 'l
         function loadObjects(objects) {
             if (objects.length == 0) {
                 alert("No " + resetType + "s in " + $scope.areaId);
-                $scope.areaId = previousAreaId;
             } else {
                 previousAreaId = $scope.areaId;
                 $scope.objects = objects;

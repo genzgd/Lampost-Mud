@@ -15,6 +15,7 @@ class Player(Creature, RootDBO):
     last_logout = 0
     age = 0
     build_mode = False
+    rec_player = True
 
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id.lower()

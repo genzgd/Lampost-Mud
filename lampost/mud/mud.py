@@ -19,14 +19,13 @@ article_load_types = ['equip', 'default']
 class MudNature():
 
     def __init__(self, flavor):
-
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
         flavor_module.init()
         self.mud = Mud()
 
     def _start_service(self):
         self.shout_channel = Channel("shout", 0x109010)
-        self.imm_channel = Channel("imm.", 0xed1c24)
+        self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
         self.context.set('article_load_types', article_load_types)
 
@@ -41,26 +40,16 @@ class MudNature():
         editors = []
         if has_perm(player, 'supreme'):
             editors.append('config')
-
         if has_perm(player, 'admin'):
-            editors.append('areas')
             editors.append('players')
-
+        if has_perm(player, 'creator'):
+            editors.append('areas')
         return editors
 
     def baptise(self, player):
-
-        new_soul = self.basic_soul.copy()
-
+        player.baptise(self.basic_soul.copy())
         if player.imm_level:
-            new_soul.add(self.imm_channel)
-            player.register_channel(self.imm_channel)
-            player.build_mode = True
-            for cmd in imm_actions:
-                if player.imm_level >= perm_level(cmd.imm_level):
-                    new_soul.add(cmd)
-
-        player.baptise(new_soul)
+            self.baptise_imm(player)
         player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
@@ -74,6 +63,15 @@ class MudNature():
             player.room_id = player.env.dbo_id
             self.datastore.save_object(player)
 
+    def baptise_imm(self, player):
+        player.enhance_soul(self.imm_channel)
+        player.register_channel(self.imm_channel)
+        player.build_mode = True
+        for cmd in imm_actions:
+            if player.imm_level >= perm_level(cmd.imm_level):
+                player.enhance_soul(cmd)
+            else:
+                player.diminish_soul(cmd)
 
 @requires('datastore', 'dispatcher', 'config')
 @provides('mud')
@@ -124,10 +122,9 @@ class Mud():
             error("Exception finding room " + room_id)
 
     def start_player(self, player):
+        room = None
         if getattr(player, "room_id", None):
             room = self.find_room(player.room_id)
-        else:
+        if not room:
             room = self.find_room(self.config.start_room)
         player.change_env(room)
-
-

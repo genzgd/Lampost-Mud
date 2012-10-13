@@ -48,9 +48,14 @@ class Entity(BaseItem):
         article.enter_env(self.env)
         self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
 
-    def enhance_soul(self, actions):
-        self.add_actions(actions)
-        self.soul.update(set(actions))
+    def enhance_soul(self, action):
+        self.add_action(action)
+        self.soul.add(action)
+
+    def diminish_soul(self, action):
+        if action in self.soul:
+            self.soul.remove(action)
+            self.remove_action(action)
 
     def rec_entity_enter_env(self, entity):
         self.add_target(entity)

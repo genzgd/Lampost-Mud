@@ -10,11 +10,11 @@ def mud_action(verbs, msg_class=None):
         return make_action(func, verbs, msg_class)
     return dec_wrapper
 
-def imm_action(verbs, msg_class=None, imm_level='creator'):
+def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
     def dec_wrapper(func):
         imm_actions.append(func)
         func.imm_level = imm_level
-        return make_action(func, verbs, msg_class)
+        return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
 
 

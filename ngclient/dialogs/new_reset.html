@@ -8,7 +8,7 @@
       <div class="row-fluid">
         <div class="span8">
           <h6 style="padding-top: 0; margin-top: 0">{{resetType}}</h6>
-          <select class="span8" ng-model="reset.object" ng-options="object.dbo_id for object in objects" required="true" autofocus="true">
+          <select class="span8" ng-disabled="disabled" ng-model="reset.object" ng-options="object.dbo_id for object in objects" required="true" autofocus="true">
           </select>
         </div>
         <div class="span4">
@@ -18,7 +18,7 @@
       </div>
       <div class="row-fluid">
         <div class="span8" style="min-height: 132px; padding-top:4px">
-          <p><em>{{reset.objects.title}}</em></p>
+          <p><em>{{reset.object.title}}</em></p>
           <p>{{reset.object.desc}}</p>
          </div>
         <div class="span4">
@@ -35,7 +35,7 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-success">Create Reset</button>
+      <button ng-disabled="disabled" class="btn btn-success">Create Reset</button>
       <button ng-click="dismiss()" class="btn">Cancel</button>
     </div>
   </form>
