@@ -1,3 +1,5 @@
+import inspect
+
 from types import MethodType
 
 def simple_action(verbs, msg_class=None):
@@ -34,6 +36,13 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
             add_verb(verb)
     if msg_class:
         action.msg_class = "rec_{0}".format(msg_class)
+    else:
+        try:
+            args, var_args, var_kwargs, defaults = inspect.getargspec(action)
+            if not args or (len(args) == 1 and args[0] == 'source'):
+                action.msg_class = 'no_args'
+        except TypeError as exp:
+            pass
     if fixed_targets:
         action.fixed_targets = fixed_targets
     if prep:

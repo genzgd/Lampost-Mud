@@ -30,6 +30,11 @@ class Dispatcher:
         if not event_registrations:
             del self._registrations[registration.event_type]
 
+    def unregister_type(self, owner, event_type):
+        for registration in self._owner_map[owner].copy():
+            if registration.event_type == event_type:
+                self.unregister(registration)
+
     def register_p(self, callback, pulses=0, seconds=0, randomize=0):
         if seconds:
             pulses = int (seconds * self.pulses_per_second)
@@ -93,4 +98,3 @@ class PulseRegistration(Registration):
     def cancel(self):
         self.freq = 0
 
-        

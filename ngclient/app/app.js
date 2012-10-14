@@ -170,7 +170,7 @@ angular.module('lampost').controller('NewAccountController', ['$scope', 'lmRemot
             player_name:$scope.playerName,  password:$scope.password,  email:$scope.email}).then(function() {
                 $scope.dismiss();
             }, function(error) {
-                if (error.status == 410) {
+                if (error.status == 409) {
                     $scope.errorText = error.data;
                 }
             });

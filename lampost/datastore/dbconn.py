@@ -112,7 +112,7 @@ class RedisStore():
             try:
                 setattr(dbo, field_name, json_obj[field_name])
             except KeyError:
-                debug("db: Object " + unicode(dbo.dbo_debug_key) + " json missing field " + field_name)
+                pass
         for dbo_col in dbo.dbo_collections:
             coll = getattr(dbo, dbo_col.field_name, [])
             try:

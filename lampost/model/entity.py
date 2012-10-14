@@ -188,7 +188,7 @@ class Entity(BaseItem):
         except ActionError as action_error:
             return self.display_line(action_error.message, action_error.color)
         if not matches:
-            matches, response = self.parse_command(" ".join(["say", command]))
+            matches, response = self.parse_command('{0} {1}'.format('say', command))
             if not matches:
                 return self.display_line("What?")
         if len(matches) > 1:
@@ -216,6 +216,11 @@ class Entity(BaseItem):
             args = words[verb_size:]
             for action in self.actions.get(verb, []):
                 msg_class = getattr(action, "msg_class", None)
+                if msg_class == 'no_args':
+                    if args:
+                        continue
+                    else:
+                        msg_class = None
                 if not msg_class:
                     yield action, verb, tuple(args), action, None, None, None
                     continue

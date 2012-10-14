@@ -14,7 +14,7 @@ m_requires('log', 'perm',  __name__)
 
 article_load_types = ['equip', 'default']
 
-@requires('sm', 'datastore', 'context')
+@requires('sm', 'datastore', 'context', 'config')
 @provides('nature')
 class MudNature():
 
@@ -48,6 +48,8 @@ class MudNature():
 
     def baptise(self, player):
         player.baptise(self.basic_soul.copy())
+        if player.imm_level < self.config.auto_imm_level:
+            player.imm_level = self.config.auto_imm_level
         if player.imm_level:
             self.baptise_imm(player)
         player.register_channel(self.shout_channel)

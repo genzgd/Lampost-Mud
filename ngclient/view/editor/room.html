@@ -131,14 +131,14 @@
             <button ng-click="addNewMobile()" class="btn btn-success btn-small">New</button>
           </div>
         </div>
-        <div class="span9">
-          <table style="width: 100%; height:60%; table-layout: fixed;">
+        <div class="span10">
+          <table style="width: 98%; height:60%; table-layout: fixed;">
             <thead>
             <tr>
-              <th style="width: 50%;">Mobile id</th>
-              <th style="width: 15%;">Count</th>
-              <th style="width: 15%;">Max</th>
-              <th style="width: 20%;"></th>
+              <th style="width: 52%;">Mobile id</th>
+              <th style="width: 14%;">Count</th>
+              <th style="width: 12%;">Max</th>
+              <th style="width: 22%;"></th>
             </tr>
             </thead>
             <tbody>
@@ -150,6 +150,7 @@
                 <a title="Edit Mobile" ng-click="addEditor('mobile', mobile.mobile_id)" class="icon-link"><i class="icon-wrench"></i></a>
                 <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
                 <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
+                <a title="Mobile Articles" ng-click="mobileArticles(mobile)" class="icon-link"><i class="icon-align-justify"></i></a>
               </td>
             </tr>
             </tbody>
@@ -164,14 +165,14 @@
             <button ng-click="addNewArticle()" class="btn btn-success btn-small">New</button>
           </div>
         </div>
-        <div class="span9">
-          <table style="width: 100%; height:60%; table-layout: fixed;">
+        <div class="span10">
+          <table style="width: 98%; height:60%; table-layout: fixed;">
             <thead>
             <tr>
-              <th style="width: 50%;">Article id</th>
-              <th style="width: 15%;">Count</th>
-              <th style="width: 15%;">Max</th>
-              <th style="width: 20%;"></th>
+              <th style="width: 52%;">Article id</th>
+              <th style="width: 14%;">Count</th>
+              <th style="width: 12%;">Max</th>
+              <th style="width: 22%;"></th>
             </tr>
             </thead>
             <tbody>

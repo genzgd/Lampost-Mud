@@ -14,7 +14,7 @@ angular.module('lampost_edit').controller('PlayersEditorController', ['$scope', 
                     lmRemote.request($scope.editor.url + "/delete", {player_id:player.id}, true).then(function() {
                         $scope.players.splice(index, 1);
                     }, function(error) {
-                        if (error.status == 410) {
+                        if (error.status == 409) {
                             lmDialog.showOk("Error", error.data);
                         }
                     })

@@ -120,6 +120,7 @@ def patch_db(verb, args, command, **ignored):
 @imm_action('sethome')
 def sethome(source, **ignored):
     source.home_room = source.env.dbo_id
+    source.display_line("{0} is now your home room".format(source.env.title))
 
 @imm_action('zap', msg_class='damage')
 def zap(source, target_method, target, **ignored):
@@ -138,6 +139,8 @@ def unmake(source, target, **ignored):
 
 @imm_action('home')
 def home(source, **ignored):
+    if not getattr(source, 'home_room', None):
+        return "Please set your home room first!"
     return goto(source=source, args=(source.home_room,))
 
 
@@ -146,12 +149,12 @@ def register_display(source, args, **ignored):
     if not args:
         return "No event specified"
     source.register(args[0], source.display_line)
-
+    source.display_line("Events of type {0} will now be displayed".format(args[0]))
 
 @imm_action('unregister display')
 def unregister_display(source, args, **ignored):
-    source.unregister_type(args[0], source.display_line)
-
+    source.unregister_type(source, args[0])
+    source.display_line("Events of type {0} will no longer be displayed".format(args[0]))
 
 @imm_action('describe', 'describe')
 def describe(source, target, **ignored):

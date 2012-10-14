@@ -161,15 +161,8 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
         };
 
         $scope.addNewMobile = function() {
-            lmEditor.loadObjects('mobile', areaId).then(function(mobiles) {
-                if (mobiles.length == 0) {
-                    lmDialog.showOk("No Mobiles", "No mobiles defined for this area.");
-                } else {
-                    lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
-                        locals:{addFunc:addMobileReset, roomId:$scope.roomId, objects:mobiles,
-                            resetType:'Mobile', areaId: areaId}});
-                }
-            });
+            lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
+                locals:{addFunc:addMobileReset, roomId:$scope.roomId, resetType:'Mobile', areaId: areaId}});
         };
 
         $scope.deleteMobile = function(mobileIx) {
@@ -177,16 +170,14 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.room.mobiles.splice(mobileIx);
         };
 
+        $scope.mobileArticles = function(mobile) {
+            lmDialog.show({templateUrl:"dialogs/article_load.html", controller:"ArticleLoadController",
+                locals:{updateFunc:updateArticleLoads, reset:mobile, areaId: areaId}});
+        };
+
         $scope.addNewArticle = function() {
-            lmEditor.loadObjects('article', areaId).then(function(articles) {
-                if (articles.length == 0) {
-                    lmDialog.showOk("No Articles", "No articles defined for this area.");
-                } else {
-                    lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
-                        locals:{addFunc:addArticleReset, roomId:$scope.roomId,
-                            objects:articles, resetType:'Article', areaId: areaId}});
-                }
-            });
+            lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
+                locals:{addFunc:addArticleReset, roomId:$scope.roomId, resetType:'Article', areaId: areaId}});
         };
 
         $scope.deleteArticle = function(articleIx) {
@@ -322,9 +313,6 @@ angular.module('lampost_edit').controller('RoomEditorController', ['$scope', 'lm
             $scope.extraDisplay = 'aliases';
         };
 
-        $scope.articleLoads = function(reset) {
-
-        };
 
         function addMobileReset(reset) {
             var newReset = {mobile_id:reset.object.dbo_id, mob_count:reset.count, mob_max:reset.max,
@@ -446,7 +434,7 @@ angular.module('lampost_edit').controller('NewExitController', ['$scope', 'lmEdi
                 }
                 $scope.dismiss();
             }, function (error) {
-                if (error.status == 410) {
+                if (error.status == 409) {
                     $scope.lastError = error.data;
                 }
             })

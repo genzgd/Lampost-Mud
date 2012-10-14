@@ -145,17 +145,18 @@ class CreateExit(Resource):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
 
         contents = save_contents(room)
+        if content.one_way:
+            other_contents = None
+        else:
+            other_contents =  save_contents(other_room)
         this_exit = Exit(new_dir, other_room)
         room.exits.append(this_exit)
         save_object(room, True)
-        restore_contents(room, contents)
 
         result = RootDTO()
         if not content.one_way:
-            contents = save_contents(other_room)
             other_exit = Exit(rev_dir, room)
             other_room.exits.append(other_exit)
-            restore_contents(other_room, contents)
             result.other_exit = ExitDTO(other_exit, other_id)
         if content.is_new:
             save_object(other_room)
@@ -166,6 +167,9 @@ class CreateExit(Resource):
             save_object(area, True)
         elif not content.one_way:
             save_object(other_room, True)
+        restore_contents(room, contents)
+        if other_contents:
+            restore_contents(other_room, other_contents)
         result.exit = ExitDTO(this_exit, room.dbo_id)
         return result
 

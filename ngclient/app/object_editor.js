@@ -42,7 +42,7 @@ angular.module('lampost_edit').controller('NewObjectController', ['$scope', 'lmR
                 lmEditor.objectAdded(type, object);
                 $scope.dismiss();
             }, function (error) {
-                if (error.status == 410) {
+                if (error.status == 409) {
                     $scope.errorText = error.data;
                 }
             })

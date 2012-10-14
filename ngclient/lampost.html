@@ -20,13 +20,17 @@
         <a ng-click="changeLocation(link.name)">{{link.label}} <i ng-class="link.iconClass()"></i></a>
       </li>
     </ul>
+
     <div class="pull-right">
       <a id="powered-link" href="https://github.com/genzgd/Lampost-Mud" target="_blank">Powered by Lampost</a>
 
     </div>
-    <div class="pagination-right" style="position: absolute; right: 250px; display:inline-block">
+    <div class="pagination-right" style="position: absolute; right: 320px; display:inline-block">
         <div style="color: white;">{{welcome}}</div>
         <label style="cursor: pointer;" ng-show="loggedIn" ng-click="logout()">Log Out</label>
+     </div>
+     <div class="pagination-right" style="position: absolute; right: 180px">
+       <a href="https://groups.google.com/forum/?fromgroups#!forum/lampost" target="_blank">Lampost Forum</a>
      </div>
 
   </div>
