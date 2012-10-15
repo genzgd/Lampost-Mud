@@ -27,10 +27,10 @@ class BaseItem(RootDBO):
         self.config_targets()
 
     def config_targets(self):
-        self.target_id = tuple(self.title.lower().split(" "))
+        self.target_id = tuple(unicode(self.title).lower().split(" "))
         if not self.aliases:
             return
-        self.target_aliases = [tuple(alias.split(" ")) for alias in self.aliases]
+        self.target_aliases = [tuple(unicode(alias).split(" ")) for alias in self.aliases]
 
     def short_desc(self, observer):
         return self.title

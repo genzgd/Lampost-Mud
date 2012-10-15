@@ -55,9 +55,8 @@ def summon(source, args, **ignored):
     player = session.player
     check_perm(source, player)
     player.change_env(source.env)
-    session.append(player.parse('look'))
-    session.append(Display("You have been summoned"))
-    return "You summon " + player.name + " into your presence."
+    player.parse('look')
+    source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=player)
 
 
 @imm_action('patch', imm_level='supreme')

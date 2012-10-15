@@ -33,7 +33,7 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
         add_verb(verbs)
     except AttributeError:
         for verb in verbs:
-            add_verb(verb)
+            add_verb(unicode(verb))
     if msg_class:
         action.msg_class = "rec_{0}".format(msg_class)
     else:
@@ -41,7 +41,7 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
             if not args or (len(args) == 1 and args[0] == 'source'):
                 action.msg_class = 'no_args'
-        except TypeError as exp:
+        except TypeError:
             pass
     if fixed_targets:
         action.fixed_targets = fixed_targets

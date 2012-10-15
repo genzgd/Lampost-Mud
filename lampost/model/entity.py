@@ -77,7 +77,7 @@ class Entity(BaseItem):
         except AttributeError:
             return
         if self.target_map.get(target):  #Should not happen
-            error("Trying to add " + unicode(target_id) + " more than once")
+            error("Trying to add " + target_id + " more than once")
             return
         self.target_map[target] = []
         self.add_target_key_set(target, target_id, parent)
@@ -86,9 +86,9 @@ class Entity(BaseItem):
 
     def add_target_key_set(self, target, target_id, parent):
         if parent == self.env:
-            prefix = "the",
+            prefix = unicode("the"),
         elif parent == self.inven:
-            prefix = "my",
+            prefix = unicode("my"),
         else:
             prefix = ()
         target_keys = list(self.gen_ids(prefix + target_id))
@@ -176,11 +176,12 @@ class Entity(BaseItem):
                 if len(bucket) == 0:
                     del self.actions[verb]
             else:
-                error("Removing action " + unicode(verb) + " that does not exist from " + self.short_desc(self))
+                error("Removing action " + verb + " that does not exist from " + self.short_desc(self))
         for sub_action in getattr(action, "sub_providers", []):
             self.remove_action(sub_action)
 
     def parse(self, command):
+        command = unicode(command)
         try:
             matches, response = self.parse_command(command)
         except PermError:
