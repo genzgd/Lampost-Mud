@@ -15,7 +15,7 @@ class Template(object):
     dbo_rev = 0
 
     def __init__(self, dbo_id):
-        self.dbo_id = dbo_id
+        self.dbo_id = unicode(dbo_id)
 
     def config_instance(self, instance):
         pass

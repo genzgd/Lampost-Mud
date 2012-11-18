@@ -1,10 +1,9 @@
-angular.module('lampost', ['lampost_dir', 'lampost_svc', 'lampost_edit']);
+angular.module('lampost', ['lampost_dir', 'lampost_svc']);
 
 angular.module('lampost').config(['$routeProvider', '$locationProvider', function (
     $routeProvider, $locationProvider) {
     $routeProvider.
-        when('/game', {templateUrl:'view/main.html', controller:'GameController'}).
-        when('/editor', {templateUrl:'view/editor.html'}).
+        when('/game', {templateUrl:'view/main.html'}).
         when('/settings', {templateUrl:'view/settings.html'}).
         otherwise({redirectTo:'/game'});
     $locationProvider.hashPrefix('!');
@@ -13,9 +12,20 @@ angular.module('lampost').config(['$routeProvider', '$locationProvider', functio
 
 // Using here so they get instantiated.
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmDialog', 'lmEditor',
-    function ($rootScope, lmBus, lmRemote, lmData, lmDialog, lmEditor) {
+angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmDialog',
+    function ($rootScope, lmBus, lmRemote, lmData, lmDialog) {
         window.onbeforeunload = function () {
+            if (lmData.editorWindow && !lmData.editorWindow.closed) {
+                return "Closing or reloading this window will close the editor.  Continue?";
+            }
+            return null;
+        };
+
+        window.onunload = function() {
+            if (lmData.editorWindow && !lmData.editorWindow.closed) {
+                lmData.editorWindow.close();
+            }
+            lmBus.dispatch("window_closing");
             window.windowClosing = true;
         };
 
@@ -36,7 +46,7 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
         function resize() {
             var navbar = jQuery('#lm-navbar');
             var navBarMargin = parseInt(navbar.css('marginBottom').replace('px', ''));
-            var gameHeight = jQuery(window).height() - navbar.height() - navBarMargin;
+            var gameHeight = $(window).height() - navbar.height() - navBarMargin;
             $rootScope.gameHeight = {height:gameHeight.toString() + 'px'};
             var editorHeight = gameHeight - lmUtil.getScrollBarSizes()[1];
             $rootScope.editorHeight = {height:editorHeight.toString() + 'px'};
@@ -62,7 +72,6 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
 
         var baseLinks = [new Link("game", "Mud", "icon-leaf", 0)];
         var settingsLink = new Link("settings", "Settings", "icon-user", 50);
-        var editorLink = new Link("editor", "Editor", "icon-wrench", 100);
 
         function validatePath() {
             $scope.welcome = 'Please Log In';
@@ -86,9 +95,6 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
 
         validatePath();
         lmBus.register("login", function () {
-            if (lmData.player.editors.length) {
-                $scope.links.push(editorLink);
-            }
             $scope.links.push(settingsLink);
             $scope.welcome = 'Welcome ' + lmData.player.name;
             $scope.loggedIn = true;
@@ -107,9 +113,14 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
 angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmData', 'lmDialog',
     function ($scope, lmBus, lmData, lmDialog) {
 
+        $scope.toolbar = [];
         update();
 
-        lmBus.register("login", update, $scope);
+        lmBus.register("login", function() {
+            update();
+
+        }, $scope);
+
         lmBus.register("logout", function (reason) {
             if (reason == "invalid_session") {
                 lmDialog.removeAll();
@@ -118,9 +129,30 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
             update();
         }, $scope);
 
-        function update() {
-            $scope.actionPane = lmData.player ? "action" : "login";
+        function launchEditor() {
+            if (lmData.editorWindow && lmData.editorWindow.closed) {
+                delete lmData.editorWindow;
+            }
+            if (lmData.editorWindow) {
+                lmData.editorWindow.focus();
+            } else {
+                lmData.editorWindow = open("editor.html", "editor_" + lmData.playerId);
+            }
         }
+
+        function update() {
+            $scope.toolbar = [];
+            if (lmData.player) {
+                $scope.actionPane = "action";
+                if (lmData.player.editors) {
+                    $scope.toolbar.push({label:'Editor', click:launchEditor});
+                }
+            } else {
+                $scope.actionPane = "login";
+            }
+
+    }
+
     }]);
 
 

@@ -39,7 +39,7 @@ class RedisStore():
             db_log("Failed to evict " + dbo.dbo_key + " from db cache")
 
     def load_by_key(self, key_type, key, base_class=None):
-        dbo_key = '{0}:{1}'.format(key_type, key)
+        dbo_key = unicode('{0}:{1}'.format(key_type, key))
         cached_dbo = self.object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo

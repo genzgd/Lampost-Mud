@@ -6,17 +6,18 @@ m_requires('log', 'datastore', __name__)
 
 class User(RootDBO):
     dbo_key_type = "user"
-    dbo_fields =  "user_name", "email", "password", "player_ids"
+    dbo_fields =  "user_name", "email", "password", "player_ids", "toolbar"
     dbo_set_key = "users"
     dbo_indexes = "user_name"
 
     user_name = ""
+    toolbar = []
     player_ids = []
-    password = "password"
+    password = unicode("password")
     email = ""
 
     def __init__(self, dbo_id):
-        self.dbo_id = dbo_id
+        self.dbo_id = unicode(dbo_id)
 
 
 @requires('config')
@@ -31,7 +32,7 @@ class UserManager(object):
         return "ok", user, player
 
     def find_user(self, user_name):
-        user_name = user_name.lower()
+        user_name = unicode(user_name).lower()
         player = load_object(Player, user_name)
         if player:
             return self.find_by_player(player), player
@@ -66,8 +67,8 @@ class UserManager(object):
         while object_exists('user', self.config.next_user_id):
             self.config.next_user_id += 1
         user = User(player.user_id)
-        user.user_name = user_name if user_name else player.name
-        user.password = password
+        user.user_name = unicode(user_name) if user_name else player.name
+        user.password = unicode(password)
         user.email = email
         user.player_ids = [player.dbo_id]
         save_object(player)
@@ -80,7 +81,7 @@ class UserManager(object):
         set_index("user_name_index", user.user_name.lower(), user.dbo_id)
 
     def check_name(self, account_name, old_user):
-        account_name = account_name.lower()
+        account_name = unicode(account_name).lower()
         if old_user:
             if account_name == old_user.user_name.lower():
                 return "ok"

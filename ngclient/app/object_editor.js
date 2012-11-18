@@ -1,4 +1,4 @@
-angular.module('lampost_edit').controller('ObjectListController', ['$scope', 'lmEditor', 'lmDialog', 'lmBus',
+angular.module('lampost_editor').controller('ObjectListController', ['$scope', 'lmEditor', 'lmDialog', 'lmBus',
     function ($scope, lmEditor, lmDialog, lmBus) {
 
         $scope.type = $scope.editor.childType;
@@ -30,7 +30,7 @@ angular.module('lampost_edit').controller('ObjectListController', ['$scope', 'lm
 
     }]);
 
-angular.module('lampost_edit').controller('NewObjectController', ['$scope', 'lmRemote', 'lmEditor', 'type', 'areaId',
+angular.module('lampost_editor').controller('NewObjectController', ['$scope', 'lmRemote', 'lmEditor', 'type', 'areaId',
     function ($scope, lmRemote, lmEditor, type, areaId) {
 
         $scope.areaId = areaId;
@@ -54,7 +54,7 @@ angular.module('lampost_edit').controller('NewObjectController', ['$scope', 'lmR
     }
 ]);
 
-angular.module('lampost_edit').controller('ObjectEditorController', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
+angular.module('lampost_editor').controller('ObjectEditorController', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
     function ($scope, lmBus, lmRemote, lmEditor, $timeout) {
 
         var copy = {};

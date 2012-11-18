@@ -95,43 +95,16 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
 }]);
 
 
-angular.module('lampost_svc').service('lmCookies', [function() {
 
-    var self = this;
-
-    this.readCookie = function(cookieName) {
-        var cookieString = document.cookie;
-        if (!cookieString) {
-            return '';
-        }
-        var cookies = cookieString.split('; ');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i];
-            var ix = cookie.indexOf('=');
-            if (cookie.substring(0, ix) == cookieName) {
-                return cookie.substring(ix + 1);
-            }
-        }
-        return '';
-    };
-
-    this.writeCookie = function(cookieName, value, expireSeconds) {
-        var expireDate = new Date(new Date().getTime() + expireSeconds * 1000);
-        document.cookie = cookieName + '=' + value.toString() + '; ' + expireDate.toGMTString();
-    };
-
-    this.deleteCookie = function(cookieName) {
-        self.writeCookie(cookieName, 'delete', -1);
-    };
-}]);
-
-angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog', 'lmBus', 'lmDialog', 'lmCookies',
-    function($timeout, $http, lmLog, lmBus, lmDialog, lmCookies) {
+angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog', 'lmBus', 'lmDialog',
+    function($timeout, $http, lmLog, lmBus, lmDialog) {
 
     var sessionId = '';
     var playerId = '';
     var connected = true;
     var loadingTemplate;
+    var waitCount = 0;
+    var waitDialogId = null;
     var reconnectTemplate = '<div class="modal fade hide">' +
         '<div class="modal-header"><h3>Reconnecting To Server</h3></div>' +
         '<div class="modal-body"><p>Reconnecting in {{time}} seconds.</p></div>' +
@@ -153,20 +126,34 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
     }
 
     function resourceRequest(resource, data, showWait) {
-        var dialogId = showWait && lmDialog.show({template:loadingTemplate, noEscape:true});
+        if (showWait) {
+            if (waitCount == 0) {
+                waitDialogId = lmDialog.show({template:loadingTemplate, noEscape:true});
+            }
+            waitCount++;
+        }
         data = data ? data : {};
         data.session_id = sessionId;
+        function checkWait() {
+            if (showWait) {
+                waitCount--;
+                if (waitCount == 0) {
+                    lmDialog.close(waitDialogId);
+                    waitDialogId = null;
+                }
+            }
+        }
 
         return $http({method: 'POST', url: '/' + resource, data:data}).
             error(function(data, status) {
-                dialogId && lmDialog.close(dialogId);
+                checkWait();
                 if (status == 403) {
                     lmDialog.showOk("Denied", "You do not have permission for that action");
                 } else if (status != 409) {
                     lmDialog.showOk("Server Error: " + status, data);
                 }
             }).then(function(result) {
-                dialogId && lmDialog.close(dialogId);
+                checkWait();
                 var data = result.data;
                 $timeout(function() {
                     serverResult(data)}, 0);
@@ -177,21 +164,28 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
 
     function link() {
         if (playerId) {
-            lmCookies.writeCookie('lampost_session', sessionId + '&&' + playerId, 60);
+            localStorage.setItem('lm_timestamp_' + playerId, new Date().getTime().toString());
         }
         linkRequest("link");
     }
 
-    function linkFailure(status) {
-        if (connected) {
-            connected = false;
-            lmLog.log("Link stopped: " + status);
-            setTimeout(function() {
-                if (!connected && !window.windowClosing) {
-                    lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
-                }
-            }, 100);
+    function onWindowClosing() {
+        if (playerId) {
+            localStorage.setItem('lm_disconnect_player', playerId);
         }
+    }
+
+    function linkFailure(status) {
+        if (!connected) {
+            return;
+        }
+        connected = false;
+        lmLog.log("Link stopped: " + status);
+        setTimeout(function() {
+            if (!connected && !window.windowClosing) {
+                lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
+            }
+        }, 100);
     }
 
     function onLinkStatus(status) {
@@ -226,11 +220,76 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
 
     function onLogin(data) {
         playerId = data.name.toLowerCase();
+        var activePlayers = localStorage.getItem('lm_active_players');
+        if (activePlayers) {
+            activePlayers = activePlayers.split('**');
+        } else {
+            activePlayers = [];
+        }
+        if (activePlayers.indexOf(playerId) == -1) {
+            activePlayers.push(playerId);
+            localStorage.setItem('lm_active_players', activePlayers.join('**'));
+        }
+        localStorage.setItem('lm_session_' + playerId, sessionId);
+        localStorage.setItem('lm_timestamp_' + playerId, new Date().getTime().toString());
+    }
+
+    function activePlayerList() {
+        var activePlayers = localStorage.getItem('lm_active_players');
+        if (!activePlayers) {
+            return [];
+        }
+        return activePlayers.split('**');
+    }
+
+    function deletePlayerData(activePlayers, deleteId) {
+        var ix = activePlayers.indexOf(deleteId);
+        if (ix == -1) {
+            return;
+        }
+        activePlayers.splice(ix, 1);
+        localStorage.setItem('lm_active_players', activePlayers.join('**'));
+        localStorage.removeItem('lm_session_' + deleteId);
+        localStorage.removeItem('lm_timestamp_' + deleteId);
+    }
+
+    function findSession() {
+        var activePlayers = activePlayerList();
+        // Anything older than a minute should not be reconnected, so we clear
+        // the active players list in localStorage
+        var staleTimestamp = new Date().getTime() - 60 * 1000;
+        var activeTimestamp = new Date().getTime() - 10 * 1000;
+        var lastPlayerId;
+        var lastTimestamp = 0;
+        angular.forEach(activePlayers, function(checkId) {
+            var timestamp = Number(localStorage.getItem('lm_timestamp_' + checkId));
+            if (timestamp < staleTimestamp) {
+                deletePlayerData(activePlayers, checkId);
+            } else if (timestamp > lastTimestamp && timestamp < activeTimestamp) {
+                lastPlayerId = checkId;
+                lastTimestamp = timestamp;
+            }
+        });
+
+        var disconnectPlayer = localStorage.getItem('lm_disconnect_player');
+        if (disconnectPlayer && activePlayers.indexOf(disconnectPlayer) > -1) {
+            lastPlayerId = disconnectPlayer;
+            localStorage.removeItem('lm_disconnect_player');
+        }
+
+        if (lastPlayerId) {
+            var lastSession = localStorage.getItem('lm_session_' + lastPlayerId);
+            if (lastSession) {
+                playerId = lastPlayerId;
+                sessionId = lastSession;
+            }
+        }
     }
 
     function onLogout() {
+        deletePlayerData(activePlayerList(), playerId);
         playerId = '';
-        lmCookies.deleteCookie('lampost_session');
+
     }
 
     function reconnect() {
@@ -241,24 +300,28 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         }
     }
 
+    this.childSession = function(parentSession) {
+        sessionId = parentSession;
+    };
+
     this.request = function(resource, args, showWait) {
-        return resourceRequest(resource, args, showWait);
+        return $http.get('dialogs/loading.html').then(function(template) {
+            loadingTemplate = template.data;
+
+        }).then(function() {
+                return resourceRequest(resource, args, showWait)
+            });
     };
 
     this.connect = function() {
         var data = {};
         if (!sessionId ) {
-            var cookie = lmCookies.readCookie('lampost_session').split('&&');
-            if (cookie.length == 2) {
-                sessionId = cookie[0];
-                data.player_id = cookie[1];
+            findSession();
+            if (sessionId) {
+                data.player_id = playerId;
             }
         }
-        $http.get('dialogs/loading.html').then(function(template) {
-            loadingTemplate = template.data;
-            linkRequest("connect", data);
-        })
-
+        linkRequest("connect", data);
     };
 
     lmBus.register("connect", onConnect);
@@ -266,6 +329,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
     lmBus.register("server_request", onServerRequest);
     lmBus.register("login", onLogin);
     lmBus.register("logout", onLogout);
+    lmBus.register("window_closing", onWindowClosing);
 
 
     function ReconnectController($scope, $timeout) {
@@ -506,6 +570,17 @@ angular.module('lampost_svc').service('lmUtil', [function() {
         array.sort(function(a, b) {
             return a[field] - b[field];
         })
+    };
+
+    this.urlVars = function() {
+        var vars = {};
+        var keyValuesPairs = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < keyValuesPairs.length; i++)
+        {
+            var kvp = keyValuesPairs[i].split('=');
+            vars[kvp[0]] = kvps[1];
+        }
+        return vars;
     };
 
     this.getScrollBarSizes = function() {

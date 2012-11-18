@@ -1,6 +1,25 @@
-angular.module('lampost_edit', []);
+angular.module('lampost_editor', ['lampost_svc', 'lampost_dir']);
 
-angular.module('lampost_edit').directive('editList', [function () {
+angular.module('lampost_editor').run(['lmUtil', 'lmEditor', 'lmRemote', function(lmUtil, lmEditor, lmRemote) {
+    try {
+        var playerId = name.split('_')[1];
+        var sessionId = localStorage.getItem('lm_session_' + playerId);
+        if (!sessionId) {
+            throw ("No session found");
+        }
+        var editorList = $.parseJSON(localStorage.getItem('lm_editors_' + playerId));
+        if (!editorList) {
+            throw ("Invalid editor list");
+        }
+        lmRemote.childSession(sessionId);
+        lmEditor.startEditors(editorList);
+    } catch(e) {
+        alert("No valid edit session.");
+        window.close();
+    }
+}]);
+
+angular.module('lampost_editor').directive('editList', [function () {
     return {
         restrict:'A',
         require:'ngController',
@@ -10,7 +29,7 @@ angular.module('lampost_edit').directive('editList', [function () {
     }
 }]);
 
-angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil', '$timeout',
+angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil', '$timeout',
     function ($q, lmBus, lmRemote, lmDialog, $location, lmUtil, $timeout) {
 
     var rawId = 0;
@@ -68,26 +87,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
     this.roomsMaster = {};
     this.loadStatus = "loading";
 
-    lmBus.register("login", configEditors);
-    lmBus.register("start_room_edit", function(roomId) {
-        $timeout( function () {
-            $location.path('editor');
-            self.addEditor('room', roomId);
-        })
-    });
 
-    function configEditors(loginData) {
-        self.editors = [];
-        currentMap = {};
-        var ids = loginData.editors;
-        for (var i = 0; i < ids.length; i++) {
-            var editor = new Editor(ids[i]);
-            self.editors.push(editor);
-            currentMap[editor.id] = editor;
-        }
-        self.currentEditor = self.editors[0];
-        self.refreshData();
-    }
 
     function idSort(values, field) {
         values.sort(function(a, b) {
@@ -96,6 +96,19 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
             return aid - bid;
         })
     }
+
+    this.startEditors = function (editorList) {
+        self.editors = [];
+        currentMap = {};
+        var ids = editorList;
+        for (var i = 0; i < ids.length; i++) {
+            var editor = new Editor(ids[i]);
+            self.editors.push(editor);
+            currentMap[editor.id] = editor;
+        }
+        self.currentEditor = self.editors[0];
+        self.refreshData();
+    };
 
     this.refreshData = function () {
         self.loadStatus = "loading";
@@ -361,7 +374,7 @@ angular.module('lampost_edit').service('lmEditor', ['$q', 'lmBus', 'lmRemote', '
 }]);
 
 
-angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEditor', 'lmBus', function ($scope, lmEditor, lmBus) {
+angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEditor', 'lmBus', function ($scope, lmEditor, lmBus) {
 
     lmBus.register('editor_change', editorChange);
 
@@ -395,7 +408,7 @@ angular.module('lampost_edit').controller('EditorController', ['$scope', 'lmEdit
 }]);
 
 
-angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemote', function ($scope) {
+angular.module('lampost_editor').controller('TableController', ['$scope', 'lmRemote', function ($scope) {
     var self = this;
     $scope.rowClass = function (rowForm) {
         if (rowForm.$invalid) {
@@ -419,7 +432,7 @@ angular.module('lampost_edit').controller('TableController', ['$scope', 'lmRemot
 }]);
 
 
-angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmUtil', 'lmEditor',
+angular.module('lampost_editor').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmUtil', 'lmEditor',
     function ($scope, lmRemote, lmDialog, lmUtil, lmEditor) {
 
         var originals = {};
@@ -467,7 +480,7 @@ angular.module('lampost_edit').controller('AreasEditorController', ['$scope', 'l
     }]);
 
 
-angular.module('lampost_edit').controller('NewAreaController', ['$scope', 'lmRemote', 'parentScope',
+angular.module('lampost_editor').controller('NewAreaController', ['$scope', 'lmRemote', 'parentScope',
     function ($scope, lmRemote, parentScope) {
 
         $scope.newArea = {};
@@ -486,7 +499,7 @@ angular.module('lampost_edit').controller('NewAreaController', ['$scope', 'lmRem
     }]);
 
 
-angular.module('lampost_edit').controller('MudConfigController', ['$rootScope', '$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
+angular.module('lampost_editor').controller('MudConfigController', ['$rootScope', '$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
     function ($rootScope, $scope, lmBus, lmRemote, lmEditor, $timeout) {
 
     var configCopy;

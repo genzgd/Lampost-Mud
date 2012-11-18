@@ -1,4 +1,4 @@
-angular.module('lampost_edit').controller('PlayersEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
+angular.module('lampost_editor').controller('PlayersEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmEditor, lmDialog, lmBus) {
 
         lmBus.register("editor_activated", function(editor) {

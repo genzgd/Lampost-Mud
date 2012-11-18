@@ -42,6 +42,9 @@ class SessionManager():
         self.session_map[session_id] = session
         return self._respond(RootDTO(connect=session_id))
 
+    def child_session(self, parent_id):
+        parent_session = self.get_session(parent_id)
+
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)
         if not session or not session.ld_time or not session.player or session.player.dbo_id != player_id:
@@ -125,7 +128,7 @@ class SessionManager():
             session.append(player_list_dto)
 
 @requires('dispatcher')
-class UserSession():
+class BaseSession(object):
     def __init__(self):
         self.output = RootDTO()
         self.player = None
@@ -134,35 +137,6 @@ class UserSession():
         self.request = None
         self.pulse_reg = None
         self.user = None
-
-    def login(self, player, user):
-        self.player = player
-        self.user = user
-        player.session = self
-        self.activity_time = datetime.now()
-        return self.player_info(self.activity_time)
-
-    def pull_output(self):
-        output = self.output
-        if self.pulse_reg:
-            self.unregister(self.pulse_reg)
-            self.pulse_reg = None
-        self.output = RootDTO()
-        return output
-
-    def player_info(self, now):
-        if self.ld_time:
-            status = "Link Dead"
-        else:
-            idle = (now - self.activity_time).seconds
-            if idle < 60:
-                status = "Active"
-            else:
-                status =  "Idle: " + str(idle / 60) + "m"
-        info = RootDTO(status=status)
-        info.name = self.player.name
-        info.loc = self.player.env.title
-        return info
 
     def attach(self, request):
         if self.request:
@@ -181,10 +155,13 @@ class UserSession():
             self.pulse_reg = self.register("pulse", self.push_output)
         self.output.merge(data)
 
-    def display_line(self, display_line):
-        display = Display()
-        display.append(display_line)
-        self.append(display)
+    def pull_output(self):
+        output = self.output
+        if self.pulse_reg:
+            self.unregister(self.pulse_reg)
+            self.pulse_reg = None
+        self.output = RootDTO()
+        return output
 
     def push_output(self):
         if self.request:
@@ -194,12 +171,47 @@ class UserSession():
             self.pulse_reg = None
 
     def push(self, output):
-            self.request.write(output.json)
-            self.request.finish()
-            self.request = None
+        self.request.write(output.json)
+        self.request.finish()
+        self.request = None
 
     @property
     def privilege(self):
         return self.player.imm_level if self.player else 0
+
+
+class UserSession(BaseSession):
+    def __init__(self):
+        super(UserSession, self).__init__()
+
+    def login(self, player, user):
+        self.player = player
+        self.user = user
+        player.session = self
+        self.activity_time = datetime.now()
+        return self.player_info(self.activity_time)
+
+    def player_info(self, now):
+        if self.ld_time:
+            status = "Link Dead"
+        else:
+            idle = (now - self.activity_time).seconds
+            if idle < 60:
+                status = "Active"
+            else:
+                status =  "Idle: " + str(idle / 60) + "m"
+        info = RootDTO(status=status)
+        info.name = self.player.name
+        info.loc = self.player.env.title
+        return info
+
+    def display_line(self, display_line):
+        display = Display()
+        display.append(display_line)
+        self.append(display)
+
+
+
+
 
 

@@ -6,9 +6,11 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
     this.display = [];
     this.player = null;
+    this.playerId = null;
     this.playerList = [];
     this.history = [];
     this.historyIx = 0;
+    this.editorWindow = null;
 
     function updateDisplay(display) {
         var lines = display.lines;
@@ -26,7 +28,10 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     }
 
     lmBus.register("login", function(data) {
-        self.player = data;}, null, -100);
+        self.player = data;
+        self.playerId = data.name.toLocaleLowerCase();
+        localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.player.editors));
+    }, null, -100);
 
     lmBus.register("player_list", function(data) {
         self.playerList = data;

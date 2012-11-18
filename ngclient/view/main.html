@@ -1,4 +1,4 @@
-<div class="container-fluid" ng-style="gameHeight">
+<div class="container-fluid" ng-style="gameHeight" ng-controller="GameController">
   <div class="row-fluid main-display">
     <div ng-switch="actionPane" class="span6 v-full">
       <div ng-switch-when="login" ng-controller="LoginController">
@@ -30,7 +30,7 @@
         </div>
       </div>
       <div ng-switch-default ng-controller="ActionController" class="v-full">
-        <div id="displayPane" scroll-bottom="update" class="telnet span12">
+        <div id="displayPane" scroll-bottom="update" class="telnet span12" >
           <div ng-repeat="line in display" ng-style="line.style" ng-bind-html-unsafe="line.text"></div>
         </div>
         <div class="telnet-input">
@@ -40,36 +40,38 @@
 
     </div>
     <div class="span6 v-full">
-      <div class="span12 tabbable" style="height:60%">
-        <ul class="nav nav-tabs" id="myTabs">
-          <li class="active"><a ng-href="#playerListTab" data-toggle="playerListTab">Players</a></li>
-        </ul>
-
-        <div class="tab-content span12">
-          <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
-            <table class="table table-condensed">
-              <thead>
-              <tr>
-                <th class="span2">Name</th>
-                <th class="span2">Status</th>
-                <th class="span7">Location</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr ng-repeat="player in playerList">
-                <td class="span2">{{player.name}}</td>
-                <td class="span2">{{player.status}}</td>
-                <td class="span7">{{player.loc}}</td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="row-fluid" ng-show="toolbar">
+        <div class="btn-toolbar span10" >
+          <button class="btn" ng-repeat="button in toolbar" ng-click="button.click()">{{button.label}}</button>
         </div>
       </div>
-      <div class="span12">
-        <div class="row-fluid">
-          <div class="span8"></div>
-          <div class="span4"></div>
+
+      <div class="row-fluid">
+        <div class="span12 tabbable" style="height:60%">
+          <ul class="nav nav-tabs" id="myTabs">
+            <li class="active"><a ng-href="#playerListTab" data-toggle="playerListTab">Players</a></li>
+          </ul>
+
+          <div class="tab-content span12">
+            <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
+              <table class="table table-condensed">
+                <thead>
+                <tr>
+                  <th class="span2">Name</th>
+                  <th class="span2">Status</th>
+                  <th class="span7">Location</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="player in playerList">
+                  <td class="span2">{{player.name}}</td>
+                  <td class="span2">{{player.status}}</td>
+                  <td class="span7">{{player.loc}}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
