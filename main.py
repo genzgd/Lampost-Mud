@@ -15,4 +15,8 @@ for arg in sys.argv[1:]:
         print "Invalid argument format: %s" % arg
         sys.exit(2)
 
-Context(**context_args)
+try:
+    Context(**context_args)
+except TypeError as ex:
+    print ex.message
+    sys.exit(2)

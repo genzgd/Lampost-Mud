@@ -1,5 +1,7 @@
 from redis import ConnectionPool
 from redis.client import StrictRedis
+
+from lampost.util.lmlog import logged
 from lampost.context.resource import requires, provides, m_requires
 
 m_requires('log', __name__)
@@ -38,6 +40,7 @@ class RedisStore():
         except:
             db_log("Failed to evict " + dbo.dbo_key + " from db cache")
 
+    @logged
     def load_by_key(self, key_type, key, base_class=None):
         dbo_key = unicode('{0}:{1}'.format(key_type, key))
         cached_dbo = self.object_map.get(dbo_key)
