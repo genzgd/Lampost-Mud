@@ -48,9 +48,7 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
             var navBarMargin = parseInt(navbar.css('marginBottom').replace('px', ''));
             var gameHeight = $(window).height() - navbar.height() - navBarMargin;
             $rootScope.gameHeight = {height:gameHeight.toString() + 'px'};
-            var editorHeight = gameHeight - lmUtil.getScrollBarSizes()[1];
-            $rootScope.editorHeight = {height:editorHeight.toString() + 'px'};
-        }
+         }
 
         resize();
 
@@ -129,14 +127,24 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
             update();
         }, $scope);
 
-        function launchEditor() {
+        function launchEditor(roomId) {
             if (lmData.editorWindow && lmData.editorWindow.closed) {
                 delete lmData.editorWindow;
             }
             if (lmData.editorWindow) {
                 lmData.editorWindow.focus();
             } else {
-                lmData.editorWindow = open("editor.html", "editor_" + lmData.playerId);
+                if (roomId) {
+                    localStorage.setItem("editor_room_id", roomId);
+                }
+                var editorWidth = 800;
+                var editorHeight = 600;
+                if (window.screen) {
+                    editorWidth = window.screen.availWidth * .8;
+                    editorHeight = window.screen.availHeight * .8;
+                }
+
+                lmData.editorWindow = open('editor.html', 'editor_' + lmData.playerId, 'width=' + editorWidth + ',height=' + editorHeight);
             }
         }
 
@@ -145,7 +153,14 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
             if (lmData.player) {
                 $scope.actionPane = "action";
                 if (lmData.player.editors) {
-                    $scope.toolbar.push({label:'Editor', click:launchEditor});
+                    $scope.toolbar.push({label:'Editor', click:launchEditor})
+                    lmBus.register("start_room_edit", function(roomId) {
+                        if (!lmData.editorWindow || lmData.editorWindow.closed) {
+                            launchEditor(roomId);
+                        } else {
+                            lmData.editorWindow.editLampostRoom(roomId);
+                        }
+                    });
                 }
             } else {
                 $scope.actionPane = "login";

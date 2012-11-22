@@ -50,6 +50,7 @@ class SessionManager():
         if not session or not session.ld_time or not session.player or session.player.dbo_id != player_id:
             return self.start_session()
         session.display_line(DisplayLine("-- Reconnecting Session --"))
+        session.player.parse("look")
         return self._respond(LoginResult(session.player).merge(RootDTO(connect=session_id)))
 
     def login(self, session, user_id, password):

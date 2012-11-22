@@ -15,7 +15,7 @@ angular.module('lampost_editor').controller('ObjectListController', ['$scope', '
         };
 
         $scope.showNewDialog = function() {
-            lmDialog.show({templateUrl:'dialogs/new_' + $scope.type + '.html', controller:"NewObjectController",
+            lmDialog.show({templateUrl:'editor/dialogs/new_' + $scope.type + '.html', controller:"NewObjectController",
                 locals:{type:$scope.type, areaId:$scope.areaId}});
         };
 

@@ -1,6 +1,6 @@
 angular.module('lampost_editor', ['lampost_svc', 'lampost_dir']);
 
-angular.module('lampost_editor').run(['lmUtil', 'lmEditor', 'lmRemote', function(lmUtil, lmEditor, lmRemote) {
+angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemote', function($timeout, lmUtil, lmEditor, lmRemote) {
     try {
         var playerId = name.split('_')[1];
         var sessionId = localStorage.getItem('lm_session_' + playerId);
@@ -16,6 +16,11 @@ angular.module('lampost_editor').run(['lmUtil', 'lmEditor', 'lmRemote', function
     } catch(e) {
         alert("No valid edit session.");
         window.close();
+    }
+    window.editLampostRoom = function(roomId) {
+        $timeout(function() {
+            lmEditor.addEditor('room', roomId);}
+        );
     }
 }]);
 
@@ -50,7 +55,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         this.label = eType.label ? eType.label : parent;
         this.label_class = parent ? "small" : "";
         this.controller = eType.controller;
-        this.include = "view/editor/" + type + ".html";
+        this.include = "editor/view/" + type + ".html";
         this.dirty = false;
         this.id = type + (parent ? ":" + parent : "");
         this.model = {};
@@ -86,8 +91,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     this.areaList = [];
     this.roomsMaster = {};
     this.loadStatus = "loading";
-
-
 
     function idSort(values, field) {
         values.sort(function(a, b) {
@@ -134,7 +137,13 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         ]).then(function () {
             lmUtil.stringSort(self.areaList, 'name');
             self.loadStatus = "loaded";
-            lmBus.dispatch('editor_change');
+            var roomId = localStorage.getItem("editor_room_id");
+            if (roomId) {
+                localStorage.removeItem("editor_room_id");
+                self.addEditor('room', roomId);
+            } else {
+                lmBus.dispatch('editor_change');
+            }
         });
     };
 
@@ -176,9 +185,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     };
 
     this.visitRoom = function (roomId) {
-        lmRemote.request('editor/room/visit', {room_id:roomId}).then(function () {
-            $location.path('game');
-        })
+        lmRemote.request('editor/room/visit', {room_id:roomId});
     };
 
     this.loadRooms = function(areaId) {
@@ -443,7 +450,7 @@ angular.module('lampost_editor').controller('AreasEditorController', ['$scope', 
         angular.forEach($scope.areas, updateOriginal);
 
         $scope.showNewDialog = function () {
-            lmDialog.show({templateUrl:"dialogs/new_area.html",
+            lmDialog.show({templateUrl:"editor/dialogs/new_area.html",
                 controller:"NewAreaController", locals:{parentScope:$scope}})
         };
 

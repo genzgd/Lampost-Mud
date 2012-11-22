@@ -10,8 +10,9 @@
   <link href="css/lampost.css" rel="stylesheet">
 </head>
 
-<body ng-cloak >
-  <div class="container-fluid" class="v-full" ng-controller="EditorController" ng-switch="loadStatus">
+<body ng-cloak class="container-fluid">
+  <h4>Lampost Editor</h4>
+  <div class="v-full" ng-controller="EditorController" ng-switch="loadStatus">
     <div ng-switch-when="loading">Loading Data From Server</div>
     <div ng-switch-when="loaded" class="row-fluid wrapper">
       <div class="tabbable tabs-left span12 wrapper">
@@ -30,9 +31,9 @@
   </div>
   <script src="app/directives.js"></script>
   <script src="app/services.js"></script>
-  <script src="app/editor.js"></script>
-  <script src="app/rooms_editor.js"></script>
-  <script src="app/object_editor.js"></script>
-  <script src="app/player_editor.js"></script>
+  <script src="editor/editor.js"></script>
+  <script src="editor/rooms_editor.js"></script>
+  <script src="editor/object_editor.js"></script>
+  <script src="editor/player_editor.js"></script>
 </body>
 </html>

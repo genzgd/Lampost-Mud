@@ -21,7 +21,7 @@ angular.module('lampost_editor').controller('RoomsEditorController', ['$scope', 
 
         $scope.showNewDialog = function () {
             var area = lmEditor.getArea($scope.areaId);
-            lmDialog.show({templateUrl:"dialogs/new_room.html", controller:"NewRoomController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_room.html", controller:"NewRoomController",
                 locals:{parentScope:$scope, nextRoomId:area.next_room_id}});
         };
 
@@ -129,7 +129,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         };
 
         $scope.addNewExit = function() {
-            lmDialog.show({templateUrl:"dialogs/new_exit.html", controller:"NewExitController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_exit.html", controller:"NewExitController",
                 locals:{parentScope:$scope, roomId:$scope.roomId}});
         };
 
@@ -161,7 +161,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         };
 
         $scope.addNewMobile = function() {
-            lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_reset.html", controller:"NewResetController",
                 locals:{addFunc:addMobileReset, roomId:$scope.roomId, resetType:'Mobile', areaId: areaId}});
         };
 
@@ -171,12 +171,12 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         };
 
         $scope.mobileArticles = function(mobile) {
-            lmDialog.show({templateUrl:"dialogs/article_load.html", controller:"ArticleLoadController",
+            lmDialog.show({templateUrl:"editor/dialogs/article_load.html", controller:"ArticleLoadController",
                 locals:{updateFunc:updateArticleLoads, reset:mobile, areaId: areaId}});
         };
 
         $scope.addNewArticle = function() {
-            lmDialog.show({templateUrl:"dialogs/new_reset.html", controller:"NewResetController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_reset.html", controller:"NewResetController",
                 locals:{addFunc:addArticleReset, roomId:$scope.roomId, resetType:'Article', areaId: areaId}});
         };
 

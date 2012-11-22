@@ -24,7 +24,7 @@ angular.module('lampost_editor').controller('PlayersEditorController', ['$scope'
 
         function loadPlayers() {
             $scope.ready = false;
-            lmRemote.request($scope.editor.url + '/list').then(function(players) {
+            lmRemote.request($scope.editor.url + '/list', null, true).then(function(players) {
                 $scope.players = players;
                 $scope.ready = true;
             });
