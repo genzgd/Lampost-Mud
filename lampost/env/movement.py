@@ -1,8 +1,3 @@
-'''
-Created on Mar 1, 2012
-
-@author: Geoffrey
-'''
 class Direction(object):
     ref_map = {}
     ordered = []

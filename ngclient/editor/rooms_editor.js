@@ -329,7 +329,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         }
 
         function updateArticleLoads(reset) {
-
+            $scope.dirty();
         }
 
     }]);
@@ -488,13 +488,15 @@ angular.module('lampost_editor').controller('NewResetController', ['$scope', 'ad
 
 }]);
 
-angular.module('lampost_editor').controller('ArticleLoadController', ['$scope', 'lmEditor', 'reset', 'areaId',
-    function ($scope, lmEditor, reset, areaId) {
+angular.module('lampost_editor').controller('ArticleLoadController', ['$scope', 'lmEditor', 'reset', 'areaId', 'updateFunc',
+    function ($scope, lmEditor, reset, areaId, updateFunc) {
 
         $scope.areaList = [];
         angular.forEach(lmEditor.areaList, function (value) {
             $scope.areaList.push(value.id);
         });
+        $scope.article_load_types = lmEditor.constants.article_load_types;
+        $scope.articles = [];
         $scope.newArticle = {};
         $scope.addDisabled = true;
         $scope.reset = reset;
@@ -502,23 +504,50 @@ angular.module('lampost_editor').controller('ArticleLoadController', ['$scope', 
         $scope.areaId = areaId;
         $scope.article_loads = jQuery.extend(true, [], reset.article_loads);
 
+
         $scope.changeArea = function() {
-            lmEditor.loadObjects('article', $scope.areaId).then(function(objects) {
-                loadObjects(objects);
+            lmEditor.loadObjects('article', $scope.areaId).then(function(articles) {
+                loadObjects(articles);
             });
         };
 
-        function loadObjects(objects) {
-            if (objects.length == 0) {
-                alert("No " + resetType + "s in " + $scope.areaId);
+        $scope.changeArea();
+
+        function loadObjects(articles) {
+            if (articles.length == 0) {
+                $scope.articles = [{dbo_id:"No articles in area"}];
+                $scope.addDisabled = true;
             } else {
-                $scope.newLoad.articleId = objects[0].dbo_id
-                $scope.reset.object = objects[0];
+                $scope.articles = articles;
+                $scope.addDisabled = false;
             }
+            $scope.newArticle = $scope.articles[0];
+        }
+
+        $scope.addArticleLoad = function() {
+            var articleLoad = {article_id:$scope.newArticle.dbo_id, count: 1}
+            if ($scope.newArticle.type == "weapon") {
+                articleLoad.type = "equip";
+                for (var i = 0; i < reset.article_loads.length; i++) {
+                    if (reset.article_loads[i].type == 'equip') {
+                        articleLoad.type = 'default';
+                        break;
+                    }
+                }
+            } else {
+                articleLoad.type = "default";
+            }
+            $scope.article_loads.push(articleLoad);
+
+        }
+
+        $scope.deleteArticleLoad = function(articleIndex) {
+            $scope.article_loads.splice(articleIndex, 1);
         }
 
         $scope.saveArticleLoads = function() {
             reset.article_loads = $scope.article_loads;
+            updateFunc();
             $scope.dismiss();
         }
 

@@ -6,42 +6,49 @@
   <form ng-submit="saveArticleLoads()">
     <div class="modal-body">
       <div class="row-fluid">
-        <table class="table table-condensed" >
+        <table style="width: 98%" class="table table-condensed" >
           <thead>
           <tr>
-            <th class="span3">Article</th>
-            <th class="span3">Load Type</th>
-            <th class="span3 cell-right">Count</th>
-            <th class="span1"></th>
+            <th>Article</th>
+            <th>Load Type</th>
+            <th class="cell-right">Count</th>
+            <th></th>
           </tr>
           </thead>
           <tbody>
-          <tr class="edit-row table-bordered" ng-repeat="article_load in reset.article_loads" >
-            <td class="span3 unselectable">{{article_load.article_id}}</td>
-            <td class="span3 unselectable edit-cell">{{article_load.type}}</td>
-            <td class="span3 unselectable edit-cell"><input class="input-small" type="number" ng-model="article_load.count"  min="1"/></td>
-            <td class="span1"><a ng-click="deleteObject($event, article)" title="Delete Article Load" class="icon-link"><i class="icon-remove"></i></a></td>
+          <tr class="edit-row table-bordered" ng-repeat="article_load in article_loads" >
+            <td style="width: 30%">{{article_load.article_id}}</td>
+            <td style="width: 22%" class="edit-cell"><select style="width: 96%" class="edit-cell" ng-model="article_load.type"
+                ng-options="article_load_type for article_load_type in article_load_types" required="true"></select></td>
+            <td style="width: 12%" class="edit-cell"><input style="width: 80%" class="edit-cell cell-right" type="number" ng-model="article_load.count"  min="1"/></td>
+            <td style="width: 6%"><a ng-click="deleteArticleLoad($index)" title="Delete Article Load" class="icon-link"><i class="icon-remove"></i></a></td>
           </tr>
           </tbody>
         </table>
       </div>
       <div class="row-fluid">
-        <div class="span8" style="min-height: 132px; padding-top:4px">
-          <label>Article to Add</label>
+
+        <div class="span5">Article to Add</div>
+        <div class="span6">
+          <select ng-disabled='addDisabled' ng-model="newArticle" ng-options="article.dbo_id for article in articles" required="true"></select>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span5" style="min-height: 132px; padding-top:4px">
           <p><em>{{reset.objects.title}}</em></p>
           <p>{{reset.object.desc}}</p>
           <h6>Source Area</h6>
-          <select class="span6" ng-model="areaId" ng-change="changeArea()" ng-options="tempAreaId for tempAreaId in areaList" required="true"></select>
+          <select ng-model="areaId" ng-change="changeArea()" ng-options="tempAreaId for tempAreaId in areaList" required="true"></select>
         </div>
         <div class="span4">
-          <button ng-disabled='addDisabled' class="btn btn-mini btn-success">Add</button>
+          <button type="button" ng-click="addArticleLoad()" ng-disabled='addDisabled' class="btn btn-mini btn-success">Add</button>
         </div>
       </div>
     </div>
 
     <div class="modal-footer">
       <button class="btn btn-success">Update Article Loads</button>
-      <button ng-click="dismiss()" class="btn">Cancel</button>
+      <button type="button" ng-click="dismiss()" class="btn">Cancel</button>
     </div>
   </form>
 </div>

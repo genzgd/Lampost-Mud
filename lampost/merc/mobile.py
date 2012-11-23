@@ -8,6 +8,8 @@ class MobileMerc(Mobile):
 
     def calc_damage(self, target):
         damage = randint(self.level / 2, self.level * 3 / 2 )
+        if self.weapon:
+            damage += damage / 2
         return damage
 
     def rec_violence(self, opponent):
@@ -21,6 +23,10 @@ class MobileMerc(Mobile):
         self.health -= damage
         if self.health < 0:
             self.die()
+
+    def equip_article(self, article):
+        if not self.weapon and article.type == "weapon":
+            self.weapon = article
 
     def add_exp(self):
         pass
@@ -46,4 +52,5 @@ class MobileTemplateMerc(MobileTemplate):
         mobile.defense = scale32(mobile.level, 100, -100)
         mobile.max_health = mobile.level * 8 + randint(mobile.level * mobile.level / 4, mobile.level * mobile.level)
         mobile.health = mobile.max_health
+        mobile.weapon = None
         return super(MobileTemplateMerc, self).config_instance(mobile)

@@ -25,19 +25,14 @@ class Player(Creature, RootDBO):
         self.equip_slots = {}
 
     def on_loaded(self):
-        pass
+        if not self.desc:
+            self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
 
     def start(self):
         self.register_p(self.autosave, seconds=20)
 
-    def long_desc(self, observer):
-        if self.desc:
-            return self.desc
-        return "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
-
-    def short_desc(self, observer):
-        return "{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player")
-
+    def rec_glance(self, source, **ignored):
+        source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))
 
     def display_channel(self, message):
         if message.source != self:

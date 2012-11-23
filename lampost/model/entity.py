@@ -259,6 +259,16 @@ class Entity(BaseItem):
     def rec_social(self):
         pass
 
+    def rec_examine(self, source, **ignored):
+        super(Entity, self).rec_examine(source, **ignored)
+        source.display_line("{0} is carrying:".format(self.name))
+        if self.inven:
+            for article in self.inven:
+                article.rec_glance(source)
+        else:
+            self.display_line("Nothing")
+
+
     def change_env(self, new_env):
         self.leave_env()
         self.enter_env(new_env)
@@ -287,6 +297,9 @@ class Entity(BaseItem):
         self.env.rec_broadcast(broadcast)
 
     def display_line(self, line, color=0x000000):
+        pass
+
+    def output(self, response):
         pass
 
     def update_score(self):

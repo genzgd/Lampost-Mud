@@ -36,7 +36,7 @@ def request(func):
             request.setResponseCode(400)
             return str(se.message)
         if result is None:
-            return "OK"
+            request.setResponseCode(204)
         try:
             return result.json
         except AttributeError:

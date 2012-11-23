@@ -186,6 +186,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 
     this.visitRoom = function (roomId) {
         lmRemote.request('editor/room/visit', {room_id:roomId});
+        window.open("",window.opener.name);
     };
 
     this.loadRooms = function(areaId) {
@@ -386,7 +387,6 @@ angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEd
     lmBus.register('editor_change', editorChange);
 
     $scope.editors = lmEditor.editors;
-    $scope.constants = lmEditor.constants;
     editorChange();
 
     $scope.tabClass = function (editor) {
@@ -394,6 +394,7 @@ angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEd
     };
 
     function editorChange() {
+        $scope.constants = lmEditor.constants;
         $scope.loadStatus = lmEditor.loadStatus;
         $scope.currentEditor = lmEditor.currentEditor;
         lmBus.dispatch('editor_activated', $scope.currentEditor);

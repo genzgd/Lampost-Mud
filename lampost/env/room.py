@@ -17,21 +17,25 @@ class Exit(RootDBO):
 
     @property
     def verbs(self):
-        return ((self.direction.key,), (self.direction.desc,))
+        return (self.direction.key,), (self.direction.desc,)
 
     @property
     def dir_name(self):
         return self.direction.key
 
+    @property
+    def dir_desc(self):
+        return self.direction.desc
+
     @dir_name.setter
     def dir_name(self, value):
         self.direction = Direction.ref_map[value]
 
-    def short_desc(self, observer=None):
-        if observer and observer.build_mode:
-            return "{0}   {1}".format(self.direction.desc, self.destination.dbo_id)
+    def rec_glance(self, source, **kwargs):
+        if source.build_mode:
+            source.display_line("{0}   {1}".format(self.direction.desc, self.destination.dbo_id))
         else:
-            return self.direction.desc
+            source.display_line(self.direction.desc)
 
     def __call__(self, source, **ignored):
         source.change_env(self.destination)
@@ -73,9 +77,6 @@ class Room(RootDBO):
     def rec_glance(self, source, **ignored):
         return Display(self.short_desc(source), Room.ROOM_COLOR)
 
-    def rec_examine(self, source, **ignored):
-        return self.long_desc(source)
-
     def rec_entity_enters(self, source):
         self.contents.append(source)
         self.tell_contents("rec_entity_enter_env", source)
@@ -106,33 +107,29 @@ class Room(RootDBO):
     def elements(self):
         return self.contents + self.exits + self.extras
 
-    def long_desc(self, observer):
-        short_desc = self.short_desc(observer)
-        if observer and observer.build_mode:
-            short_desc = "{0} [{1}]".format(short_desc, self.dbo_id)
-        longdesc = Display(short_desc, 0x6b306b)
-        longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
-        longdesc.append(DisplayLine(self.desc, Room.ROOM_COLOR))
-        longdesc.append(DisplayLine(Room.ROOM_SEP, Room.ROOM_COLOR))
-        if self.exits:
-            if observer.build_mode:
-                for my_exit in self.exits:
-                    longdesc.append(DisplayLine("Exit: {0} ".format(my_exit.short_desc(observer)), Room.EXIT_COLOR))
-            else:
-                longdesc.append(DisplayLine("Obvious exits are: " + self.short_exits(),  Room.EXIT_COLOR))
+    def rec_examine(self, source, **ignored):
+        if source.build_mode:
+            source.display_line("{0} [{1}]".format(self.title, self.dbo_id), 0x6b306b)
         else:
-            longdesc.append(DisplayLine("No obvious exits", Room.EXIT_COLOR))
+            source.display_line(self.title)
+        source.display_line(Room.ROOM_SEP, Room.ROOM_COLOR)
+        source.display_line(self.desc, Room.ROOM_COLOR)
+        source.display_line(Room.ROOM_SEP, Room.ROOM_COLOR)
+        if self.exits:
+            if source.build_mode:
+                for my_exit in self.exits:
+                    source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), Room.EXIT_COLOR)
+            else:
+                source.display_line("Obvious exits are: " + self.short_exits(),  Room.EXIT_COLOR)
+        else:
+            source.display_line("No obvious exits", Room.EXIT_COLOR)
 
         for obj in self.contents:
-            if obj != observer:
-                longdesc.append(DisplayLine(obj.short_desc(observer), Room.ITEM_COLOR))
-        return longdesc
-
-    def short_desc(self, observer):
-        return self.title
+            if obj != source:
+                obj.rec_glance(source)
 
     def short_exits(self):
-        return ", ".join([ex.short_desc() for ex in self.exits])
+        return ", ".join([ex.dir_desc for ex in self.exits])
 
     def find_exit(self, exit_dir):
         for my_exit in self.exits:
@@ -153,9 +150,9 @@ class Room(RootDBO):
                 continue
             curr_count = len([entity for entity in self.contents if getattr(entity, "mobile_id", None) == m_reset.mobile_id])
             for unused in range(m_reset.mob_count - curr_count):
-                self.add_template(template)
+                self.add_mobile(template, m_reset)
             if curr_count >= m_reset.mob_count and curr_count < m_reset.mob_max:
-                self.add_template(template)
+                self.add_mobile(template, m_reset)
         for a_reset in self.article_resets:
             template = self.mud.get_article(a_reset.article_id)
             if not template:
@@ -167,9 +164,22 @@ class Room(RootDBO):
             if curr_count >= a_reset.article_count and curr_count < a_reset.article_max:
                 self.add_template(template)
 
+    def add_mobile(self, template, reset):
+        instance = self.add_template(template)
+        for article_load in reset.article_loads:
+            article_template = self.mud.get_article(article_load.article_id)
+            if not template:
+                error("Invalid article load for roomId: {0}, mobileId: {1}, articleId: {2}".format(self.dbo_id, template.mobile_id, article_template.article_id))
+                continue
+            article = article_template.create_instance()
+            instance.add_inven(article)
+            if article_load.type == "equip":
+                instance.equip_article(article)
+
     def add_template(self, template):
         instance = template.create_instance()
         instance.enter_env(self)
+        return instance
 
 
 

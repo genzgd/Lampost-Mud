@@ -6,10 +6,15 @@ class Creature(Entity):
 
     def die(self):
         self.exit_msg = Broadcast(s="{n} expires, permanently.", color=0xE6282D)
+        for article in self.inven.copy():
+            self.drop_inven(article)
         self.leave_env()
         self.detach()
         self.status = 'dead'
         del self
+
+    def equip_article(self, article):
+        pass
 
     @property
     def dead(self):

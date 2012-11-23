@@ -96,7 +96,7 @@ class RoomVisit(Resource):
             raise DataError("ROOM_MISSING")
         session.player.change_env(room)
         session.player.parse('look')
-        session.push_output();
+        session.push_output()
 
 class RoomUpdate(Resource):
     @request

@@ -15,10 +15,10 @@ class BaseItem(RootDBO):
     rec_general = True
 
     def rec_examine(self, source, **ignored):
-        return self.long_desc(source)
+        source.display_line(self.desc if self.desc else self.title)
 
     def rec_glance(self, source, **ignored):
-        return self.short_desc(source)
+        source.display_line(self.title)
 
     def rec_broadcast(self, broadcast):
         pass
@@ -31,12 +31,6 @@ class BaseItem(RootDBO):
         if not self.aliases:
             return
         self.target_aliases = [tuple(unicode(alias).split(" ")) for alias in self.aliases]
-
-    def short_desc(self, observer):
-        return self.title
-
-    def long_desc(self, observer):
-        return self.desc if self.desc else self.title
 
     def enter_env(self, new_env):
         self.env = new_env

@@ -33,6 +33,7 @@ angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmD
         $('title').text(lampost_config.title);
 
         lmRemote.connect();
+        window.name = "lampost_main_" + new Date().getTime();
     }]);
 
 
@@ -124,6 +125,10 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
                 lmDialog.removeAll();
                 lmDialog.showOk("Session Lost", "Your session has been disconnected.");
             }
+            if (lmData.editorWindow && !lmData.editorWindow.closed) {
+                lmData.editorWindow.close();
+                delete lmData.editorWindow;
+            }
             update();
         }, $scope);
 
@@ -159,6 +164,7 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
                             launchEditor(roomId);
                         } else {
                             lmData.editorWindow.editLampostRoom(roomId);
+                            window.open("",lmData.editorWindow.name);
                         }
                     });
                 }

@@ -12,7 +12,6 @@ class Mobile(Creature):
     def name(self):
         return self.title
 
-
 class MobileTemplate(Template, RootDBO):
     template_fields = Mobile.dbo_fields
     dbo_fields = Template.dbo_fields + template_fields
@@ -28,7 +27,10 @@ class MobileTemplate(Template, RootDBO):
 class MobileReset(RootDBO):
     dbo_fields = "mobile_id", "mob_count", "mob_max"
     dbo_collections = DBORef("article_loads", ArticleLoad),
-    article_loads = []
     mob_count = 1
     mob_max = 1
+
+    def __init__(self):
+        super(MobileReset, self).__init__()
+        self.article_loads = []
 
