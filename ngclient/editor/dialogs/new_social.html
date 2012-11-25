@@ -1,0 +1,23 @@
+<div class="modal">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+    <h4>Create New Area</h4>
+  </div>
+  <form ng-submit="createSocial()" >
+    <div class="modal-body">
+
+      <label>Social Verb</label>
+      <input type="text" ng-model="social.social_id" ng-change="changeSocial()" required="true"/>
+      <div class="alert alert-error" ng-show="socialExists">
+        <button type="button" class="close" ng-click="socialExists = false">×</button>
+        Social verb already exists
+      </div>
+      <label>Social Basic</label>
+      <input type="text" ng-model="social.map.s" required="true"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success">Create Social</button>
+      <button ng-click="dismiss()" class="btn">Cancel</button>
+    </div>
+  </form>
+</div>

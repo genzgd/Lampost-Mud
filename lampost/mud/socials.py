@@ -1,8 +1,10 @@
 from lampost.comm.broadcast import BroadcastMap
+from lampost.context.resource import provides
 from lampost.mud.action import mud_action
+from lampost.datastore.dbo import RootDBO
 
 
-EMOTES =  {"dance": BroadcastMap(s="You gyrate lewdly!",
+SOCIALS =  {"dance": BroadcastMap(s="You gyrate lewdly!",
                     e="{n} gyrates lewdly!",
                     st="You dip {N} in a tango!",
                     et="{n} dips {N} in a tango!",
@@ -77,11 +79,32 @@ EMOTES =  {"dance": BroadcastMap(s="You gyrate lewdly!",
            }
 
 
-@mud_action(EMOTES.keys(), 'social')
+@provides('social_registry')
+class SocialRegistry(object):
+
+    def insert(self, social):
+        SOCIALS[social.verb] = BroadcastMap(**social.map)
+
+    def delete(self, social_verb):
+        del SOCIALS[social_verb]
+
+    def get(self, social_id):
+        return SOCIALS.get(social_id)
+
+
+class Social(RootDBO):
+    dbo_key_type = 'social'
+    dbo_fields = 'map',
+
+    def __init__(self, social_id):
+        self.dbo_id = social_id
+        self.map = {}
+
+@mud_action(SOCIALS.keys(), 'social')
 def emote(source, target, verb, **ignored):
-    source.broadcast(broadcast_map=EMOTES[verb[0]], target=target)
+    source.broadcast(broadcast_map=SOCIALS[verb[0]], target=target)
 
 @mud_action('socials')
 def socials(**ignored):
-    return " ".join(sorted(EMOTES.keys()))
+    return " ".join(sorted(SOCIALS.keys()))
 

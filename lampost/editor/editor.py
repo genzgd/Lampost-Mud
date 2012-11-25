@@ -7,6 +7,7 @@ from lampost.editor.config import ConfigResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.rooms import RoomResource
+from lampost.editor.socials import SocialsResource
 
 class EditorResource(Resource):
     def __init__(self):
@@ -18,6 +19,7 @@ class EditorResource(Resource):
         self.putChild('player', PlayerResource())
         self.putChild('config', ConfigResource())
         self.putChild('constants', PropertiesResource())
+        self.putChild('socials', SocialsResource())
 
 @requires('context')
 class PropertiesResource(Resource):

@@ -1,8 +1,8 @@
 import lampost.mud.immortal
 import lampost.comm.chat
 import lampost.mud.inventory
-import lampost.mud.emote
 
+from lampost.mud.socials import SocialRegistry
 from lampost.gameops.action import simple_action
 from lampost.mud.action import mud_actions, imm_actions
 from lampost.context.resource import provides, requires, m_requires
@@ -22,6 +22,7 @@ class MudNature():
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
         flavor_module.init()
         self.mud = Mud()
+        SocialRegistry()
 
     def _start_service(self):
         self.shout_channel = Channel("shout", 0x109010)
@@ -34,7 +35,12 @@ class MudNature():
         for action in mud_actions:
             self.basic_soul.add(action)
         self.mud.load_areas()
+        self._load_socials()
         self.basic_soul.add(self.shout_channel)
+
+
+    def _load_socials(self):
+        pass
 
     def editors(self, player):
         editors = []
@@ -42,6 +48,7 @@ class MudNature():
             editors.append('config')
         if has_perm(player, 'admin'):
             editors.append('players')
+            editors.append('socials')
         if has_perm(player, 'creator'):
             editors.append('areas')
         return editors
@@ -55,9 +62,7 @@ class MudNature():
         player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
-            player.register("db_log", player.display_line)
-            player.register("debug", player.display_line)
-            player.register("error", player.display_line)
+             player.register("error", player.display_line)
 
         player.equip(set())
         self.mud.start_player(player)

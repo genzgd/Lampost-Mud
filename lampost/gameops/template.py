@@ -40,10 +40,10 @@ class Template(object):
             setattr(instance, field, getattr(self, field, None))
         instance.on_loaded()
         instance.template = self
-        self.instance_count = self.instance_count + 1
+        self.instance_count += 1
         self.config_instance(instance)
         return instance
 
     def delete_instance(self, instance):
-        self.instance_count = self.instance_count - 1
+        self.instance_count -= 1
 

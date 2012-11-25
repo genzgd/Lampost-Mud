@@ -60,7 +60,7 @@ def cls_name(cls):
 
 def patch_object(obj, prop, new_value):
     existing_value = getattr(obj, prop, None)
-    if existing_value != None:
+    if existing_value is not None:
         try:
             if isinstance(existing_value, int):
                 new_value = int(new_value)

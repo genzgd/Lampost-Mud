@@ -42,9 +42,6 @@ class SessionManager():
         self.session_map[session_id] = session
         return self._respond(RootDTO(connect=session_id))
 
-    def child_session(self, parent_id):
-        parent_session = self.get_session(parent_id)
-
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)
         if not session or not session.ld_time or not session.player or session.player.dbo_id != player_id:
@@ -208,7 +205,7 @@ class UserSession(BaseSession):
 
     def display_line(self, display_line):
         display = Display()
-        display.append(display_line)
+        display.append_line(display_line)
         self.append(display)
 
 

@@ -151,7 +151,7 @@ class Room(RootDBO):
             curr_count = len([entity for entity in self.contents if getattr(entity, "mobile_id", None) == m_reset.mobile_id])
             for unused in range(m_reset.mob_count - curr_count):
                 self.add_mobile(template, m_reset)
-            if curr_count >= m_reset.mob_count and curr_count < m_reset.mob_max:
+            if m_reset.mob_count <= curr_count < m_reset.mob_max:
                 self.add_mobile(template, m_reset)
         for a_reset in self.article_resets:
             template = self.mud.get_article(a_reset.article_id)
@@ -161,7 +161,7 @@ class Room(RootDBO):
             curr_count = len([entity for entity in self.contents if getattr(entity, "article_id", None) == a_reset.article_id])
             for unused in range(a_reset.article_count - curr_count):
                 self.add_template(template)
-            if curr_count >= a_reset.article_count and curr_count < a_reset.article_max:
+            if a_reset.article_count <= curr_count < a_reset.article_max:
                 self.add_template(template)
 
     def add_mobile(self, template, reset):

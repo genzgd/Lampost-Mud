@@ -1,4 +1,5 @@
 from lampost.util.lmutil import pronouns
+
 defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}
 
 class BroadcastMap(object):

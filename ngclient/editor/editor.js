@@ -14,7 +14,7 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
         lmRemote.childSession(sessionId);
         lmEditor.startEditors(editorList);
     } catch(e) {
-        alert("No valid edit session.");
+        alert("No valid edit session:\n" + e);
         window.close();
     }
     window.editLampostRoom = function(roomId) {
@@ -47,7 +47,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         mobiles:{label:"Mobiles", url:'mobile', childType:'mobile'},
         mobile:{label:"", url:"mobile", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1}},
         articles:{label:"Articles", url:"article", childType:'article'},
-        article:{label:"", url:"article", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1, weight: 1}}
+        article:{label:"", url:"article", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1, weight: 1}},
+        socials:{label:"Socials", url:"socials"}
     };
 
     function Editor(type, parent) {

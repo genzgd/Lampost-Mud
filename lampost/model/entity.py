@@ -266,7 +266,7 @@ class Entity(BaseItem):
             for article in self.inven:
                 article.rec_glance(source)
         else:
-            self.display_line("Nothing")
+            source.display_line("Nothing")
 
 
     def change_env(self, new_env):

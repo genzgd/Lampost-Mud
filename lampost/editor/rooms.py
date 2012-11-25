@@ -249,7 +249,7 @@ class ExitDTO(RootDTO):
         self.dest_desc = exit.destination.desc
         self.dir = exit.dir_name
         self.two_way = False
-        if (exit.destination.find_exit(exit.direction.rev_dir)):
+        if exit.destination.find_exit(exit.direction.rev_dir):
             self.two_way = True
 
 class MobileDTO(RootDTO):

@@ -133,7 +133,8 @@ def unmake(source, target, **ignored):
         source.broadcast(s="{N} is no more.", target=target)
         target.leave_env()
         del target
-    return "Can only unmake things in the room."
+    else:
+        return "Can only unmake things in the room."
 
 
 @imm_action('home')
