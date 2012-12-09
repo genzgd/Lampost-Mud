@@ -2,7 +2,7 @@ import lampost.mud.immortal
 import lampost.comm.chat
 import lampost.mud.inventory
 
-from lampost.mud.socials import SocialRegistry
+from lampost.mud.socials import Social, SocialRegistry,emote
 from lampost.gameops.action import simple_action
 from lampost.mud.action import mud_actions, imm_actions
 from lampost.context.resource import provides, requires, m_requires
@@ -22,7 +22,7 @@ class MudNature():
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
         flavor_module.init()
         self.mud = Mud()
-        SocialRegistry()
+        self.social_registry = SocialRegistry()
 
     def _start_service(self):
         self.shout_channel = Channel("shout", 0x109010)
@@ -38,9 +38,14 @@ class MudNature():
         self._load_socials()
         self.basic_soul.add(self.shout_channel)
 
-
     def _load_socials(self):
-        pass
+        for social_id in fetch_set_keys('socials'):
+            social = load_object(Social, social_id.split(':')[1])
+            if social:
+                self.social_registry.insert(social)
+                emote.verbs.add((social.dbo_id,))
+            else:
+                error("Missing social for " + social_id)
 
     def editors(self, player):
         editors = []

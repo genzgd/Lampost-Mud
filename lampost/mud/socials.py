@@ -83,7 +83,7 @@ SOCIALS =  {"dance": BroadcastMap(s="You gyrate lewdly!",
 class SocialRegistry(object):
 
     def insert(self, social):
-        SOCIALS[social.verb] = BroadcastMap(**social.map)
+        SOCIALS[social.dbo_id] = BroadcastMap(**social.map)
 
     def delete(self, social_verb):
         del SOCIALS[social_verb]
@@ -93,6 +93,7 @@ class SocialRegistry(object):
 
 
 class Social(RootDBO):
+    dbo_set_key = 'socials'
     dbo_key_type = 'social'
     dbo_fields = 'map',
 

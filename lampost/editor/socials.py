@@ -31,8 +31,8 @@ class SocialUpdate(Resource):
     @request
     def render_POST(self, content, session):
         check_perm(session, 'admin')
-        social = self.cls_registry(Social)(content.social_id.lower())
-        load_json(social, content.model)
+        social = self.cls_registry(Social)(content.social['social_id'].lower())
+        load_json(social, content.social)
         save_object(social)
         self.social_registry.insert(social)
 
