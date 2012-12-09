@@ -1,37 +1,33 @@
 <div ng-controller="SocialsEditorController" ng-show="ready">
   <div class="row-fluid">
     <div class="span2">
-      <h4>Socials {{socials.length}}</h4>
+      <h4>Socials ({{socials.length}})</h4>
+      <button ng-click="showNewSocialDialog()" class="btn btn-small btn-success">New Social</button>
     </div>
     <div class="span2 scrollable wrapper">
-      <table class="table table-condensed" ng-controller="TableController" edit-list="rooms" >
+      <table class="table table-condensed table-bordered" ng-controller="TableController" edit-list="rooms" >
         <thead>
         <tr>
           <th>Social</th>
-          <th>Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr class="edit-row table-bordered" ng-click="clickRow(social)" ng-repeat="social in socials">
+        <tr class="edit-row" ng-click="editSocial(social)" ng-repeat="social in socials">
           <td class="span8">{{social}}</td>
           <td class="span4">
             <a ng-click="deleteSocial($event, $index)" title="Delete Social" class="icon-link"><i class="icon-remove"></i></a>
           </td>
-
         </tr>
         </tbody>
       </table>
     </div>
-    <div class="span8">
+    <div class="span8" ng-hide="!social_valid">
+      <label>Subject</label><input />
       <div class="row-fluid" ng-repeat="broadcast_type in constants.broadcast_types">
-        <div class="span1">{{broadcast_type.id</div>
+        <div class="span12">{{broadcast_type.label}}</div>
         <div class="span11"></div>
       </div>
     </div>
   </div>
-  <div class="row-fluid">
-    <div class="span2">
-      <button ng-click="showNewSocialDialog()" class="btn btn-small btn-success">New Social</button>
-    </div>
-  </div>
+
 </div>

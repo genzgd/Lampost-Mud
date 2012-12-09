@@ -218,7 +218,7 @@ class Entity(BaseItem):
         for verb_size in range(1, len(words) + 1):
             verb = tuple(words[:verb_size])
             args = words[verb_size:]
-            actions = itertools.chain.from_iterable([self.actions.get(verb, []), self.mud_actions.verbs.get(verb, [])])
+            actions = itertools.chain.from_iterable([self.actions.get(verb, []), self.mud_actions.verb_list(verb)])
             for action in actions:
                 msg_class = getattr(action, "msg_class", None)
                 if msg_class == 'no_args':

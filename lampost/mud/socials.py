@@ -1,6 +1,5 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import provides, requires
-from lampost.mud.action import mud_action
 from lampost.datastore.dbo import RootDBO
 
 
@@ -102,7 +101,7 @@ class SocialRegistry(object):
 
     def delete(self, social_verb):
         del self._socials[social_verb]
-        self.mud_actions.rem_verb((social_verb), self.emote)
+        self.mud_actions.rem_verb((social_verb,), self.emote)
 
     def socials(self, **ignored):
         return " ".join(sorted(self._socials.keys()))

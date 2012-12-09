@@ -24,7 +24,7 @@ class SocialList(Resource):
 class SocialGet(Resource):
     @request
     def render_POST(self, content, session):
-        return load_object(content.social_id)
+        return load_object(Social, content.social_id)
 
 @requires('cls_registry', 'social_registry')
 class SocialUpdate(Resource):
@@ -51,7 +51,7 @@ class SocialValid(Resource):
     def render_POST(self, content, session):
         if self.social_registry.get(content.social_id):
             raise StateError("Social already exists")
-        if self.mud_actions.verbs.get(content.social_id):
+        if self.mud_actions.verb_list((content.social_id,)):
             raise StateError("Verb already in use")
 
 

@@ -23,21 +23,24 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
 
 @provides('mud_actions')
 class MudActions(object):
-    verbs = defaultdict(set)
 
     def __init__(self):
+        self._verbs = defaultdict(set)
         for action in mud_actions:
             self.add_action(action)
 
     def add_action(self, action):
         for verb in getattr(action, 'verbs', []):
-            self.verbs[verb].add(action)
+            self._verbs[verb].add(action)
 
     def rem_verb(self, verb, action):
-        self.verbs.get(verb, []).remove(action)
+        self._verbs.get(verb).remove(action)
 
     def add_verb(self, verb, action):
-        self.verbs[verb].add(action)
+        self._verbs[verb].add(action)
+
+    def verb_list(self, verb):
+        return self._verbs.get(verb, [])
 
 
 @mud_action('help')

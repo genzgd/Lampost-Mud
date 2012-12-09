@@ -10,9 +10,10 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
         $scope.social = {};
         $scope.social_valid = false;
 
-        $scope.editSocials = function(social_id) {
-            LmRemote.request($scope.editor.url + '/get', {social_id:social_id}, true).then(function (social) {
+        $scope.editSocial = function(social_id) {
+            lmRemote.request($scope.editor.url + '/get', {social_id:social_id}, true).then(function (social) {
                 if (social) {
+                    social.social_id = social_id;
                     editSocial(social);
                 }
                 else {
@@ -28,12 +29,17 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
 
         $scope.deleteSocial = function(event, social_ix) {
             event.preventDefault();
-            var delSocial = $scope.socials[social_ix].split(":")[1];
+            var delSocial = $scope.socials[social_ix];
             lmDialog.showConfirm("Delete Social", "Are you sure you want to delete " + delSocial + "?", function() {
                 lmRemote.request($scope.editor.url + '/delete', {social_id:delSocial}, true).then(function() {
                     $scope.socials.splice(social_ix, 1);
+                    if ($scope.social && delSocial == $scope.social.social_id) {
+                        $scope.social = null;
+                        $scope.social_valid = false;
+                    }
                 })
             });
+            return false;
         };
 
         function loadSocials() {
@@ -78,7 +84,7 @@ angular.module('lampost_editor').controller('NewSocialController', ['$scope', 'l
             lmRemote.request('editor/socials/valid', {social_id:$scope.social.social_id}, true).then(function() {
                 lmRemote.request('editor/socials/update', $scope.social).then( function() {
                     $scope.dismiss();
-                    updateFunc(social);
+                    updateFunc($scope.social);
                 })
             }, function() {
                 $scope.socialExists = true;
