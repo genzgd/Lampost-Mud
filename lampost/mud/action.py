@@ -36,6 +36,9 @@ class MudActions(object):
     def rem_verb(self, verb, action):
         self.verbs.get(verb, []).remove(action)
 
+    def add_verb(self, verb, action):
+        self.verbs[verb].add(action)
+
 
 @mud_action('help')
 def help(source, args, **ignored):

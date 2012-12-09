@@ -32,7 +32,7 @@ class SocialUpdate(Resource):
     def render_POST(self, content, session):
         check_perm(session, 'admin')
         social = self.cls_registry(Social)(content.social_id.lower())
-        load_json(social, content.model)
+        social.map = content.map
         save_object(social)
         self.social_registry.insert(social)
 
@@ -45,13 +45,13 @@ class SocialDelete(Resource):
         delete_object(social)
         self.social_registry.delete(content.social_id)
 
-@requires('social_registry')
+@requires('social_registry', 'mud_actions')
 class SocialValid(Resource):
     @request
     def render_POST(self, content, session):
         if self.social_registry.get(content.social_id):
             raise StateError("Social already exists")
-        if session.player.actions.get(content.social_id):
-            raise StateError("Verb already exists")
+        if self.mud_actions.verbs.get(content.social_id):
+            raise StateError("Verb already in use")
 
 

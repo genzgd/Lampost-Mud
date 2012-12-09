@@ -36,11 +36,13 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
             });
         };
 
-
         function loadSocials() {
             $scope.ready = false;
             lmRemote.request($scope.editor.url + '/list', null, true).then(function(socials) {
-                $scope.socials = socials;
+                $scope.socials = [];
+                for (var i = 0; i < socials.length; i++) {
+                    $scope.socials.push(socials[i].split(':')[1])
+                }
                 $scope.socials.sort();
                 $scope.ready = true;
             });
@@ -74,7 +76,7 @@ angular.module('lampost_editor').controller('NewSocialController', ['$scope', 'l
 
         $scope.createSocial = function () {
             lmRemote.request('editor/socials/valid', {social_id:$scope.social.social_id}, true).then(function() {
-                lmRemote.request($scope.editor.url + "/update", $scope.social).then( function() {
+                lmRemote.request('editor/socials/update', $scope.social).then( function() {
                     $scope.dismiss();
                     updateFunc(social);
                 })

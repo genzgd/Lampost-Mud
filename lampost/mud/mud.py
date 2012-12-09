@@ -80,7 +80,6 @@ class MudNature():
 class Mud():
     def __init__(self):
         self.area_map = {}
-        self.actions = {}
 
     def load_areas(self):
         area_keys = self.datastore.fetch_set_keys("areas")
