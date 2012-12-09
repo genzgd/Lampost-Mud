@@ -2,9 +2,9 @@ import lampost.mud.immortal
 import lampost.comm.chat
 import lampost.mud.inventory
 
+from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.mud.socials import SocialRegistry
-from lampost.gameops.action import simple_action
-from lampost.mud.action import mud_actions, imm_actions
+from lampost.mud.action import imm_actions, MudActions
 from lampost.context.resource import provides, requires, m_requires
 from lampost.comm.channel import Channel
 
@@ -22,25 +22,20 @@ class MudNature():
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
         flavor_module.init()
         self.mud = Mud()
-        SocialRegistry()
+        self.mud_actions = MudActions()
+        self.social_registry = SocialRegistry()
 
     def _start_service(self):
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
         self.context.set('article_load_types', article_load_types)
+        self.context.set('broadcast_types', broadcast_types)
+        self.context.set('broadcast_tokens', broadcast_tokens)
+        self.mud_actions.add_action(self.shout_channel)
 
-        look_action = simple_action(("look", "l", "exa", "examine", "look at"), "examine")
-        self.basic_soul = {look_action}
-        for action in mud_actions:
-            self.basic_soul.add(action)
         self.mud.load_areas()
-        self._load_socials()
-        self.basic_soul.add(self.shout_channel)
-
-
-    def _load_socials(self):
-        pass
+        self.social_registry.load_socials()
 
     def editors(self, player):
         editors = []
@@ -54,7 +49,7 @@ class MudNature():
         return editors
 
     def baptise(self, player):
-        player.baptise(self.basic_soul.copy())
+        player.baptise(set())
         if player.imm_level < self.config.auto_imm_level:
             player.imm_level = self.config.auto_imm_level
         if player.imm_level:
@@ -85,6 +80,7 @@ class MudNature():
 class Mud():
     def __init__(self):
         self.area_map = {}
+        self.actions = {}
 
     def load_areas(self):
         area_keys = self.datastore.fetch_set_keys("areas")

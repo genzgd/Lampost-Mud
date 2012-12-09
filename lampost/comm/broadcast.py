@@ -1,6 +1,27 @@
 from lampost.util.lmutil import pronouns
 
-defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e'}
+defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e', 'sa':'st', 'ea':'et'}
+
+broadcast_types = [{'id':'s', 'label':'Self', 'reduce':'s'},
+                   {'id':'e', 'label':'Environment', 'reduce':'s'},
+                   {'id':'t', 'label':'Targeted to target', 'reduce':'e'},
+                   {'id':'st', 'label':'Targeted to self', 'reduce':'s'},
+                   {'id':'et', 'label':'Targeted to environment', 'reduce': 'e'},
+                   {'id':'sf', 'label':'Self targeted to self', 'reduce':'s'},
+                   {'id':'ef', 'label':'Self targeted to environment', 'reduce': 'e'},
+                   {'id':'sa', 'label':'Article targeted to self', 'reduce':'st'},
+                   {'id':'ea', 'label':'Article targeted to environment', 'reduce':'et'}]
+
+broadcast_tokens = [{'id':'n', 'token':'Subject name'},
+                    {'id':'N', 'token':'Target name'},
+                    {'id':'e', 'token':'Subject pronoun'},
+                    {'id':'E', 'token':'Target pronoun'},
+                    {'id':'s', 'token':'Subject possessive pronoun'},
+                    {'id':'S', 'token':'Target possessive pronoun'},
+                    {'id':'m', 'token':'Subject objective pronoun'},
+                    {'id':'M', 'token':'Target objective pronoun'},
+                    {'id':'f', 'token':'Subject self pronoun'},
+                    {'id':'F', 'token':'Target self pronoun'}]
 
 class BroadcastMap(object):
     def __init__(self, def_msg=None, **kwargs):
@@ -34,6 +55,7 @@ class Broadcast(object):
         if not self.target:
             if not self.source or self.source == observer:
                 return self.substitute('s')
+
         if self.target == self.source:
             if self.source == observer:
                 return self.substitute('sf')
@@ -42,20 +64,24 @@ class Broadcast(object):
             return self.substitute('t')
         if not self.target:
             return self.substitute('e')
+        if getattr(self.target, 'living'):
+            if self.source == observer:
+                return self.substitute('st')
+            return self.substitute('et')
         if self.source == observer:
-            return self.substitute('st')
-        return self.substitute('et')
+            return self.substitute('sa')
+        return self.substitute('ea')
 
     def substitute(self, version):
         message = self.broadcast_map[version]
         if self.source:
             s_name = self.source.name
-            s_sub, s_obj, s_poss, s_self = pronouns(getattr(self.source, 'sex', None))
+            s_sub, s_obj, s_poss, s_self = pronouns[getattr(self.source, 'sex', 'none')]
         else:
             s_name = s_sub = s_obj = s_poss = s_self = None
         if self.target:
             t_name = self.target.name
-            t_sub, t_obj, t_poss, t_self = pronouns(self.target.sex)
+            t_sub, t_obj, t_poss, t_self = pronouns[getattr(self.target, 'sex', 'none')]
         else:
             t_name = t_sub = t_obj = t_poss = t_self = None
 

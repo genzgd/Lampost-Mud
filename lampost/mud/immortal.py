@@ -1,6 +1,5 @@
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
-from lampost.dto.display import Display
 from lampost.dto.rootdto import RootDTO
 from lampost.mud.action import imm_action
 from lampost.model.player import Player

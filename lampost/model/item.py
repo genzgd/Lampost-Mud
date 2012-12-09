@@ -10,6 +10,7 @@ class BaseItem(RootDBO):
     env = None
     title = ""
     sex = "none"
+    living = False
     aliases = []
     target_aliases = []
     rec_general = True

@@ -1,6 +1,12 @@
 angular.module('lampost_editor').controller('SocialsEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmEditor, lmDialog, lmBus) {
 
+        lmBus.register("editor_activated", function(editor) {
+            if (editor == $scope.editor) {
+                loadSocials();
+            }
+        });
+
         $scope.social = {};
         $scope.social_valid = false;
 
@@ -20,11 +26,16 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
                 locals:{updateFunc:newSocial}});
         };
 
-        lmBus.register("editor_activated", function(editor) {
-            if (editor == $scope.editor) {
-                loadSocials();
-            }
-        });
+        $scope.deleteSocial = function(event, social_ix) {
+            event.preventDefault();
+            var delSocial = $scope.socials[social_ix].split(":")[1];
+            lmDialog.showConfirm("Delete Social", "Are you sure you want to delete " + delSocial + "?", function() {
+                lmRemote.request($scope.editor.url + '/delete', {social_id:delSocial}, true).then(function() {
+                    $scope.socials.splice(social_ix, 1);
+                })
+            });
+        };
+
 
         function loadSocials() {
             $scope.ready = false;

@@ -1,8 +1,12 @@
-from lampost.gameops.action import make_action, ActionError
+from collections import defaultdict
+from lampost.context.resource import provides
+from lampost.gameops.action import make_action, ActionError, simple_action
 from lampost.util.lmutil import dump
 
 mud_actions = []
 imm_actions = []
+
+mud_actions.append(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
 
 def mud_action(verbs, msg_class=None):
     def dec_wrapper(func):
@@ -16,6 +20,21 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
         func.imm_level = imm_level
         return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
+
+@provides('mud_actions')
+class MudActions(object):
+    verbs = defaultdict(set)
+
+    def __init__(self):
+        for action in mud_actions:
+            self.add_action(action)
+
+    def add_action(self, action):
+        for verb in getattr(action, 'verbs', []):
+            self.verbs[verb].add(action)
+
+    def rem_verb(self, verb, action):
+        self.verbs.get(verb, []).remove(action)
 
 
 @mud_action('help')

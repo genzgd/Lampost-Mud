@@ -1,5 +1,5 @@
 from lampost.comm.broadcast import BroadcastMap
-from lampost.context.resource import provides
+from lampost.context.resource import provides, requires
 from lampost.mud.action import mud_action
 from lampost.datastore.dbo import RootDBO
 
@@ -80,10 +80,17 @@ SOCIALS =  {"dance": BroadcastMap(s="You gyrate lewdly!",
 
 
 @provides('social_registry')
+@requires('datastore')
 class SocialRegistry(object):
 
+    def load_socials(self):
+        for social_key in self.datastore.fetch_set_keys("socials"):
+            social_id = social_key.split(":")[1]
+            social = self.datastore.load_object(Social, social_id)
+            self.insert(social)
+
     def insert(self, social):
-        SOCIALS[social.verb] = BroadcastMap(**social.map)
+        SOCIALS[social.dbo_id] = BroadcastMap(**social.map)
 
     def delete(self, social_verb):
         del SOCIALS[social_verb]
@@ -94,6 +101,7 @@ class SocialRegistry(object):
 
 class Social(RootDBO):
     dbo_key_type = 'social'
+    dbo_set_key = 'socials'
     dbo_fields = 'map',
 
     def __init__(self, social_id):

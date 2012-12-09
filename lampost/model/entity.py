@@ -1,16 +1,19 @@
 import math
+import itertools
 from lampost.gameops.action import ActionError
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, requires
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
 
+@requires('mud_actions')
 class Entity(BaseItem):
     env = None
     status = 'awake'
+    living = True
     entry_msg = Broadcast(e="{n} arrives.", silent=True)
     exit_msg = Broadcast(e="{n} leaves.", silent=True)
     current_target = None
@@ -215,7 +218,8 @@ class Entity(BaseItem):
         for verb_size in range(1, len(words) + 1):
             verb = tuple(words[:verb_size])
             args = words[verb_size:]
-            for action in self.actions.get(verb, []):
+            actions = itertools.chain.from_iterable([self.actions.get(verb, []), self.mud_actions.verbs.get(verb, [])])
+            for action in actions:
                 msg_class = getattr(action, "msg_class", None)
                 if msg_class == 'no_args':
                     if args:

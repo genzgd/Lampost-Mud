@@ -91,7 +91,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 
     this.areaList = [];
     this.roomsMaster = {};
-    this.loadStatus = "loading";
 
     function idSort(values, field) {
         values.sort(function(a, b) {
@@ -145,6 +144,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
             } else {
                 lmBus.dispatch('editor_change');
             }
+            lmBus.dispatch('editor_ready');
         });
     };
 
@@ -386,6 +386,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEditor', 'lmBus', function ($scope, lmEditor, lmBus) {
 
     lmBus.register('editor_change', editorChange);
+    lmBus.register('editor_ready', editorReady);
 
     $scope.editors = lmEditor.editors;
     editorChange();
@@ -394,9 +395,12 @@ angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEd
         return (editor == $scope.currentEditor ? "active " : " ") + editor.label_class;
     };
 
-    function editorChange() {
+    function editorReady() {
         $scope.constants = lmEditor.constants;
         $scope.loadStatus = lmEditor.loadStatus;
+    }
+
+    function editorChange() {
         $scope.currentEditor = lmEditor.currentEditor;
         lmBus.dispatch('editor_activated', $scope.currentEditor);
     }
