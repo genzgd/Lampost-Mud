@@ -1,5 +1,4 @@
-<div ng-controller="SocialsEditorController" ng-show="ready">
-  <div class="row-fluid">
+<div class="v-full" ng-controller="SocialsEditorController" ng-show="ready">
     <div class="span2">
       <h4>Socials ({{socials.length}})</h4>
       <button ng-click="showNewSocialDialog()" class="btn btn-small btn-success">New Social</button>
@@ -21,13 +20,19 @@
         </tbody>
       </table>
     </div>
-    <div class="span8" ng-hide="!social_valid">
-      <label>Subject</label><input />
-      <div class="row-fluid" ng-repeat="broadcast_type in constants.broadcast_types">
-        <div class="span12">{{broadcast_type.label}}</div>
-        <div class="span11"></div>
+    <div class="span8 v-full" >
+      <div class="row-fluid">
+        <label>Edit</label>
+        <input ng-model="displayMode" value="edit" type="radio" name="display-type">
+        <label>Preview</label>
+        <input ng-model="displayMode" value="view" type="radio" name="display-type">
+        <label>Subject</label><input />
+      </div>
+      <div class="row-fluid scrollable" ng-hide="!social_valid">
+        <div class="row-fluid" ng-repeat="broadcast_type in constants.broadcast_types">
+          <div ng-hide="displayMode == 'edit'" class="span12">{{broadcast_type.label}}</div>
+          <textarea value="social['broadcast_type.id]" lines="2" class="span12" ng-hide="displayMode == 'view'" />
+        </div>
       </div>
     </div>
-  </div>
-
 </div>

@@ -9,6 +9,7 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
 
         $scope.social = {};
         $scope.social_valid = false;
+        $scope.displayMode = 'edit';
 
         $scope.editSocial = function(social_id) {
             lmRemote.request($scope.editor.url + '/get', {social_id:social_id}, true).then(function (social) {
@@ -29,6 +30,7 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
 
         $scope.deleteSocial = function(event, social_ix) {
             event.preventDefault();
+            event.stopPropagation();
             var delSocial = $scope.socials[social_ix];
             lmDialog.showConfirm("Delete Social", "Are you sure you want to delete " + delSocial + "?", function() {
                 lmRemote.request($scope.editor.url + '/delete', {social_id:delSocial}, true).then(function() {
