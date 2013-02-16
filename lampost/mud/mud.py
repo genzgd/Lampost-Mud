@@ -26,6 +26,7 @@ class MudNature():
         self.social_registry = SocialRegistry()
 
     def _start_service(self):
+        debug("Loading mud", self)
         self.shout_channel = Channel("shout", 0x109010)
         self.imm_channel = Channel("imm", 0xed1c24)
         self.pulse_interval = .25
@@ -36,6 +37,7 @@ class MudNature():
 
         self.mud.load_areas()
         self.social_registry.load_socials()
+        debug("Mud loaded", self)
 
     def editors(self, player):
         editors = []

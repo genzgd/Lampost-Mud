@@ -24,6 +24,9 @@ class BaseItem(RootDBO):
     def rec_broadcast(self, broadcast):
         pass
 
+    def rec_social(self, social):
+        pass
+
     def on_loaded(self):
         self.config_targets()
 

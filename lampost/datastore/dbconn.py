@@ -38,7 +38,7 @@ class RedisStore():
         try:
             del self.object_map[dbo.dbo_key]
         except:
-            db_log("Failed to evict " + dbo.dbo_key + " from db cache")
+            debug("Failed to evict " + dbo.dbo_key + " from db cache", self)
 
     @logged
     def load_by_key(self, key_type, key, base_class=None):
@@ -56,8 +56,8 @@ class RedisStore():
         self.load_json(dbo, json_obj)
         return dbo
 
-    def object_exists(self, type, id):
-        key = '{0}:{1}'.format(type, id)
+    def object_exists(self, obj_type, obj_id):
+        key = '{0}:{1}'.format(obj_type, obj_id)
         return self.redis.keys(key) == key
 
     def load_object(self, dbo_class, key):
@@ -77,7 +77,7 @@ class RedisStore():
                 coll = getattr(dbo, dbo_col.field_name, set())
                 for child_dbo in coll:
                     self.delete_object(child_dbo)
-        db_log("object deleted: " + key)
+        debug("object deleted: " + key, self)
         if self.object_map.get(dbo.dbo_key):
             del self.object_map[dbo.dbo_key]
         return True
@@ -128,10 +128,10 @@ class RedisStore():
                             self.load_json(child_dbo, child_json)
                         coll.append(child_dbo)
                     except AttributeError:
-                        db_log("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)))
+                        warn("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)), self)
             except KeyError:
                 if dbo.dbo_key_type:
-                    db_log("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name)
+                    trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name, self)
 
         for dbo_ref in dbo.dbo_refs:
             try:
@@ -140,6 +140,6 @@ class RedisStore():
                 setattr(dbo, dbo_ref.field_name, ref_obj)
             except:
                 if dbo.dbo_key_type:
-                    db_log("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name)
+                    trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name, self)
         dbo.on_loaded()
         return True

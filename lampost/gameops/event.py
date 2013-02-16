@@ -2,8 +2,10 @@ from collections import defaultdict
 from random import randint
 from twisted.internet import task
 
-from lampost.context.resource import provides
+from lampost.context.resource import provides, m_requires
 from lampost.util.lmlog import logged
+
+m_requires("log", __name__)
 
 @provides('dispatcher', True)
 class Dispatcher:
@@ -78,6 +80,7 @@ class Dispatcher:
     @logged
     def _start_service(self):
         task.LoopingCall(self._pulse).start(self.pulse_interval)
+        debug("Event heartbeat started", self)
 
 
 class Registration(object):

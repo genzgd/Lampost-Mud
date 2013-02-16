@@ -4,7 +4,7 @@ from lampost.client.resources import *
 from lampost.client.settings import SettingsResource
 
 from lampost.util.lmlog import logged
-from lampost.context.resource import provides, requires
+from lampost.context.resource import provides, requires, m_requires
 
 from twisted.internet import reactor
 from twisted.web.resource import Resource
@@ -24,6 +24,8 @@ URL_LSP = "lsp"
 URL_EDITOR = "editor"
 URL_SETTINGS = "settings"
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
+
+m_requires("log", __name__)
 
 @provides('web_server')
 @requires('config', 'dispatcher')
@@ -47,6 +49,7 @@ class WebServer(Resource):
     #noinspection PyUnresolvedReferences
     @logged
     def _start_service(self):
+        debug("Starting web server", self)
         self._config_updated()
         reactor.listenTCP(self.port, Site(self))
         reactor.run()

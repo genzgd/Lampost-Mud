@@ -48,6 +48,9 @@ def m_requires(*resources):
     for name in resources[:-1]:
         inject(module, name)
 
+def get_resource(name):
+    return _registry[name]
+
 _registry = {}
 _consumers = {}
 _methods = {}

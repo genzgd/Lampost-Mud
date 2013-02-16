@@ -15,10 +15,10 @@ from lampost.util.lmlog import Log
 
 class Context(object):
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
-                 flavor='merc', config_id='lampost'):
+                 flavor='merc', config_id='lampost', log_level="warn"):
         self.properties = {}
         register('context', self)
-        Log()
+        Log(log_level)
         ClassRegistry()
         dispatcher = Dispatcher()
         register('decode', JSONDecoder().decode)
@@ -27,9 +27,9 @@ class Context(object):
         Permissions()
         SessionManager()
         UserManager()
+        datastore.load_object(Config, config_id)
         web_server = WebServer(int(port))
         nature = MudNature(flavor)
-        datastore.load_object(Config, config_id)
 
         dispatcher._start_service()
         nature._start_service()
