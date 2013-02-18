@@ -1,16 +1,18 @@
+import re
+
 from lampost.util.lmutil import pronouns
 
 defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e', 'sa':'st', 'ea':'et'}
 
-broadcast_types = [{'id':'s', 'label':'Self', 'reduce':'s'},
-                   {'id':'e', 'label':'Environment', 'reduce':'s'},
-                   {'id':'t', 'label':'Targeted to target', 'reduce':'e'},
-                   {'id':'st', 'label':'Targeted to self', 'reduce':'s'},
-                   {'id':'et', 'label':'Targeted to environment', 'reduce': 'e'},
-                   {'id':'sf', 'label':'Self targeted to self', 'reduce':'s'},
-                   {'id':'ef', 'label':'Self targeted to environment', 'reduce': 'e'},
-                   {'id':'sa', 'label':'Article targeted to self', 'reduce':'st'},
-                   {'id':'ea', 'label':'Article targeted to environment', 'reduce':'et'}]
+broadcast_types = [{'id':'s', 'label':'To self (no target)', 'reduce':'s'},
+                   {'id':'e', 'label':'To others (no target)', 'reduce':'s'},
+                   {'id':'t', 'label':'To target (target is other)', 'reduce':'e'},
+                   {'id':'st', 'label':'To self (target is other)', 'reduce':'s'},
+                   {'id':'et', 'label':'To others (target is other)', 'reduce': 'e'},
+                   {'id':'sf', 'label':'To self (target is self)', 'reduce':'s'},
+                   {'id':'ef', 'label':'To others (target is self)', 'reduce': 'e'},
+                   {'id':'sa', 'label':'To self (target is not living)', 'reduce':'st'},
+                   {'id':'ea', 'label':'To environment (target is not living)', 'reduce':'et'}]
 
 broadcast_tokens = [{'id':'n', 'token':'Subject name'},
                     {'id':'N', 'token':'Target name'},
@@ -23,10 +25,16 @@ broadcast_tokens = [{'id':'n', 'token':'Subject name'},
                     {'id':'f', 'token':'Subject self pronoun'},
                     {'id':'F', 'token':'Target self pronoun'}]
 
+token_pattern = re.compile('\$([nNeEsSmMfF])')
+
+
 class BroadcastMap(object):
-    def __init__(self, def_msg=None, **kwargs):
-        self.s = def_msg
-        for key, value in kwargs.iteritems():
+    def __init__(self,  **kwargs):
+        self.populate(kwargs)
+
+    def populate(self, type_map):
+        for key, value in type_map.iteritems():
+            value = token_pattern.sub(r'{\1}', value)
             setattr(self, key, value)
 
     def __getitem__(self, msg_key):
@@ -37,6 +45,7 @@ class BroadcastMap(object):
             msg_key = defaults[msg_key]
             if not msg_key:
                 return "Invalid message type"
+
 
 class Broadcast(object):
     def __init__(self, broadcast_map=None, source=None, target=None, color=0x000000, silent=False, **kwargs):
@@ -90,6 +99,7 @@ class Broadcast(object):
         if result:
             result = "{0}{1}".format(result[0], result[1:])
         return result
+
 
 class SingleBroadcast():
     def __init__(self, all_msg, color=0x00000):

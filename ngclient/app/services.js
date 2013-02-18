@@ -523,7 +523,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
 
     this.showPrompt = function(args) {
         var scope = $rootScope.$new();
-        var submitButton = {label:'Submit', dismiss:true, class:"btn-primary", click:doSubmit};
+        var submitButton = {label:'Submit', dismiss:true, class:"btn-primary", click:doSubmit, default:true};
         var cancelButton = {label:'Cancel', dismiss:true};
 
         scope.buttons = [submitButton,  cancelButton];

@@ -54,6 +54,10 @@ div.telnet-input {
   background-color: #fcf8e3;
 }
 
+.table tbody tr.highlight td {
+  background-color: khaki;
+}
+
 td.cell-right, th.cell-right, input.cell-right {
   padding-left: 5px;
   text-align: right;

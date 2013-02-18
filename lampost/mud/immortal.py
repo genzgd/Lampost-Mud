@@ -1,5 +1,5 @@
 from lampost.gameops.action import ActionError
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, get_resource
 from lampost.dto.rootdto import RootDTO
 from lampost.mud.action import imm_action
 from lampost.model.player import Player
@@ -171,6 +171,14 @@ def build_mode(source, **ignored):
 def reset(source, **ignored):
     source.env.reset()
     return "Room reset"
+
+@imm_action("loglevel", imm_level='supreme')
+def log_level(args, **ignored):
+    log = get_resource("log")
+    if args:
+        log._set_level(args[0])
+    return "Log level at {0}".format(log.level_desc)
+
 
 @imm_action('promote', 'player', prep='to', imm_level='admin')
 def promote(source, target, obj, **ignored):

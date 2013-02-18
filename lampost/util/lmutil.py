@@ -36,6 +36,9 @@ def javascript_safe(value):
     value = value.replace("\n", "")
     return value
 
+class Blank(object):
+    pass
+
 class PermError(Exception):
     pass
 

@@ -7,20 +7,58 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
             }
         });
 
+        var oldMap;
+
         $scope.social = {};
         $scope.social_valid = false;
         $scope.displayMode = 'edit';
+        $scope.source = 'Player';
+        $scope.target = 'Target';
+        $scope.sourceSelf = false;
 
         $scope.editSocial = function(social_id) {
-            lmRemote.request($scope.editor.url + '/get', {social_id:social_id}, true).then(function (social) {
-                if (social) {
-                    social.social_id = social_id;
-                    editSocial(social);
-                }
-                else {
-                    alert("Social does not exist");
-                }
-            })
+            if (mapDiff()) {
+                lmDialog.showConfirm("Social Edited", "Changes to this social will be lost.  Continue anyway?",
+                    function() {
+                        startEdit(social_id);
+                    })
+            } else {
+                startEdit(social_id);
+            }
+        };
+
+        $scope.copySocial = function(event, social_ix) {
+            event.preventDefault();
+            event.stopPropagation();
+            var originalId = $scope.socials[social_ix];
+            lmDialog.showPrompt({title:"Copy Social", prompt:"New Social", submit:function(copy_id) {
+                lmRemote.request($scope.editor.url + "/copy", {original_id:originalId, copy_id:copy_id}).
+                    then(function(new_social) {
+                        $scope.socials.push(copy_id);
+                        $scope.socials.sort();
+                        if (!$scope.social_valid || !mapDiff()) {
+                            new_social.social_id = copy_id;
+                            editSocial(new_social);
+                        }
+                    })
+            }});
+
+        };
+
+        $scope.socialRowClass = function(social) {
+            if ($scope.social_valid && social == $scope.social.social_id) {
+                return "highlight";
+            }
+            return "";
+        };
+
+        $scope.previewSocial = function() {
+            lmRemote.request($scope.editor.url + '/preview', {target:$scope.target, self_source:$scope.sourceSelf,
+                source:$scope.source, map:$scope.social.map})
+                .then( function(preview) {
+                   $scope.preview = preview;
+                    $scope.displayMode = 'view';
+                });
         };
 
         $scope.showNewSocialDialog = function() {
@@ -44,6 +82,47 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
             return false;
         };
 
+        $scope.revertSocial = function() {
+            $scope.social.map = oldMap;
+        };
+
+        $scope.saveSocial = function() {
+            lmRemote.request('editor/socials/update', $scope.social).then( function() {
+                $scope.social_valid = false;
+            });
+        };
+
+        function startEdit(social_id) {
+            lmRemote.request($scope.editor.url + '/get', {social_id:social_id}, true).then(function (social) {
+                if (social) {
+                    social.social_id = social_id;
+                    editSocial(social);
+                }
+                else {
+                    alert("Social does not exist");
+                }
+            })
+        }
+
+        function mapDiff() {
+            if (!$scope.social_valid) {
+                return false;
+            }
+            var matched = true;
+            angular.forEach($scope.constants.broadcast_types, function(broadcast_type) {
+                var id = broadcast_type.id;
+
+                if (!$scope.social.map[id] && !oldMap[id]) {
+                    return;
+                }
+                if ($scope.social.map[id] == oldMap[id]) {
+                    return;
+                }
+                matched = false;
+            });
+            return !matched;
+        }
+
         function loadSocials() {
             $scope.ready = false;
             lmRemote.request($scope.editor.url + '/list', null, true).then(function(socials) {
@@ -63,8 +142,12 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
         }
 
         function editSocial(social) {
+            oldMap = jQuery.extend(true, {}, social.map);
             $scope.social = social;
             $scope.social_valid = true;
+            if ($scope.displayMode == 'view') {
+                $scope.previewSocial();
+            }
         }
 
 
@@ -83,15 +166,16 @@ angular.module('lampost_editor').controller('NewSocialController', ['$scope', 'l
         };
 
         $scope.createSocial = function () {
-            lmRemote.request('editor/socials/valid', {social_id:$scope.social.social_id}, true).then(function() {
+            lmRemote.request('editor/socials/valid', {social_id:$scope.social.social_id}).then( function() {
                 lmRemote.request('editor/socials/update', $scope.social).then( function() {
                     $scope.dismiss();
                     updateFunc($scope.social);
                 })
-            }, function() {
-                $scope.socialExists = true;
-            })
-        }
+                }, function() {
+                    $scope.socialExists = true;
+                })
+        };
+
 
 
     }]);

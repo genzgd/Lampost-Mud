@@ -13,21 +13,25 @@ def logged(func):
         try:
             return func(*args, **kwargs)
         except Exception as error:
-            get_resource("log").error("Unhandled exception", error)
+            get_resource("log").error("Unhandled exception", func, error)
     return wrapper
 
 @provides('log', True)
 class Log(object):
 
     def __init__(self, log_level):
+        self.level_desc = "Not set"
         self._set_level(log_level)
 
     def _set_level(self, log_level):
         log_level = log_level.lower()
         if LOG_LEVELS.get(log_level) is not None:
             self.level = LOG_LEVELS[log_level]
+            self.debug("Log level set to {}".format(log_level))
+            self.level_desc = log_level
         else:
-            self.level = 20
+            self.level = LOG_LEVELS["warn"]
+            self.level_desc = "warn"
             self.warn("Invalid log level {}".format(log_level))
 
     def _log(self, log_level, log_msg, log_name, exception):

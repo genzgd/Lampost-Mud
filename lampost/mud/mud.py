@@ -34,7 +34,6 @@ class MudNature():
         self.context.set('broadcast_types', broadcast_types)
         self.context.set('broadcast_tokens', broadcast_tokens)
         self.mud_actions.add_action(self.shout_channel)
-
         self.mud.load_areas()
         self.social_registry.load_socials()
         debug("Mud loaded", self)
@@ -59,7 +58,7 @@ class MudNature():
         player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
-             player.register("error", player.display_line)
+             player.register("log", player.display_line)
 
         player.equip(set())
         self.mud.start_player(player)
