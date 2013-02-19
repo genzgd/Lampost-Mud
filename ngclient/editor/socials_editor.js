@@ -8,6 +8,7 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
         });
 
         var oldMap;
+        var originalId;
 
         $scope.social = {};
         $scope.social_valid = false;
@@ -30,20 +31,11 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
         $scope.copySocial = function(event, social_ix) {
             event.preventDefault();
             event.stopPropagation();
-            var originalId = $scope.socials[social_ix];
-            lmDialog.showPrompt({title:"Copy Social", prompt:"New Social", submit:function(copy_id) {
-                lmRemote.request($scope.editor.url + "/copy", {original_id:originalId, copy_id:copy_id}).
-                    then(function(new_social) {
-                        $scope.socials.push(copy_id);
-                        $scope.socials.sort();
-                        if (!$scope.social_valid || !mapDiff()) {
-                            new_social.social_id = copy_id;
-                            editSocial(new_social);
-                        }
-                    })
-            }});
-
+            originalId = $scope.socials[social_ix];
+            lmDialog.showPrompt({title:"Copy Social", prompt:"New Social", submit:submitCopy});
         };
+
+
 
         $scope.socialRowClass = function(social) {
             if ($scope.social_valid && social == $scope.social.social_id) {
@@ -91,6 +83,18 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
                 $scope.social_valid = false;
             });
         };
+
+        function submitCopy(copy_id) {
+            lmRemote.request($scope.editor.url + "/copy", {original_id:originalId, copy_id:copy_id}).
+                then(function(new_social) {
+                    $scope.socials.push(copy_id);
+                    $scope.socials.sort();
+                    if (!$scope.social_valid || !mapDiff()) {
+                        new_social.social_id = copy_id;
+                        editSocial(new_social);
+                    }
+                });
+        }
 
         function startEdit(social_id) {
             lmRemote.request($scope.editor.url + '/get', {social_id:social_id}, true).then(function (social) {
