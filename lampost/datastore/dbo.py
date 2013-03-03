@@ -54,6 +54,12 @@ class RootDBO(object):
         return self._to_json_obj()
 
     @property
+    def dto_value(self):
+        json_obj = self._to_json_obj()
+        json_obj['dbo_id'] = self.dbo_id
+        return json_obj
+
+    @property
     def json(self):
         return encode(self._to_json_obj())
 
@@ -104,7 +110,6 @@ class RootDBO(object):
             else:
                 append(col.field_name, "None")
         return display
-
 
     def _to_json_obj(self, use_defaults=False):
         json_obj = {}

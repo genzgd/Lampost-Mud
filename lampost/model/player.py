@@ -1,6 +1,4 @@
 from lampost.datastore.dbo import RootDBO
-from lampost.dto.display import DisplayLine
-from lampost.dto.rootdto import RootDTO
 from lampost.model.creature import Creature
 
 class Player(Creature, RootDBO):
@@ -36,11 +34,11 @@ class Player(Creature, RootDBO):
 
     def display_channel(self, message):
         if message.source != self:
-            self.session.display_line(message.display_line)
+            self.session.display_line({'text': message.text, 'color': message.color})
 
     def display_line(self, text, color=0x000000):
         if text:
-            self.session.display_line(DisplayLine(text, color))
+            self.session.display_line({'text': text, 'color': color})
 
     def output(self, output):
         self.session.append(output)
@@ -52,7 +50,7 @@ class Player(Creature, RootDBO):
         self.display_line(broadcast.translate(self), broadcast.color)
 
     def get_score(self):
-        score = RootDTO()
+        score = {}
         return score
 
     def die(self):

@@ -2,8 +2,8 @@ from json.decoder import JSONDecoder
 from json.encoder import JSONEncoder
 from lampost.client.user import UserManager
 
-from lampost.context.resource import register, provides
-
+from lampost.context.resource import register
+from lampost.context.classes import ClassRegistry
 from lampost.client.server import WebServer
 from lampost.gameops.config import Config
 from lampost.gameops.event import Dispatcher
@@ -42,15 +42,5 @@ class Context(object):
         return self.properties.get(key, None)
 
 
-@provides('cls_registry')
-class ClassRegistry(object):
-    def __init__(self):
-        self.registry = {}
-
-    def __call__(self, cls):
-        return self.registry.get(cls, cls)
-
-    def set_class(self, base_cls, sub_cls):
-        self.registry[base_cls] = sub_cls
 
 

@@ -158,7 +158,7 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
             if (lmData.player) {
                 $scope.actionPane = "action";
                 if (lmData.player.editors) {
-                    $scope.toolbar.push({label:'Editor', click:launchEditor})
+                    $scope.toolbar.push({label: 'Editor', click: launchEditor});
                     lmBus.register("start_room_edit", function(roomId) {
                         if (!lmData.editorWindow || lmData.editorWindow.closed) {
                             launchEditor(roomId);
@@ -177,31 +177,30 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
     }]);
 
 
-angular.module('lampost').controller('LoginController', ['$scope', 'lmRemote', 'lmDialog',
-    function ($scope, lmRemote, lmDialog) {
+angular.module('lampost').controller('LoginController', ['$scope',  'lmDialog', 'lmBus',
+    function ($scope, lmDialog, lmBus) {
+
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
-        lmRemote.request("login", {user_id:this.userId,
-            password:this.password}).then(loginError);
-
+        lmBus.dispatch("server_request", "login", {user_id:this.userId,
+            password:this.password})
     };
 
     $scope.newAccountDialog = function() {
         lmDialog.show({templateUrl:"dialogs/new_account.html", controller:"NewAccountController"});
     };
 
-    function loginError(response) {
-        if (response == "not_found") {
-            $scope.loginError = true;
-        }
-    }
+    lmBus.register("login_failure", function() {
+        $scope.loginError = true},
+        $scope);
+
 }]);
 
-angular.module('lampost').controller('NewAccountController', ['$scope', 'lmRemote', function($scope, lmRemote) {
+angular.module('lampost').controller('NewAccountController', ['$scope', '$timeout', 'lmRemote', 'lmDialog',
+    function($scope, $timeout, lmRemote, lmDialog) {
 
     $scope.accountName = "";
-    $scope.playerName = "";
     $scope.password = "";
     $scope.passwordCopy = "";
     $scope.email = "";
@@ -222,6 +221,9 @@ angular.module('lampost').controller('NewAccountController', ['$scope', 'lmRemot
         lmRemote.request("settings/create_account", {account_name:$scope.accountName,
             player_name:$scope.playerName,  password:$scope.password,  email:$scope.email}).then(function() {
                 $scope.dismiss();
+                $timeout(function() {
+                    lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});
+                })
             }, function(error) {
                 if (error.status == 409) {
                     $scope.errorText = error.data;

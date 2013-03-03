@@ -1,6 +1,5 @@
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
-from lampost.dto.rootdto import RootDTO
 from lampost.mud.action import imm_action
 from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
@@ -10,7 +9,7 @@ m_requires('sm', 'mud', 'datastore', 'perm', 'nature', __name__)
 @imm_action('edit')
 def edit(source, **ignored):
     check_perm(source, mud.get_area(source.env.area_id))
-    return RootDTO(start_room_edit=source.env.dbo_id)
+    return {'start_room_edit': source.env.dbo_id}
 
 
 @imm_action(('cmds', 'commands'))
@@ -33,7 +32,7 @@ def goto(source, args, **ignored):
             raise ActionError("Area has no rooms!")
         new_env = area.first_room
     else:
-        session = sm.user_session(dest)
+        session = sm.player_session(dest)
         if session:
             new_env = session.player.env
         else:
@@ -48,7 +47,7 @@ def goto(source, args, **ignored):
 
 @imm_action('summon')
 def summon(source, args, **ignored):
-    session = sm.user_session(args[0].lower())
+    session = sm.player_session(args[0].lower())
     if not session:
         return "Player is not logged in"
     player = session.player

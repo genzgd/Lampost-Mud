@@ -1,7 +1,6 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
-from lampost.dto.rootdto import RootDTO
 from lampost.model.player import Player
 from lampost.util.lmutil import DataError
 
@@ -16,7 +15,7 @@ class PlayerResource(Resource):
 class PlayerList(Resource):
     @request
     def render_POST(self, content, session):
-        return [PlayerDTO(key.split(':')[1]) for key in fetch_set_keys("players")]
+        return [player_dto(key.split(':')[1]) for key in fetch_set_keys("players")]
 
 @requires('user_manager')
 class PlayerDelete(Resource):
@@ -37,18 +36,11 @@ class PlayerDelete(Resource):
         self.user_manager.delete_player(user, player)
 
 
-class PlayerDTO(RootDTO):
-    def __init__(self, id):
-        player = load_object(Player, id)
-        if not hasattr(player, 'session'):
-            evict_object(player)
-        self.id = id
-        self.level = getattr(player, 'level', 0)
-        self.logged_in = 'Yes' if hasattr(player, 'session') else 'No'
-        self.user_id = player.user_id
-        self.imm_level = perm_name(getattr(player, 'imm_level', 0))
-        self.created = player.created
-        self.last_login = player.last_login
-        self.last_logout = player.last_logout
-
+def player_dto(player_id):
+    player = load_object(Player, player_id)
+    if not hasattr(player, 'session'):
+        evict_object(player)
+    return {'id': player_id, 'level': getattr(player, 'level', 0), 'logged_in': 'Yes' if hasattr(player, 'session') else 'No', 'user_id': player.user_id,
+            'imm_level': perm_name(getattr(player, 'imm_level', 0)), 'created': player.created, 'last_login': player.last_login,
+            'last_logout': player.last_logout}
 

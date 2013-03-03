@@ -1,6 +1,6 @@
 from lampost.gameops.action import make_action
 from lampost.context.resource import requires
-from lampost.dto.display import DisplayLine
+
 
 @requires('dispatcher')
 class Channel():
@@ -16,7 +16,9 @@ class Channel():
         self.dispatch(self, ChannelMessage(source, statement, self.color))
         source.display_line(statement, self.color)
 
+
 class ChannelMessage():
-    def __init__(self, source, message, color):
+    def __init__(self, source, text, color):
         self.source = source
-        self.display_line = DisplayLine(message, color)
+        self.text = text
+        self.color = color

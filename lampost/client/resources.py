@@ -4,24 +4,28 @@ from datetime import datetime
 from twisted.web.resource import Resource, NoResource
 from twisted.web.server import NOT_DONE_YET
 
-from lampost.dto.link import *
-from lampost.dto.rootdto import RootDTO
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires
-from lampost.util.lmutil import PermError, DataError, StateError
+from lampost.util.lmutil import build_object, PermError, DataError, StateError
 
 m_requires('sm', 'decode', 'encode', 'log', __name__)
+
 
 def request(func):
     @logged
     def wrapper(self, request):
-        content = RootDTO().merge_dict(decode(request.content.getvalue()))
-        session_id = getattr(content, 'session_id', None)
+        content = build_object(decode(request.content.getvalue()))
+        session_headers = request.requestHeaders.getRawHeaders('x-lampost-session')
+        if not session_headers:
+            error('Request sent without lampost session header')
+            request.setResponseCode(400)
+            return "No Lampost Session Header"
+        session_id = session_headers[0]
         if not session_id:
-            return LinkError(ERROR_SESSION_NOT_FOUND).json
+            return encode({'link_status': 'no_session_id'})
         session = sm.get_session(session_id)
         if not session:
-            return LinkError(ERROR_NO_SESSION_ID).json
+            return encode({'link_status': 'session_not_found'})
         try:
             if getattr(self, 'Raw', False):
                 return func(self, request, session)
@@ -37,27 +41,26 @@ def request(func):
             return str(se.message)
         if result is None:
             request.setResponseCode(204)
-        try:
-            return result.json
-        except AttributeError:
-            if isinstance(result, dict):
-                return encode(result)
-            return Response(result).json
+            return ''
+        return encode(result)
     return wrapper
+
 
 class ConnectResource(Resource):
     @logged
     def render_POST(self, request):
-        content = RootDTO().merge_dict(decode(request.content.getvalue()))
+        content = build_object(decode(request.content.getvalue()))
         session_id = getattr(content, 'session_id', None)
         if session_id:
-            return sm.reconnect_session(session_id, content.player_id).json
-        return sm.start_session().json
+            return encode(sm.reconnect_session(session_id, content.player_id))
+        return encode(sm.start_session())
+
 
 class LoginResource(Resource):
     @request
     def render_POST(self, content, session):
         return sm.login(session, content.user_id, content.password)
+
 
 class LinkResource(Resource):
     Raw = True
@@ -66,18 +69,20 @@ class LinkResource(Resource):
         session.attach(request)
         return NOT_DONE_YET
 
+
 class ActionResource(Resource):
     @request
     def render_POST(self, content, session):
         player = session.player
         if not player:
-            return LinkError(ERROR_NOT_LOGGED_IN)
+            return {"link_status": "no_login"}
         action = cgi.escape(content.action).strip()
         if action in ["quit", "logout", "log out"]:
             return sm.logout(session)
         session.activity_time = datetime.now()
         player.parse(action)
         return session.pull_output()
+
 
 class LspServerResource(Resource):
     IsLeaf = True

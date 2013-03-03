@@ -1,24 +1,15 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
-from lampost.dto.rootdto import RootDTO
 from lampost.model.area import Area
 
 __author__ = 'Geoff'
 
 m_requires('datastore', 'mud', 'perm', __name__)
 
-class AreaDTO(RootDTO):
-    def __init__(self, area, can_write=True):
-        self.id = area.dbo_id
-        self.dbo_rev = area.dbo_rev
-        self.name = area.name
-        self.owner_id = area.owner_id
-        self.room = len(area.rooms)
-        self.article = len(area.articles)
-        self.mobile = len(area.mobiles)
-        self.next_room_id = area.next_room_id
-        self.can_write = can_write
+def area_dto(area, can_write=True):
+    return {'id': area.dbo_id, 'dbo_rev': area.dbo_rev, 'name': area.name, 'owner_id': area.owner_id, 'room': len(area.rooms),
+            'article':len(area.articles), 'mobile': len(area.mobiles), 'next_room_id': area.next_room_id, 'can_write': can_write}
 
 class AreaResource(Resource):
     def __init__(self):
@@ -31,7 +22,7 @@ class AreaResource(Resource):
 class AreaList(Resource):
     @request
     def render_POST(self, content, session):
-        return [AreaDTO(area, has_perm(session.player, area)) for area in mud.area_map.itervalues()]
+        return [area_dto(area, has_perm(session.player, area)) for area in mud.area_map.itervalues()]
 
 @requires('mud', 'cls_registry')
 class AreaNew(Resource):
@@ -45,7 +36,7 @@ class AreaNew(Resource):
         area.owner_id = session.player.dbo_id
         datastore.save_object(area)
         self.mud.add_area(area)
-        return AreaDTO(area)
+        return area_dto(area)
 
 
 @requires('mud', 'dispatcher')
@@ -65,15 +56,15 @@ class AreaDelete(Resource):
 class AreaUpdate(Resource):
     @request
     def render_POST(self, content, session):
-        area_dto = content.area
-        area = datastore.load_object(Area, area_dto['id'])
+        area_info = content.area
+        area = datastore.load_object(Area, area_info['id'])
         if not area:
             return "ERROR_NOT_FOUND"
         check_perm(session, area)
-        area.name = area_dto['name']
-        area.next_room_id = area_dto['next_room_id']
+        area.name = area_info['name']
+        area.next_room_id = area_info['next_room_id']
         datastore.save_object(area, True)
-        return AreaDTO(area)
+        return area_dto(area)
 
 
 

@@ -1,7 +1,6 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
-from lampost.dto.rootdto import RootDTO
 from lampost.model.article import ArticleTemplate
 from lampost.util.lmutil import DataError
 
@@ -20,7 +19,7 @@ class ArticleList(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
-        return [ArticleDTO(article_template) for article_template in area.articles]
+        return [article_template.dto_value for article_template in area.articles]
 
 class ArticleGet(Resource):
     @request
@@ -28,14 +27,14 @@ class ArticleGet(Resource):
         area, article = get_article(content.object_id)
         if not article.desc:
             article.desc = article.title
-        return ArticleDTO(article)
+        return article.dto_value
 
 class ArticleUpdate(Resource):
     @request
     def render_POST(self, content, session):
         area, article = get_article(content.object_id, session)
         update_object(article, content.model)
-        return ArticleDTO(article)
+        return article.dto_value
 
 @requires('cls_registry')
 class ArticleCreate(Resource):
@@ -43,7 +42,7 @@ class ArticleCreate(Resource):
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
         check_perm(session, area)
-        article_id = ":".join([area.dbo_id, content.object['id']])
+        article_id = ":".join([area.dbo_id, content.object.id])
         if area.get_article(article_id):
             raise DataError(article_id + " already exists in this area")
         template = self.cls_registry(ArticleTemplate)(article_id)
@@ -51,7 +50,7 @@ class ArticleCreate(Resource):
         save_object(template)
         area.articles.append(template)
         save_object(area)
-        return ArticleDTO(template)
+        return template.dto_value
 
 class ArticleDelete(Resource):
     @request
@@ -80,8 +79,3 @@ def get_article(article_id, session=None):
     if session:
         check_perm(session, area)
     return area, article
-
-class ArticleDTO(RootDTO):
-    def __init__(self, article_template):
-        self.merge_dict(article_template.json_obj)
-        self.dbo_id = article_template.dbo_id

@@ -7,6 +7,7 @@ from lampost.util.lmutil import DataError, StateError
 
 m_requires('datastore', 'user_manager', 'perm', __name__)
 
+
 class SettingsResource(Resource):
     def __init__(self):
         Resource.__init__(self)
@@ -14,6 +15,7 @@ class SettingsResource(Resource):
         self.putChild("create_account", AccountCreate())
         self.putChild('update_account', AccountUpdate())
         self.putChild('delete_account', AccountDelete())
+
 
 class SettingsGet(Resource):
     @request
@@ -24,6 +26,7 @@ class SettingsGet(Resource):
         user_json = user.json_obj
         user_json['password'] = ''
         return user_json
+
 
 @requires('sm', 'cls_registry')
 class AccountCreate(Resource):
@@ -36,8 +39,9 @@ class AccountCreate(Resource):
         if get_index("user_name_index", player_name) or object_exists('player', player_name):
             raise DataError(content.player_name + " is in use.")
         player = self.cls_registry(Player)(player_name)
-        user_manager.attach_user(player, account_name, content.password, content.email)
+        user_manager(player, account_name, content.password, content.email)
         return self.sm.login(session, account_name, content.password)
+
 
 class AccountUpdate(Resource):
     @request
@@ -51,10 +55,10 @@ class AccountUpdate(Resource):
         if user_id:
             old_user = datastore.load_object(User, user_id)
             if not old_user:
-                return "User does not exist"
+                raise StateError(user_id + " does not exist!")
 
         if user_manager.check_name(user_json['user_name'], old_user) != "ok":
-            return "name_in_use"
+            raise DataError(user_id + " is in use")
         user = User(user_id)
         if not user_json['password']:
             user_json['password'] = old_user.password
@@ -63,7 +67,7 @@ class AccountUpdate(Resource):
         if old_user:
             delete_index("user_name_index", old_user.user_name.lower())
         set_index("user_name_index", user.user_name.lower(), user_id)
-        return "success"
+
 
 @requires('sm')
 class AccountDelete(Resource):

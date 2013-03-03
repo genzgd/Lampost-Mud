@@ -92,6 +92,12 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
             }
         }
     };
+
+    this.dispatchMap = function(eventMap) {
+        for (var key in eventMap) {
+            self.dispatch(key, eventMap[key]);
+        }
+    }
 }]);
 
 
@@ -111,15 +117,15 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         '<div class="modal-footer"><button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div>' +
         '</div>';
 
-    function linkRequest(resource, data) {
-        data = data ? data : {};
-        data.session_id = sessionId;
+    function serverRequest(resource, data) {
+
         $.ajax({
             type: 'POST',
             dataType: 'json',
             url: '/' + resource,
-            data: JSON.stringify(data),
-            success: serverResult,
+            data: JSON.stringify(data || {}),
+            headers: {'X-Lampost-Session': sessionId},
+            success: lmBus.dispatchMap,
             error: function (jqXHR, status) {
                 linkFailure(status)}
         });
@@ -132,8 +138,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
             }
             waitCount++;
         }
-        data = data ? data : {};
-        data.session_id = sessionId;
+
         function checkWait() {
             if (showWait) {
                 waitCount--;
@@ -144,7 +149,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
             }
         }
 
-        return $http({method: 'POST', url: '/' + resource, data:data}).
+        return $http({method: 'POST', url: '/' + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}}).
             error(function(data, status) {
                 checkWait();
                 if (status == 403) {
@@ -154,10 +159,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
                 }
             }).then(function(result) {
                 checkWait();
-                var data = result.data;
-                $timeout(function() {
-                    serverResult(data)}, 0);
-                return data.hasOwnProperty('response') ? data.response : data;
+                return result.data;
             });
 
     }
@@ -166,7 +168,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         if (playerId) {
             localStorage.setItem('lm_timestamp_' + playerId, new Date().getTime().toString());
         }
-        linkRequest("link");
+        serverRequest("link");
     }
 
     function onWindowClosing() {
@@ -192,20 +194,14 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         connected = true;
         if (status == "good") {
             link();
-        } else if (status == "no_session_id") {
+        } else if (status == "session_not_found") {
             lmBus.dispatch("logout", "invalid_session");
             sessionId = 0;
-            linkRequest("connect");
+            serverRequest("connect");
         } else if (status == "no_login") {
             lmBus.dispatch("logout", "invalid_session");
         } else {
             lmDialog.showOk("Unknown Server Error", status);
-        }
-    }
-
-    function serverResult(eventMap) {
-        for (var key in eventMap) {
-            lmBus.dispatch(key, eventMap[key]);
         }
     }
 
@@ -214,18 +210,15 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         link();
     }
 
-    function onServerRequest(resource, data) {
-        linkRequest(resource, data);
+    function onLogin(data) {
+        if (data.name) {
+            playerId = data.name.toLowerCase();
+            storePlayer();
+        }
     }
 
-    function onLogin(data) {
-        playerId = data.name.toLowerCase();
-        var activePlayers = localStorage.getItem('lm_active_players');
-        if (activePlayers) {
-            activePlayers = activePlayers.split('**');
-        } else {
-            activePlayers = [];
-        }
+    function storePlayer() {
+        var activePlayers = activePlayerList();
         if (activePlayers.indexOf(playerId) == -1) {
             activePlayers.push(playerId);
             localStorage.setItem('lm_active_players', activePlayers.join('**'));
@@ -294,7 +287,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
 
     function reconnect() {
         if (sessionId == 0) {
-            linkRequest("connect");
+            serverRequest("connect");
         } else {
             link();
         }
@@ -321,12 +314,12 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
                 data.player_id = playerId;
             }
         }
-        linkRequest("connect", data);
+        serverRequest("connect", data);
     };
 
     lmBus.register("connect", onConnect);
     lmBus.register("link_status", onLinkStatus);
-    lmBus.register("server_request", onServerRequest);
+    lmBus.register("server_request", serverRequest);
     lmBus.register("login", onLogin);
     lmBus.register("logout", onLogout);
     lmBus.register("window_closing", onWindowClosing);

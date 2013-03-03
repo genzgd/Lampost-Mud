@@ -1,7 +1,6 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
-from lampost.dto.rootdto import RootDTO
 from lampost.model.mobile import MobileTemplate
 from lampost.util.lmutil import DataError
 
@@ -20,7 +19,7 @@ class MobileList(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
-        return [MobileDTO(mobile_template) for mobile_template in area.mobiles]
+        return [mobile_template.dto_value for mobile_template in area.mobiles]
 
 class MobileGet(Resource):
     @request
@@ -28,14 +27,14 @@ class MobileGet(Resource):
         area, mobile = get_mobile(content.object_id)
         if not mobile.desc:
             mobile.desc = mobile.title
-        return MobileDTO(mobile)
+        return mobile.dto_value
 
 class MobileUpdate(Resource):
     @request
     def render_POST(self, content, session):
         area, mobile = get_mobile(content.object_id)
         update_object(mobile, content.model)
-        return MobileDTO(mobile)
+        return mobile.dto_value
 
 @requires('cls_registry')
 class MobileCreate(Resource):
@@ -51,7 +50,7 @@ class MobileCreate(Resource):
         save_object(template)
         area.mobiles.append(template)
         save_object(area)
-        return MobileDTO(template)
+        return template.dto_value
 
 class MobileDelete(Resource):
     @request
@@ -80,8 +79,3 @@ def get_mobile(mobile_id, session=None):
     if session:
         check_perm(session, area)
     return area, mobile
-
-class MobileDTO(RootDTO):
-    def __init__(self, mobile_template):
-        self.merge_dict(mobile_template.json_obj)
-        self.dbo_id = mobile_template.dbo_id

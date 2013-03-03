@@ -6,7 +6,8 @@ from lampost.context.resource import m_requires, provides, get_resource
 
 m_requires('dispatcher', __name__)
 
-LOG_LEVELS = {"fatal":0, "error":10, "warn":20, "info":30, "debug":40, "trace":50}
+LOG_LEVELS = {"fatal": 0, "error": 10, "warn": 20, "info": 30, "debug": 40, "trace": 50}
+
 
 def logged(func):
     def wrapper(*args, **kwargs):
@@ -15,6 +16,7 @@ def logged(func):
         except Exception as error:
             get_resource("log").error("Unhandled exception", func, error)
     return wrapper
+
 
 @provides('log', True)
 class Log(object):
@@ -52,7 +54,7 @@ class Log(object):
         self._log("fatal", log_msg, log_name, exception)
 
     def error(self, log_msg, log_name="root", exception=None):
-        self._log("debug", log_msg, log_name, exception)
+        self._log("error", log_msg, log_name, exception)
 
     def warn(self, log_msg, log_name="root", exception=None):
         self._log("warn", log_msg, log_name, exception)
@@ -62,8 +64,3 @@ class Log(object):
 
     def trace(self, log_msg, log_name="root", exception=None):
         self._log("trace", log_msg, log_name, exception)
-
-
-
-
-

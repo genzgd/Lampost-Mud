@@ -28,7 +28,7 @@ class SocialList(Resource):
 class SocialGet(Resource):
     @request
     def render_POST(self, content, session):
-        return load_object(Social, content.social_id)
+        return load_object(Social, content.social_id).json_obj
 
 @requires('cls_registry', 'social_registry')
 class SocialUpdate(Resource):
@@ -85,7 +85,7 @@ class SocialCopy(Resource):
         copy.dbo_id = content.copy_id
         save_object(copy)
         self.social_registry.insert(copy)
-        return copy
+        return copy.json_obj
 
 
 

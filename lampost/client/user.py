@@ -24,33 +24,23 @@ class User(RootDBO):
 @provides('user_manager')
 class UserManager(object):
     def validate_user(self, user_name, password):
-        user, player = self.find_user(user_name)
+        user = self.find_user(user_name)
         if not user:
-            return "not_found", None, None
+            return "not_found", None
         if user.password != password:
-            return "not_found", None, None
-        return "ok", user, player
+            return "not_found", None
+        return "ok", user
 
     def find_user(self, user_name):
         user_name = unicode(user_name).lower()
-        player = load_object(Player, user_name)
-        if player:
-            return self.find_by_player(player), player
         user_id = get_index("user_name_index", user_name)
         if user_id:
-            user = load_object(User, user_id)
-            player = load_object(Player, user.player_ids[0])
-            return user, player
+            return load_object(User, user_id)
+        player = load_object(Player, user_name)
+        if player:
+            datastore.evict_object(player)
+            return load_object(User, player.user_id)
         return None, None
-
-    def find_by_player(self, player):
-        if not player.user_id:
-            return self.attach_user(player)
-        user = load_object(User, player.user_id)
-        if not user:
-            error("User not found in database for user id " + player.user_id)
-            return self.attach_user(player)
-        return user
 
     def delete_player(self, user, player):
         delete_object(player)
@@ -61,19 +51,25 @@ class UserManager(object):
         else:
             update_object(user)
 
-    def attach_user(self, player, user_name=None, password="password", email="email"):
-        player.user_id = str(self.config.next_user_id)
+    def attach_player(self, user, player):
+        user.player_ids.append(player.dbo_id)
+        player.user_id = user.dbo_id
+        save_object(player)
+        self.save_user(user)
+        return user
+
+    def create_user(self, user_name, password, email=""):
+        user_id = str(self.config.next_user_id)
         self.config.next_user_id += 1
         while object_exists('user', self.config.next_user_id):
             self.config.next_user_id += 1
-        user = User(player.user_id)
+        save_object(self.config)
+        user = User(user_id)
         user.user_name = unicode(user_name) if user_name else player.name
         user.password = unicode(password)
         user.email = email
-        user.player_ids = [player.dbo_id]
-        save_object(player)
+        user.player_ids = []
         self.save_user(user)
-        save_object(self.config)
         return user
 
     def save_user(self, user):

@@ -1,7 +1,8 @@
 from json import JSONDecoder, JSONEncoder
+
 from lampost.client.user import UserManager
 from lampost.context.resource import register
-from lampost.context.context import ClassRegistry
+from lampost.context.classes import ClassRegistry
 from lampost.datastore.dbconn import RedisStore
 from lampost.env.room import Room
 from lampost.gameops.config import Config
@@ -18,7 +19,7 @@ class SetupMudContext(object):
                  imm_password="password", start_area="immortal"):
         self.properties = {}
         register('context', self)
-        Log()
+        Log("debug")
         cls_registry = ClassRegistry()
         Dispatcher()
         register('decode', JSONDecoder().decode)
@@ -40,7 +41,6 @@ class SetupMudContext(object):
         user_manager = UserManager()
 
         player = cls_registry(Player)(imm_name)
-        user_manager.attach_user(player, imm_account, imm_password, '')
 
         area = cls_registry(Area)(start_area)
         area.name = start_area
@@ -59,6 +59,9 @@ class SetupMudContext(object):
         player.home_room = room_id
         player.imm_level = perm.perm_level('supreme')
         datastore.save_object(player)
+
+        user = user_manager.create_user(imm_account, imm_password)
+        user_manager.attach_player(user, player)
 
     def set(self, key, value):
         self.properties[key] = value

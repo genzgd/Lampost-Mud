@@ -1,5 +1,4 @@
 from lampost.context.resource import requires, m_requires
-from lampost.dto.display import Display, DisplayLine
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset
@@ -75,7 +74,7 @@ class Room(RootDBO):
         return self.room_id.split(":")[0]
 
     def rec_glance(self, source, **ignored):
-        return Display(self.short_desc(source), Room.ROOM_COLOR)
+        return source.display_line(self.title, Room.ROOM_COLOR)
 
     def rec_entity_enters(self, source):
         self.contents.append(source)
