@@ -1,0 +1,33 @@
+<div class="modal">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="tryCancel()">×</button>
+    <h4>Create New Character</h4>
+  </div>
+  <form ng-submit="createCharacter()">
+    <div class="modal-body">
+      <div class="row-fluid">
+        <div class="span5">
+          <label>Character Name</label>
+          <input class="span11" type="text" ng-model="playerName" ng-change="accountChange()" required/>
+        </div>
+        <div class="span7">
+          <p>
+            <small>Your player's name. This is the name other players will know you by in the game. No spaces are permitted.
+              Use common sense. Players with inappropriate names will be deleted.
+            </small>
+          </p>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="alert alert-error" ng-show="errorText">
+          <button type="button" class="close" ng-click="errorText = null">×</button>
+          {{errorText}}
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success">Create Character</button>
+      <button ng-click="tryCancel()" class="btn">Cancel</button>
+    </div>
+  </form>
+</div>

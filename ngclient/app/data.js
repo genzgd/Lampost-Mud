@@ -4,13 +4,19 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     var padding = "00000000";
     var self = this;
 
-    this.display = [];
-    this.player = null;
-    this.playerId = null;
-    this.playerList = [];
-    this.history = [];
-    this.historyIx = 0;
-    this.editorWindow = null;
+    clear();
+
+    function clear() {
+        self.display = [];
+        self.userId = 0;
+        self.playerIds = [];
+        self.editors = [];
+        self.playerId = 0;
+        self.playerList = [];
+        self.history = [];
+        self.historyIx = 0;
+        self.editorWindow = null;
+    }
 
     function updateDisplay(display) {
         var lines = display.lines;
@@ -28,9 +34,17 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     }
 
     lmBus.register("login", function(data) {
-        self.player = data;
-        self.playerId = data.name.toLocaleLowerCase();
-        localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.player.editors));
+        self.editors = data.editors;
+        self.userId = data.user_id;
+        self.playerIds = data.player_ids;
+        self.playerName = data.name;
+        self.playerId = self.playerName.toLocaleLowerCase();
+        localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
+    }, null, -100);
+
+    lmBus.register("user_login", function(data) {
+        self.userId = data.user_id;
+        self.playerIds = data.player_ids;
     }, null, -100);
 
     lmBus.register("player_list", function(data) {
@@ -38,12 +52,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     });
 
     lmBus.register("display", updateDisplay, null, -100);
-    lmBus.register("logout", function() {
-        self.player = null;
-        self.display = [];
-        self.history = [];
-        self.historyIx = 0;
-        }, null, -100);
+    lmBus.register("logout", clear, null, -100);
 
 }]);
 

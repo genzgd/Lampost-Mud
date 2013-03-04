@@ -15,6 +15,7 @@ class SettingsResource(Resource):
         self.putChild("create_account", AccountCreate())
         self.putChild('update_account', AccountUpdate())
         self.putChild('delete_account', AccountDelete())
+        self.putChild('create_player', PlayerCreate())
 
 
 class SettingsGet(Resource):
@@ -28,19 +29,13 @@ class SettingsGet(Resource):
         return user_json
 
 
-@requires('sm', 'cls_registry')
 class AccountCreate(Resource):
     @request
     def render_POST(self, content, session):
         account_name = content.account_name.lower()
-        player_name = content.player_name.lower()
         if get_index("user_name_index", account_name) or object_exists('player', account_name):
             raise DataError(content.account_name + " is in use.")
-        if get_index("user_name_index", player_name) or object_exists('player', player_name):
-            raise DataError(content.player_name + " is in use.")
-        player = self.cls_registry(Player)(player_name)
-        user_manager(player, account_name, content.password, content.email)
-        return self.sm.login(session, account_name, content.password)
+        user_manager.create_user(account_name, content.password, content.email)
 
 
 class AccountUpdate(Resource):
@@ -82,5 +77,24 @@ class AccountDelete(Resource):
         response = self.sm.logout(session)
         user_manager.delete_player(user, player)
         return response
+
+
+@requires('cls_registry')
+class PlayerCreate(Resource):
+    @request
+    def render_POST(self, content, session):
+        user = load_object(User, content.user_id)
+        if not user:
+            raise StateError("User {0} does not exist".format([user_id]))
+        player_name = content.player_name.lower()
+        if player_name != user.user_name and get_index("user_name_index", player_name):
+            raise DataError(content.player_name + " is in use.")
+        if object_exists('player', player_name):
+            raise DataError(content.player_name + " is in use.")
+        player = self.cls_registry(Player)(player_name)
+        load_json(player, content.player_data)
+        user_manager.attach_player(user, player)
+
+
 
 

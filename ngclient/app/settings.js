@@ -29,7 +29,7 @@ angular.module('lampost').controller('AccountFormController', ['$scope', '$timeo
     $scope.inUse = false;
     $scope.passwordMismatch = false;
 
-    lmRemote.request("settings/get", {user_id:lmData.player.user_id}).then(updateSettings);
+    lmRemote.request("settings/get", {user_id:lmData.userId}).then(updateSettings);
 
     function updateSettings(data) {
         $scope.user = data;
@@ -41,7 +41,7 @@ angular.module('lampost').controller('AccountFormController', ['$scope', '$timeo
         if ($scope.user.confirm != $scope.user.password) {
             $scope.passwordMismatch = true;
         } else {
-            lmRemote.request("settings/update_account", {user_id:lmData.player.user_id,
+            lmRemote.request("settings/update_account", {user_id:lmData.userId,
                 user:$scope.user}).then(function() {
                     $scope.showSuccess = true;
                     $scope.user.password = "";

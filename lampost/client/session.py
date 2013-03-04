@@ -48,21 +48,27 @@ class SessionManager(object):
         user = self.datastore.load_object(User, session.player.user_id)
         return self._respond(login=self._login_result(user, session.player), connect=session_id)
 
-    def login(self, session, user_id, password):
-        user_id = unicode(user_id).lower()
-        result, user = self.user_manager.validate_user(user_id, password)
+    def login(self, session, user_name, password):
+        user_name = unicode(user_name).lower()
+        result, user = self.user_manager.validate_user(user_name, password)
         if result != "ok":
             return {"login_failure": result}
         session.connect_user(user)
         if len(user.player_ids) == 1:
-            return self._start_player(session, user, user.player_ids[0])
-        if user_id != user.user_id:
-            return self._start_player(session, user, user_id)
+            return self._start_player(session, user.player_ids[0])
+        if user_name != user.user_name:
+            return self._start_player(session, user_id)
 
-        user_login = {'user_id': user.user_id, 'player_ids': user.player_ids}
+        user_login = {'user_id': user.dbo_id, 'player_ids': user.player_ids}
         return self._respond(user_login=user_login)
 
-    def _start_player(self, session, user, player_id):
+    def login_player(self, session, player_id):
+        player = self.datastore.load_object(Player, player_id)
+        if session.user.dbo_id != player.user_id:
+            raise StateError("User and player ids do not match")
+        self._start_player(session, player_id)
+
+    def _start_player(self, session, player_id):
         old_session = self.player_session(player_id)
         if old_session:
             player = old_session.player
@@ -82,7 +88,7 @@ class SessionManager(object):
         self.player_session_map[player.dbo_id] = session
         player.display_line(intro_line,  0x002288)
         player.parse("look")
-        return self._respond(login=self._login_result(user, player))
+        return self._respond(login=self._login_result(session.user, player))
 
     def logout(self, session):
         player = session.player
@@ -91,6 +97,7 @@ class SessionManager(object):
         player.leave_env()
         player.detach()
         session.player = None
+        session.user = None
         del self.player_info_map[player.dbo_id]
         self.save_object(player)
         self.evict_object(player)

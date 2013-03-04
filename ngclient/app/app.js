@@ -34,6 +34,14 @@ angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmD
 
         lmRemote.connect();
         window.name = "lampost_main_" + new Date().getTime();
+
+        lmBus.register("user_login", function() {
+            if (lmData.playerIds.length == 0) {
+                lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});
+            } else {
+                lmDialog.show({templateUrl:"dialogs/select_character.html", controller:"SelectCharacterController"});
+            }
+        });
     }]);
 
 
@@ -95,13 +103,13 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
         validatePath();
         lmBus.register("login", function () {
             $scope.links.push(settingsLink);
-            $scope.welcome = 'Welcome ' + lmData.player.name;
+            $scope.welcome = 'Welcome ' + lmData.playerName;
             $scope.loggedIn = true;
         }, $scope);
 
         lmBus.register("logout", function(reason) {
             if (reason == "other_location") {
-                var player = lmData.player ? lmData.player.name : "Unknown";
+                var player = lmData.player ? lmData.playerName : "Unknown";
                 lmDialog.showOk("Logged Out", player + " logged in from another location.");
             }
             validatePath();
@@ -155,9 +163,9 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
 
         function update() {
             $scope.toolbar = [];
-            if (lmData.player) {
+            if (lmData.playerId) {
                 $scope.actionPane = "action";
-                if (lmData.player.editors) {
+                if (lmData.editors) {
                     $scope.toolbar.push({label: 'Editor', click: launchEditor});
                     lmBus.register("start_room_edit", function(roomId) {
                         if (!lmData.editorWindow || lmData.editorWindow.closed) {
@@ -213,13 +221,12 @@ angular.module('lampost').controller('NewAccountController', ['$scope', '$timeou
             $scope.errorText = "Passwords don't match.";
             return;
         }
-        if ($scope.accountName.indexOf(" ") > -1 ||
-            $scope.playerName.indexOf(" ") > -1) {
-            $scope.errorText = "Spaces not permitted in player or account names";
+        if ($scope.accountName.indexOf(" ") > -1) {
+            $scope.errorText = "Spaces not permitted in account names";
             return;
         }
         lmRemote.request("settings/create_account", {account_name:$scope.accountName,
-            player_name:$scope.playerName,  password:$scope.password,  email:$scope.email}).then(function() {
+              password:$scope.password,  email:$scope.email}).then(function() {
                 $scope.dismiss();
                 $timeout(function() {
                     lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});

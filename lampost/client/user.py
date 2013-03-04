@@ -4,6 +4,7 @@ from lampost.model.player import Player
 
 m_requires('log', 'datastore', __name__)
 
+
 class User(RootDBO):
     dbo_key_type = "user"
     dbo_fields =  "user_name", "email", "password", "player_ids", "toolbar"
@@ -11,13 +12,14 @@ class User(RootDBO):
     dbo_indexes = "user_name"
 
     user_name = ""
-    toolbar = []
-    player_ids = []
     password = unicode("password")
     email = ""
 
     def __init__(self, dbo_id):
         self.dbo_id = unicode(dbo_id)
+        self.player_ids = []
+        self.toolbar = []
+
 
 
 @requires('config')
