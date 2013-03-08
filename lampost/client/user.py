@@ -21,7 +21,6 @@ class User(RootDBO):
         self.toolbar = []
 
 
-
 @requires('config')
 @provides('user_manager')
 class UserManager(object):
@@ -42,16 +41,19 @@ class UserManager(object):
         if player:
             datastore.evict_object(player)
             return load_object(User, player.user_id)
-        return None, None
+        return None
+
+    def delete_user(self, user):
+        for player_id in user.player_ids:
+            player = load_object(Player, player_id)
+            delete_object(player)
+        delete_object(user)
+        delete_index("user_name_index", user.user_name)
 
     def delete_player(self, user, player):
         delete_object(player)
         user.player_ids.remove(player.dbo_id)
-        if not user.player_ids:
-            delete_object(user)
-            delete_index("user_name_index", user.user_name)
-        else:
-            update_object(user)
+        save_object(user)
 
     def attach_player(self, user, player):
         user.player_ids.append(player.dbo_id)

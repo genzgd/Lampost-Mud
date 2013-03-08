@@ -10,7 +10,7 @@
     <div class="span8" ng-switch="headingId">
       <div class="row-fluid" ng-switch-when="account">
         <div class="span6">
-          <form ng-controller="AccountFormController" name="accountForm" ng-submit="submitAccount()"  class="well span12 form-horizontal">
+          <form ng-controller="AccountFormController" name="accountForm" ng-submit="submitAccount()" class="well span12 form-horizontal">
             <div class="control-group">
               <label class="control-label">Account Name</label>
 
@@ -66,13 +66,35 @@
         </div>
       </div>
 
-      <div ng-switch-when="characters">
+      <div ng-switch-when="characters" ng-controller="CharactersTabController">
         <div class="row-fluid">
-          <div class="span8">
-            <table class="span11 table table-condensed">
-
-            </table>
+          <div class="span4">
+            <button class="btn btn-info" ng-click="addCharacter()">Add Character</button>
           </div>
+        </div>
+        <div class="row-fluid">
+          <p></p>
+          <div class="span4 alert alert-error" ng-show="errorText">
+            <button type="button" class="close" ng-click="errorText = null">×</button>
+            {{errorText}}
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span6">
+            <h5>Character Name</h5>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div ng-repeat="player in players">
+            <div class="row-fluid">
+              <div class="span3">{{player.name}}</div>
+              <div class="span1"></div>
+              <div class="span1">
+                <button class="btn btn-danger btn-mini" ng-click="deleteCharacter(player.dbo_id)">Delete</button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 

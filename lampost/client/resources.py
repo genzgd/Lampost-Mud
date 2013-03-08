@@ -15,9 +15,9 @@ def request(func):
     @logged
     def wrapper(self, request):
         content = build_object(decode(request.content.getvalue()))
-        session_headers = request.requestHeaders.getRawHeaders('x-lampost-session')
+        session_headers = request.requestHeaders.getRawHeaders('X-Lampost-Session')
         if not session_headers:
-            error('Request sent without lampost session header')
+            error('Request sent without Lampost session header')
             request.setResponseCode(400)
             return "No Lampost Session Header"
         session_id = session_headers[0]
@@ -66,6 +66,7 @@ class LoginResource(Resource):
 
 class LinkResource(Resource):
     Raw = True
+
     @request
     def render_POST(self, request, session):
         session.attach(request)
@@ -101,7 +102,9 @@ class LspServerResource(Resource):
 
     class ChildResource(Resource):
         IsLeaf = True
+
         def __init__(self, document):
+            Resource.__init__(self)
             self.document = document
 
         def render_GET(self, request):

@@ -1,5 +1,5 @@
-angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote', 'lmDialog',
-    function ($scope, lmRemote, lmDialog) {
+angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote', 'lmDialog', 'lmBus',
+    function ($scope, lmRemote, lmDialog, lmBus) {
 
     $scope.headings = [{id:"account", label:"Account", class:"active"},
         {id:"characters", label:"Characters", class:""}];
@@ -16,8 +16,9 @@ angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote'
     $scope.deleteAccount = function() {
         lmDialog.showPrompt({title:"Confirm Account Deletion", prompt:"Account Password: ", password:true,
                 submit:function(password) {
-                    lmRemote.request("settings/delete_account", {password:password}).then(function() {
+                    lmRemote.request("settings/delete_account", {password:password}).then(function(response) {
                         lmDialog.showOk("Account Deleted", "Your account has been deleted");
+                        lmBus.dispatchMap(response);
                     });
             }
         });
@@ -57,9 +58,37 @@ angular.module('lampost').controller('AccountFormController', ['$scope', '$timeo
 
 }]);
 
-angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmData', 'lmRemote',
-    function($scope, lmData, lmRemote) {
+angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
+    function($scope, lmData, lmRemote, lmBus, lmDialog) {
 
+    $scope.players = [];
+    $scope.errorText = null;
+    $scope.deleteCharacter = function(playerId) {
+        if (playerId == lmData.playerId) {
+            $scope.errorText = "Cannot delete logged in player";
+            return;
+        }
+        lmDialog.showConfirm("Delete Player", "Are you certain you want to delete " + playerId, function() {
+            lmRemote.request("settings/delete_player", {player_id:playerId}, true).then(function(players) {
+                $scope.players = players;
+            }, function(error) {
+                $scope.errorText = error;
+            });
+        });
+    };
+
+    lmBus.register('players_updated', loadCharacters, $scope);
+
+    $scope.addCharacter = function() {
+        lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});
+    };
+
+    loadCharacters();
+    function loadCharacters() {
+        lmRemote.request("settings/get_players", {user_id: lmData.userId}, true).then(function(players) {
+            $scope.players = players;
+        });
+    }
 
 
 }]);

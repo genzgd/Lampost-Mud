@@ -57,7 +57,7 @@ class SessionManager(object):
         if len(user.player_ids) == 1:
             return self._start_player(session, user.player_ids[0])
         if user_name != user.user_name:
-            return self._start_player(session, user_id)
+            return self._start_player(session, user_name)
 
         user_login = {'user_id': user.dbo_id, 'player_ids': user.player_ids}
         return self._respond(user_login=user_login)
@@ -66,7 +66,7 @@ class SessionManager(object):
         player = self.datastore.load_object(Player, player_id)
         if session.user.dbo_id != player.user_id:
             raise StateError("User and player ids do not match")
-        self._start_player(session, player_id)
+        return self._start_player(session, player_id)
 
     def _start_player(self, session, player_id):
         old_session = self.player_session(player_id)
@@ -92,16 +92,17 @@ class SessionManager(object):
 
     def logout(self, session):
         player = session.player
-        player.last_logout = int(time.time())
-        player.age += player.last_logout - player.last_login
-        player.leave_env()
-        player.detach()
-        session.player = None
+        if player:
+            player.last_logout = int(time.time())
+            player.age += player.last_logout - player.last_login
+            player.leave_env()
+            player.detach()
+            session.player = None
+            del self.player_info_map[player.dbo_id]
+            self.save_object(player)
+            self.evict_object(player)
+            del self.player_session_map[player.dbo_id]
         session.user = None
-        del self.player_info_map[player.dbo_id]
-        self.save_object(player)
-        self.evict_object(player)
-        del self.player_session_map[player.dbo_id]
         return self._respond(logout="logout")
 
     def _get_next_id(self):

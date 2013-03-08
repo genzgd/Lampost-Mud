@@ -16,6 +16,8 @@ class SettingsResource(Resource):
         self.putChild('update_account', AccountUpdate())
         self.putChild('delete_account', AccountDelete())
         self.putChild('create_player', PlayerCreate())
+        self.putChild('get_players', GetPlayers())
+        self.putChild('delete_player', PlayerDelete())
 
 
 class SettingsGet(Resource):
@@ -35,7 +37,9 @@ class AccountCreate(Resource):
         account_name = content.account_name.lower()
         if get_index("user_name_index", account_name) or object_exists('player', account_name):
             raise DataError(content.account_name + " is in use.")
-        user_manager.create_user(account_name, content.password, content.email)
+        user = user_manager.create_user(account_name, content.password, content.email)
+        session.connect_user(user)
+        return {'user_id': user.dbo_id}
 
 
 class AccountUpdate(Resource):
@@ -68,14 +72,11 @@ class AccountUpdate(Resource):
 class AccountDelete(Resource):
     @request
     def render_POST(self, content, session):
-        player = session.player
-        user = load_object(User, player.user_id)
-        if not user:
-            raise StateError("User missing")
-        if content.password != user.password:
+        user = session.user
+        if user.player_ids and content.password != user.password:
             raise StateError("Incorrect password.")
         response = self.sm.logout(session)
-        user_manager.delete_player(user, player)
+        user_manager.delete_user(user)
         return response
 
 
@@ -85,7 +86,7 @@ class PlayerCreate(Resource):
     def render_POST(self, content, session):
         user = load_object(User, content.user_id)
         if not user:
-            raise StateError("User {0} does not exist".format([user_id]))
+            raise StateError("User {0} does not exist".format([content.user_id]))
         player_name = content.player_name.lower()
         if player_name != user.user_name and get_index("user_name_index", player_name):
             raise DataError(content.player_name + " is in use.")
@@ -94,6 +95,37 @@ class PlayerCreate(Resource):
         player = self.cls_registry(Player)(player_name)
         load_json(player, content.player_data)
         user_manager.attach_player(user, player)
+
+
+class GetPlayers(Resource):
+    @request
+    def render_POST(self, content, session):
+        user = load_object(User, content.user_id)
+        if not user:
+            raise StateError("User {0} does not exist".format([content.user_id]))
+        return player_list(user.player_ids)
+
+
+class PlayerDelete(Resource):
+    @request
+    def render_POST(self, content, session):
+        user = session.user
+        if not content.player_id in user.player_ids:
+            raise StateError("Player not longer associated with user")
+        player = load_object(Player, content.player_id)
+        user_manager.delete_player(user, player)
+        return player_list(user.player_ids)
+
+
+def player_list(player_ids):
+    players = []
+    for player_id in player_ids:
+        player = load_object(Player, player_id)
+        players.append({'name': player.name, 'dbo_id': player.dbo_id})
+        if not getattr(player, 'session', None):
+            evict_object(player)
+    return players
+
 
 
 

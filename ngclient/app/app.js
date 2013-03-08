@@ -165,7 +165,7 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
             $scope.toolbar = [];
             if (lmData.playerId) {
                 $scope.actionPane = "action";
-                if (lmData.editors) {
+                if (lmData.editors.length) {
                     $scope.toolbar.push({label: 'Editor', click: launchEditor});
                     lmBus.register("start_room_edit", function(roomId) {
                         if (!lmData.editorWindow || lmData.editorWindow.closed) {
@@ -205,8 +205,8 @@ angular.module('lampost').controller('LoginController', ['$scope',  'lmDialog', 
 
 }]);
 
-angular.module('lampost').controller('NewAccountController', ['$scope', '$timeout', 'lmRemote', 'lmDialog',
-    function($scope, $timeout, lmRemote, lmDialog) {
+angular.module('lampost').controller('NewAccountController', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmData',
+    function($scope, $timeout, lmRemote, lmDialog, lmData) {
 
     $scope.accountName = "";
     $scope.password = "";
@@ -226,7 +226,8 @@ angular.module('lampost').controller('NewAccountController', ['$scope', '$timeou
             return;
         }
         lmRemote.request("settings/create_account", {account_name:$scope.accountName,
-              password:$scope.password,  email:$scope.email}).then(function() {
+              password:$scope.password,  email:$scope.email}).then(function(response) {
+                lmData.userId = response.user_id;
                 $scope.dismiss();
                 $timeout(function() {
                     lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});

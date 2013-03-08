@@ -1,11 +1,22 @@
-angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmData', 'lmRemote', 'lmBus', function($scope, lmData, lmRemote, lmBus) {
+angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
+    function($scope, lmData, lmRemote, lmBus, lmDialog) {
 
     $scope.playerName = "";
     $scope.errorText = null;
     $scope.playerData = {};
 
     $scope.tryCancel = function() {
-        $scope.dismiss();
+        if (lmData.playerIds.length == 0) {
+            lmDialog.showConfirm("No Characters", "This account has no characters and will be deleted.  Do you still wish to continue?",
+                function() {
+                    lmRemote.request("settings/delete_account", {}, function(response) {
+                        lmBus.dispatchMap(response);
+                    });
+                    $scope.dismiss();
+                });
+        } else {
+            $scope.dismiss();
+        }
     };
 
     $scope.createCharacter = function() {
@@ -18,10 +29,30 @@ angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmDat
             if (!lmData.playerId) {
                 lmBus.dispatch('server_request', 'login', {player_id:$scope.playerName.toLowerCase()});
             }
-            $scope.dismiss()
-        }).error(function(error) {
-            $scope.errorText = error;
+            lmBus.dispatch('players_updated');
+            $scope.dismiss();
+        }, function(error) {
+            $scope.errorText = error.data;
         });
     }
 
+}]);
+
+angular.module('lampost').controller('SelectCharacterController', ['$scope', 'lmRemote', 'lmBus', 'lmData',
+    function($scope, lmRemote, lmBus, lmData) {
+
+    $scope.players = [];
+
+    $scope.selectCharacter = function(playerId) {
+        lmBus.dispatch('server_request', 'login', {player_id:playerId});
+    };
+
+    lmBus.register('login', $scope.dismiss, $scope);
+
+    loadCharacters();
+    function loadCharacters() {
+        lmRemote.request("settings/get_players", {user_id: lmData.userId}, true).then(function(players) {
+            $scope.players = players;
+        });
+    }
 }]);

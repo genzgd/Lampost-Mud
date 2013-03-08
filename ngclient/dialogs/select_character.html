@@ -1,0 +1,26 @@
+<div class="modal">
+  <div class="modal-header">
+    <h4>Select Character</h4>
+  </div>
+  <div class="modal-body">
+    <div class="row-fluid">
+      <div class="span6">
+        <h5>Character Name</h5>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div ng-repeat="player in players">
+        <div class="row-fluid">
+          <div class="span8">{{player.name}}</div>
+          <div class="span2"></div>
+          <div class="span2">
+            <button class="btn btn-info btn-small" ng-click="selectCharacter(player.dbo_id)">Play</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="modal-footer">
+  </div>
+</div>

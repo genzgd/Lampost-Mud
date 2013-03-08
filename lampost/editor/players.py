@@ -2,9 +2,11 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.model.player import Player
+from lampost.client.user import User
 from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'user_manager',__name__)
+
 
 class PlayerResource(Resource):
     def __init__(self):
@@ -12,28 +14,32 @@ class PlayerResource(Resource):
         self.putChild('list', PlayerList())
         self.putChild('delete', PlayerDelete())
 
+
 class PlayerList(Resource):
     @request
     def render_POST(self, content, session):
         return [player_dto(key.split(':')[1]) for key in fetch_set_keys("players")]
 
+
 @requires('user_manager')
 class PlayerDelete(Resource):
     @request
     def render_POST(self, content, session):
-        user, player = self.user_manager.find_user(content.player_id)
-        if not user or not player:
+        player = load_object(Player, content.player_id)
+        if not player:
             raise DataError("Player no longer exists.")
         if player.imm_level >= perm_level('supreme'):
             raise DataError("Cannot delete root user.")
         if hasattr(player, 'session'):
             raise DataError("Player is logged in.")
-        user_level = self.user_manager.user_imm_level(user)
-        if user_level > 0:
+        user = load_object(User, player.user_id)
+        if self.user_manager.user_imm_level(user) > 0:
             check_perm(session, 'supreme')
         else:
             check_perm(session, 'admin')
         self.user_manager.delete_player(user, player)
+        if not user.player_ids:
+            self.user_manager.delete_user(user)
 
 
 def player_dto(player_id):
