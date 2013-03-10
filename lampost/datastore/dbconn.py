@@ -57,8 +57,8 @@ class RedisStore():
         return dbo
 
     def object_exists(self, obj_type, obj_id):
-        key = '{0}:{1}'.format(obj_type, obj_id)
-        return self.redis.keys(key) == key
+        key = unicode('{0}:{1}'.format(obj_type, obj_id))
+        return key in self.redis.keys(key)
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)

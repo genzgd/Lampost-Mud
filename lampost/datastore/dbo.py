@@ -32,12 +32,12 @@ class RootDBO(object):
 
     @property
     def dbo_key(self):
-        return ":".join([self.dbo_key_type, self.dbo_id])
+        return unicode(":".join([self.dbo_key_type, self.dbo_id]))
 
     @property
     def dbo_set_key(self):
         if self.dbo_set_type:
-            return self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else ""
+            return unicode(self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else "")
 
     @property
     def dbo_debug_key(self):
