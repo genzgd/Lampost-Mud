@@ -2,7 +2,6 @@ from lampost.context.resource import provides, requires
 from lampost.datastore.dbo import RootDBO
 
 @provides('config')
-@requires('lsp', 'encode')
 class Config(RootDBO):
     dbo_key_type = "config"
     dbo_fields = ('title', 'description', 'start_room', 'next_user_id', 'auto_imm_level')

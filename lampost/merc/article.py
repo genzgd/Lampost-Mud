@@ -21,9 +21,11 @@ class ArticleTemplateMerc(ArticleTemplate):
                 defense *= 2
             instance.defense = defense
 
+
 @mud_action(('wear', 'equip', 'wield'), 'wear')
 def wear(source, target, **ignored):
     source.equip_article(target)
+
 
 @mud_action(('remove', 'unequip', 'unwield'), 'wear')
 def remove(source, target, **ignored):

@@ -94,8 +94,8 @@ class Broadcast(object):
         else:
             t_name = t_sub = t_obj = t_poss = t_self = None
 
-        result =  message.format(n=s_name, N=t_name, e=s_sub, E=t_sub,
-            s=s_poss, S=t_poss, m=s_obj, M=t_obj, f=s_self, F=t_self)
+        result = message.format(n=s_name, N=t_name, e=s_sub, E=t_sub,
+                                s=s_poss, S=t_poss, m=s_obj, M=t_obj, f=s_self, F=t_self)
         if result:
             result = "{0}{1}".format(result[0], result[1:])
         return result

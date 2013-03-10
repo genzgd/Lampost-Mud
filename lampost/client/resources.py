@@ -8,28 +8,28 @@ from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires
 from lampost.util.lmutil import build_object, PermError, DataError, StateError
 
-m_requires('sm', 'decode', 'encode', 'log', __name__)
+m_requires('sm', 'json_decode', 'json_encode', 'log', __name__)
+
+
+def find_session_id(request):
+    session_headers = request.requestHeaders.getRawHeaders('X-Lampost-Session')
+    if session_headers:
+        return session_headers[0]
 
 
 def request(func):
     @logged
     def wrapper(self, request):
-        content = build_object(decode(request.content.getvalue()))
-        session_headers = request.requestHeaders.getRawHeaders('X-Lampost-Session')
-        if not session_headers:
-            error('Request sent without Lampost session header')
-            request.setResponseCode(400)
-            return "No Lampost Session Header"
-        session_id = session_headers[0]
-        if not session_id:
-            return encode({'link_status': 'no_session_id'})
-        session = sm.get_session(session_id)
+        content = build_object(json_decode(request.content.getvalue()))
+        session = sm.get_session(find_session_id(request))
         if not session:
-            return encode({'link_status': 'session_not_found'})
+            return json_encode({'link_status': 'session_not_found'})
         try:
-            if getattr(self, 'Raw', False):
-                return func(self, request, session)
             result = func(self, content, session)
+            if result is None:
+                request.setResponseCode(204)
+                return ''
+            return json_encode(result)
         except PermError:
             request.setResponseCode(403)
             return "Permission Denied."
@@ -39,21 +39,17 @@ def request(func):
         except StateError as se:
             request.setResponseCode(400)
             return str(se.message)
-        if result is None:
-            request.setResponseCode(204)
-            return ''
-        return encode(result)
     return wrapper
 
 
 class ConnectResource(Resource):
     @logged
     def render_POST(self, request):
-        content = build_object(decode(request.content.getvalue()))
-        session_id = getattr(content, 'session_id', None)
+        content = build_object(json_decode(request.content.getvalue()))
+        session_id = find_session_id(request)
         if session_id:
-            return encode(sm.reconnect_session(session_id, content.player_id))
-        return encode(sm.start_session())
+            return json_encode(sm.reconnect_session(session_id, content.player_id))
+        return json_encode(sm.start_session())
 
 
 class LoginResource(Resource):
@@ -65,10 +61,11 @@ class LoginResource(Resource):
 
 
 class LinkResource(Resource):
-    Raw = True
-
-    @request
-    def render_POST(self, request, session):
+    @logged
+    def render_POST(self, request):
+        session = sm.get_session(find_session_id(request))
+        if not session:
+            return json_encode({'link_status': 'session_not_found'})
         session.attach(request)
         return NOT_DONE_YET
 

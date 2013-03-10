@@ -22,8 +22,8 @@ class SetupMudContext(object):
         Log("debug")
         cls_registry = ClassRegistry()
         Dispatcher()
-        register('decode', JSONDecoder().decode)
-        register('encode', JSONEncoder().encode)
+        register('json_decode', JSONDecoder().decode)
+        register('json_encode', JSONEncoder().encode)
         perm = Permissions()
 
         datastore = RedisStore(db_host, int(db_port), int(db_num), db_pw)

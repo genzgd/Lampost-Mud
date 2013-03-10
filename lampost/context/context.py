@@ -15,14 +15,14 @@ from lampost.util.lmlog import Log
 
 class Context(object):
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
-                 flavor='merc', config_id='lampost', log_level="warn"):
+                 flavor='lpflavor', config_id='lampost', log_level="info", log_file=None):
         self.properties = {}
         register('context', self)
-        Log(log_level)
+        Log(log_level, log_file)
         ClassRegistry()
         dispatcher = Dispatcher()
-        register('decode', JSONDecoder().decode)
-        register('encode', JSONEncoder().encode)
+        register('json_decode', JSONDecoder().decode)
+        register('json_encode', JSONEncoder().encode)
         datastore = RedisStore(db_host, int(db_port), int(db_num), db_pw)
         Permissions()
         SessionManager()

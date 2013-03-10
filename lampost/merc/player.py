@@ -4,10 +4,11 @@ from lampost.merc.combat import basic_hit
 from lampost.merc.constants import MAX_ITEMS, weight_capacity, MAX_LEVEL, XP_PER_LEVEL
 from lampost.model.player import Player
 
+
 class PlayerMerc(Player):
 
     dbo_fields = Player.dbo_fields + ("level", "health", "max_health", "status", "experience",
-                 "perm_str", "perm_dex", "perm_wis", "perm_int", "perm_con")
+                                      "perm_str", "perm_dex", "perm_wis", "perm_int", "perm_con",)
     defense = 100
     max_health = 20
     health = 20
@@ -15,6 +16,7 @@ class PlayerMerc(Player):
     level = 1
     perm_str = perm_wis = perm_int = perm_con = perm_dex = 13
     mod_str = mod_wis = mod_int = mod_con = mod_dex = 0
+
     weapon = None
 
     def __init__(self, dbo_id):

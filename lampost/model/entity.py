@@ -9,10 +9,15 @@ from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
 
+
 @requires('mud_actions')
 class Entity(BaseItem):
+    dbo_fields = BaseItem.dbo_fields + ("size", "sex")
+
     env = None
     status = 'awake'
+    sex = 'none'
+    size = 'medium'
     living = True
     entry_msg = Broadcast(e="{n} arrives.", silent=True)
     exit_msg = Broadcast(e="{n} leaves.", silent=True)
@@ -260,7 +265,7 @@ class Entity(BaseItem):
                 yield target, target_method
                 return
 
-    def rec_social(self):
+    def rec_social(self, **ignored):
         pass
 
     def rec_examine(self, source, **ignored):
@@ -308,3 +313,19 @@ class Entity(BaseItem):
 
     def update_score(self):
         pass
+
+    def die(self):
+        self.exit_msg = Broadcast(s="{n} expires, permanently.", color=0xE6282D)
+        for article in self.inven.copy():
+            self.drop_inven(article)
+        self.leave_env()
+        self.detach()
+        self.status = 'dead'
+        del self
+
+    def equip_article(self, article):
+        pass
+
+    @property
+    def dead(self):
+        return self.status == 'dead'

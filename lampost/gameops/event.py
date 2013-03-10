@@ -80,7 +80,7 @@ class Dispatcher:
     @logged
     def _start_service(self):
         task.LoopingCall(self._pulse).start(self.pulse_interval)
-        debug("Event heartbeat started", self)
+        info("Event heartbeat started", self)
 
 
 class Registration(object):

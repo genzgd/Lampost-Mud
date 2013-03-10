@@ -6,6 +6,7 @@ from lampost.util.lmutil import cls_name
 
 VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
+
 class Article(BaseItem):
     dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "type")
     rec_wear = True
@@ -51,7 +52,8 @@ class Article(BaseItem):
 
 
 class Container(Article):
-    def __init__(self):
+    def __init__(self, article_id):
+        super(Container, self).__init__(article_id)
         self.contents = []
 
 

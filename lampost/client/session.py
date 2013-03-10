@@ -28,7 +28,7 @@ class SessionManager(object):
                 'player_ids': user.player_ids}
 
     def get_session(self, session_id):
-        return self.session_map.get(session_id)
+        return self.session_map.get(session_id, None)
 
     def player_session(self, player_id):
         return self.player_session_map.get(player_id, None)
@@ -73,7 +73,7 @@ class SessionManager(object):
         if old_session:
             player = old_session.player
             old_session.player = None
-            old_session.user_id = 0
+            old_session.user = None
             old_session.append({'logout': 'other_location'})
             intro_line = '-- Existing Session Logged Out --'
         else:
@@ -138,7 +138,7 @@ class SessionManager(object):
             session.append({"player_list":self.player_info_map})
 
 
-@requires('dispatcher', 'encode')
+@requires('dispatcher', 'json_encode')
 class UserSession(object):
     def __init__(self):
         self.output = {}
@@ -183,7 +183,7 @@ class UserSession(object):
             self.pulse_reg = None
 
     def push(self, output):
-        self.request.write(self.encode(output))
+        self.request.write(self.json_encode(output))
         self.request.finish()
         self.request = None
 

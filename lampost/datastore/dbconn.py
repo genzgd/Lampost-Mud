@@ -7,7 +7,7 @@ from lampost.context.resource import requires, provides, m_requires
 m_requires('log', __name__)
 
 @provides('datastore', True)
-@requires('dispatcher', 'decode', 'encode', 'cls_registry')
+@requires('dispatcher', 'json_decode', 'json_encode', 'cls_registry')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
@@ -25,7 +25,7 @@ class RedisStore():
             dbo.dbo_rev = 1 if not rev else rev + 1
         dbo.before_save()
         key = dbo.dbo_key
-        self.redis.set(key, self.encode(dbo.save_json_obj))
+        self.redis.set(key, self.json_encode(dbo.save_json_obj))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, key)
         self.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
@@ -49,7 +49,7 @@ class RedisStore():
         json_str = self.redis.get(dbo_key)
         if not json_str:
             return None
-        json_obj = self.decode(json_str)
+        json_obj = self.json_decode(json_str)
         dbo = self._load_class(json_obj, base_class)(key)
         if dbo.dbo_key_type:
             self.object_map[dbo.dbo_key] = dbo

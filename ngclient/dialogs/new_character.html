@@ -1,4 +1,4 @@
-<div class="modal">
+<div class="modal medium">
   <div class="modal-header">
     <button type="button" class="close" ng-click="tryCancel()">×</button>
     <h4>Create New Character</h4>
@@ -6,16 +6,27 @@
   <form ng-submit="createCharacter()">
     <div class="modal-body">
       <div class="row-fluid">
-        <div class="span5">
-          <label>Character Name</label>
-          <input class="span11" type="text" ng-model="playerName" ng-change="accountChange()" required/>
+        <div class="span4">
+          <h6>Character Name</h6>
+          <input title="Your player's name. This is the name other players will know you by in the game. No spaces are permitted.  Use common sense. Players with inappropriate names will be deleted."
+              class="span11" type="text" ng-model="playerName" ng-change="errorText = null" required/>
         </div>
-        <div class="span7">
-          <p>
-            <small>Your player's name. This is the name other players will know you by in the game. No spaces are permitted.
-              Use common sense. Players with inappropriate names will be deleted.
-            </small>
-          </p>
+        <div class="span2">
+          <h6>Sex</h6>
+          <select class="input-small" ng-model="playerData.sex">
+            <option value="select">Select...</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+          </select>
+        </div>
+        <div class="span2">
+          <h6>Size</h6>
+          <select class="input-small" ng-model="playerData.size">
+            <option value="select">Select...</option>
+            <option value="medium">Medium</option>
+            <option value="small">Small</option>
+            <option value="large">Large</option>
+          </select>
         </div>
       </div>
       <div class="row-fluid">

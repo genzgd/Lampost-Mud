@@ -61,7 +61,7 @@ class RootDBO(object):
 
     @property
     def json(self):
-        return encode(self._to_json_obj())
+        return json_encode(self._to_json_obj())
 
     def on_loaded(self):
         pass

@@ -1,6 +1,6 @@
-pronouns = {'none':['it', 'it', 'its', 'itself'],
-            'male':['he', 'him', 'his', 'himself'],
-            'female':['she', 'her', 'hers', 'herself']}
+pronouns = {'none': ['it', 'it', 'its', 'itself'],
+            'male': ['he', 'him', 'his', 'himself'],
+            'female': ['she', 'her', 'hers', 'herself']}
 
 
 def l_just(value, size):

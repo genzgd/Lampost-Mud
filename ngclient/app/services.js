@@ -196,7 +196,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
             link();
         } else if (status == "session_not_found") {
             lmBus.dispatch("logout", "invalid_session");
-            sessionId = 0;
+            sessionId = '';
             serverRequest("connect");
         } else if (status == "no_login") {
             lmBus.dispatch("logout", "invalid_session");
@@ -286,7 +286,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
     }
 
     function reconnect() {
-        if (sessionId == 0) {
+        if (!sessionId) {
             serverRequest("connect");
         } else {
             link();

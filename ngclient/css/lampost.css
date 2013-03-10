@@ -123,5 +123,12 @@ div.scrollable {
   opacity: 0.1;
 }
 
+@media (min-width:768px) {
+  body .modal.medium {
+    width: 60%;
+    margin-left:-30%;
+  }
+}
+
 
 

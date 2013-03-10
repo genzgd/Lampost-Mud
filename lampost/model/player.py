@@ -1,11 +1,12 @@
 from lampost.datastore.dbo import RootDBO
-from lampost.model.creature import Creature
+from lampost.model.entity import Entity
 
-class Player(Creature, RootDBO):
+
+class Player(Entity, RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Creature.dbo_fields + ("imm_level", "room_id", "home_room", "age",
-                                        "user_id", "created", "last_login", "last_logout")
+    dbo_fields = Entity.dbo_fields + ("imm_level", "room_id", "home_room", "age",
+                                      "user_id", "created", "last_login", "last_logout")
     imm_level = 0
     user_id = 0
     last_login = 0

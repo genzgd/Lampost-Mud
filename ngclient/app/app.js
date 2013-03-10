@@ -109,8 +109,8 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
 
         lmBus.register("logout", function(reason) {
             if (reason == "other_location") {
-                var player = lmData.player ? lmData.playerName : "Unknown";
-                lmDialog.showOk("Logged Out", player + " logged in from another location.");
+                var playerName = lmData.playerName ? lmData.playerName : "Unknown";
+                lmDialog.showOk("Logged Out", playerName + " logged in from another location.");
             }
             validatePath();
         }, $scope, -500);

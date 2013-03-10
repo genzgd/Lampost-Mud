@@ -49,9 +49,9 @@ class WebServer(Resource):
     #noinspection PyUnresolvedReferences
     @logged
     def _start_service(self):
-        debug("Starting web server", self)
+        info("Starting web server", self)
         self._config_updated()
-        reactor.listenTCP(self.port, Site(self))
+        reactor.listenTCP(self.port, Site(self), interface='127.0.0.1')
         reactor.run()
 
     def _config_updated(self):
