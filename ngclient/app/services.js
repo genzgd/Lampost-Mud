@@ -516,20 +516,18 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
 
     this.showPrompt = function(args) {
         var scope = $rootScope.$new();
-        var submitButton = {label:'Submit', dismiss:true, class:"btn-primary", click:doSubmit};
-        var cancelButton = {label:'Cancel', dismiss:true};
-
-        scope.buttons = [submitButton,  cancelButton];
+        scope.submit = args.submit;
+        scope.promptValue = "";
         scope.title = args.title;
-        var type = args.password ? "password": "text";
-        scope.body = '<label>' + args.prompt + '</label><input id="prompt-dialog-input" type="' + type +
-            '" autofocus"/>';
-        showDialog({templateUrl:'dialogs/alert.html', scope:scope,
-            controller:AlertController, noEscape:true});
+        scope.prompt = args.prompt;
+        scope.inputType = args.password ? "password" : "text";
+        scope.doSubmit = function() {
+            scope.submit.call(scope, scope.promptValue);
+            scope.dismiss();
+        };
+        showDialog({templateUrl:'dialogs/prompt.html', scope:scope,
+            noEscape:true});
 
-        function doSubmit() {
-            args.submit.call(scope, $('#prompt-dialog-input').val());
-        }
     };
 
     function AlertController($scope, dialog) {
@@ -546,6 +544,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             }
         }
     }
+
 
 }]);
 

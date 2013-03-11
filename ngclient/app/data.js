@@ -7,6 +7,12 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     clear();
 
     function clear() {
+
+        if (self.editorWindow && !self.editorWindow.closed) {
+            self.editorWindow.close();
+            delete self.editorWindow;
+        }
+
         self.display = [];
         self.userId = 0;
         self.playerIds = [];
@@ -28,7 +34,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
             self.display.push(line);
         }
         if (self.display.length > maxLines) {
-            self.display.splice(0, maxLines - self.display.length);
+            self.display.splice(0, self.display.length - maxLines);
         }
         lmBus.dispatch("display_update", display);
     }

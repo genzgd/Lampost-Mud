@@ -9,7 +9,7 @@ m_requires("log", __name__)
 
 @provides('dispatcher', True)
 class Dispatcher:
-    def __init__(self, max_pulse_queue = 100, pulse_interval = .25):
+    def __init__(self, max_pulse_queue=1000, pulse_interval=.25):
         self._registrations = defaultdict(set)
         self._pulse_map = defaultdict(set)
         self._owner_map = defaultdict(set)
@@ -39,8 +39,8 @@ class Dispatcher:
 
     def register_p(self, callback, pulses=0, seconds=0, randomize=0):
         if seconds:
-            pulses = int (seconds * self.pulses_per_second)
-            randomize = int (randomize * self.pulses_per_second)
+            pulses = int(seconds * self.pulses_per_second)
+            randomize = int(randomize * self.pulses_per_second)
         if pulses >= self.max_pulse_queue:
             raise ValueError("Pulse Frequency Greater Than Pulse Queue Size")
         if randomize:

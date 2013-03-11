@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from os import urandom
 from base64 import b64encode
 
-from lampost.context.resource import requires, provides
+from lampost.context.resource import m_requires, requires, provides
 from lampost.model.player import Player
 from lampost.client.user import User
 
@@ -13,6 +13,7 @@ LINK_DEAD_INTERVAL = timedelta(seconds=15)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
 LINK_IDLE_REFRESH = timedelta(seconds=45)
 
+m_requires('log', __name__)
 
 @provides('sm')
 @requires('dispatcher', 'datastore', 'nature', 'user_manager')
@@ -22,6 +23,7 @@ class SessionManager(object):
         self.player_info_map = {}
         self.player_session_map = {}
         self.register_p(self._refresh_link_status, seconds=5)
+        self.register_p(self._push_player_list, seconds=30)
 
     def _login_result(self, user, player):
         return {'name': player.name, 'privilege': player.imm_level, 'editors': self.nature.editors(player), 'user_id': user.dbo_id,
@@ -67,6 +69,11 @@ class SessionManager(object):
         if session.user.dbo_id != player.user_id:
             raise StateError("User and player ids do not match")
         return self._start_player(session, player_id)
+
+    def push_event(self, event_type, data):
+        for session in self.session_map.values():
+            if event_type in session.push_events:
+                session.append({event_type: data})
 
     def _start_player(self, session, player_id):
         old_session = self.player_session(player_id)
@@ -121,21 +128,19 @@ class SessionManager(object):
                     del self.session_map[session_id]
                     continue
             elif session.request:
-                if now - session.attach_time > LINK_IDLE_REFRESH:
-                    session.append({"keep_alive":True})
+                if now - session.attach_time >= LINK_IDLE_REFRESH:
+                    session.append({"keep_alive": True})
             elif now - session.attach_time > LINK_DEAD_INTERVAL:
                 session.link_failed("Timeout")
             if session.player:
                 self.player_info_map[session.player.dbo_id] = session.player_info(now)
-        self._display_players()
+
+    def _push_player_list(self):
+        self.push_event('player_list', self.player_info_map)
 
     def _respond(self, **response):
         response['player_list'] = self.player_info_map
         return response
-
-    def _display_players(self):
-        for session in self.session_map.itervalues():
-            session.append({"player_list":self.player_info_map})
 
 
 @requires('dispatcher', 'json_encode')
@@ -148,16 +153,18 @@ class UserSession(object):
         self.request = None
         self.pulse_reg = None
         self.user = None
+        self.push_events = {'player_list'}
 
     def attach(self, request):
         if self.request:
-            self.push({'link_status':'cancel'})
+            self.push({'link_status': 'cancel'})
         self.attach_time = datetime.now()
         self.ld_time = None
         self.request = request
         self.request.notifyFinish().addErrback(self.link_failed)
 
     def link_failed(self, error):
+        warn("Link failed: " + repr(error), self)
         self.ld_time = datetime.now()
         self.request = None
 
@@ -205,21 +212,15 @@ class UserSession(object):
             if idle < 60:
                 status = "Active"
             else:
-                status =  "Idle: " + str(idle / 60) + "m"
-        return {'status': status, 'name':self.player.name, 'loc':self.player.env.title}
+                status = "Idle: " + str(idle / 60) + "m"
+        return {'status': status, 'name': self.player.name, 'loc': self.player.env.title}
 
     def display_line(self, display_line):
         display = self.output.get('display', {'lines':[]})
         display['lines'].append(display_line)
-        self.append({'display':display})
+        self.append({'display': display})
 
     @property
     def privilege(self):
         return self.player.imm_level if self.player else 0
-
-
-
-
-
-
 

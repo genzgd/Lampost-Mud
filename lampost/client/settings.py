@@ -86,7 +86,7 @@ class PlayerCreate(Resource):
     def render_POST(self, content, session):
         user = load_object(User, content.user_id)
         if not user:
-            raise StateError("User {0} does not exist".format([content.user_id]))
+            raise DataError("User {0} does not exist".format([content.user_id]))
         player_name = content.player_name.lower()
         if player_name != user.user_name and get_index("user_name_index", player_name):
             raise DataError(content.player_name + " is in use.")
@@ -110,6 +110,8 @@ class PlayerDelete(Resource):
     @request
     def render_POST(self, content, session):
         user = session.user
+        if content.password != user.password:
+            raise DataError("Incorrect account password")
         if not content.player_id in user.player_ids:
             raise StateError("Player not longer associated with user")
         player = load_object(Player, content.player_id)

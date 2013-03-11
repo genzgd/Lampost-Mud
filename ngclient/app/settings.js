@@ -68,12 +68,14 @@ angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmDa
             $scope.errorText = "Cannot delete logged in player";
             return;
         }
-        lmDialog.showConfirm("Delete Player", "Are you certain you want to delete " + playerId, function() {
-            lmRemote.request("settings/delete_player", {player_id:playerId}, true).then(function(players) {
-                $scope.players = players;
-            }, function(error) {
-                $scope.errorText = error;
-            });
+        lmDialog.showPrompt({title:"Delete Player", prompt:"Enter account password to delete player " + playerId + ":", password:true,
+            submit: function(password) {
+                lmRemote.request("settings/delete_player", {player_id:playerId, password:password}, true).then(function(players) {
+                    $scope.players = players;
+                }, function(error) {
+                    $scope.errorText = error.data;
+                });
+            }
         });
     };
 

@@ -133,10 +133,6 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
                 lmDialog.removeAll();
                 lmDialog.showOk("Session Lost", "Your session has been disconnected.");
             }
-            if (lmData.editorWindow && !lmData.editorWindow.closed) {
-                lmData.editorWindow.close();
-                delete lmData.editorWindow;
-            }
             update();
         }, $scope);
 
@@ -230,7 +226,7 @@ angular.module('lampost').controller('NewAccountController', ['$scope', '$timeou
                 lmData.userId = response.user_id;
                 $scope.dismiss();
                 $timeout(function() {
-                    lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});
+                    lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController", noEscape:true});
                 })
             }, function(error) {
                 if (error.status == 409) {
