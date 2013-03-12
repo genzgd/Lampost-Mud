@@ -145,58 +145,42 @@ class SessionManager(object):
 
 @requires('dispatcher', 'json_encode')
 class UserSession(object):
+
     def __init__(self):
-        self.output = {}
-        self.player = None
+        self._output = {}
+        self._pulse_reg = None
+
         self.attach_time = datetime.now()
-        self.ld_time = None
         self.request = None
-        self.pulse_reg = None
+        self.player = None
+        self.ld_time = None
         self.user = None
         self.push_events = {'player_list'}
 
     def attach(self, request):
         if self.request:
-            self.push({'link_status': 'cancel'})
+            self._push({'link_status': 'cancel'})
         self.attach_time = datetime.now()
         self.ld_time = None
         self.request = request
-        self.request.notifyFinish().addErrback(self.link_failed)
-
-    def link_failed(self, error):
-        warn("Link failed: " + repr(error), self)
-        self.ld_time = datetime.now()
-        self.request = None
+        self.request.notifyFinish().addErrback(self._link_failed)
 
     def append(self, data):
-        if not self.pulse_reg:
-            self.pulse_reg = self.register("pulse", self.push_output)
-        self.output.update(data)
+        if not self._pulse_reg:
+            self._pulse_reg = self.register("pulse", self._push_output)
+        self._output.update(data)
 
     def pull_output(self):
-        output = self.output
-        if self.pulse_reg:
-            self.unregister(self.pulse_reg)
-            self.pulse_reg = None
-        self.output = {}
+        output = self._output
+        if self._pulse_reg:
+            self.unregister(self._pulse_reg)
+            self._pulse_reg = None
+        self._output = {}
         return output
-
-    def push_output(self):
-        if self.request:
-            self.output['link_status'] = "good"
-            self.push(self.output)
-            self.output = {}
-            self.unregister(self.pulse_reg)
-            self.pulse_reg = None
-
-    def push(self, output):
-        self.request.write(self.json_encode(output))
-        self.request.finish()
-        self.request = None
 
     def connect_user(self, user):
         self.user = user
-        self.activity_time = datetime.now()
+        self._activity_time = datetime.now()
 
     def connect_player(self, player):
         self.player = player
@@ -216,9 +200,29 @@ class UserSession(object):
         return {'status': status, 'name': self.player.name, 'loc': self.player.env.title}
 
     def display_line(self, display_line):
-        display = self.output.get('display', {'lines':[]})
+        display = self._output.get('display', {'lines':[]})
         display['lines'].append(display_line)
         self.append({'display': display})
+
+    def _push_output(self):
+        if self.request:
+            self._output['link_status'] = "good"
+            self._push(self._output)
+            self._output = {}
+            self.unregister(self._pulse_reg)
+            self._pulse_reg = None
+
+    def _push(self, output):
+        self.request.write(self.json_encode(output))
+        self.request.finish()
+        self.request = None
+
+    def _link_failed(self, error):
+        warn("Link failed: " + repr(error), self)
+        self.ld_time = datetime.now()
+        self.request = None
+
+
 
     @property
     def privilege(self):

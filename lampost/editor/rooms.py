@@ -62,7 +62,7 @@ class RoomCreate(Resource):
         area.rooms.append(room)
         area.inc_next_room(room_dto['id'])
         save_object(area)
-        return {'next_room_id': area.next_room_id, 'room': room_stu_dto(room)}
+        return {'next_room_id': area.next_room_id, 'room': room_stub_dto(room)}
 
 
 class RoomDelete(Resource):

@@ -116,7 +116,6 @@ class Entity(BaseItem):
             else:
                 self.target_key_map[target_key] = [target]
 
-
     def gen_ids(self, target_id):
         prefix_count = len(target_id) - 1
         target = target_id[prefix_count],
@@ -147,7 +146,6 @@ class Entity(BaseItem):
                 key_data.pop(target_loc)
                 self.renumber_keys(target_key, key_data)
 
-
     def renumber_keys(self, target_key, key_data):
         for ix in range(len(key_data) + 1):
             number_key = target_key + (unicode(ix + 1),)
@@ -156,7 +154,6 @@ class Entity(BaseItem):
             return
         for ix, target in enumerate(key_data):
             self.target_key_map[target_key + (unicode(ix + 1),)] = [target]
-
 
     def add_actions(self, actions):
         for action in actions:
@@ -216,8 +213,7 @@ class Entity(BaseItem):
             return matches, None
         action, verb, args, target, target_method, obj, obj_method = matches[0]
         return matches, action(source=self, target=target, verb=verb, args=args,
-            target_method=target_method, command=command, obj=obj, obj_method=obj_method)
-
+                               target_method=target_method, command=command, obj=obj, obj_method=obj_method)
 
     def match_actions(self, words):
         for verb_size in range(1, len(words) + 1):
@@ -277,7 +273,6 @@ class Entity(BaseItem):
         else:
             source.display_line("Nothing")
 
-
     def change_env(self, new_env):
         self.leave_env()
         self.enter_env(new_env)
@@ -292,7 +287,7 @@ class Entity(BaseItem):
     def enter_env(self, new_env):
         self.env = new_env
         self.room_id = new_env.room_id
-        self.add_actions(self.env.elements)
+        self.add_actions(new_env.elements)
         self.add_target(new_env)
         self.add_targets(new_env.elements, new_env)
         self.env.rec_entity_enters(self)
