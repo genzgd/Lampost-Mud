@@ -1,5 +1,3 @@
-__author__ = 'Geoff'
-
 from lampost.context.resource import provides
 
 @provides('cls_registry')

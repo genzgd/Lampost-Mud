@@ -1,18 +1,23 @@
-from lampost.context.resource import requires, m_requires
+from lampost.context.resource import requires, m_requires, get_resource
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset
 from lampost.model.item import BaseItem
 from lampost.model.article import ArticleReset
+from lampost.gameops.display import *
+
 
 m_requires('log', __name__)
 
+
 class Exit(RootDBO):
-    dbo_fields = "dir_name",
+    dbo_fields = "dir_name", "desc", "aliases"
+    desc = None
 
     def __init__(self, direction=None, destination=None):
         self.direction = direction
         self.destination = destination
+        self.aliases = []
 
     @property
     def verbs(self):
@@ -30,7 +35,7 @@ class Exit(RootDBO):
     def dir_name(self, value):
         self.direction = Direction.ref_map[value]
 
-    def rec_glance(self, source, **kwargs):
+    def rec_glance(self, source, **ignored):
         if source.build_mode:
             source.display_line("{0}   {1}".format(self.direction.desc, self.destination.dbo_id))
         else:
@@ -43,16 +48,11 @@ class Exit(RootDBO):
 
 @requires('mud')
 class Room(RootDBO):
-    ROOM_COLOR = 0xAD419A
-    ROOM_SEP = "-=" * 30
-    EXIT_COLOR = 0x808000
-    ITEM_COLOR = 0x7092BE
 
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev"
     dbo_collections = DBORef("exits", Exit), DBORef("extras", BaseItem), DBORef("mobile_resets", MobileReset), \
         DBORef("article_resets", ArticleReset)
-
     dbo_rev = 0
 
     def __init__(self, dbo_id, title=None, desc=None):
@@ -74,7 +74,7 @@ class Room(RootDBO):
         return self.room_id.split(":")[0]
 
     def rec_glance(self, source, **ignored):
-        return source.display_line(self.title, Room.ROOM_COLOR)
+        return source.display_line(self.title, ROOM_COLOR)
 
     def rec_entity_enters(self, source):
         self.contents.append(source)
@@ -108,20 +108,20 @@ class Room(RootDBO):
 
     def rec_examine(self, source, **ignored):
         if source.build_mode:
-            source.display_line("{0} [{1}]".format(self.title, self.dbo_id), 0x6b306b)
+            source.display_line("{0} [{1}]".format(self.title, self.dbo_id), ROOM_TITLE_COLOR)
         else:
-            source.display_line(self.title)
-        source.display_line(Room.ROOM_SEP, Room.ROOM_COLOR)
-        source.display_line(self.desc, Room.ROOM_COLOR)
-        source.display_line(Room.ROOM_SEP, Room.ROOM_COLOR)
+            source.display_line(self.title, ROOM_TITLE_COLOR)
+        source.display_line('<hr/>', ROOM_COLOR)
+        source.display_line(self.desc, ROOM_COLOR)
+        source.display_line('<hr/>', ROOM_COLOR)
         if self.exits:
             if source.build_mode:
                 for my_exit in self.exits:
-                    source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), Room.EXIT_COLOR)
+                    source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), EXIT_COLOR)
             else:
-                source.display_line("Obvious exits are: " + self.short_exits(),  Room.EXIT_COLOR)
+                source.display_line("Obvious exits are: " + self.short_exits(),  EXIT_COLOR)
         else:
-            source.display_line("No obvious exits", Room.EXIT_COLOR)
+            source.display_line("No obvious exits", EXIT_COLOR)
 
         for obj in self.contents:
             if obj != source:

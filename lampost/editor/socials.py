@@ -8,6 +8,7 @@ from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
+
 class SocialsResource(Resource):
     def __init__(self):
         Resource.__init__(self)
@@ -19,16 +20,19 @@ class SocialsResource(Resource):
         self.putChild('preview', SocialPreview())
         self.putChild('copy', SocialCopy())
 
+
 class SocialList(Resource):
     @request
     def render_POST(self, content, session):
         check_perm(session, 'admin')
         return list(fetch_set_keys('socials'))
 
+
 class SocialGet(Resource):
     @request
     def render_POST(self, content, session):
         return load_object(Social, content.social_id).json_obj
+
 
 @requires('cls_registry', 'social_registry')
 class SocialUpdate(Resource):
@@ -40,6 +44,7 @@ class SocialUpdate(Resource):
         save_object(social)
         self.social_registry.insert(social)
 
+
 @requires('social_registry')
 class SocialDelete(Resource):
     @request
@@ -49,12 +54,14 @@ class SocialDelete(Resource):
         delete_object(social)
         self.social_registry.delete(content.social_id)
 
+
 @requires('mud_actions')
 class SocialValid(Resource):
     @request
     def render_POST(self, content, session):
         if self.mud_actions.verb_list((content.social_id,)):
             raise DataError("Verb already in use")
+
 
 class SocialPreview(Resource):
     @request
@@ -73,6 +80,7 @@ class SocialPreview(Resource):
         for broadcast_type in broadcast_types:
             preview[broadcast_type['id']] = broadcast.substitute(broadcast_type['id'])
         return preview
+
 
 @requires('social_registry', 'mud_actions')
 class SocialCopy(Resource):

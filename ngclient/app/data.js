@@ -22,15 +22,16 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.history = [];
         self.historyIx = 0;
         self.editorWindow = null;
+        self.colors = {};
     }
 
     function updateDisplay(display) {
         var lines = display.lines;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
-            var color = parseInt(line.color).toString(16).toUpperCase();
-            color = '#' + padding.substring(0, 6-color.length) + color;
-            line.style = {color: color};
+            if (self.colors[line.color]) {
+                line.style = {color: self.colors[line.color]};
+            }
             self.display.push(line);
         }
         if (self.display.length > maxLines) {
@@ -44,6 +45,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.userId = data.user_id;
         self.playerIds = data.player_ids;
         self.playerName = data.name;
+        translateColors(data.colors);
         self.playerId = self.playerName.toLocaleLowerCase();
         localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
     }, null, -100);
@@ -59,6 +61,13 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
     lmBus.register("display", updateDisplay, null, -100);
     lmBus.register("logout", clear, null, -100);
+
+    function translateColors(colors) {
+        angular.forEach(colors,  function(colorData, colorName) {
+            var strValue =  parseInt(colorData.value).toString(16).toUpperCase();
+            self.colors[colorName] = '#' + padding.substring(0, 6 - strValue.length) + strValue;
+        });
+    }
 
 }]);
 

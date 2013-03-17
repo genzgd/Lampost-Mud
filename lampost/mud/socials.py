@@ -2,6 +2,7 @@ from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import provides, requires
 from lampost.datastore.dbo import RootDBO
 
+
 @provides('social_registry')
 @requires('datastore', 'mud_actions')
 class SocialRegistry(object):

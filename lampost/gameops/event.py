@@ -7,6 +7,7 @@ from lampost.util.lmlog import logged
 
 m_requires("log", __name__)
 
+
 @provides('dispatcher', True)
 class Dispatcher:
     def __init__(self, max_pulse_queue=1000, pulse_interval=.25):
@@ -78,7 +79,7 @@ class Dispatcher:
         self._pulse_map[next_loc].add(event)
 
     @logged
-    def _start_service(self):
+    def _post_init(self):
         task.LoopingCall(self._pulse).start(self.pulse_interval)
         info("Event heartbeat started", self)
 

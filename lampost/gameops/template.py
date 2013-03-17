@@ -2,8 +2,10 @@ from lampost.context.resource import m_requires
 
 m_requires('cls_registry', __name__)
 
+
 class TemplateException(Exception):
     pass
+
 
 class Template(object):
     dbo_fields = ("dbo_rev", "instance_class", "world_max")

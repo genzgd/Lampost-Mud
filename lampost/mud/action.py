@@ -8,11 +8,13 @@ imm_actions = []
 
 mud_actions.append(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
 
+
 def mud_action(verbs, msg_class=None):
     def dec_wrapper(func):
         mud_actions.append(func)
         return make_action(func, verbs, msg_class)
     return dec_wrapper
+
 
 def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
     def dec_wrapper(func):
@@ -20,6 +22,7 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
         func.imm_level = imm_level
         return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
+
 
 @provides('mud_actions')
 class MudActions(object):
@@ -44,7 +47,7 @@ class MudActions(object):
 
 
 @mud_action('help')
-def help(source, args, **ignored):
+def help_action(source, args, **ignored):
     if not args:
         source.display_line('Available actions:')
         verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in mud_actions]
@@ -56,6 +59,7 @@ def help(source, args, **ignored):
         raise ActionError("Multiple matching commands")
     action = iter(action_set).next()
     return getattr(action, "help_text", "No help available.")
+
 
 @mud_action('score')
 def score(source, **ignored):

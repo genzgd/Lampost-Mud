@@ -11,10 +11,8 @@ equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms'
 equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
 
-def init():
+def _post_init():
     cls_registry.set_class(Player, PlayerLP)
-
-
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
 

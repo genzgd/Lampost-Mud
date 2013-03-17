@@ -11,7 +11,6 @@ from twisted.web.resource import Resource
 from twisted.web.server import Site
 from twisted.web.static import File
 from twisted.web.util import Redirect
-from lampost.util.lmutil import javascript_safe
 
 FILE_WEB_CLIENT = "ngclient"
 
@@ -27,8 +26,8 @@ URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 m_requires("log", __name__)
 
+
 @provides('web_server')
-@requires('config', 'dispatcher')
 class WebServer(Resource):
     def __init__(self, port):
         Resource.__init__(self)
@@ -42,22 +41,19 @@ class WebServer(Resource):
         self.putChild(URL_EDITOR, EditorResource())
         self.putChild(URL_SETTINGS, SettingsResource())
 
-        self.lsp_server = LspServerResource()
-        self.putChild(URL_LSP, self.lsp_server)
-        self.dispatcher.register('config_updated', self._config_updated)
+        self._lsp_server = LspServerResource()
+        self.putChild(URL_LSP, self._lsp_server)
+
+    def add_lsp_js(self, path, content):
+        self._lsp_server.add_js(path, content)
 
     #noinspection PyUnresolvedReferences
     @logged
-    def _start_service(self):
+    def start_service(self, interface):
         info("Starting web server", self)
-        self._config_updated()
-        reactor.listenTCP(self.port, Site(self), interface='127.0.0.1')
+        reactor.listenTCP(self.port, Site(self), interface=interface)
         reactor.run()
 
-    def _config_updated(self):
-        title = javascript_safe(self.config.title)
-        description = javascript_safe(self.config.description)
-        self.lsp_server.add_js("config.js", "var lampost_config = {{title:'{0}', description:'{1}'}};".format(title, description))
 
 
 

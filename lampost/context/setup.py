@@ -35,6 +35,8 @@ class SetupMudContext(object):
         room_id = "{0}:0".format(start_area)
         config = Config(config_id)
         config.start_room = room_id
+        config.default_colors['shout_channel'] = 0x109010
+        config.default_colors['imm_channel'] = 0xed1c24
         datastore.save_object(config)
 
         MudNature(flavor)

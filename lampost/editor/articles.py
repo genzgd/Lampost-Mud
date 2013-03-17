@@ -6,6 +6,7 @@ from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
+
 class ArticleResource(Resource):
     def __init__(self):
         Resource.__init__(self)
@@ -15,11 +16,13 @@ class ArticleResource(Resource):
         self.putChild('get', ArticleGet())
         self.putChild('update', ArticleUpdate())
 
+
 class ArticleList(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
         return [article_template.dto_value for article_template in area.articles]
+
 
 class ArticleGet(Resource):
     @request
@@ -29,12 +32,14 @@ class ArticleGet(Resource):
             article.desc = article.title
         return article.dto_value
 
+
 class ArticleUpdate(Resource):
     @request
     def render_POST(self, content, session):
         area, article = get_article(content.object_id, session)
         update_object(article, content.model)
         return article.dto_value
+
 
 @requires('cls_registry')
 class ArticleCreate(Resource):
@@ -51,6 +56,7 @@ class ArticleCreate(Resource):
         area.articles.append(template)
         save_object(area)
         return template.dto_value
+
 
 class ArticleDelete(Resource):
     @request

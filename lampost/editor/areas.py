@@ -3,13 +3,8 @@ from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.model.area import Area
 
-__author__ = 'Geoff'
-
 m_requires('datastore', 'mud', 'perm', __name__)
 
-def area_dto(area, can_write=True):
-    return {'id': area.dbo_id, 'dbo_rev': area.dbo_rev, 'name': area.name, 'owner_id': area.owner_id, 'room': len(area.rooms),
-            'article':len(area.articles), 'mobile': len(area.mobiles), 'next_room_id': area.next_room_id, 'can_write': can_write}
 
 class AreaResource(Resource):
     def __init__(self):
@@ -19,10 +14,12 @@ class AreaResource(Resource):
         self.putChild('delete', AreaDelete())
         self.putChild('update', AreaUpdate())
 
+
 class AreaList(Resource):
     @request
     def render_POST(self, content, session):
         return [area_dto(area, has_perm(session.player, area)) for area in mud.area_map.itervalues()]
+
 
 @requires('mud', 'cls_registry')
 class AreaNew(Resource):
@@ -65,6 +62,11 @@ class AreaUpdate(Resource):
         area.next_room_id = area_info['next_room_id']
         datastore.save_object(area, True)
         return area_dto(area)
+
+def area_dto(area, can_write=True):
+    return {'id': area.dbo_id, 'dbo_rev': area.dbo_rev, 'name': area.name, 'owner_id': area.owner_id, 'room': len(area.rooms),
+            'article':len(area.articles), 'mobile': len(area.mobiles), 'next_room_id': area.next_room_id, 'can_write': can_write}
+
 
 
 

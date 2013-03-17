@@ -37,7 +37,7 @@ class Player(Entity, RootDBO):
         if message.source != self:
             self.session.display_line({'text': message.text, 'color': message.color})
 
-    def display_line(self, text, color=0x000000):
+    def display_line(self, text, color='default'):
         if text:
             self.session.display_line({'text': text, 'color': color})
 

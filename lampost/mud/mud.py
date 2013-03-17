@@ -12,25 +12,22 @@ from lampost.model.area import Area
 
 m_requires('log', 'perm',  __name__)
 
-article_load_types = ['equip', 'default']
 
-@requires('sm', 'datastore', 'context', 'config')
+@requires('sm', 'datastore', 'context')
 @provides('nature')
 class MudNature():
 
     def __init__(self, flavor):
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
-        flavor_module.init()
         self.mud = Mud()
         self.mud_actions = MudActions()
         self.social_registry = SocialRegistry()
 
-    def _start_service(self):
+    def _post_init(self):
         debug("Loading mud", self)
-        self.shout_channel = Channel("shout", 0x109010)
-        self.imm_channel = Channel("imm", 0xed1c24)
-        self.pulse_interval = .25
-        self.context.set('article_load_types', article_load_types)
+        self.shout_channel = Channel("shout")
+        self.imm_channel = Channel("imm")
+        self.context.set('article_load_types', ['equip', 'default'])
         self.context.set('broadcast_types', broadcast_types)
         self.context.set('broadcast_tokens', broadcast_tokens)
         self.mud_actions.add_action(self.shout_channel)
@@ -51,8 +48,6 @@ class MudNature():
 
     def baptise(self, player):
         player.baptise(set())
-        if player.imm_level < self.config.auto_imm_level:
-            player.imm_level = self.config.auto_imm_level
         if player.imm_level:
             self.baptise_imm(player)
         player.register_channel(self.shout_channel)
@@ -76,11 +71,13 @@ class MudNature():
             else:
                 player.diminish_soul(cmd)
 
-@requires('datastore', 'dispatcher', 'config')
+
+@requires('datastore', 'dispatcher', 'config_manager')
 @provides('mud')
 class Mud():
     def __init__(self):
         self.area_map = {}
+
 
     def load_areas(self):
         area_keys = self.datastore.fetch_set_keys("areas")
@@ -129,5 +126,5 @@ class Mud():
         if getattr(player, "room_id", None):
             room = self.find_room(player.room_id)
         if not room:
-            room = self.find_room(self.config.start_room)
+            room = self.find_room(self.config_manager.start_room)
         player.change_env(room)

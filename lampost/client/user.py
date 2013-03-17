@@ -1,3 +1,5 @@
+import time
+
 from lampost.context.resource import requires, provides, m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.model.player import Player
@@ -7,7 +9,7 @@ m_requires('log', 'datastore', __name__)
 
 class User(RootDBO):
     dbo_key_type = "user"
-    dbo_fields =  "user_name", "email", "password", "player_ids", "toolbar"
+    dbo_fields = "user_name", "email", "password", "player_ids", "toolbar"
     dbo_set_key = "users"
     dbo_indexes = "user_name"
 
@@ -19,9 +21,10 @@ class User(RootDBO):
         self.dbo_id = unicode(dbo_id)
         self.player_ids = []
         self.toolbar = []
+        self.colors = {}
 
 
-@requires('config')
+@requires('config_manager', 'nature')
 @provides('user_manager')
 class UserManager(object):
     def validate_user(self, user_name, password):
@@ -57,17 +60,14 @@ class UserManager(object):
 
     def attach_player(self, user, player):
         user.player_ids.append(player.dbo_id)
+        self.config_manager.config_player(player)
         player.user_id = user.dbo_id
         save_object(player)
         self.save_user(user)
         return user
 
     def create_user(self, user_name, password, email=""):
-        user_id = str(self.config.next_user_id)
-        self.config.next_user_id += 1
-        while object_exists('user', self.config.next_user_id):
-            self.config.next_user_id += 1
-        save_object(self.config)
+        user_id = self.config_manager.next_user_id()
         user = User(user_id)
         user.user_name = unicode(user_name) if user_name else player.name
         user.password = unicode(password)
@@ -104,6 +104,28 @@ class UserManager(object):
             imm_levels.append(player.imm_level)
             unload_player(player)
         return max(imm_levels)
+
+    def client_data(self, user, player=None):
+        result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'colors': user.colors}
+        if player:
+            result.update({'name': player.name, 'privilege': player.imm_level, 'editors':self.nature.editors(player)})
+        return result
+
+    def login_player(self, player_id):
+        player = load_object(Player, player_id)
+        self.nature.baptise(player)
+        player.last_login = int(time.time())
+        if not player.created:
+            player.created = player.last_login
+        player.start()
+        return player
+
+    def logout_player(self, player):
+        player.age += player.last_logout - player.last_login
+        player.leave_env()
+        player.detach()
+        save_object(player)
+        evict_object(player)
 
 
 def unload_player(player):

@@ -6,6 +6,7 @@ from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
+
 class MobileResource(Resource):
     def __init__(self):
         Resource.__init__(self)
@@ -15,11 +16,13 @@ class MobileResource(Resource):
         self.putChild('get', MobileGet())
         self.putChild('update', MobileUpdate())
 
+
 class MobileList(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
         return [mobile_template.dto_value for mobile_template in area.mobiles]
+
 
 class MobileGet(Resource):
     @request
@@ -29,12 +32,14 @@ class MobileGet(Resource):
             mobile.desc = mobile.title
         return mobile.dto_value
 
+
 class MobileUpdate(Resource):
     @request
     def render_POST(self, content, session):
         area, mobile = get_mobile(content.object_id)
         update_object(mobile, content.model)
         return mobile.dto_value
+
 
 @requires('cls_registry')
 class MobileCreate(Resource):
@@ -51,6 +56,7 @@ class MobileCreate(Resource):
         area.mobiles.append(template)
         save_object(area)
         return template.dto_value
+
 
 class MobileDelete(Resource):
     @request

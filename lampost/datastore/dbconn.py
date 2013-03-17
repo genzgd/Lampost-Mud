@@ -6,6 +6,7 @@ from lampost.context.resource import requires, provides, m_requires
 
 m_requires('log', __name__)
 
+
 @provides('datastore', True)
 @requires('dispatcher', 'json_decode', 'json_encode', 'cls_registry')
 class RedisStore():

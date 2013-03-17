@@ -48,7 +48,7 @@ class BroadcastMap(object):
 
 
 class Broadcast(object):
-    def __init__(self, broadcast_map=None, source=None, target=None, color=0x000000, silent=False, **kwargs):
+    def __init__(self, broadcast_map=None, source=None, target=None, color='default', silent=False, **kwargs):
         if broadcast_map:
             self.broadcast_map = broadcast_map
         else:
@@ -102,7 +102,7 @@ class Broadcast(object):
 
 
 class SingleBroadcast():
-    def __init__(self, all_msg, color=0x00000):
+    def __init__(self, all_msg, color='default'):
         self.all_msg = all_msg
         self.color = color
 

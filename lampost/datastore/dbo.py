@@ -3,12 +3,14 @@ from lampost.util.lmutil import cls_name
 
 m_requires('datastore', 'encode', 'cls_registry', __name__)
 
+
 class RootDBOMeta(type):
     def __new__(mcs, class_name, bases, new_attrs):
         cls = type.__new__(mcs, class_name, bases, new_attrs)
         if "RootDBO" in [base.__name__ for base in bases]:
             cls.dbo_base_class = cls
         return cls
+
 
 class DBODict(dict):
     def append(self, dbo):
@@ -19,6 +21,7 @@ class DBODict(dict):
 
     def remove(self, dbo):
         del self[dbo.dbo_id]
+
 
 class RootDBO(object):
     __metaclass__ = RootDBOMeta
@@ -136,6 +139,7 @@ class RootDBO(object):
             if ref:
                 json_obj[dbo_ref.field_name] = ref.dbo_id
         return json_obj
+
 
 class DBORef():
     def __init__(self, field_name, base_class, key_type=None):

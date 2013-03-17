@@ -1,18 +1,17 @@
+from lampost.gameops.display import *
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.mud.action import mud_action
 
 m_requires('sm', __name__)
 
-TELL_COLOR = 0x00a2e8
-TELL_OTHER_COLOR = 0x0033f8
-SAY_COLOR = 0xe15a00
 
 @mud_action(('t', 'tell'))
 def tell(source, args, command, **ignored):
     if not args:
         raise ActionError("Tell who?")
     tell_message(source, args[0], command.partition(args[0])[2][1:])
+
 
 def tell_message(source, player_id, statement):
     session = sm.player_session(player_id)
@@ -22,8 +21,9 @@ def tell_message(source, player_id, statement):
     if not statement:
         return source.display_line("Say what to " + player.name + "?")
     player.last_tell = source.dbo_id
-    player.display_line(source.name + " tells you, `" + statement + "'", TELL_COLOR)
-    source.display_line("You tell " + player.name + ", `" + statement + "'", TELL_OTHER_COLOR)
+    player.display_line(source.name + " tells you, `" + statement + "'", TELL_FROM_COLOR)
+    source.display_line("You tell " + player.name + ", `" + statement + "'", TELL_TO_COLOR)
+
 
 @mud_action(('r', 'reply'))
 def reply(source, verb, command, **ignored):
@@ -31,6 +31,7 @@ def reply(source, verb, command, **ignored):
         raise ActionError("You have not received a tell recently.")
     ix = command.find(verb[0]) + len(verb[0]) + 1
     tell_message(source, source.last_tell, command[ix:])
+
 
 @mud_action('say')
 def say(source, command, **ignored):

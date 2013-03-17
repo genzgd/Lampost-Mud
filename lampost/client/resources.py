@@ -55,8 +55,8 @@ class ConnectResource(Resource):
 class LoginResource(Resource):
     @request
     def render_POST(self, content, session):
-        if session.user:
-            return sm.login_player(session, content.player_id)
+        if session.user and hasattr(content, 'player_id'):
+            return sm.start_player(session, content.player_id)
         return sm.login(session, content.user_id, content.password)
 
 

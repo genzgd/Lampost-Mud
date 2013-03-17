@@ -7,6 +7,7 @@ from lampost.model.article import ArticleTemplate
 
 m_requires('log', __name__)
 
+
 @requires('dispatcher')
 class Area(RootDBO):
     dbo_key_type = "area"
@@ -18,15 +19,15 @@ class Area(RootDBO):
     next_room_id = 0
     dbo_rev = 0
 
-    reset_time = 180 # reset every 3 minutes
-    reset_pulse = 20 # we get the reset pulse every 20 seconds
+    reset_time = 180  # reset every 3 minutes
+    reset_pulse = 20  # we get the reset pulse every 20 seconds
 
     def __init__(self, dbo_id):
         self.dbo_id = unicode(dbo_id)
         self.rooms = DBODict()
         self.mobiles = DBODict()
         self.articles = DBODict()
-        self.reset_wait = randint(-180, 0) #Start resets at staggered intervals
+        self.reset_wait = randint(-180, 0)  # Start resets at staggered intervals
 
     def start(self):
         self.reset()
@@ -38,7 +39,7 @@ class Area(RootDBO):
 
     @property
     def sorted_rooms(self):
-        return sorted(self.rooms.values(), key= lambda x:int(x.dbo_id.split(":")[1]))
+        return sorted(self.rooms.values(), key=lambda x: int(x.dbo_id.split(":")[1]))
 
     def get_room(self, room_id):
         return self.rooms.get(room_id)

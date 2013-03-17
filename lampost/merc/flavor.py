@@ -19,7 +19,7 @@ equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms'
 equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
 
-def init():
+def _post_init():
     cls_registry.set_class(lampost.model.player.Player, lampost.merc.player.PlayerMerc)
     cls_registry.set_class(lampost.model.article.ArticleTemplate, lampost.merc.article.ArticleTemplateMerc)
     cls_registry.set_class(lampost.model.mobile.MobileTemplate, lampost.merc.mobile.MobileTemplateMerc)

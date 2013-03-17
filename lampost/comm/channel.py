@@ -1,19 +1,20 @@
 from lampost.gameops.action import make_action
-from lampost.context.resource import requires
+from lampost.context.resource import m_requires
+
+m_requires('dispatcher', __name__)
 
 
-@requires('dispatcher')
 class Channel():
-    def __init__(self, verb, color=0x000000):
+    def __init__(self, verb):
         make_action(self, verb)
-        self.color = color
+        self.color = verb + "_channel"
 
     def __call__(self, source, command, **ignored):
         space_ix = command.find(" ")
         if space_ix == -1:
             return source.display_line("Say what?")
         statement = source.name + ":" + command[space_ix:]
-        self.dispatch(self, ChannelMessage(source, statement, self.color))
+        dispatch(self, ChannelMessage(source, statement, self.color))
         source.display_line(statement, self.color)
 
 

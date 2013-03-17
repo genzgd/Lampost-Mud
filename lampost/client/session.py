@@ -15,8 +15,9 @@ LINK_IDLE_REFRESH = timedelta(seconds=45)
 
 m_requires('log', __name__)
 
+
 @provides('sm')
-@requires('dispatcher', 'datastore', 'nature', 'user_manager')
+@requires('dispatcher', 'user_manager', 'config_manager')
 class SessionManager(object):
     def __init__(self):
         self.session_map = {}
@@ -24,10 +25,6 @@ class SessionManager(object):
         self.player_session_map = {}
         self.register_p(self._refresh_link_status, seconds=5)
         self.register_p(self._push_player_list, seconds=30)
-
-    def _login_result(self, user, player):
-        return {'name': player.name, 'privilege': player.imm_level, 'editors': self.nature.editors(player), 'user_id': user.dbo_id,
-                'player_ids': user.player_ids}
 
     def get_session(self, session_id):
         return self.session_map.get(session_id, None)
@@ -39,7 +36,7 @@ class SessionManager(object):
         session_id = self._get_next_id()
         session = UserSession()
         self.session_map[session_id] = session
-        return self._respond(connect=session_id)
+        return self._respond(connect=session_id, client_config=self.config_manager.client_config)
 
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)
@@ -47,8 +44,7 @@ class SessionManager(object):
             return self.start_session()
         session.player.display_line("-- Reconnecting Session --")
         session.player.parse("look")
-        user = self.datastore.load_object(User, session.player.user_id)
-        return self._respond(login=self._login_result(user, session.player), connect=session_id)
+        return self._respond(login=self.user_manager.client_data(session.user, session.player), connect=session_id)
 
     def login(self, session, user_name, password):
         user_name = unicode(user_name).lower()
@@ -57,25 +53,17 @@ class SessionManager(object):
             return {"login_failure": result}
         session.connect_user(user)
         if len(user.player_ids) == 1:
-            return self._start_player(session, user.player_ids[0])
+            return self.start_player(session, user.player_ids[0])
         if user_name != user.user_name:
-            return self._start_player(session, user_name)
-
-        user_login = {'user_id': user.dbo_id, 'player_ids': user.player_ids}
-        return self._respond(user_login=user_login)
-
-    def login_player(self, session, player_id):
-        player = self.datastore.load_object(Player, player_id)
-        if session.user.dbo_id != player.user_id:
-            raise StateError("User and player ids do not match")
-        return self._start_player(session, player_id)
+            return self.start_player(session, user_name)
+        return self._respond(user_login=self.user_manager.client_data(session.user))
 
     def push_event(self, event_type, data):
         for session in self.session_map.values():
             if event_type in session.push_events:
                 session.append({event_type: data})
 
-    def _start_player(self, session, player_id):
+    def start_player(self, session, player_id):
         old_session = self.player_session(player_id)
         if old_session:
             player = old_session.player
@@ -84,30 +72,23 @@ class SessionManager(object):
             old_session.append({'logout': 'other_location'})
             intro_line = '-- Existing Session Logged Out --'
         else:
-            player = self.datastore.load_object(Player, player_id)
+            player = self.user_manager.login_player(player_id)
             intro_line = "Welcome " + player.name
-            self.nature.baptise(player)
-            player.last_login = int(time.time())
-            if not player.created:
-                player.created = player.last_login
-            player.start()
+        if player.user_id != session.user.dbo_id:
+            raise StateError("Player user does not match session user")
         self.player_info_map[player.dbo_id] = session.connect_player(player)
         self.player_session_map[player.dbo_id] = session
-        player.display_line(intro_line,  0x002288)
+        player.display_line(intro_line,  "system")
         player.parse("look")
-        return self._respond(login=self._login_result(session.user, player))
+        return self._respond(login=self.user_manager.client_data(session.user, player))
 
     def logout(self, session):
         player = session.player
         if player:
+            self.user_manager.logout_player(player)
             player.last_logout = int(time.time())
-            player.age += player.last_logout - player.last_login
-            player.leave_env()
-            player.detach()
             session.player = None
             del self.player_info_map[player.dbo_id]
-            self.save_object(player)
-            self.evict_object(player)
             del self.player_session_map[player.dbo_id]
         session.user = None
         return self._respond(logout="logout")
@@ -163,7 +144,7 @@ class UserSession(object):
         self.attach_time = datetime.now()
         self.ld_time = None
         self.request = request
-        self.request.notifyFinish().addErrback(self._link_failed)
+        self.request.notifyFinish().addErrback(self.link_failed)
 
     def append(self, data):
         if not self._pulse_reg:
@@ -204,6 +185,11 @@ class UserSession(object):
         display['lines'].append(display_line)
         self.append({'display': display})
 
+    def link_failed(self, error):
+        warn("Link failed: " + repr(error), self)
+        self.ld_time = datetime.now()
+        self.request = None
+
     def _push_output(self):
         if self.request:
             self._output['link_status'] = "good"
@@ -216,13 +202,6 @@ class UserSession(object):
         self.request.write(self.json_encode(output))
         self.request.finish()
         self.request = None
-
-    def _link_failed(self, error):
-        warn("Link failed: " + repr(error), self)
-        self.ld_time = datetime.now()
-        self.request = None
-
-
 
     @property
     def privilege(self):
