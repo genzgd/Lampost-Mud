@@ -1,3 +1,5 @@
+import lampost.setup.update
+
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action
@@ -195,4 +197,6 @@ def promote(source, target, obj, **ignored):
     source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
 
 
-
+@imm_action('run_update', imm_level='supreme')
+def run_update(args, **ignored):
+    lampost.setup.update.__dict__[args[0]]()

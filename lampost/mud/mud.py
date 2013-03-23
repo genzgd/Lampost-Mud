@@ -1,3 +1,7 @@
+import lampost.mud.immortal
+import lampost.comm.chat
+import lampost.mud.inventory
+
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.mud.socials import SocialRegistry
 from lampost.mud.action import imm_actions, MudActions
