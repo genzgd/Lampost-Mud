@@ -21,6 +21,9 @@ class ConfigManager():
         save_object(self.config)
         return result
 
+    def save_config(self):
+        save_object(self.config)
+
     def update_config(self, config_update):
         update_object(self.config, config_update)
         dispatch("config_updated", self.config_js)
@@ -33,7 +36,7 @@ class ConfigManager():
 
     @property
     def client_config(self):
-        return {'default_colors': self.config.default_colors}
+        return {'default_displays': self.config.default_displays}
 
     @property
     def config_js(self):
@@ -48,7 +51,7 @@ class ConfigManager():
 
 class Config(RootDBO):
     dbo_key_type = "config"
-    dbo_fields = ('title', 'description', 'start_room', 'next_user_id', 'auto_imm_level', 'default_colors')
+    dbo_fields = ('title', 'description', 'start_room', 'next_user_id', 'auto_imm_level', 'default_displays')
     title = "Lampost (New Install)"
     description = "A fresh install of Lampost Mud"
     next_user_id = 1
@@ -56,4 +59,4 @@ class Config(RootDBO):
 
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id
-        self.default_colors = {}
+        self.default_displays = {}

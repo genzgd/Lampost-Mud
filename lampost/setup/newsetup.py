@@ -1,46 +1,35 @@
-from json import JSONDecoder, JSONEncoder
-
 from lampost.client.user import UserManager
-from lampost.context.resource import register
-from lampost.context.classes import ClassRegistry
-from lampost.datastore.dbconn import RedisStore
+from lampost.context.resource import m_requires
 from lampost.env.room import Room
 from lampost.gameops.config import Config, ConfigManager
-from lampost.gameops.event import Dispatcher
 from lampost.gameops.permissions import Permissions
 from lampost.model.area import Area
-from lampost.mud.mud import MudNature
 from lampost.model.player import Player
-from lampost.util.lmlog import Log
+from lampost.mud.mud import MudNature
+from lampost.setup.dbcontext import DbContext
+from lampost.setup.scripts import build_default_displays
 
-display_data = {}
+m_requires('datastore', 'cls_registry', 'perm', __name__)
 
 
-class SetupMudContext(object):
+class NewSetup(object):
+
     def __init__(self, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
                  flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
                  imm_password="password", start_area="immortal"):
-        self.properties = {}
-        register('context', self)
-        Log("debug")
-        cls_registry = ClassRegistry()
-        Dispatcher()
-
-        register('json_decode', JSONDecoder().decode)
-        register('json_encode', JSONEncoder().encode)
-        perm = Permissions()
-
-        datastore = RedisStore(db_host, int(db_port), int(db_num), db_pw)
-
-        config = datastore.load_object(Config, config_id)
+        DbContext(db_host=db_host, db_num=db_num, db_port=db_port, db_pw=db_pw)
+        config = load_object(Config, config_id)
         if config:
             print "Error:  This instance is already set up"
             return
-        room_id = "{0}:0".format(start_area)
-        config = Config(config_id)
-        config.start_room = room_id
 
-        datastore.save_object(config)
+        Permissions()
+
+        config = Config(config_id)
+        room_id = "{0}:0".format(start_area)
+        config.start_room = room_id
+        config.default_displays = build_default_displays()
+        save_object(config)
         ConfigManager(config_id)._post_init()
 
         MudNature(flavor)
@@ -52,25 +41,25 @@ class SetupMudContext(object):
         area.name = start_area
         area.owner_id = player.dbo_id
         area.next_room_id = 1
-        datastore.save_object(area)
+        save_object(area)
 
         room = cls_registry(Room)(room_id)
         room.title = "Immortal Start Room"
         room.desc = "A brand new start room for immortals."
-        datastore.save_object(room)
+        save_object(room)
         area.rooms.append(room)
-        datastore.save_object(area)
+        save_object(area)
 
         player.room_id = room_id
         player.home_room = room_id
-        player.imm_level = perm.perm_level('supreme')
-        datastore.save_object(player)
+        player.imm_level = perm_level('supreme')
+        save_object(player)
 
         user = user_manager.create_user(imm_account, imm_password)
         user_manager.attach_player(user, player)
 
-    def set(self, key, value):
-        self.properties[key] = value
 
-    def get(self, key):
-        return self.properties.get(key, None)
+
+
+
+

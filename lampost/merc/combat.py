@@ -1,5 +1,7 @@
-from lampost.merc.util import scale32, range_limit
 from random import randint
+
+from lampost.merc.util import scale32, range_limit
+
 
 base_thdef0 = 18  # Roll required to hit Defense 0 at level 1
 base_thdef32 = 6  # Roll required to hit Defense 0 at level 32

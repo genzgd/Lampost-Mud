@@ -1,16 +1,14 @@
-from lampost.editor.editor import EditorResource
-
-from lampost.client.resources import *
-from lampost.client.settings import SettingsResource
-
-from lampost.util.lmlog import logged
-from lampost.context.resource import provides, requires, m_requires
-
 from twisted.internet import reactor
 from twisted.web.resource import Resource
 from twisted.web.server import Site
 from twisted.web.static import File
 from twisted.web.util import Redirect
+
+from lampost.editor.editor import EditorResource
+from lampost.client.resources import *
+from lampost.client.settings import SettingsResource
+from lampost.util.lmlog import logged
+from lampost.context.resource import provides, requires, m_requires
 
 FILE_WEB_CLIENT = "ngclient"
 

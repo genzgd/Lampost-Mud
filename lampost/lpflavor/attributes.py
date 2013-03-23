@@ -1,7 +1,5 @@
 __author__ = 'Geoff'
 
-from itertools import chain
-
 master_attr = {'Brawn': {'con': 'Constitution', 'str': 'Strength', 'agi': 'Agility'},
                'Brain': {'int': 'Intelligence', 'wis': 'Wisdom', 'kno': 'Knowledge'},
                'Bravado': {'cha': 'Charm', 'bal': 'Balance', 'gui': 'Guile'}}

@@ -1,4 +1,4 @@
-from lampost.context.resource import requires, m_requires, get_resource
+from lampost.context.resource import requires, m_requires
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset

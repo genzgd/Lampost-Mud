@@ -5,8 +5,6 @@ from os import urandom
 from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
-from lampost.model.player import Player
-from lampost.client.user import User
 
 
 LINK_DEAD_INTERVAL = timedelta(seconds=15)

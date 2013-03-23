@@ -1,21 +1,21 @@
 import sys
-from lampost.context.setup import SetupMudContext
+from lampost.setup.newsetup import NewSetup
 
 if __name__ != "__main__":
     print "Invalid usage"
     sys.exit(2)
 
-context_args = {}
+setup_args = {}
 for arg in sys.argv[1:]:
     try:
         name, value = arg.split(":")
-        context_args[name] = value
+        setup_args[name] = value
     except ValueError:
         print "Invalid argument format: %s" % arg
         sys.exit(2)
 
-if not context_args.get('imm_name'):
+if not setup_args.get('imm_name'):
     print "Please supply an imm_name argument to identify the root user"
     sys.exit(2)
 
-SetupMudContext(**context_args)
+NewSetup(**setup_args)
