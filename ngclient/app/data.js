@@ -23,7 +23,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.historyIx = 0;
         self.editorWindow = null;
         self.userColors = {};
-        self.defaultColors = {}
+        self.defaultDisplays = {}
 
     }
 
@@ -31,9 +31,9 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         var lines = display.lines;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
-            var color = self.userColors[line.color] || self.defaultColors[line.color];
-            if (color) {
-                line.style = {color: color.value};
+            var lineDisplay = self.userColors[line.color] || self.defaultDisplays[line.color];
+            if (lineDisplay) {
+                line.style = {color: lineDisplay.color};
             }
             self.display.push(line);
         }
@@ -44,7 +44,8 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     }
 
     lmBus.register('client_config', function(data) {
-        self.defaultColors = data.default_colors;
+        self.defaultDisplays = data.default_displays;
+        translateColors(self.defaultDisplays);
     });
 
     lmBus.register("login", function(data) {
@@ -70,9 +71,9 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     lmBus.register("logout", clear, null, -100);
 
     function translateColors(colors) {
-        angular.forEach(colors,  function(colorData, colorName) {
-            var strValue =  parseInt(colorData.value).toString(16).toUpperCase();
-            self.colors[colorName] = '#' + padding.substring(0, 6 - strValue.length) + strValue;
+        angular.forEach(colors,  function(colorData) {
+            var strValue =  parseInt(colorData.color).toString(16).toUpperCase();
+            colorData.color = '#' + padding.substring(0, 6 - strValue.length) + strValue;
         });
     }
 
