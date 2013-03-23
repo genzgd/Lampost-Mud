@@ -22,15 +22,18 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.history = [];
         self.historyIx = 0;
         self.editorWindow = null;
-        self.colors = {};
+        self.userColors = {};
+        self.defaultColors = {}
+
     }
 
     function updateDisplay(display) {
         var lines = display.lines;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
-            if (self.colors[line.color]) {
-                line.style = {color: self.colors[line.color]};
+            var color = self.userColors[line.color] || self.defaultColors[line.color];
+            if (color) {
+                line.style = {color: color.value};
             }
             self.display.push(line);
         }
@@ -39,6 +42,10 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         }
         lmBus.dispatch("display_update", display);
     }
+
+    lmBus.register('client_config', function(data) {
+        self.defaultColors = data.default_colors;
+    });
 
     lmBus.register("login", function(data) {
         self.editors = data.editors;

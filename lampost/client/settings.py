@@ -68,14 +68,14 @@ class AccountUpdate(Resource):
         set_index("user_name_index", user.user_name.lower(), user_id)
 
 
-@requires('sm')
+@requires('session_manager')
 class AccountDelete(Resource):
     @request
     def render_POST(self, content, session):
         user = session.user
         if user.player_ids and content.password != user.password:
             raise StateError("Incorrect password.")
-        response = self.sm.logout(session)
+        response = self.session_manager.logout(session)
         user_manager.delete_user(user)
         return response
 

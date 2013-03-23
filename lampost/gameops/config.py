@@ -1,30 +1,29 @@
-from lampost.context.resource import provides, requires
+from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.util.lmutil import javascript_safe
 
+m_requires('datastore', 'dispatcher', __name__)
 
 @provides('config_manager')
-@requires('datastore')
 class ConfigManager():
     def __init__(self, config_id):
         self.config_id = config_id
 
     def _post_init(self):
-        self.config = self.datastore.load_object(Config, self.config_id)
-        title = javascript_safe(self.config.title)
-        description = javascript_safe(self.config.description)
-        self.web_server.add_lsp_js("config.js", "var lampost_config = {{title:'{0}', description:'{1}'}};".format(title, description))
+        self.config = load_object(Config, self.config_id)
+        dispatch("config_updated", self.config_js)
 
     def next_user_id(self):
         result = str(self.config.next_user_id)
         self.config.next_user_id += 1
-        while self.datastore.object_exists('user', self.config.next_user_id):
+        while object_exists('user', self.config.next_user_id):
             self.config.next_user_id += 1
         save_object(self.config)
         return result
 
     def update_config(self, config_update):
-        self.datastore.update_object(self.config, config_update)
+        update_object(self.config, config_update)
+        dispatch("config_updated", self.config_js)
 
     def config_player(self, player):
         player.imm_level = self.config.auto_imm_level
@@ -35,6 +34,12 @@ class ConfigManager():
     @property
     def client_config(self):
         return {'default_colors': self.config.default_colors}
+
+    @property
+    def config_js(self):
+        title = javascript_safe(self.config.title)
+        description = javascript_safe(self.config.description)
+        return "var lampost_config = {{title:'{0}', description:'{1}'}};".format(title, description)
 
     @property
     def config_json(self):

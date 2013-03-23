@@ -3,7 +3,7 @@ from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.mud.action import mud_action
 
-m_requires('sm', __name__)
+m_requires('session_manager', __name__)
 
 
 @mud_action(('t', 'tell'))
@@ -14,15 +14,15 @@ def tell(source, args, command, **ignored):
 
 
 def tell_message(source, player_id, statement):
-    session = sm.player_session(player_id)
+    session = session_manager.player_session(player_id)
     if not session:
         return source.display_line("Cannot find " + player_id)
     player = session.player
     if not statement:
         return source.display_line("Say what to " + player.name + "?")
     player.last_tell = source.dbo_id
-    player.display_line(source.name + " tells you, `" + statement + "'", TELL_FROM_COLOR)
-    source.display_line("You tell " + player.name + ", `" + statement + "'", TELL_TO_COLOR)
+    player.display_line(source.name + " tells you, `" + statement + "'", TELL_FROM_DISPLAY)
+    source.display_line("You tell " + player.name + ", `" + statement + "'", TELL_TO_DISPLAY)
 
 
 @mud_action(('r', 'reply'))
@@ -39,4 +39,4 @@ def say(source, command, **ignored):
     if space_ix == -1:
         raise ActionError("Say what?")
     statement = command[space_ix + 1:]
-    source.broadcast(s="You say `{0}'".format(statement), e="{0} says, `{1}'".format(source.name, statement), color=SAY_COLOR)
+    source.broadcast(s="You say `{0}'".format(statement), e="{0} says, `{1}'".format(source.name, statement), color=SAY_DISPLAY)

@@ -8,7 +8,7 @@ from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires
 from lampost.util.lmutil import build_object, PermError, DataError, StateError
 
-m_requires('sm', 'json_decode', 'json_encode', 'log', __name__)
+m_requires('log', 'session_manager', 'json_decode', 'json_encode', __name__)
 
 
 def find_session_id(request):
@@ -21,7 +21,7 @@ def request(func):
     @logged
     def wrapper(self, request):
         content = build_object(json_decode(request.content.getvalue()))
-        session = sm.get_session(find_session_id(request))
+        session = session_manager.get_session(find_session_id(request))
         if not session:
             return json_encode({'link_status': 'session_not_found'})
         try:
@@ -48,22 +48,22 @@ class ConnectResource(Resource):
         content = build_object(json_decode(request.content.getvalue()))
         session_id = find_session_id(request)
         if session_id:
-            return json_encode(sm.reconnect_session(session_id, content.player_id))
-        return json_encode(sm.start_session())
+            return json_encode(session_manager.reconnect_session(session_id, content.player_id))
+        return json_encode(session_manager.start_session())
 
 
 class LoginResource(Resource):
     @request
     def render_POST(self, content, session):
         if session.user and hasattr(content, 'player_id'):
-            return sm.start_player(session, content.player_id)
-        return sm.login(session, content.user_id, content.password)
+            return session_manager.start_player(session, content.player_id)
+        return session_manager.login(session, content.user_id, content.password)
 
 
 class LinkResource(Resource):
     @logged
     def render_POST(self, request):
-        session = sm.get_session(find_session_id(request))
+        session = session_manager.get_session(find_session_id(request))
         if not session:
             return json_encode({'link_status': 'session_not_found'})
         session.attach(request)
@@ -78,7 +78,7 @@ class ActionResource(Resource):
             return {"link_status": "no_login"}
         action = cgi.escape(content.action).strip()
         if action in ["quit", "logout", "log out"]:
-            return sm.logout(session)
+            return session_manager.logout(session)
         session.activity_time = datetime.now()
         player.parse(action)
         return session.pull_output()

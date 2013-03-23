@@ -99,17 +99,17 @@ class RedisStore():
         class_path = json_obj.get("class_name")
         if not class_path:
             return self.cls_registry(base_class)
-        clazz = self.class_map.get(class_path)
-        if clazz:
-            return clazz
+        cls = self.class_map.get(class_path)
+        if cls:
+            return cls
         split_path = class_path.split(".")
         module_name = ".".join(split_path[:-1])
         class_name = split_path[-1]
         module = __import__(module_name, globals(), locals(), [class_name])
-        clazz = getattr(module, class_name)
-        clazz = self.cls_registry(clazz)
-        self.class_map[class_path] = clazz
-        return clazz
+        cls = getattr(module, class_name)
+        cls = self.cls_registry(cls)
+        self.class_map[class_path] = cls
+        return cls
 
     def load_json(self, dbo, json_obj):
         for field_name in dbo.dbo_fields:

@@ -10,10 +10,10 @@ from lampost.comm.channel import Channel
 
 from lampost.model.area import Area
 
-m_requires('log', 'perm',  __name__)
+m_requires('log', 'datastore', 'perm', __name__)
 
 
-@requires('sm', 'datastore', 'context')
+@requires('context')
 @provides('nature')
 class MudNature():
 
@@ -53,13 +53,13 @@ class MudNature():
         player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
-             player.register("log", player.display_line)
+            player.register("log", player.display_line)
 
         player.equip(set())
         self.mud.start_player(player)
         if not getattr(player, "room_id", None):
             player.room_id = player.env.dbo_id
-            self.datastore.save_object(player)
+            save_object(player)
 
     def baptise_imm(self, player):
         player.enhance_soul(self.imm_channel)
@@ -72,18 +72,17 @@ class MudNature():
                 player.diminish_soul(cmd)
 
 
-@requires('datastore', 'dispatcher', 'config_manager')
+@requires('config_manager')
 @provides('mud')
 class Mud():
     def __init__(self):
         self.area_map = {}
 
-
     def load_areas(self):
-        area_keys = self.datastore.fetch_set_keys("areas")
+        area_keys = fetch_set_keys("areas")
         for area_key in area_keys:
             area_id = area_key.split(":")[1]
-            area = self.datastore.load_object(Area, area_id)
+            area = load_object(Area, area_id)
             self.add_area(area)
         for area in self.area_map.itervalues():
             area.start()
@@ -107,19 +106,16 @@ class Mud():
         error('Requested invalid articleId: {0}'.format(article_id))
 
     def find_room(self, room_id):
-        try:
-            area_id = room_id.split(":")[0]
-            area = self.get_area(area_id)
-            if not area:
-                error("Unable to find area for " + area_id)
-                return None
-            room = area.get_room(room_id)
-            if not room:
-                error("Unable to find room for " + room_id)
-                return None
-            return room
-        except:
-            error("Exception finding room " + room_id)
+        area_id = room_id.split(":")[0]
+        area = self.get_area(area_id)
+        if not area:
+            error("Unable to find area for " + area_id)
+            return None
+        room = area.get_room(room_id)
+        if not room:
+            error("Unable to find room for " + room_id)
+            return None
+        return room
 
     def start_player(self, player):
         room = None

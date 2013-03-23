@@ -5,7 +5,7 @@ from lampost.context.resource import register
 from lampost.context.classes import ClassRegistry
 from lampost.datastore.dbconn import RedisStore
 from lampost.env.room import Room
-from lampost.gameops.config import Config
+from lampost.gameops.config import Config, ConfigManager
 from lampost.gameops.event import Dispatcher
 from lampost.gameops.permissions import Permissions
 from lampost.model.area import Area
@@ -13,15 +13,19 @@ from lampost.mud.mud import MudNature
 from lampost.model.player import Player
 from lampost.util.lmlog import Log
 
+display_data = {}
+
+
 class SetupMudContext(object):
     def __init__(self, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
-                 flavor='merc', config_id='lampost', imm_name='root', imm_account='root',
+                 flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
                  imm_password="password", start_area="immortal"):
         self.properties = {}
         register('context', self)
         Log("debug")
         cls_registry = ClassRegistry()
         Dispatcher()
+
         register('json_decode', JSONDecoder().decode)
         register('json_encode', JSONEncoder().encode)
         perm = Permissions()
@@ -38,6 +42,7 @@ class SetupMudContext(object):
         config.default_colors['shout_channel'] = 0x109010
         config.default_colors['imm_channel'] = 0xed1c24
         datastore.save_object(config)
+        ConfigManager(config_id)._post_init()
 
         MudNature(flavor)
         user_manager = UserManager()
@@ -70,5 +75,3 @@ class SetupMudContext(object):
 
     def get(self, key):
         return self.properties.get(key, None)
-
-

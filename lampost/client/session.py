@@ -13,18 +13,18 @@ LINK_DEAD_INTERVAL = timedelta(seconds=15)
 LINK_DEAD_PRUNE = timedelta(minutes=2)
 LINK_IDLE_REFRESH = timedelta(seconds=45)
 
-m_requires('log', __name__)
+m_requires('log', 'dispatcher', __name__)
 
 
-@provides('sm')
-@requires('dispatcher', 'user_manager', 'config_manager')
+@provides('session_manager')
+@requires('user_manager', 'config_manager')
 class SessionManager(object):
     def __init__(self):
         self.session_map = {}
         self.player_info_map = {}
         self.player_session_map = {}
-        self.register_p(self._refresh_link_status, seconds=5)
-        self.register_p(self._push_player_list, seconds=30)
+        register_p(self._refresh_link_status, seconds=5)
+        register_p(self._push_player_list, seconds=30)
 
     def get_session(self, session_id):
         return self.session_map.get(session_id, None)
@@ -124,7 +124,7 @@ class SessionManager(object):
         return response
 
 
-@requires('dispatcher', 'json_encode')
+@requires('json_encode')
 class UserSession(object):
 
     def __init__(self):
@@ -148,13 +148,13 @@ class UserSession(object):
 
     def append(self, data):
         if not self._pulse_reg:
-            self._pulse_reg = self.register("pulse", self._push_output)
+            self._pulse_reg = register("pulse", self._push_output)
         self._output.update(data)
 
     def pull_output(self):
         output = self._output
         if self._pulse_reg:
-            self.unregister(self._pulse_reg)
+            unregister(self._pulse_reg)
             self._pulse_reg = None
         self._output = {}
         return output
@@ -195,7 +195,7 @@ class UserSession(object):
             self._output['link_status'] = "good"
             self._push(self._output)
             self._output = {}
-            self.unregister(self._pulse_reg)
+            unregister(self._pulse_reg)
             self._pulse_reg = None
 
     def _push(self, output):

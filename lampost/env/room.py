@@ -74,7 +74,7 @@ class Room(RootDBO):
         return self.room_id.split(":")[0]
 
     def rec_glance(self, source, **ignored):
-        return source.display_line(self.title, ROOM_COLOR)
+        return source.display_line(self.title, ROOM_DISPLAY)
 
     def rec_entity_enters(self, source):
         self.contents.append(source)
@@ -108,20 +108,20 @@ class Room(RootDBO):
 
     def rec_examine(self, source, **ignored):
         if source.build_mode:
-            source.display_line("{0} [{1}]".format(self.title, self.dbo_id), ROOM_TITLE_COLOR)
+            source.display_line("{0} [{1}]".format(self.title, self.dbo_id), ROOM_TITLE_DISPLAY)
         else:
-            source.display_line(self.title, ROOM_TITLE_COLOR)
-        source.display_line('<hr/>', ROOM_COLOR)
-        source.display_line(self.desc, ROOM_COLOR)
-        source.display_line('<hr/>', ROOM_COLOR)
+            source.display_line(self.title, ROOM_TITLE_DISPLAY)
+        source.display_line('<hr/>', ROOM_DISPLAY)
+        source.display_line(self.desc, ROOM_DISPLAY)
+        source.display_line('<hr/>', ROOM_DISPLAY)
         if self.exits:
             if source.build_mode:
                 for my_exit in self.exits:
-                    source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), EXIT_COLOR)
+                    source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), EXIT_DISPLAY)
             else:
-                source.display_line("Obvious exits are: " + self.short_exits(),  EXIT_COLOR)
+                source.display_line("Obvious exits are: " + self.short_exits(),  EXIT_DISPLAY)
         else:
-            source.display_line("No obvious exits", EXIT_COLOR)
+            source.display_line("No obvious exits", EXIT_DISPLAY)
 
         for obj in self.contents:
             if obj != source:

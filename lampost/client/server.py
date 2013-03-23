@@ -28,6 +28,7 @@ m_requires("log", __name__)
 
 
 @provides('web_server')
+@requires('dispatcher')
 class WebServer(Resource):
     def __init__(self, port):
         Resource.__init__(self)
@@ -43,9 +44,10 @@ class WebServer(Resource):
 
         self._lsp_server = LspServerResource()
         self.putChild(URL_LSP, self._lsp_server)
+        self.dispatcher.register("config_updated", self._update_config)
 
-    def add_lsp_js(self, path, content):
-        self._lsp_server.add_js(path, content)
+    def _update_config(self, config_js):
+        self._lsp_server.add_js("config.js", config_js)
 
     #noinspection PyUnresolvedReferences
     @logged
