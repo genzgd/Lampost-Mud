@@ -277,5 +277,5 @@ def article_reset_dto(article_reset):
 
 def room_dto(room):
     return {'id': room.dbo_id, 'title': room.title, 'desc': room.desc, 'dbo_rev': room.dbo_rev, 'extras': [extra.json_obj for extra in room.extras],
-            'exits': [exit_dto(room_exit) for room_exit in room.exits], 'mobiles': [mobile_dto(mobile_reset) for mobile_reset in room.mobile_resets],
-            'articles': [article_dto(article_reset) for article_reset in room.article_resets]}
+            'exits': [exit_dto(room_exit) for room_exit in room.exits], 'mobiles': [mobile_reset_dto(mobile_reset) for mobile_reset in room.mobile_resets],
+            'articles': [article_reset_dto(article_reset) for article_reset in room.article_resets]}
