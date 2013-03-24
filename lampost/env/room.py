@@ -111,9 +111,9 @@ class Room(RootDBO):
             source.display_line("{0} [{1}]".format(self.title, self.dbo_id), ROOM_TITLE_DISPLAY)
         else:
             source.display_line(self.title, ROOM_TITLE_DISPLAY)
-        source.display_line('<hr/>', ROOM_DISPLAY)
+        source.display_line('HRT', ROOM_DISPLAY)
         source.display_line(self.desc, ROOM_DISPLAY)
-        source.display_line('<hr/>', ROOM_DISPLAY)
+        source.display_line('HRB', ROOM_DISPLAY)
         if self.exits:
             if source.build_mode:
                 for my_exit in self.exits:

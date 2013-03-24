@@ -34,21 +34,22 @@ angular.module('lampost_editor').directive('editList', [function () {
     }
 }]);
 
-angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil', '$timeout',
-    function ($q, lmBus, lmRemote, lmDialog, $location, lmUtil, $timeout) {
+angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', '$location', 'lmUtil',
+    function ($q, lmBus, lmRemote, lmDialog, $location, lmUtil) {
 
     var rawId = 0;
     var types = {
-        config:{label:"Mud Config", url:"config"},
-        players:{label:"Players", url:"player"},
-        areas:{label:"Areas", url:"area"},
-        rooms:{label:"Rooms", url:"room", childType:'mobile'},
-        room:{label:"", url:"room", model_props:['room']},
-        mobiles:{label:"Mobiles", url:'mobile', childType:'mobile'},
-        mobile:{label:"", url:"mobile", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1}},
-        articles:{label:"Articles", url:"article", childType:'article'},
-        article:{label:"", url:"article", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1, weight: 1}},
-        socials:{label:"Socials", url:"socials"}
+        config: {label:"Mud Config", url:"config"},
+        players: {label:"Players", url:"player"},
+        areas: {label:"Areas", url:"area"},
+        rooms: {label:"Rooms", url:"room", childType:'mobile'},
+        room: {label:"", url:"room", model_props:['room']},
+        mobiles: {label:"Mobiles", url:'mobile', childType:'mobile'},
+        mobile: {label:"", url:"mobile", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1}},
+        articles: {label:"Articles", url:"article", childType:'article'},
+        article: {label:"", url:"article", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1, weight: 1}},
+        socials: {label:"Socials", url:"socials"},
+        display: {label:"Display", url:"display"}
     };
 
     function Editor(type, parent) {

@@ -32,6 +32,7 @@ class ConfigManager():
         if not player.imm_level:
             player.imm_level = self.config.auto_imm_level
 
+    @property
     def start_room(self):
         return self.config.start_room
 

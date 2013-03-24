@@ -42,6 +42,7 @@ class MudNature():
         if has_perm(player, 'admin'):
             editors.append('players')
             editors.append('socials')
+            editors.append('display')
         if has_perm(player, 'creator'):
             editors.append('areas')
         return editors

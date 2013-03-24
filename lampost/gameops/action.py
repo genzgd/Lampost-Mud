@@ -56,9 +56,9 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
 
 
 class ActionError(Exception):
-    def __init__(self, message, color=None):
+    def __init__(self, message, display=None):
         self.message = message
-        self.color = color
+        self.display = display
 
 
 class _ActionObject(object):

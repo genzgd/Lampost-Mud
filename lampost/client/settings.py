@@ -18,6 +18,7 @@ class SettingsResource(Resource):
         self.putChild('create_player', PlayerCreate())
         self.putChild('get_players', GetPlayers())
         self.putChild('delete_player', PlayerDelete())
+        self.putChild('update_display', DisplayUpdate())
 
 
 class SettingsGet(Resource):
@@ -117,6 +118,14 @@ class PlayerDelete(Resource):
         player = load_object(Player, content.player_id)
         user_manager.delete_player(user, player)
         return player_list(user.player_ids)
+
+
+class DisplayUpdate(Resource):
+    @request
+    def render_POST(self, content, session):
+        user = session.user
+        user.displays = content.displays
+        save_object(user)
 
 
 def player_list(player_ids):

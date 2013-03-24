@@ -2,8 +2,8 @@ angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote'
     function ($scope, lmRemote, lmDialog, lmBus) {
 
     $scope.headings = [{id:"account", label:"Account", class:"active"},
-        {id:"characters", label:"Characters", class:""}];
-       // {id:"colors", label:"Colors", class:""}];
+        {id:"characters", label:"Characters", class:""},
+        {id:"display", label:"Text Display", class:""}];
     $scope.headingId = "account";
     $scope.click = function (headingId) {
         $scope.headingId = headingId;
@@ -95,3 +95,31 @@ angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmDa
 
 }]);
 
+
+angular.module('lampost').controller('DisplayTabController', ['$scope', 'lmData', 'lmRemote', function($scope, lmData, lmRemote) {
+
+    $scope.selectors = [];
+
+    angular.forEach(lmData.defaultDisplays, function(value, key) {
+       var selector = {name: key, desc: value.desc, defaultColor:value.color};
+       var userDisplay = lmData.userDisplays[key];
+       if (userDisplay) {
+           selector.userColor = userDisplay.color;
+       } else {
+           selector.userColor = selector.defaultColor;
+       }
+       $scope.selectors.push(selector);
+    });
+
+    $scope.updateDisplay = function() {
+        var newDisplays = {};
+        angular.forEach($scope.selectors, function(selector) {
+           if (selector.userColor != selector.defaultColor) {
+               newDisplays[selector.name] = {color: selector.userColor};
+           }
+        });
+        lmData.userDisplays = newDisplays;
+        lmRemote.request("settings/update_display", {displays: newDisplays});
+    }
+
+}]);

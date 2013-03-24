@@ -9,7 +9,7 @@ m_requires('log', 'datastore', __name__)
 
 class User(RootDBO):
     dbo_key_type = "user"
-    dbo_fields = "user_name", "email", "password", "player_ids", "toolbar"
+    dbo_fields = "user_name", "email", "password", "player_ids", "toolbar", "displays"
     dbo_set_key = "users"
     dbo_indexes = "user_name"
 
@@ -21,7 +21,7 @@ class User(RootDBO):
         self.dbo_id = unicode(dbo_id)
         self.player_ids = []
         self.toolbar = []
-        self.colors = {}
+        self.displays = {}
 
 
 @requires('config_manager', 'nature')
@@ -106,7 +106,7 @@ class UserManager(object):
         return max(imm_levels)
 
     def client_data(self, user, player=None):
-        result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'colors': user.colors}
+        result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays}
         if player:
             result.update({'name': player.name, 'privilege': player.imm_level, 'editors':self.nature.editors(player)})
         return result

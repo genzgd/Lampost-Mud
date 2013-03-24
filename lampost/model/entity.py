@@ -192,7 +192,7 @@ class Entity(BaseItem):
         except PermError:
             return self.display_line("You do not have permission to do that.")
         except ActionError as action_error:
-            return self.display_line(action_error.message, action_error.color)
+            return self.display_line(action_error.message, action_error.display)
         if not matches:
             matches, response = self.parse_command('{0} {1}'.format('say', command))
             if not matches:
@@ -292,15 +292,15 @@ class Entity(BaseItem):
         self.add_targets(new_env.elements, new_env)
         self.env.rec_entity_enters(self)
 
-    def broadcast(self, broadcast=None, color=0x000000, **kwargs):
+    def broadcast(self, broadcast=None, display='default', **kwargs):
         if isinstance(broadcast, basestring):
-            broadcast = SingleBroadcast(broadcast, color)
+            broadcast = SingleBroadcast(broadcast, display)
         elif not broadcast:
-            broadcast = Broadcast(color=color, **kwargs)
+            broadcast = Broadcast(display=display, **kwargs)
         broadcast.source = self
         self.env.rec_broadcast(broadcast)
 
-    def display_line(self, line, color=0x000000):
+    def display_line(self, line, display='default'):
         pass
 
     def output(self, response):

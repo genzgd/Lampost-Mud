@@ -4,6 +4,7 @@ from lampost.context.resource import requires
 from lampost.editor.areas import AreaResource
 from lampost.editor.articles import ArticleResource
 from lampost.editor.config import ConfigResource
+from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.rooms import RoomResource
@@ -21,6 +22,7 @@ class EditorResource(Resource):
         self.putChild('config', ConfigResource())
         self.putChild('constants', PropertiesResource())
         self.putChild('socials', SocialsResource())
+        self.putChild('display', DisplayResource())
 
 
 @requires('context')

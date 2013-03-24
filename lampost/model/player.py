@@ -35,11 +35,11 @@ class Player(Entity, RootDBO):
 
     def display_channel(self, message):
         if message.source != self:
-            self.session.display_line({'text': message.text, 'color': message.color})
+            self.session.display_line({'text': message.text, 'display': message.display})
 
-    def display_line(self, text, color='default'):
+    def display_line(self, text, display='default'):
         if text:
-            self.session.display_line({'text': text, 'color': color})
+            self.session.display_line({'text': text, 'display': display})
 
     def output(self, output):
         self.session.append(output)
@@ -48,7 +48,7 @@ class Player(Entity, RootDBO):
         self.register(channel, self.display_channel)
 
     def rec_broadcast(self, broadcast):
-        self.display_line(broadcast.translate(self), broadcast.color)
+        self.display_line(broadcast.translate(self), broadcast.display)
 
     def get_score(self):
         score = {}

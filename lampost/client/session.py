@@ -5,6 +5,7 @@ from os import urandom
 from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
+from lampost.gameops.display import SYSTEM_DISPLAY
 
 
 LINK_DEAD_INTERVAL = timedelta(seconds=15)
@@ -40,9 +41,10 @@ class SessionManager(object):
         session = self.get_session(session_id)
         if not session or not session.ld_time or not session.player or session.player.dbo_id != player_id:
             return self.start_session()
-        session.player.display_line("-- Reconnecting Session --")
+        session.player.display_line("-- Reconnecting Session --", SYSTEM_DISPLAY)
         session.player.parse("look")
-        return self._respond(login=self.user_manager.client_data(session.user, session.player), connect=session_id)
+        return self._respond(login=self.user_manager.client_data(session.user, session.player),
+                             client_config=self.config_manager.client_config, connect=session_id)
 
     def login(self, session, user_name, password):
         user_name = unicode(user_name).lower()
@@ -76,7 +78,7 @@ class SessionManager(object):
             raise StateError("Player user does not match session user")
         self.player_info_map[player.dbo_id] = session.connect_player(player)
         self.player_session_map[player.dbo_id] = session
-        player.display_line(intro_line,  "system")
+        player.display_line(intro_line, SYSTEM_DISPLAY)
         player.parse("look")
         return self._respond(login=self.user_manager.client_data(session.user, player))
 

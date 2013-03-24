@@ -135,3 +135,27 @@ angular.module('lampost_dir').directive("altText", [function () {
     }
 
 }]);
+
+angular.module('lampost_dir').directive("colorPicker", [function () {
+    return {
+        restrict: "A",
+        scope: {color: '=ngModel'},
+        link: function (scope, element) {
+            element.spectrum({
+                color: scope.color,
+                change: function(color) {
+                    scope.$apply(function() {
+                        scope.color = color.toHexString(true);
+                    });
+                },
+                showInitial: true,
+                showInput: true,
+                preferredFormat: 'hex'
+            });
+            scope.$watch('color', function() {
+                element.spectrum('set', scope.color);
+            });
+        }
+    }
+
+}]);

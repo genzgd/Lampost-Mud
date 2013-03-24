@@ -1,8 +1,9 @@
 angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
     var maxLines = 1000;
-    var padding = "00000000";
     var self = this;
+
+    self.defaultDisplays = {};
 
     clear();
 
@@ -22,18 +23,24 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.history = [];
         self.historyIx = 0;
         self.editorWindow = null;
-        self.userColors = {};
-        self.defaultDisplays = {}
-
+        self.userDisplays = {};
     }
 
     function updateDisplay(display) {
         var lines = display.lines;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
-            var lineDisplay = self.userColors[line.color] || self.defaultDisplays[line.color];
+            var lineDisplay = self.userDisplays[line.display] || self.defaultDisplays[line.display];
             if (lineDisplay) {
-                line.style = {color: lineDisplay.color};
+                if (line.text == 'HRT') {
+                    line.style = {height: '2px', backgroundColor: lineDisplay.color, marginTop: '6px', marginBottom: '3px', marginRight: '3px'};
+                    line.text = '';
+                } else if (line.text == "HRB") {
+                    line.style = {height: '2px', backgroundColor: lineDisplay.color, marginTop: '3px', marginBottom: '6px', marginRight: '3px'};
+                    line.text = '';
+                } else {
+                    line.style = {color: lineDisplay.color};
+                }
             }
             self.display.push(line);
         }
@@ -45,7 +52,6 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
     lmBus.register('client_config', function(data) {
         self.defaultDisplays = data.default_displays;
-        translateColors(self.defaultDisplays);
     });
 
     lmBus.register("login", function(data) {
@@ -53,7 +59,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.userId = data.user_id;
         self.playerIds = data.player_ids;
         self.playerName = data.name;
-        translateColors(data.colors);
+        self.userDisplays = data.displays;
         self.playerId = self.playerName.toLocaleLowerCase();
         localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
     }, null, -100);
@@ -70,12 +76,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     lmBus.register("display", updateDisplay, null, -100);
     lmBus.register("logout", clear, null, -100);
 
-    function translateColors(colors) {
-        angular.forEach(colors,  function(colorData) {
-            var strValue =  parseInt(colorData.color).toString(16).toUpperCase();
-            colorData.color = '#' + padding.substring(0, 6 - strValue.length) + strValue;
-        });
-    }
+
 
 }]);
 

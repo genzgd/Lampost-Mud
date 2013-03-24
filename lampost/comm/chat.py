@@ -39,4 +39,4 @@ def say(source, command, **ignored):
     if space_ix == -1:
         raise ActionError("Say what?")
     statement = command[space_ix + 1:]
-    source.broadcast(s="You say `{0}'".format(statement), e="{0} says, `{1}'".format(source.name, statement), color=SAY_DISPLAY)
+    source.broadcast(s="You say `{0}'".format(statement), e="{0} says, `{1}'".format(source.name, statement), display=SAY_DISPLAY)

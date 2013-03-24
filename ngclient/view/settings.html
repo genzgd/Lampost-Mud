@@ -98,7 +98,20 @@
         </div>
       </div>
 
-      <div ng-switch-when="colors">
+      <div ng-switch-when="display" ng-controller="DisplayTabController">
+        <div class="row-fluid">
+          <div class="offset8 span2">
+            <button class="btn btn-primary" title="Reset to game default" ng-click="updateDisplay()">Update Display</button>
+          </div>
+        </div>
+        <div ng-repeat="selector in selectors" class="row-fluid">
+          <div class="span3">{{selector.desc}}</div>
+          <div class="span1"></div>
+          <div class="span2"><input type="text" ng-model="selector.userColor" color-picker></div>
+          <div class="span2">
+            <button class="btn btn-mini" ng-click="selector.userColor = selector.defaultColor">Reset</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
