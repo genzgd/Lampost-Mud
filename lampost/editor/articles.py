@@ -1,8 +1,8 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
+from lampost.datastore.exceptions import DataError
 from lampost.model.article import ArticleTemplate
-from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
@@ -51,7 +51,7 @@ class ArticleCreate(Resource):
         if area.get_article(article_id):
             raise DataError(article_id + " already exists in this area")
         template = self.cls_registry(ArticleTemplate)(article_id)
-        load_json(template, content.object)
+        hydrate_dbo(template, content.object)
         save_object(template)
         area.articles.append(template)
         save_object(area)

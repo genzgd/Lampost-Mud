@@ -3,6 +3,7 @@ import time
 from lampost.context.resource import requires, provides, m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.model.player import Player
+from lampost.util.encrypt import make_hash, check_password
 
 m_requires('log', 'datastore', __name__)
 
@@ -11,10 +12,10 @@ class User(RootDBO):
     dbo_key_type = "user"
     dbo_fields = "user_name", "email", "password", "player_ids", "toolbar", "displays"
     dbo_set_key = "users"
-    dbo_indexes = "user_name"
+    dbo_indexes = "user_name", "email"
 
     user_name = ""
-    password = unicode("password")
+    password = None
     email = ""
 
     def __init__(self, dbo_id):
@@ -31,18 +32,18 @@ class UserManager(object):
         user = self.find_user(user_name)
         if not user:
             return "not_found", None
-        if user.password != password:
+        if not check_password(password, user.password):
             return "not_found", None
         return "ok", user
 
     def find_user(self, user_name):
         user_name = unicode(user_name).lower()
-        user_id = get_index("user_name_index", user_name)
+        user_id = get_index("ix:user:user_name", user_name)
         if user_id:
             return load_object(User, user_id)
         player = load_object(Player, user_name)
         if player:
-            datastore.evict_object(player)
+            unload_player(player)
             return load_object(User, player.user_id)
         return None
 
@@ -51,7 +52,6 @@ class UserManager(object):
             player = load_object(Player, player_id)
             delete_object(player)
         delete_object(user)
-        delete_index("user_name_index", user.user_name)
 
     def delete_player(self, user, player):
         delete_object(player)
@@ -63,22 +63,23 @@ class UserManager(object):
         self.config_manager.config_player(player)
         player.user_id = user.dbo_id
         save_object(player)
-        self.save_user(user)
+        save_object(user)
         return user
+
+    def find_player(self, player_id):
+        player = load_object(Player, player_id)
+        unload_player(player)
+        return player
 
     def create_user(self, user_name, password, email=""):
         user_id = self.config_manager.next_user_id()
         user = User(user_id)
         user.user_name = unicode(user_name) if user_name else player.name
-        user.password = unicode(password)
+        user.password = make_hash(unicode(password))
         user.email = email
         user.player_ids = []
-        self.save_user(user)
-        return user
-
-    def save_user(self, user):
         save_object(user)
-        set_index("user_name_index", user.user_name.lower(), user.dbo_id)
+        return user
 
     def check_name(self, account_name, old_user):
         account_name = unicode(account_name).lower()
@@ -93,7 +94,7 @@ class UserManager(object):
         if player:
             unload_player(player)
             return "player_exists"
-        if get_index("user_name_index", account_name):
+        if get_index("ix:user:user_name", account_name):
             return "user exists"
         return "ok"
 

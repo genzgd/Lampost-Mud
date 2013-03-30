@@ -50,7 +50,7 @@ angular.module('lampost').controller('AccountFormController', ['$scope', '$timeo
                     $timeout(function() {
                         $scope.showSuccess = false;
                     }, 3000);
-                }).error(function() {
+                }, function(error) {
                     $scope.inUse = true;
                 })
         }

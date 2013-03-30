@@ -18,13 +18,13 @@ m_requires('log', 'datastore', 'perm', __name__)
 class MudNature():
 
     def __init__(self, flavor):
-        flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals(), ['init'])
+        flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals())
         self.mud = Mud()
         self.mud_actions = MudActions()
         self.social_registry = SocialRegistry()
 
     def _post_init(self):
-        debug("Loading mud", self)
+        info("Loading mud", self)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")
         self.context.set('article_load_types', ['equip', 'default'])
@@ -33,7 +33,7 @@ class MudNature():
         self.mud_actions.add_action(self.shout_channel)
         self.mud.load_areas()
         self.social_registry.load_socials()
-        debug("Mud loaded", self)
+        info("Mud loaded", self)
 
     def editors(self, player):
         editors = []

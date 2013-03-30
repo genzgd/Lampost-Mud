@@ -186,7 +186,8 @@ class UserSession(object):
         self.append({'display': display})
 
     def link_failed(self, error):
-        warn("Link failed: " + repr(error), self)
+        if self.player:
+            warn("Link failed for {}: ".format(self.player.name, repr(error)), self)
         self.ld_time = datetime.now()
         self.request = None
 

@@ -1,5 +1,6 @@
 from redis import ConnectionPool
 from redis.client import StrictRedis
+from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import requires, provides, m_requires
@@ -8,64 +9,66 @@ m_requires('log', __name__)
 
 
 @provides('datastore', True)
-@requires('dispatcher', 'json_decode', 'json_encode', 'cls_registry')
+@requires('json_decode', 'json_encode', 'cls_registry')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
         self.redis = StrictRedis(connection_pool=pool)
-        self.class_map = {}
-        self.object_map = {}
+        self._class_map = {}
+        self._object_map = {}
 
-    def create_object(self, dbo, update_rev=False):
-        self.save_object(dbo, update_rev)
+    def create_object(self, dbo):
+        if self.object_exists(dbo.dbo_key_type, dbo.dbo_id):
+            raise ObjectExistsError(dbo.dbo_key)
+        save_object(dbo)
         dbo.on_loaded()
 
     def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:
             rev = getattr(dbo, "dbo_rev", None)
             dbo.dbo_rev = 1 if not rev else rev + 1
-        dbo.before_save()
-        key = dbo.dbo_key
-        self.redis.set(key, self.json_encode(dbo.save_json_obj))
+        if dbo.dbo_indexes:
+            self.update_indexes(dbo)
+        self.redis.set(dbo.dbo_key, self.json_encode(dbo.save_dbo_dict))
         if dbo.dbo_set_key:
-            self.redis.sadd(dbo.dbo_set_key, key)
-        self.dispatch("db_log{0}".format("_auto" if autosave else ""), "object saved: " + key)
-        self.object_map[dbo.dbo_key] = dbo
+            self.redis.sadd(dbo.dbo_set_key, dbo.dbo_key)
+        trace("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
+        self._object_map[dbo.dbo_key] = dbo
 
     def load_cached(self, key):
-        return self.object_map.get(key)
+        return self._object_map.get(key)
 
     def evict_object(self, dbo):
         try:
-            del self.object_map[dbo.dbo_key]
-        except:
+            del self._object_map[dbo.dbo_key]
+        except KeyError:
             debug("Failed to evict " + dbo.dbo_key + " from db cache", self)
 
     @logged
     def load_by_key(self, key_type, key, base_class=None):
         dbo_key = unicode('{0}:{1}'.format(key_type, key))
-        cached_dbo = self.object_map.get(dbo_key)
+        cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
         json_str = self.redis.get(dbo_key)
         if not json_str:
             return None
-        json_obj = self.json_decode(json_str)
-        dbo = self._load_class(json_obj, base_class)(key)
+        dbo_dict = self.json_decode(json_str)
+        dbo = self._load_class(dbo_dict, base_class)(key)
         if dbo.dbo_key_type:
-            self.object_map[dbo.dbo_key] = dbo
-        self.load_json(dbo, json_obj)
+            self._object_map[dbo.dbo_key] = dbo
+        self.hydrate_dbo(dbo, dbo_dict)
         return dbo
 
     def object_exists(self, obj_type, obj_id):
-        key = unicode('{0}:{1}'.format(obj_type, obj_id))
+        key = unicode('{}:{}'.format(obj_type, obj_id))
         return key in self.redis.keys(key)
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
 
-    def update_object(self, dbo, json_obj):
-        self.load_json(dbo, json_obj)
+    def update_object(self, dbo, dbo_dict):
+        self.hydrate_dbo(dbo, dbo_dict)
         self.save_object(dbo, True)
 
     def delete_object(self, dbo):
@@ -78,9 +81,13 @@ class RedisStore():
                 coll = getattr(dbo, dbo_col.field_name, set())
                 for child_dbo in coll:
                     self.delete_object(child_dbo)
+        for ix_name in dbo.dbo_indexes:
+            ix_value = getattr(dbo, ix_name, None)
+            if ix_value is not None and ix_value != '':
+                self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
         debug("object deleted: " + key, self)
-        if self.object_map.get(dbo.dbo_key):
-            del self.object_map[dbo.dbo_key]
+        if self._object_map.get(dbo.dbo_key):
+            del self._object_map[dbo.dbo_key]
         return True
 
     def fetch_set_keys(self, set_key):
@@ -95,11 +102,43 @@ class RedisStore():
     def delete_index(self, index_name, key):
         return self.redis.hdel(index_name, key)
 
-    def _load_class(self, json_obj, base_class):
-        class_path = json_obj.get("class_name")
+    def update_indexes(self, dbo):
+        try:
+            old_dbo = self.json_decode(self.redis.get(dbo.dbo_key))
+        except TypeError:
+            old_dbo = None
+
+        for ix_name in dbo.dbo_indexes:
+            new_val = getattr(dbo, ix_name, None)
+            old_val = old_dbo.get(ix_name) if old_dbo else None
+            if old_val == new_val:
+                continue
+            ix_key = 'ix:{}:{}'.format(dbo.dbo_key_type, ix_name)
+            if old_val is not None:
+                self.delete_index(ix_key, old_val)
+            if new_val is not None and new_val != '':
+                if self.get_index(ix_key, new_val):
+                    raise NonUniqueError(ix_key, new_val)
+                self.set_index(ix_key, new_val, dbo.dbo_key)
+
+    def build_indexes(self, dbo_cls):
+        for ix_name in dbo_cls.dbo_indexes:
+            self.redis.delete('ix:{}:{}'.format(dbo_cls.dbo_key_type, ix_name))
+        for dbo_id in self.fetch_set_keys(dbo_cls.dbo_set_key):
+            try:
+                dbo_dict = self.json_decode(self.redis.get(dbo_id))
+                for ix_name in dbo_cls.dbo_indexes:
+                    ix_value = dbo_dict.get(ix_name)
+                    if ix_value is not None and ix_value != '':
+                        self.set_index('ix:{}:{}'.format(dbo_cls.dbo_key_type, ix_name), ix_value, dbo_id)
+            except (ValueError, TypeError):
+                warn("Missing dbo object {} from set key {}".format(dbo_id, dbo_cls.dbo_set_key, self))
+
+    def _load_class(self, dbo_dict, base_class):
+        class_path = dbo_dict.get("class_name")
         if not class_path:
             return self.cls_registry(base_class)
-        cls = self.class_map.get(class_path)
+        cls = self._class_map.get(class_path)
         if cls:
             return cls
         split_path = class_path.split(".")
@@ -108,25 +147,25 @@ class RedisStore():
         module = __import__(module_name, globals(), locals(), [class_name])
         cls = getattr(module, class_name)
         cls = self.cls_registry(cls)
-        self.class_map[class_path] = cls
+        self._class_map[class_path] = cls
         return cls
 
-    def load_json(self, dbo, json_obj):
+    def hydrate_dbo(self, dbo, dbo_dict):
         for field_name in dbo.dbo_fields:
             try:
-                setattr(dbo, field_name, json_obj[field_name])
+                setattr(dbo, field_name, dbo_dict[field_name])
             except KeyError:
                 pass
         for dbo_col in dbo.dbo_collections:
             coll = getattr(dbo, dbo_col.field_name, [])
             try:
-                for child_json in json_obj[dbo_col.field_name]:
+                for child_json in dbo_dict[dbo_col.field_name]:
                     try:
                         if dbo_col.key_type:
                             child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
                         else:
                             child_dbo = self._load_class(child_json, dbo_col.base_class)()
-                            self.load_json(child_dbo, child_json)
+                            self.hydrate_dbo(child_dbo, child_json)
                         coll.append(child_dbo)
                     except AttributeError:
                         warn("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)), self)
@@ -136,10 +175,10 @@ class RedisStore():
 
         for dbo_ref in dbo.dbo_refs:
             try:
-                ref_key = json_obj[dbo_ref.field_name]
+                ref_key = dbo_dict[dbo_ref.field_name]
                 ref_obj = self.load_by_key(dbo_ref.key_type, ref_key, dbo_ref.base_class)
                 setattr(dbo, dbo_ref.field_name, ref_obj)
-            except:
+            except KeyError:
                 if dbo.dbo_key_type:
                     trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name, self)
         dbo.on_loaded()

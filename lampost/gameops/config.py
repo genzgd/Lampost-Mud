@@ -2,7 +2,8 @@ from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.util.lmutil import javascript_safe
 
-m_requires('datastore', 'dispatcher', __name__)
+m_requires('log', 'datastore', 'dispatcher', __name__)
+
 
 @provides('config_manager')
 class ConfigManager():
@@ -11,7 +12,10 @@ class ConfigManager():
 
     def _post_init(self):
         self.config = load_object(Config, self.config_id)
-        dispatch("config_updated", self.config_js)
+        if self.config:
+            dispatch("config_updated", self.config_js)
+        else:
+            error("No configuration found", self)
 
     def next_user_id(self):
         result = str(self.config.next_user_id)
@@ -48,7 +52,7 @@ class ConfigManager():
 
     @property
     def config_json(self):
-        return self.config.json_obj
+        return self.config.dbo_dict
 
 
 class Config(RootDBO):

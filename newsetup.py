@@ -11,7 +11,7 @@ for arg in sys.argv[1:]:
         name, value = arg.split(":")
         setup_args[name] = value
     except ValueError:
-        print "Invalid argument format: %s" % arg
+        print "Invalid argument format: {}".format(arg)
         sys.exit(2)
 
 if not setup_args.get('imm_name'):

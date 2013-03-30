@@ -1,8 +1,8 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
+from lampost.datastore.exceptions import DataError
 from lampost.model.mobile import MobileTemplate
-from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
@@ -51,7 +51,7 @@ class MobileCreate(Resource):
         if area.get_mobile(mobile_id):
             raise DataError(mobile_id + " already exists in this area")
         template = self.cls_registry(MobileTemplate)(mobile_id)
-        load_json(template, content.object)
+        hydrate_dbo(template, content.object)
         save_object(template)
         area.mobiles.append(template)
         save_object(area)

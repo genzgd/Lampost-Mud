@@ -1,5 +1,5 @@
 from lampost.client.user import UserManager
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, context_post_init
 from lampost.env.room import Room
 from lampost.gameops.config import Config, ConfigManager
 from lampost.gameops.permissions import Permissions
@@ -34,6 +34,8 @@ class NewSetup(object):
 
         MudNature(flavor)
         user_manager = UserManager()
+
+        context_post_init()
 
         player = cls_registry(Player)(imm_name)
 

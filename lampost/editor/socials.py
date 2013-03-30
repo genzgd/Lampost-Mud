@@ -2,8 +2,9 @@ from twisted.web.resource import Resource
 
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
+from lampost.datastore.exceptions import DataError
 from lampost.mud.socials import Social
-from lampost.util.lmutil import DataError, Blank
+from lampost.util.lmutil import Blank
 from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
 m_requires('datastore', 'perm', 'mud', __name__)
@@ -31,7 +32,7 @@ class SocialList(Resource):
 class SocialGet(Resource):
     @request
     def render_POST(self, content, session):
-        return load_object(Social, content.social_id).json_obj
+        return load_object(Social, content.social_id).dbo_dict
 
 
 @requires('cls_registry', 'social_registry')
@@ -93,7 +94,7 @@ class SocialCopy(Resource):
         copy.dbo_id = content.copy_id
         save_object(copy)
         self.social_registry.insert(copy)
-        return copy.json_obj
+        return copy.dbo_dict
 
 
 

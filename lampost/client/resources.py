@@ -3,10 +3,11 @@ from datetime import datetime
 
 from twisted.web.resource import Resource, NoResource
 from twisted.web.server import NOT_DONE_YET
+from lampost.datastore.exceptions import DataError
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires
-from lampost.util.lmutil import build_object, PermError, DataError, StateError
+from lampost.util.lmutil import build_object, PermError, StateError
 
 m_requires('log', 'session_manager', 'json_decode', 'json_encode', __name__)
 

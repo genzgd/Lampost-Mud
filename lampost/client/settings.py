@@ -2,8 +2,10 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
+from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
-from lampost.util.lmutil import DataError, StateError
+from lampost.util.encrypt import make_hash, check_password
+from lampost.util.lmutil import StateError
 
 m_requires('datastore', 'user_manager', 'perm', __name__)
 
@@ -27,7 +29,7 @@ class SettingsGet(Resource):
         if session.user.dbo_id != content.user_id:
             check_perm(session, 'admin')
         user = load_object(User, content.user_id)
-        user_json = user.json_obj
+        user_json = user.dbo_dict
         user_json['password'] = ''
         return user_json
 
@@ -36,7 +38,7 @@ class AccountCreate(Resource):
     @request
     def render_POST(self, content, session):
         account_name = content.account_name.lower()
-        if get_index("user_name_index", account_name) or object_exists('player', account_name):
+        if get_index("ix:user:name", account_name) or object_exists('player', account_name):
             raise DataError(content.account_name + " is in use.")
         user = user_manager.create_user(account_name, content.password, content.email)
         session.connect_user(user)
@@ -46,7 +48,7 @@ class AccountCreate(Resource):
 class AccountUpdate(Resource):
     @request
     def render_POST(self, content, session):
-        user_json = content.user
+        update_dict = content.user
         user_id = content.user_id
         if session.user.dbo_id != content.user_id:
             check_perm(session, 'admin')
@@ -57,16 +59,16 @@ class AccountUpdate(Resource):
             if not old_user:
                 raise StateError(user_id + " does not exist!")
 
-        if user_manager.check_name(user_json['user_name'], old_user) != "ok":
-            raise DataError(user_id + " is in use")
+        if user_manager.check_name(update_dict['user_name'], old_user) != "ok":
+            raise DataError("{} is in use".format(update_dict['user_name']))
         user = User(user_id)
-        if not user_json['password']:
-            user_json['password'] = old_user.password
+        if update_dict['password']:
+            update_dict['password'] = make_hash(update_dict['password'])
+        else:
+            update_dict['password'] = old_user.password
 
-        update_object(user, user_json)
-        if old_user:
-            delete_index("user_name_index", old_user.user_name.lower())
-        set_index("user_name_index", user.user_name.lower(), user_id)
+        update_object(user, update_dict)
+
 
 
 @requires('session_manager')
@@ -74,7 +76,7 @@ class AccountDelete(Resource):
     @request
     def render_POST(self, content, session):
         user = session.user
-        if user.player_ids and content.password != user.password:
+        if user.player_ids and not check_password(content.password, user.password):
             raise StateError("Incorrect password.")
         response = self.session_manager.logout(session)
         user_manager.delete_user(user)
@@ -89,12 +91,12 @@ class PlayerCreate(Resource):
         if not user:
             raise DataError("User {0} does not exist".format([content.user_id]))
         player_name = content.player_name.lower()
-        if player_name != user.user_name and get_index("user_name_index", player_name):
+        if player_name != user.user_name and get_index("ix:user:user_name", player_name):
             raise DataError(content.player_name + " is in use.")
         if object_exists('player', player_name):
             raise DataError(content.player_name + " is in use.")
         player = self.cls_registry(Player)(player_name)
-        load_json(player, content.player_data)
+        hydrate_dbo(player, content.player_data)
         user_manager.attach_player(user, player)
 
 
@@ -111,7 +113,7 @@ class PlayerDelete(Resource):
     @request
     def render_POST(self, content, session):
         user = session.user
-        if content.password != user.password:
+        if not check_password(content.password, user.password):
             raise DataError("Incorrect account password")
         if not content.player_id in user.player_ids:
             raise StateError("Player not longer associated with user")

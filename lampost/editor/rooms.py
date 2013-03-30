@@ -2,12 +2,12 @@ from twisted.web.resource import Resource
 
 from lampost.client.resources import request
 from lampost.context.resource import m_requires
+from lampost.datastore.exceptions import DataError
 from lampost.env.movement import Direction
 from lampost.env.room import Room, Exit
 from lampost.model.mobile import MobileReset
 from lampost.model.article import ArticleReset
 from lampost.model.item import BaseItem
-from lampost.util.lmutil import DataError
 
 m_requires('datastore', 'perm', 'mud', __name__)
 
@@ -79,7 +79,7 @@ class RoomDelete(Resource):
                     other_room.exits.remove(other_exit)
                     save_object(other_room, True)
                     restore_contents(other_room, other_contents)
-                    deleted_exits.append(ExitDTO(other_exit, other_room.dbo_id))
+                    deleted_exits.append(exit_dto(other_exit, other_room.dbo_id))
         delete_object(room)
         area.rooms.remove(room)
         save_object(area, True)
@@ -112,17 +112,17 @@ class RoomUpdate(Resource):
         for extra_json in content.extras:
             if extra_json.get('title', None):
                 extra = BaseItem()
-                load_json(extra, extra_json)
+                hydrate_dbo(extra, extra_json)
                 room.extras.append(extra)
         room.mobile_resets = []
         for mobile_json in content.mobiles:
             mobile_reset = MobileReset()
-            load_json(mobile_reset, mobile_json)
+            hydrate_dbo(mobile_reset, mobile_json)
             room.mobile_resets.append(mobile_reset)
         room.article_resets = []
         for article_json in content.articles:
             article_reset = ArticleReset()
-            load_json(article_reset, article_json)
+            hydrate_dbo(article_reset, article_json)
             room.article_resets.append(article_reset)
         save_object(room, True)
         restore_contents(room, contents)
@@ -252,7 +252,7 @@ def exit_dto(room_exit, start_id=None):
 
 
 def mobile_reset_dto(mobile_reset):
-    dto = mobile_reset.json_obj
+    dto = mobile_reset.dbo_dict
     mobile = mud.get_mobile(mobile_reset.mobile_id)
     if mobile:
         dto['desc'] = mobile.desc if mobile.desc else mobile.title
@@ -264,7 +264,7 @@ def mobile_reset_dto(mobile_reset):
 
 
 def article_reset_dto(article_reset):
-    dto = article_reset.json_obj
+    dto = article_reset.dbo_dict
     article = mud.get_article(article_reset.article_id)
     if article:
         dto['desc'] = article.desc if article.desc else article.title
@@ -276,6 +276,6 @@ def article_reset_dto(article_reset):
 
 
 def room_dto(room):
-    return {'id': room.dbo_id, 'title': room.title, 'desc': room.desc, 'dbo_rev': room.dbo_rev, 'extras': [extra.json_obj for extra in room.extras],
+    return {'id': room.dbo_id, 'title': room.title, 'desc': room.desc, 'dbo_rev': room.dbo_rev, 'extras': [extra.dbo_dict for extra in room.extras],
             'exits': [exit_dto(room_exit) for room_exit in room.exits], 'mobiles': [mobile_reset_dto(mobile_reset) for mobile_reset in room.mobile_resets],
             'articles': [article_reset_dto(article_reset) for article_reset in room.article_resets]}

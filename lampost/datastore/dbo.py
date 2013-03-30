@@ -31,7 +31,11 @@ class RootDBO(object):
     dbo_fields = ()
     dbo_collections = ()
     dbo_refs = ()
+    dbo_indexes = ()
     dbo_id = None
+
+    def on_loaded(self):
+        pass
 
     @property
     def dbo_key(self):
@@ -49,28 +53,22 @@ class RootDBO(object):
         return '-embedded-'
 
     @property
-    def save_json_obj(self):
-        return self._to_json_obj(True)
+    def save_dbo_dict(self):
+        return self._to_dbo_dict(True)
 
     @property
-    def json_obj(self):
-        return self._to_json_obj()
+    def dbo_dict(self):
+        return self._to_dbo_dict()
 
     @property
     def dto_value(self):
-        json_obj = self._to_json_obj()
-        json_obj['dbo_id'] = self.dbo_id
-        return json_obj
+        dbo_dict = self._to_dbo_dict()
+        dbo_dict['dbo_id'] = self.dbo_id
+        return dbo_dict
 
     @property
     def json(self):
-        return json_encode(self._to_json_obj())
-
-    def on_loaded(self):
-        pass
-
-    def before_save(self):
-        pass
+        return json_encode(self._to_dbo_dict())
 
     def autosave(self):
         save_object(self, autosave=True)
@@ -114,31 +112,31 @@ class RootDBO(object):
                 append(col.field_name, "None")
         return display
 
-    def _to_json_obj(self, use_defaults=False):
-        json_obj = {}
+    def _to_dbo_dict(self, use_defaults=False):
+        dbo_dict = {}
         if self.__class__ != cls_registry(self.dbo_base_class):
-            json_obj["class_name"] = self.__module__ + "." + self.__class__.__name__
+            dbo_dict["class_name"] = self.__module__ + "." + self.__class__.__name__
         for field_name in self.dbo_fields:
             if use_defaults:
                 default = getattr(self.__class__, field_name, None)
                 instance = getattr(self, field_name, None)
                 if instance != default:
-                    json_obj[field_name] = getattr(self, field_name, None)
+                    dbo_dict[field_name] = getattr(self, field_name, None)
             else:
-                json_obj[field_name] = getattr(self, field_name, None)
+                dbo_dict[field_name] = getattr(self, field_name, None)
         for dbo_col in self.dbo_collections:
             coll_list = list()
             for child_dbo in getattr(self, dbo_col.field_name):
                 if dbo_col.key_type:
                     coll_list.append(child_dbo.dbo_id)
                 else:
-                    coll_list.append(child_dbo._to_json_obj(use_defaults))
-            json_obj[dbo_col.field_name] = coll_list
+                    coll_list.append(child_dbo._to_dbo_dict(use_defaults))
+            dbo_dict[dbo_col.field_name] = coll_list
         for dbo_ref in self.dbo_refs:
             ref = getattr(self, dbo_ref.field_name, None)
             if ref:
-                json_obj[dbo_ref.field_name] = ref.dbo_id
-        return json_obj
+                dbo_dict[dbo_ref.field_name] = ref.dbo_id
+        return dbo_dict
 
 
 class DBORef():

@@ -1,3 +1,4 @@
+from lampost.client.user import User
 import lampost.setup.update
 
 from lampost.gameops.action import ActionError
@@ -6,7 +7,7 @@ from lampost.mud.action import imm_action
 from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
-m_requires('session_manager', 'mud', 'datastore', 'perm', 'nature', __name__)
+m_requires('session_manager', 'mud', 'datastore', 'perm', 'nature', 'email_sender', 'user_manager', __name__)
 
 @imm_action('edit')
 def edit(source, **ignored):
@@ -152,10 +153,12 @@ def register_display(source, args, **ignored):
     source.register(args[0], source.display_line)
     source.display_line("Events of type {0} will now be displayed".format(args[0]))
 
+
 @imm_action('unregister display')
 def unregister_display(source, args, **ignored):
     source.unregister_type(source, args[0])
     source.display_line("Events of type {0} will no longer be displayed".format(args[0]))
+
 
 @imm_action('describe', 'describe')
 def describe(source, target, **ignored):
@@ -175,6 +178,7 @@ def reset(source, **ignored):
     return "Room reset"
 
 @imm_action("loglevel", imm_level='supreme')
+
 def log_level(args, **ignored):
     log = get_resource("log")
     if args:
@@ -200,3 +204,20 @@ def promote(source, target, obj, **ignored):
 @imm_action('run_update', imm_level='supreme')
 def run_update(args, **ignored):
     lampost.setup.update.__dict__[args[0]]()
+
+
+@imm_action('email', imm_level='admin')
+def email(verb, args, command, **ignored):
+    if len(args) < 2:
+        return "Player and message required"
+    player = user_manager.find_player(args[0])
+    if not player:
+        return "Player not found"
+    user = load_object(User, player.user_id)
+    message = find_extra(verb, 1, command)
+    return email_sender.send_targeted_email('Lampost Message', message, [user])
+
+
+
+
+
