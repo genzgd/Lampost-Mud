@@ -102,8 +102,8 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
 
 
 
-angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog', 'lmBus', 'lmDialog',
-    function($timeout, $http, lmLog, lmBus, lmDialog) {
+angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'lmLog', 'lmBus', 'lmDialog',
+    function($timeout, $http, $q, lmLog, lmBus, lmDialog) {
 
     var sessionId = '';
     var playerId = '';
@@ -131,37 +131,45 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         });
     }
 
-    function resourceRequest(resource, data, showWait) {
-        if (showWait) {
-            if (waitCount == 0) {
-                waitDialogId = lmDialog.show({template:loadingTemplate, noEscape:true});
-            }
-            waitCount++;
+    function resourceRequest(resource, data) {
+        if (waitCount == 0) {
+            waitDialogId = lmDialog.show({template:loadingTemplate, noEscape:true});
         }
+        waitCount++;
 
         function checkWait() {
-            if (showWait) {
-                waitCount--;
-                if (waitCount == 0) {
-                    lmDialog.close(waitDialogId);
-                    waitDialogId = null;
-                }
+            waitCount--;
+            if (waitCount == 0) {
+                lmDialog.close(waitDialogId);
+                waitDialogId = null;
             }
         }
 
-        return $http({method: 'POST', url: '/' + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}}).
-            error(function(data, status) {
-                checkWait();
-                if (status == 403) {
-                    lmDialog.showOk("Denied", "You do not have permission for that action");
-                } else if (status != 409) {
-                    lmDialog.showOk("Server Error: " + status, data);
-                }
-            }).then(function(result) {
-                checkWait();
-                return result.data;
-            });
-
+        return $http({method: 'POST', url: '/' + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
+                .then(function(result) {
+                    checkWait();
+                    return result.data;
+                }, function(result) {
+                    checkWait();
+                    if (result.status == 409) {
+                        var errorResult = {id: 'Error', raw: result.data, text: result.data};
+                        var colon_ix = result.data.indexOf(':');
+                        if (colon_ix > 0) {
+                            var space_ix = result.data.indexOf(' ');
+                            if (space_ix == -1 || colon_ix < space_ix) {
+                                errorResult.id = result.data.substring(0, colon_ix);
+                                errorResult.text = $.trim(result.data.substring(colon_ix + 1));
+                            }
+                        }
+                        return $q.reject(errorResult);
+                    }
+                    if (result.status == 403) {
+                        lmDialog.showOk("Denied", "You do not have permission for that action");
+                    } else {
+                        lmDialog.showOk("Server Error: " + status, data);
+                    }
+                    return result;
+                });
     }
 
     function link() {
@@ -297,12 +305,12 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', 'lmLog',
         sessionId = parentSession;
     };
 
-    this.request = function(resource, args, showWait) {
+    this.request = function(resource, args) {
         return $http.get('dialogs/loading.html').then(function(template) {
             loadingTemplate = template.data;
 
         }).then(function() {
-                return resourceRequest(resource, args, showWait)
+                return resourceRequest(resource, args)
             });
     };
 

@@ -63,6 +63,7 @@ class AreaUpdate(Resource):
         datastore.save_object(area, True)
         return area_dto(area)
 
+
 def area_dto(area, can_write=True):
     return {'id': area.dbo_id, 'dbo_rev': area.dbo_rev, 'name': area.name, 'owner_id': area.owner_id, 'room': len(area.rooms),
             'article':len(area.articles), 'mobile': len(area.mobiles), 'next_room_id': area.next_room_id, 'can_write': can_write}

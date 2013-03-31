@@ -187,7 +187,7 @@ class UserSession(object):
 
     def link_failed(self, error):
         if self.player:
-            warn("Link failed for {}: ".format(self.player.name, repr(error)), self)
+            warn("Link failed for {} ".format(self.player.name, repr(error)), self)
         self.ld_time = datetime.now()
         self.request = None
 

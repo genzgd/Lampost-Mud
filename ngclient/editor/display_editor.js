@@ -12,7 +12,7 @@ angular.module('lampost_editor').controller('DisplayEditorController', ['$scope'
 
     function loadDisplays() {
         $scope.ready = false;
-        lmRemote.request($scope.editor.url + '/list', {}, true).then(function (displays) {
+        lmRemote.request($scope.editor.url + '/list').then(function (displays) {
             $scope.displays = displays;
             $scope.ready = true;
         })

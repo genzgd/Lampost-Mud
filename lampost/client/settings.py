@@ -39,7 +39,7 @@ class AccountCreate(Resource):
     def render_POST(self, content, session):
         account_name = content.account_name.lower()
         if get_index("ix:user:name", account_name) or object_exists('player', account_name):
-            raise DataError(content.account_name + " is in use.")
+            raise DataError("InUse: {}".format(content.account_name))
         user = user_manager.create_user(account_name, content.password, content.email)
         session.connect_user(user)
         return {'user_id': user.dbo_id}
@@ -60,7 +60,7 @@ class AccountUpdate(Resource):
                 raise StateError(user_id + " does not exist!")
 
         if user_manager.check_name(update_dict['user_name'], old_user) != "ok":
-            raise DataError("{} is in use".format(update_dict['user_name']))
+            raise DataError("InUse: {}".format(update_dict['user_name']))
         user = User(user_id)
         if update_dict['password']:
             update_dict['password'] = make_hash(update_dict['password'])

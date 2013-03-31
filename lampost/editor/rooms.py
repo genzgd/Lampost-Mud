@@ -56,7 +56,7 @@ class RoomCreate(Resource):
         room_dto = content.room
         room_id = content.area_id + ':' + str(room_dto['id'])
         if area.get_room(room_id):
-            raise DataError("ROOM_EXISTS")
+            raise DataError("RoomExists:")
         room = Room(room_id, room_dto['title'], room_dto['desc'])
         save_object(room)
         area.rooms.append(room)

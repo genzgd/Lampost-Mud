@@ -55,7 +55,7 @@ angular.module('lampost_editor').controller('NewRoomController', ['$scope', 'lmR
                 parentScope.roomCreated(roomData);
                 $scope.dismiss();
             }, function (error) {
-                if (error.data == "ROOM_EXISTS") {
+                if (error.id == "RoomExists") {
                     $scope.roomExists = true;
                 }
             })
@@ -135,7 +135,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
 
         $scope.deleteExit = function(exit, bothSides) {
             var exitData = {start_room:$scope.roomId, both_sides:bothSides,  dir:exit.dir};
-            lmRemote.request($scope.editor.url + "/delete_exit", exitData, true).then(function(result) {
+            lmRemote.request($scope.editor.url + "/delete_exit", exitData).then(function(result) {
                     lmEditor.exitDeleted(result.exit);
                     result.other_exit && lmEditor.exitDeleted(result.other_exit);
                     result.room_deleted && lmEditor.roomDeleted(result.room_deleted);
@@ -328,7 +328,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
             $scope.dirty();
         }
 
-        function updateArticleLoads(reset) {
+        function updateArticleLoads() {
             $scope.dirty();
         }
 
@@ -438,9 +438,7 @@ angular.module('lampost_editor').controller('NewExitController', ['$scope', 'lmE
                 }
                 $scope.dismiss();
             }, function (error) {
-                if (error.status == 409) {
-                    $scope.lastError = error.data;
-                }
+                $scope.lastError = error.text;
             })
         }
     }
@@ -525,7 +523,7 @@ angular.module('lampost_editor').controller('ArticleLoadController', ['$scope', 
         }
 
         $scope.addArticleLoad = function() {
-            var articleLoad = {article_id:$scope.newArticle.dbo_id, count: 1}
+            var articleLoad = {article_id:$scope.newArticle.dbo_id, count: 1};
             if ($scope.newArticle.type == "weapon") {
                 articleLoad.type = "equip";
                 for (var i = 0; i < reset.article_loads.length; i++) {
@@ -539,17 +537,17 @@ angular.module('lampost_editor').controller('ArticleLoadController', ['$scope', 
             }
             $scope.article_loads.push(articleLoad);
 
-        }
+        };
 
         $scope.deleteArticleLoad = function(articleIndex) {
             $scope.article_loads.splice(articleIndex, 1);
-        }
+        };
 
         $scope.saveArticleLoads = function() {
             reset.article_loads = $scope.article_loads;
             updateFunc();
             $scope.dismiss();
-        }
+        };
 
 
 

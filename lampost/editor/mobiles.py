@@ -65,7 +65,7 @@ class MobileDelete(Resource):
         mobile_resets = list(area.find_mobile_resets(mobile.dbo_id))
         if mobile_resets:
             if not content.force:
-                raise DataError('IN_USE')
+                raise DataError('InUse:')
             for room, mobile_reset in mobile_resets:
                 room.mobile_resets.remove(mobile_reset)
                 save_object(room, True)

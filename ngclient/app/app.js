@@ -229,9 +229,7 @@ angular.module('lampost').controller('NewAccountController', ['$scope', '$timeou
                     lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController", noEscape:true});
                 })
             }, function(error) {
-                if (error.status == 409) {
-                    $scope.errorText = error.data;
-                }
+                $scope.errorText = error.text;
             });
     }
 }]);

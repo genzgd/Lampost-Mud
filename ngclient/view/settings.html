@@ -15,12 +15,12 @@
               <label class="control-label">Account Name</label>
 
               <div class="controls">
-                <input class="span8" name="name" ng-change="inUse = false"
+                <input class="span8" name="name" ng-change="nameInUse = false"
                     type="text" ng-model="user.user_name" ng-minlength="2" ng-maxlength="20" required/>
 
-                <div class="alert alert-error" ng-show="inUse">
+                <div class="alert alert-error" ng-show="nameInUse">
                   <button type="button" class="close" ng-click="inUse = false">×</button>
-                  Account name in use
+                  Account name in use.
                 </div>
               </div>
             </div>
@@ -31,6 +31,10 @@
               <div class="controls">
                 <input class="span10" type="text" ng-model="user.email" name="email"/>
               </div>
+               <div class="alert alert-error" ng-show="emailInUse">
+                  <button type="button" class="close" ng-click="emailInUse = false">×</button>
+                  This email is already associated with another account.
+                </div>
             </div>
             <div class="control-group">
               <label class="control-label">New Password</label>

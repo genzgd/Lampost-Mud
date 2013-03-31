@@ -65,7 +65,7 @@ class ArticleDelete(Resource):
         article_resets = list(area.find_article_resets(article.dbo_id))
         if article_resets:
             if not content.force:
-                raise DataError('IN_USE')
+                raise DataError('InUse:')
             for room, article_reset in article_resets:
                 room.article_resets.remove(article_reset)
                 save_object(room, True)

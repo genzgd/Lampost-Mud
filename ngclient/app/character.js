@@ -9,7 +9,7 @@ angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmDat
         if (lmData.playerIds.length == 0) {
             lmDialog.showConfirm("No Characters", "This account has no characters and will be deleted.  Do you still wish to continue?",
                 function() {
-                    lmRemote.request("settings/delete_account", {}, function(response) {
+                    lmRemote.request("settings/delete_account").then(function(response) {
                         lmBus.dispatchMap(response);
                     });
                     $scope.dismiss();
@@ -42,7 +42,7 @@ angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmDat
             lmBus.dispatch('players_updated');
             $scope.dismiss();
         }, function(error) {
-            $scope.errorText = error.data;
+            $scope.errorText = error.text;
         });
     }
 
@@ -61,7 +61,7 @@ angular.module('lampost').controller('SelectCharacterController', ['$scope', 'lm
 
     loadCharacters();
     function loadCharacters() {
-        lmRemote.request("settings/get_players", {user_id: lmData.userId}, true).then(function(players) {
+        lmRemote.request("settings/get_players", {user_id: lmData.userId}).then(function(players) {
             $scope.players = players;
         });
     }

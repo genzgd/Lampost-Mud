@@ -27,7 +27,8 @@ angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote'
 
 angular.module('lampost').controller('AccountFormController', ['$scope', '$timeout', 'lmData', 'lmRemote',
     function ($scope, $timeout, lmData, lmRemote) {
-    $scope.inUse = false;
+    $scope.nameInUse = false;
+    $scope.emailInUse = false;
     $scope.passwordMismatch = false;
 
     lmRemote.request("settings/get", {user_id:lmData.userId}).then(updateSettings);
@@ -51,7 +52,11 @@ angular.module('lampost').controller('AccountFormController', ['$scope', '$timeo
                         $scope.showSuccess = false;
                     }, 3000);
                 }, function(error) {
-                    $scope.inUse = true;
+                    if (error.id == 'NonUnique') {
+                        $scope.emailInUse = true;
+                    } else {
+                        $scope.nameInUse = true;
+                    }
                 })
         }
     }
@@ -70,10 +75,10 @@ angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmDa
         }
         lmDialog.showPrompt({title:"Delete Player", prompt:"Enter account password to delete player " + playerId + ":", password:true,
             submit: function(password) {
-                lmRemote.request("settings/delete_player", {player_id:playerId, password:password}, true).then(function(players) {
+                lmRemote.request("settings/delete_player", {player_id:playerId, password:password}).then(function(players) {
                     $scope.players = players;
                 }, function(error) {
-                    $scope.errorText = error.data;
+                    $scope.errorText = error.text;
                 });
             }
         });
@@ -87,7 +92,7 @@ angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmDa
 
     loadCharacters();
     function loadCharacters() {
-        lmRemote.request("settings/get_players", {user_id: lmData.userId}, true).then(function(players) {
+        lmRemote.request("settings/get_players", {user_id: lmData.userId}).then(function(players) {
             $scope.players = players;
         });
     }

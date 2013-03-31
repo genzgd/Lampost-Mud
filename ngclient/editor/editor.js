@@ -104,9 +104,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     this.startEditors = function (editorList) {
         self.editors = [];
         currentMap = {};
-        var ids = editorList;
-        for (var i = 0; i < ids.length; i++) {
-            var editor = new Editor(ids[i]);
+        for (var i = 0; i < editorList.length; i++) {
+            var editor = new Editor(editorList[i]);
             self.editors.push(editor);
             currentMap[editor.id] = editor;
         }
@@ -198,7 +197,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
             deferred.resolve(rooms);
             return deferred.promise;
         }
-        return lmRemote.request('editor/room/list', {area_id:areaId}, true).then(function (rooms) {
+        return lmRemote.request('editor/room/list', {area_id:areaId}).then(function (rooms) {
             idSort(rooms,  'id');
             self.roomsMaster[areaId] = rooms;
             return rooms;
@@ -212,7 +211,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
             deferred.resolve(objects);
             return deferred.promise;
         }
-        return lmRemote.request('editor/' + type + '/list', {area_id:areaId}, true).then(function (objects) {
+        return lmRemote.request('editor/' + type + '/list', {area_id:areaId}).then(function (objects) {
             master[type][areaId] = objects;
             lmUtil.stringSort(objects, 'dbo_id');
             return objects;
@@ -312,7 +311,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
             lmRemote.request('editor/' + type + '/delete', {object_id:objectId, force:false}).then(function ()
                     {objectDeleted(type, objectId);},
                 function(error) {
-                    if (error.data == 'IN_USE') {
+                    if (error.id == 'InUse') {
                         lmDialog.showConfirm('Object in Use', 'This ' + type + ' is in use.  Delete anyway?', function () {
                             lmRemote.request('editor/' + type + '/delete', {object_id:objectId, force:true}).then( function() {
                                 objectDeleted(type, objectId);
