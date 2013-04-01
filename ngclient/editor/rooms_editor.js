@@ -1,4 +1,4 @@
-angular.module('lampost_editor').controller('RoomsEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
+angular.module('lampost_editor').controller('RoomsEditorCtrl', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmEditor, lmDialog, lmBus) {
 
         $scope.areaId = $scope.editor.parent;
@@ -21,7 +21,7 @@ angular.module('lampost_editor').controller('RoomsEditorController', ['$scope', 
 
         $scope.showNewDialog = function () {
             var area = lmEditor.getArea($scope.areaId);
-            lmDialog.show({templateUrl:"editor/dialogs/new_room.html", controller:"NewRoomController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_room.html", controller:"NewRoomCtrl",
                 locals:{parentScope:$scope, nextRoomId:area.next_room_id}});
         };
 
@@ -46,7 +46,7 @@ angular.module('lampost_editor').controller('RoomsEditorController', ['$scope', 
     }]);
 
 
-angular.module('lampost_editor').controller('NewRoomController', ['$scope', 'lmRemote', 'parentScope',  'nextRoomId',
+angular.module('lampost_editor').controller('NewRoomCtrl', ['$scope', 'lmRemote', 'parentScope',  'nextRoomId',
     function ($scope, lmRemote, parentScope, nextRoomId) {
         $scope.areaId = parentScope.areaId;
         $scope.newRoom = {id:nextRoomId, title:'', desc:''};
@@ -63,7 +63,7 @@ angular.module('lampost_editor').controller('NewRoomController', ['$scope', 'lmR
     }
 ]);
 
-angular.module('lampost_editor').controller('RoomEditorController', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
+angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
     function ($scope, lmBus, lmRemote, lmEditor, $timeout, lmDialog) {
 
         lmBus.register("exit_added", exitAdded);
@@ -129,7 +129,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         };
 
         $scope.addNewExit = function() {
-            lmDialog.show({templateUrl:"editor/dialogs/new_exit.html", controller:"NewExitController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_exit.html", controller:"NewExitCtrl",
                 locals:{parentScope:$scope, roomId:$scope.roomId}});
         };
 
@@ -161,7 +161,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         };
 
         $scope.addNewMobile = function() {
-            lmDialog.show({templateUrl:"editor/dialogs/new_reset.html", controller:"NewResetController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_reset.html", controller:"NewResetCtrl",
                 locals:{addFunc:addMobileReset, roomId:$scope.roomId, resetType:'Mobile', areaId: areaId}});
         };
 
@@ -171,12 +171,12 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
         };
 
         $scope.mobileArticles = function(mobile) {
-            lmDialog.show({templateUrl:"editor/dialogs/article_load.html", controller:"ArticleLoadController",
+            lmDialog.show({templateUrl:"editor/dialogs/article_load.html", controller:"ArticleLoadCtrl",
                 locals:{updateFunc:updateArticleLoads, reset:mobile, areaId: areaId}});
         };
 
         $scope.addNewArticle = function() {
-            lmDialog.show({templateUrl:"editor/dialogs/new_reset.html", controller:"NewResetController",
+            lmDialog.show({templateUrl:"editor/dialogs/new_reset.html", controller:"NewResetCtrl",
                 locals:{addFunc:addArticleReset, roomId:$scope.roomId, resetType:'Article', areaId: areaId}});
         };
 
@@ -334,7 +334,7 @@ angular.module('lampost_editor').controller('RoomEditorController', ['$scope', '
 
     }]);
 
-angular.module('lampost_editor').controller('NewExitController', ['$scope', 'lmEditor', 'lmRemote', 'roomId',
+angular.module('lampost_editor').controller('NewExitCtrl', ['$scope', 'lmEditor', 'lmRemote', 'roomId',
     function ($scope, lmEditor, lmRemote, roomId) {
 
         var area;
@@ -444,7 +444,7 @@ angular.module('lampost_editor').controller('NewExitController', ['$scope', 'lmE
     }
 ]);
 
-angular.module('lampost_editor').controller('NewResetController', ['$scope', 'addFunc', 'roomId', 'resetType', 'lmEditor', 'areaId',
+angular.module('lampost_editor').controller('NewResetCtrl', ['$scope', 'addFunc', 'roomId', 'resetType', 'lmEditor', 'areaId',
     function ($scope, addFunc, roomId, resetType, lmEditor, areaId) {
 
         var invalidObject = {dbo_id:'No ' + resetType + 's', title:'No ' + resetType + 's', desc:''};
@@ -486,7 +486,7 @@ angular.module('lampost_editor').controller('NewResetController', ['$scope', 'ad
 
 }]);
 
-angular.module('lampost_editor').controller('ArticleLoadController', ['$scope', 'lmEditor', 'reset', 'areaId', 'updateFunc',
+angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lmEditor', 'reset', 'areaId', 'updateFunc',
     function ($scope, lmEditor, reset, areaId, updateFunc) {
 
         $scope.areaList = [];

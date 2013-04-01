@@ -1,18 +1,18 @@
-<div class="container_fluid" ng-controller="MudConfigController" ng-show="ready">
+<div class="container_fluid" ng-controller="MudConfigCtrl" ng-show="ready">
   <div class="row-fluid">
     <form >
       <div class="span4">
         <label>Mud Title</label>
         <input class="span10" type="text" ng-model="config.title" required="true"/>
         <label>Mud Description</label>
-        <textarea class="span10" rows="10"  ng-model="config.description" required="true"></textarea>
+        <textarea class="span10" rows="10"  ng-model="config.description" required></textarea>
       </div>
       <div class="span3">
         <label>Start Area</label>
-        <select class="span10" ng-change="changeArea()" ng-model="startAreaId" ng-options="areaId for areaId in areaList" required="true">
+        <select class="span10" ng-change="changeArea()" ng-model="startAreaId" ng-options="areaId for areaId in areaList" required>
         </select>
         <label>Start Room</label>
-        <select class="span10" ng-change="changeRoom()" ng-model="startRoom" ng-options="room.label for room in rooms" required="true">
+        <select class="span10" ng-change="changeRoom()" ng-model="startRoom" ng-options="room.label for room in rooms" required>
         </select>
         <label>Next User Id</label>
         <input class="span4 pagination-right" type="number" ng-model="config.next_user_id" required="true"/>

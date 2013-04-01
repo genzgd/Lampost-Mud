@@ -13,7 +13,7 @@
 
 <body ng-cloak class="container-fluid v-full">
   <h4>Lampost Editor</h4>
-  <div class="v-full" ng-controller="EditorController" ng-switch="loadStatus">
+  <div class="v-full" ng-controller="EditorCtrl" ng-switch="loadStatus">
     <div ng-switch-when="loading">Loading Data From Server</div>
     <div ng-switch-when="loaded" class="row-fluid wrapper">
       <div class="tabbable tabs-left span12 wrapper">

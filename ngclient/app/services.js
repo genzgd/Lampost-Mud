@@ -145,31 +145,32 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
             }
         }
 
-        return $http({method: 'POST', url: '/' + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
-                .then(function(result) {
-                    checkWait();
-                    return result.data;
-                }, function(result) {
-                    checkWait();
-                    if (result.status == 409) {
-                        var errorResult = {id: 'Error', raw: result.data, text: result.data};
-                        var colon_ix = result.data.indexOf(':');
-                        if (colon_ix > 0) {
-                            var space_ix = result.data.indexOf(' ');
-                            if (space_ix == -1 || colon_ix < space_ix) {
-                                errorResult.id = result.data.substring(0, colon_ix);
-                                errorResult.text = $.trim(result.data.substring(colon_ix + 1));
-                            }
+        var deferred = $q.defer();
+        $http({method: 'POST', url: '/' + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
+            .success(function(data) {
+                checkWait();
+                deferred.resolve(data);
+            }).error(function(data, status) {
+                checkWait();
+                if (status == 409) {
+                    var errorResult = {id: 'Error', raw: data, text: data};
+                    var colon_ix = data.indexOf(':');
+                    if (colon_ix > 0) {
+                        var space_ix = data.indexOf(' ');
+                        if (space_ix == -1 || colon_ix < space_ix) {
+                            errorResult.id = data.substring(0, colon_ix);
+                            errorResult.text = $.trim(data.substring(colon_ix + 1));
                         }
-                        return $q.reject(errorResult);
                     }
-                    if (result.status == 403) {
-                        lmDialog.showOk("Denied", "You do not have permission for that action");
-                    } else {
-                        lmDialog.showOk("Server Error: " + status, data);
-                    }
-                    return result;
-                });
+                    deferred.reject(errorResult);
+                } else if (status == 403) {
+                    lmDialog.showOk("Denied", "You do not have permission for that action");
+                } else {
+                    lmDialog.showOk("Server Error: " + status, data);
+                }
+            });
+
+        return deferred.promise;
     }
 
     function link() {
@@ -193,7 +194,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         lmLog.log("Link stopped: " + status);
         setTimeout(function() {
             if (!connected && !window.windowClosing) {
-                lmDialog.show({template: reconnectTemplate, controller: ReconnectController, noEscape:true});
+                lmDialog.show({template: reconnectTemplate, controller: ReconnectCtrl, noEscape:true});
             }
         }, 100);
     }
@@ -333,7 +334,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
     lmBus.register("window_closing", onWindowClosing);
 
 
-    function ReconnectController($scope, $timeout) {
+    function ReconnectCtrl($scope, $timeout) {
         var tickPromise;
         var time = 16;
         lmBus.register("link_status", function() {
@@ -358,7 +359,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
             tickPromise = $timeout(tickDown, 1000);
         }
     }
-    ReconnectController.$inject = ['$scope', '$timeout'];
+    ReconnectCtrl.$inject = ['$scope', '$timeout'];
 
 }]);
 
@@ -435,7 +436,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             locals.$scope = dialogScope;
             locals.dialog = dialog;
             var controller = $controller(args.controller, locals);
-            element.contents().data('$ngControllerController', controller);
+            element.contents().data('$ngController', controller);
         }
 
         link(dialogScope);
@@ -507,7 +508,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         scope.title = title;
         scope.body = msg;
         showDialog({templateUrl:'dialogs/alert.html', scope:scope,
-            controller:AlertController});
+            controller:AlertCtrl});
     };
 
     this.showConfirm = function (title, msg, confirm) {
@@ -519,7 +520,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         scope.body = msg;
 
         showDialog({templateUrl:'dialogs/alert.html', scope:scope,
-            controller:AlertController, noEscape:true});
+            controller:AlertCtrl, noEscape:true});
     };
 
     this.showPrompt = function(args) {
@@ -538,7 +539,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
 
     };
 
-    function AlertController($scope, dialog) {
+    function AlertCtrl($scope, dialog) {
         $scope.click = function (button) {
             button.click && button.click();
             button.dismiss && $scope.dismiss();

@@ -1,4 +1,4 @@
-<div ng-controller="ObjectEditorController" style="height: 100%; overflow-y: auto">
+<div ng-controller="ObjectEditorCtrl" style="height: 100%; overflow-y: auto">
   <div class="row-fluid">
     <div class="span4">
       <div class="row-fluid">
@@ -65,14 +65,14 @@
         </div>
         <div class="span4">
           <label>Equip Slot</label>
-          <select class="span10" ng-change="dirty()" ng-model="model.slot" ng-options="slot for slot in constants.equip_slots" required="true">
+          <select class="span10" ng-change="dirty()" ng-model="model.slot" ng-options="slot for slot in constants.equip_slots" required>
           </select>
         </div>
       </div>
       <div class="row-fluid">
         <div class="span4">
           <label>Article Type</label>
-          <select class="span10" ng-change="dirty()" ng-model="model.type" ng-options="type for type in constants.equip_types" required="true">
+          <select class="span10" ng-change="dirty()" ng-model="model.type" ng-options="type for type in constants.equip_types" required>
           </select>
         </div>
       </div>

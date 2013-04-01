@@ -1,4 +1,4 @@
-angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote', 'lmDialog', 'lmBus',
+angular.module('lampost').controller('SettingsCtrl', ['$scope', 'lmRemote', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmDialog, lmBus) {
 
     $scope.headings = [{id:"account", label:"Account", class:"active"},
@@ -25,7 +25,7 @@ angular.module('lampost').controller('SettingsController', ['$scope', 'lmRemote'
     };
 }]);
 
-angular.module('lampost').controller('AccountFormController', ['$scope', '$timeout', 'lmData', 'lmRemote',
+angular.module('lampost').controller('AccountFormCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote',
     function ($scope, $timeout, lmData, lmRemote) {
     $scope.nameInUse = false;
     $scope.emailInUse = false;
@@ -63,7 +63,7 @@ angular.module('lampost').controller('AccountFormController', ['$scope', '$timeo
 
 }]);
 
-angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
+angular.module('lampost').controller('CharactersTabCtrl', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
     function($scope, lmData, lmRemote, lmBus, lmDialog) {
 
     $scope.players = [];
@@ -87,7 +87,7 @@ angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmDa
     lmBus.register('players_updated', loadCharacters, $scope);
 
     $scope.addCharacter = function() {
-        lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});
+        lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterCtrl"});
     };
 
     loadCharacters();
@@ -101,9 +101,10 @@ angular.module('lampost').controller('CharactersTabController', ['$scope', 'lmDa
 }]);
 
 
-angular.module('lampost').controller('DisplayTabController', ['$scope', 'lmData', 'lmRemote', function($scope, lmData, lmRemote) {
+angular.module('lampost').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote', function($scope, $timeout, lmData, lmRemote) {
 
     $scope.selectors = [];
+    $scope.showSuccess = false;
 
     angular.forEach(lmData.defaultDisplays, function(value, key) {
        var selector = {name: key, desc: value.desc, defaultColor:value.color};
@@ -124,7 +125,11 @@ angular.module('lampost').controller('DisplayTabController', ['$scope', 'lmData'
            }
         });
         lmData.userDisplays = newDisplays;
-        lmRemote.request("settings/update_display", {displays: newDisplays});
+        lmRemote.request("settings/update_display", {displays: newDisplays}).then(function() {
+            $scope.showSuccess = true;
+            $timeout(function() {$scope.showSuccess = false;}
+                , 3000);
+            })
     }
 
 }]);

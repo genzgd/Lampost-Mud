@@ -1,6 +1,7 @@
 from smtplib import SMTPHeloError, SMTP, SMTPRecipientsRefused, SMTPSenderRefused, SMTPDataError
+from threading import Thread
 
-from lampost.context.resource import provides, m_requires
+from lampost.context.resource import provides, requires, m_requires
 
 m_requires('log', __name__)
 
@@ -24,26 +25,32 @@ class EmailSender():
     def send_targeted_email(self, subject, text, users):
         if not self.available:
             return "Email not available"
-        server = self._open_server()
+        wrappers = []
         for user in users:
             if user.email:
-                email_message = "\From: {}\nTo: {}\nSubject:{}\n\n{}".format(self.email_name, user.user_name, subject, text)
-                self._send_message(server, user.email, email_message)
+                wrappers.append(EmailWrapper(user.email, "\From: {}\nTo: {}\nSubject:{}\n\n{}".format(self.email_name, user.user_name, subject, text)))
             else:
                 log.warn("User {} has no email address".format(user.user_name), self)
-        server.close()
+        MessageSender(wrappers).start()
         return "Email Sent"
 
-    def _open_server(self):
-        server = SMTP("smtp.gmail.com", 587)
-        server.ehlo()
-        server.starttls()
-        server.login(self.email_address, self.email_password)
-        return server
 
-    def _send_message(self, server, addresses, message):
+@requires('email_sender')
+class MessageSender(Thread):
+
+    def __init__(self, wrappers):
+        super(MessageSender, self).__init__()
+        self.wrappers = wrappers
+
+    def run(self):
+        self._open_server()
+        for wrapper in self.wrappers:
+            self._send_message(wrapper.addresses, wrapper.message)
+        self.server.close()
+
+    def _send_message(self, addresses, message):
         try:
-            return server.sendmail(self.email_address, addresses, message)
+            self.server.sendmail(self.email_sender.email_address, addresses, message)
         except SMTPHeloError as exp:
             error("Helo error sending email", self, exp)
         except SMTPRecipientsRefused:
@@ -52,3 +59,15 @@ class EmailSender():
             error("Sender refused for email", self)
         except SMTPDataError as exp:
             error("Unexpected Data error sending email", self, exp)
+
+    def _open_server(self):
+        self.server = SMTP("smtp.gmail.com", 587)
+        self.server.ehlo()
+        self.server.starttls()
+        self.server.login(self.email_sender.email_address, self.email_sender.email_password)
+
+
+class EmailWrapper(object):
+    def __init__(self, addresses, message):
+        self.addresses = addresses
+        self.message = message

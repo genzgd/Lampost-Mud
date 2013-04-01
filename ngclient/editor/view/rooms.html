@@ -1,10 +1,10 @@
-<div ng-controller="RoomsEditorController" ng-show="ready" class="wrapper">
+<div ng-controller="RoomsEditorCtrl" ng-show="ready" class="wrapper">
     <div class="span2">
         <h4>Rooms - {{areaId}}</h4>
         <button ng-click="showNewDialog()" class="btn btn-small btn-success">New Room</button>
     </div>
     <div class="span8 scrollable">
-        <table class="table table-condensed" ng-controller="TableController" edit-list="rooms" >
+        <table class="table table-condensed" ng-controller="TableCtrl" edit-list="rooms" >
             <thead>
             <tr>
                 <th class="span1"></th>

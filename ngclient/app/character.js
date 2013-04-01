@@ -1,4 +1,4 @@
-angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
+angular.module('lampost').controller('NewCharacterCtrl', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
     function($scope, lmData, lmRemote, lmBus, lmDialog) {
 
     $scope.playerName = '';
@@ -48,7 +48,7 @@ angular.module('lampost').controller('NewCharacterController', ['$scope', 'lmDat
 
 }]);
 
-angular.module('lampost').controller('SelectCharacterController', ['$scope', 'lmRemote', 'lmBus', 'lmData',
+angular.module('lampost').controller('SelectCharacterCtrl', ['$scope', 'lmRemote', 'lmBus', 'lmData',
     function($scope, lmRemote, lmBus, lmData) {
 
     $scope.players = [];

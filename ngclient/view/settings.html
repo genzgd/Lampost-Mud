@@ -1,4 +1,4 @@
-<div class="container-fluid" ng-controller="SettingsController">
+<div class="container-fluid" ng-controller="SettingsCtrl">
   <div class="row-fluid">
     <div class="span2">
       <h5>Your Settings</h5>
@@ -10,7 +10,7 @@
     <div class="span8" ng-switch="headingId">
       <div class="row-fluid" ng-switch-when="account">
         <div class="span6">
-          <form ng-controller="AccountFormController" name="accountForm" ng-submit="submitAccount()" class="well span12 form-horizontal">
+          <form ng-controller="AccountFormCtrl" name="accountForm" ng-submit="submitAccount()" class="well span12 form-horizontal">
             <div class="control-group">
               <label class="control-label">Account Name</label>
 
@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      <div ng-switch-when="characters" ng-controller="CharactersTabController">
+      <div ng-switch-when="characters" ng-controller="CharactersTabCtrl">
         <div class="row-fluid">
           <div class="span4">
             <button class="btn btn-info" ng-click="addCharacter()">Add Character</button>
@@ -102,18 +102,24 @@
         </div>
       </div>
 
-      <div ng-switch-when="display" ng-controller="DisplayTabController">
+      <div ng-switch-when="display" ng-controller="DisplayTabCtrl">
         <div class="row-fluid">
-          <div class="offset8 span2">
-            <button class="btn btn-primary" title="Reset to game default" ng-click="updateDisplay()">Update Display</button>
+          <div class="span9">
+            <div ng-repeat="selector in selectors" class="row-fluid">
+              <div class="span3">{{selector.desc}}</div>
+              <div class="span1"></div>
+              <div class="span2"><input type="text" ng-model="selector.userColor" color-picker></div>
+              <div class="span2">
+                <button class="btn btn-mini" ng-click="selector.userColor = selector.defaultColor">Reset</button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div ng-repeat="selector in selectors" class="row-fluid">
-          <div class="span3">{{selector.desc}}</div>
-          <div class="span1"></div>
-          <div class="span2"><input type="text" ng-model="selector.userColor" color-picker></div>
-          <div class="span2">
-            <button class="btn btn-mini" ng-click="selector.userColor = selector.defaultColor">Reset</button>
+          <div class="span3">
+            <button class="btn btn-primary" title="Reset to game default" ng-click="updateDisplay()">Update Display</button>
+             <div class="alert alert-success" ng-show="showSuccess">
+              <button type="button" class="close" ng-click="showSuccess = false">×</button>
+              Display Settings Updated
+            </div>
           </div>
         </div>
       </div>

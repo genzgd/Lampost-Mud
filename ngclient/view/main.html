@@ -1,7 +1,7 @@
-<div class="container-fluid" ng-style="gameHeight" ng-controller="GameController">
+<div class="container-fluid" ng-style="gameHeight" ng-controller="GameCtrl">
   <div class="row-fluid main-display">
     <div ng-switch="actionPane" class="span6 v-full">
-      <div ng-switch-when="login" ng-controller="LoginController">
+      <div ng-switch-when="login" ng-controller="LoginCtrl">
         <div class="row-fluid">
           <div class="span6">
             <h4>Welcome to {{siteTitle}}</h4>
@@ -17,25 +17,20 @@
           </div>
           <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
             <label>Player or Account Name:</label>
-            <input class="span11" type="text" ng-change="loginError = false" ng-model="userId" pref-focus required/>
+            <input class="span11" style="margin-bottom: 0;" type="text" ng-change="loginError = false" ng-model="userId" pref-focus required/>
+            <div class="forgot-link offset3" ng-click="forgotName()">Forgot your account name?</div>
             <label>Account Password:</label>
-            <input class="span11" type="password" ng-change="loginError = false" ng-model="password" required/>
-
+            <input class="span11" style="margin-bottom: 0;" type="password" ng-change="loginError = false" ng-model="password" required/>
+            <div class="forgot-link offset3" ng-click="forgotPassword()">Forgot your password?</div>
             <div class="alert alert-error" ng-show="loginError">
               <button type="button" class="close" ng-click="loginError = false">×</button>
               Invalid user name or password
             </div>
-            <button class="btn btn-small btn-primary" type="submit">Enter {{siteTitle}}</button>
+            <button class="btn btn-small btn-primary" style="margin-top: 4px" type="submit">Enter {{siteTitle}}</button>
           </form>
-
-        </div>
-        <div class="row-fluid">
-          <div class="span6 offset6">
-            <button class="btn btn-small" ng-click="forgot()">Forget your name or password?</button>
-          </div>
         </div>
       </div>
-      <div ng-switch-default ng-controller="ActionController" class="v-full">
+      <div ng-switch-default ng-controller="ActionCtrl" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12" >
           <div ng-repeat="line in display" ng-style="line.style" ng-bind-html-unsafe="line.text"></div>
         </div>
@@ -59,7 +54,7 @@
           </ul>
 
           <div class="tab-content span12">
-            <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListController">
+            <div class="tab-pane active" id="playerListTab" ng-controller="PlayerListCtrl">
               <table class="table table-condensed">
                 <thead>
                 <tr>

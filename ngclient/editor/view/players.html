@@ -1,9 +1,9 @@
-<div ng-controller="PlayersEditorController" ng-show="ready" class="wrapper">
+<div ng-controller="PlayersEditorCtrl" ng-show="ready" class="wrapper">
   <div class="span2">
     <h4>Players {{players.length}}</h4>
   </div>
   <div class="span8 scrollable">
-    <table class="table table-condensed" ng-controller="TableController" edit-list="rooms" >
+    <table class="table table-condensed" ng-controller="TableCtrl" edit-list="rooms" >
       <thead>
       <tr>
         <th class="span1"></th>

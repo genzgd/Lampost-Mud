@@ -1,4 +1,4 @@
-<div class="v-full" ng-controller="SocialsEditorController" ng-show="ready">
+<div class="v-full" ng-controller="SocialsEditorCtrl" ng-show="ready">
   <div class="span2">
     <h4>Socials ({{socials.length}})</h4>
     <button ng-click="showNewSocialDialog()" class="btn btn-small btn-success">New Social</button>
@@ -8,7 +8,7 @@
     </div>
   </div>
   <div class="span2 scrollable wrapper">
-    <table class="table table-condensed table-bordered" ng-controller="TableController" edit-list="rooms" >
+    <table class="table table-condensed table-bordered" ng-controller="TableCtrl" edit-list="rooms" >
       <thead>
       <tr>
         <th>Social</th>

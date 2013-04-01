@@ -383,7 +383,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 }]);
 
 
-angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEditor', 'lmBus', function ($scope, lmEditor, lmBus) {
+angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmBus', function ($scope, lmEditor, lmBus) {
 
     lmBus.register('editor_change', editorChange);
     lmBus.register('editor_ready', editorReady);
@@ -421,7 +421,7 @@ angular.module('lampost_editor').controller('EditorController', ['$scope', 'lmEd
 }]);
 
 
-angular.module('lampost_editor').controller('TableController', ['$scope', 'lmRemote', function ($scope) {
+angular.module('lampost_editor').controller('TableCtrl', ['$scope', 'lmRemote', function ($scope) {
     var self = this;
     $scope.rowClass = function (rowForm) {
         if (rowForm.$invalid) {
@@ -445,7 +445,7 @@ angular.module('lampost_editor').controller('TableController', ['$scope', 'lmRem
 }]);
 
 
-angular.module('lampost_editor').controller('AreasEditorController', ['$scope', 'lmRemote', 'lmDialog', 'lmUtil', 'lmEditor',
+angular.module('lampost_editor').controller('AreasEditorCtrl', ['$scope', 'lmRemote', 'lmDialog', 'lmUtil', 'lmEditor',
     function ($scope, lmRemote, lmDialog, lmUtil, lmEditor) {
 
         var originals = {};
@@ -457,7 +457,7 @@ angular.module('lampost_editor').controller('AreasEditorController', ['$scope', 
 
         $scope.showNewDialog = function () {
             lmDialog.show({templateUrl:"editor/dialogs/new_area.html",
-                controller:"NewAreaController", locals:{parentScope:$scope}})
+                controller:"NewAreaCtrl", locals:{parentScope:$scope}})
         };
 
         $scope.addNew = function (newArea) {
@@ -493,7 +493,7 @@ angular.module('lampost_editor').controller('AreasEditorController', ['$scope', 
     }]);
 
 
-angular.module('lampost_editor').controller('NewAreaController', ['$scope', 'lmRemote', 'parentScope',
+angular.module('lampost_editor').controller('NewAreaCtrl', ['$scope', 'lmRemote', 'parentScope',
     function ($scope, lmRemote, parentScope) {
 
         $scope.newArea = {};
@@ -512,7 +512,7 @@ angular.module('lampost_editor').controller('NewAreaController', ['$scope', 'lmR
     }]);
 
 
-angular.module('lampost_editor').controller('MudConfigController', ['$rootScope', '$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
+angular.module('lampost_editor').controller('MudConfigCtrl', ['$rootScope', '$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
     function ($rootScope, $scope, lmBus, lmRemote, lmEditor, $timeout) {
 
     var configCopy;

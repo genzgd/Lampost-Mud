@@ -42,7 +42,7 @@ class RedisStore():
         try:
             del self._object_map[dbo.dbo_key]
         except KeyError:
-            debug("Failed to evict " + dbo.dbo_key + " from db cache", self)
+            warn("Failed to evict " + dbo.dbo_key + " from db cache", self)
 
     @logged
     def load_by_key(self, key_type, key, base_class=None):
@@ -168,7 +168,7 @@ class RedisStore():
                             self.hydrate_dbo(child_dbo, child_json)
                         coll.append(child_dbo)
                     except AttributeError:
-                        warn("{0} json failed to load for coll {1} in {2}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)), self)
+                        warn("{} json failed to load for coll {} in {}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)), self)
             except KeyError:
                 if dbo.dbo_key_type:
                     trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name, self)

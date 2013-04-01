@@ -1,3 +1,5 @@
+import random
+import string
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.client.user import User
@@ -7,7 +9,7 @@ from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lmutil import StateError
 
-m_requires('datastore', 'user_manager', 'perm', __name__)
+m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', __name__)
 
 
 class SettingsResource(Resource):
@@ -21,6 +23,9 @@ class SettingsResource(Resource):
         self.putChild('get_players', GetPlayers())
         self.putChild('delete_player', PlayerDelete())
         self.putChild('update_display', DisplayUpdate())
+        self.putChild('send_name', SendAccountName())
+        self.putChild('temp_password', TempPassword())
+        self.putChild('set_password', SetPassword())
 
 
 class SettingsGet(Resource):
@@ -40,7 +45,7 @@ class AccountCreate(Resource):
         account_name = content.account_name.lower()
         if get_index("ix:user:name", account_name) or object_exists('player', account_name):
             raise DataError("InUse: {}".format(content.account_name))
-        user = user_manager.create_user(account_name, content.password, content.email)
+        user = user_manager.create_user(account_name, content.password, content.email.lower())
         session.connect_user(user)
         return {'user_id': user.dbo_id}
 
@@ -66,9 +71,8 @@ class AccountUpdate(Resource):
             update_dict['password'] = make_hash(update_dict['password'])
         else:
             update_dict['password'] = old_user.password
-
+        update_dict['email'] = update_dict['email'].lower()
         update_object(user, update_dict)
-
 
 
 @requires('session_manager')
@@ -127,6 +131,52 @@ class DisplayUpdate(Resource):
     def render_POST(self, content, session):
         user = session.user
         user.displays = content.displays
+        save_object(user)
+
+
+class SendAccountName(Resource):
+    @request
+    def render_POST(self, content, session):
+        email = content.info.lower()
+        user_id = get_index("ix:user:email", email)
+        if not user_id:
+            raise DataError("User Not Found")
+        user = load_object(User, user_id.split(":")[1])
+        email_msg = "Your {} account name is {}.\nThe players on this account are {}."\
+            .format(config_manager.name, user.user_name,
+                    ','.join([player_id.capitalize() for player_id in user.player_ids]))
+        email_sender.send_targeted_email('Account/Player Names', email_msg, [user])
+
+
+class TempPassword(Resource):
+    @request
+    def render_POST(self, content, session):
+        user_id = get_index("ix:user:user_name", content.info.lower())
+        if user_id:
+            user_id = user_id.split(':')[1]
+        else:
+            player = load_object(Player, content.info.lower())
+            if not player:
+                raise DataError("Name Not Found.")
+            user_id = player.user_id
+        user = load_object(User, user_id)
+        if not user or not user.email:
+            raise DataError("No Email On File For {}".format(content.info))
+        temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _unused in range(12))
+        email_msg = "Your {} temporary password is {}.\nYou wil be asked to change it after you log in."\
+            .format(config_manager.name, temp_pw)
+        user.password = make_hash(temp_pw)
+        user.password_reset = True
+        save_object(user)
+        email_sender.send_targeted_email('Your {} temporary password.'.format(config_manager.name), email_msg, [user])
+
+
+class SetPassword(Resource):
+    @request
+    def render_POST(self, content, session):
+        user = session.user
+        user.password = make_hash(content.password)
+        user.password_reset = False
         save_object(user)
 
 

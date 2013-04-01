@@ -37,15 +37,19 @@ angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmD
 
         lmBus.register("user_login", function() {
             if (lmData.playerIds.length == 0) {
-                lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController"});
+                lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterCtrl"});
             } else {
-                lmDialog.show({templateUrl:"dialogs/select_character.html", controller:"SelectCharacterController"});
+                lmDialog.show({templateUrl:"dialogs/select_character.html", controller:"SelectCharacterCtrl"});
             }
+        });
+
+        lmBus.register("password_reset", function() {
+            lmDialog.show({templateUrl:'dialogs/password_reset.html', controller:'PasswordResetCtrl', noEscape: true});
         });
     }]);
 
 
-angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil', 'lmDialog',
+angular.module('lampost').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil', 'lmDialog',
     function ($rootScope, $scope, $location, lmBus, lmData, lmUtil, lmDialog) {
 
         $(window).on("resize", function () {
@@ -114,10 +118,11 @@ angular.module('lampost').controller('NavController', ['$rootScope', '$scope', '
             }
             validatePath();
         }, $scope, -500);
+
     }]);
 
 
-angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmData', 'lmDialog',
+angular.module('lampost').controller('GameCtrl', ['$scope', 'lmBus', 'lmData', 'lmDialog',
     function ($scope, lmBus, lmData, lmDialog) {
 
         $scope.toolbar = [];
@@ -181,7 +186,7 @@ angular.module('lampost').controller('GameController', ['$scope', 'lmBus', 'lmDa
     }]);
 
 
-angular.module('lampost').controller('LoginController', ['$scope',  'lmDialog', 'lmBus',
+angular.module('lampost').controller('LoginCtrl', ['$scope',  'lmDialog', 'lmBus',
     function ($scope, lmDialog, lmBus) {
 
     $scope.loginError = false;
@@ -192,7 +197,15 @@ angular.module('lampost').controller('LoginController', ['$scope',  'lmDialog', 
     };
 
     $scope.newAccountDialog = function() {
-        lmDialog.show({templateUrl:"dialogs/new_account.html", controller:"NewAccountController"});
+        lmDialog.show({templateUrl:"dialogs/new_account.html", controller:"NewAccountCtrl"});
+    };
+
+    $scope.forgotName = function() {
+        lmDialog.show({templateUrl:"dialogs/forgot_name.html", controller:"ForgotNameCtrl"})
+    };
+
+     $scope.forgotPassword = function() {
+        lmDialog.show({templateUrl:"dialogs/forgot_password.html", controller:"ForgotPasswordCtrl"})
     };
 
     lmBus.register("login_failure", function() {
@@ -201,7 +214,7 @@ angular.module('lampost').controller('LoginController', ['$scope',  'lmDialog', 
 
 }]);
 
-angular.module('lampost').controller('NewAccountController', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmData',
+angular.module('lampost').controller('NewAccountCtrl', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmData',
     function($scope, $timeout, lmRemote, lmDialog, lmData) {
 
     $scope.accountName = "";
@@ -226,7 +239,7 @@ angular.module('lampost').controller('NewAccountController', ['$scope', '$timeou
                 lmData.userId = response.user_id;
                 $scope.dismiss();
                 $timeout(function() {
-                    lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterController", noEscape:true});
+                    lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterCtrl", noEscape:true});
                 })
             }, function(error) {
                 $scope.errorText = error.text;
@@ -234,7 +247,46 @@ angular.module('lampost').controller('NewAccountController', ['$scope', '$timeou
     }
 }]);
 
-angular.module('lampost').controller('ActionController', ['$scope', 'lmBus', 'lmData', function ($scope, lmBus, lmData) {
+angular.module('lampost').controller('ForgotNameCtrl', ['$scope', 'lmRemote', 'lmDialog', function($scope, lmRemote, lmDialog) {
+    $scope.showError = false;
+    $scope.submitRequest = function() {
+        lmRemote.request("settings/send_name", {info: $scope.info}).then(function() {
+            $scope.dismiss();
+            lmDialog.showOk("Email Sent", "An email has been sent to " + $scope.info + " with account information");
+        }, function() {
+            $scope.showError = true;
+        })
+    };
+}]);
+
+angular.module('lampost').controller('ForgotPasswordCtrl', ['$scope', 'lmRemote', 'lmDialog', function($scope, lmRemote, lmDialog) {
+    $scope.showError = false;
+    $scope.submitRequest = function() {
+        lmRemote.request("settings/temp_password", {info: $scope.info}).then(function() {
+            $scope.dismiss();
+            lmDialog.showOk("Password Sent","An email has been set to the address on file for " + $scope.info +
+                " with a temporary password.");
+        }, function() {
+            $scope.showError = true;
+        })
+    };
+}]);
+
+angular.module('lampost').controller('PasswordResetCtrl', ['$scope', 'lmRemote', function($scope, lmRemote) {
+    $scope.errorText = null;
+    $scope.password = '';
+    $scope.passwordCopy = '';
+    $scope.submitRequest = function() {
+        if ($scope.password != $scope.passwordCopy) {
+            $scope.errorText = "Passwords do not match";
+        } else {
+            $scope.dismiss();
+            lmRemote.request('settings/set_password', {password: $scope.password});
+        }
+    }
+}]);
+
+angular.module('lampost').controller('ActionCtrl', ['$scope', 'lmBus', 'lmData', function ($scope, lmBus, lmData) {
     var curAction;
     $scope.update = 0;
     $scope.action = "";

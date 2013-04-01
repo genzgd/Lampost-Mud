@@ -1,4 +1,4 @@
-angular.module('lampost_editor').controller('DisplayEditorController', ['$scope', 'lmRemote', 'lmBus', function ($scope, lmRemote, lmBus) {
+angular.module('lampost_editor').controller('DisplayEditorCtrl', ['$scope', 'lmRemote', 'lmBus', function ($scope, lmRemote, lmBus) {
 
     lmBus.register("editor_activated", function (editor) {
         if (editor == $scope.editor) {

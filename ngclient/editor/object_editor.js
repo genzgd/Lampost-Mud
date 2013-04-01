@@ -1,4 +1,4 @@
-angular.module('lampost_editor').controller('ObjectListController', ['$scope', 'lmEditor', 'lmDialog', 'lmBus',
+angular.module('lampost_editor').controller('ObjectListCtrl', ['$scope', 'lmEditor', 'lmDialog', 'lmBus',
     function ($scope, lmEditor, lmDialog, lmBus) {
 
         $scope.type = $scope.editor.childType;
@@ -15,7 +15,7 @@ angular.module('lampost_editor').controller('ObjectListController', ['$scope', '
         };
 
         $scope.showNewDialog = function() {
-            lmDialog.show({templateUrl:'editor/dialogs/new_' + $scope.type + '.html', controller:"NewObjectController",
+            lmDialog.show({templateUrl:'editor/dialogs/new_' + $scope.type + '.html', controller:"NewObjectCtrl",
                 locals:{type:$scope.type, areaId:$scope.areaId}});
         };
 
@@ -30,7 +30,7 @@ angular.module('lampost_editor').controller('ObjectListController', ['$scope', '
 
     }]);
 
-angular.module('lampost_editor').controller('NewObjectController', ['$scope', 'lmRemote', 'lmEditor', 'type', 'areaId',
+angular.module('lampost_editor').controller('NewObjectCtrl', ['$scope', 'lmRemote', 'lmEditor', 'type', 'areaId',
     function ($scope, lmRemote, lmEditor, type, areaId) {
 
         $scope.areaId = areaId;
@@ -52,7 +52,7 @@ angular.module('lampost_editor').controller('NewObjectController', ['$scope', 'l
     }
 ]);
 
-angular.module('lampost_editor').controller('ObjectEditorController', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
+angular.module('lampost_editor').controller('ObjectEditorCtrl', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
     function ($scope, lmBus, lmRemote, lmEditor, $timeout) {
 
         var copy = {};

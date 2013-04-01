@@ -1,4 +1,4 @@
-angular.module('lampost_editor').controller('SocialsEditorController', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
+angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmRemote', 'lmEditor', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmEditor, lmDialog, lmBus) {
 
         lmBus.register("editor_activated", function(editor) {
@@ -54,7 +54,7 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
         };
 
         $scope.showNewSocialDialog = function() {
-            lmDialog.show({templateUrl:'editor/dialogs/new_social.html', controller:"NewSocialController",
+            lmDialog.show({templateUrl:'editor/dialogs/new_social.html', controller:"NewSocialCtrl",
                 locals:{updateFunc:newSocial}});
         };
 
@@ -157,7 +157,7 @@ angular.module('lampost_editor').controller('SocialsEditorController', ['$scope'
 
     }]);
 
-angular.module('lampost_editor').controller('NewSocialController', ['$scope', 'lmRemote', 'updateFunc',
+angular.module('lampost_editor').controller('NewSocialCtrl', ['$scope', 'lmRemote', 'updateFunc',
     function($scope, lmRemote, updateFunc) {
 
         $scope.social = {social_id:"", map:{}};

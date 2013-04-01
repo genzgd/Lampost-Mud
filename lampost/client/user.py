@@ -10,12 +10,13 @@ m_requires('log', 'datastore', __name__)
 
 class User(RootDBO):
     dbo_key_type = "user"
-    dbo_fields = "user_name", "email", "password", "player_ids", "toolbar", "displays"
+    dbo_fields = "user_name", "email", "password", "password_reset", "player_ids", "toolbar", "displays"
     dbo_set_key = "users"
     dbo_indexes = "user_name", "email"
 
     user_name = ""
     password = None
+    password_reset = False
     email = ""
 
     def __init__(self, dbo_id):
@@ -107,7 +108,8 @@ class UserManager(object):
         return max(imm_levels)
 
     def client_data(self, user, player=None):
-        result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays}
+        result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
+                  'password_reset': user.password_reset}
         if player:
             result.update({'name': player.name, 'privilege': player.imm_level, 'editors':self.nature.editors(player)})
         return result

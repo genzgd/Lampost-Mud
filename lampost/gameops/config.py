@@ -45,6 +45,10 @@ class ConfigManager():
         return {'default_displays': self.config.default_displays}
 
     @property
+    def name(self):
+        return self.config.title
+
+    @property
     def config_js(self):
         title = javascript_safe(self.config.title)
         description = javascript_safe(self.config.description)

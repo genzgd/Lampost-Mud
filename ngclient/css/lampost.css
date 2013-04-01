@@ -1,6 +1,5 @@
 * {
     margin: 0;
-
 }
 
 html, body {
@@ -13,6 +12,17 @@ html, body {
     font-style: italic;
     font-size: 11px;
 }
+
+.forgot-link {
+  cursor: pointer;
+  font-style: italic;
+  font-size: 11px;
+  margin-top: -3px;
+  padding-top: 0;
+  padding-bottom: 3px;
+  margin-right: 10px;
+}
+
 
 .main-display {
     height: 96%;
@@ -38,7 +48,6 @@ div.telnet-input {
 }
 
 .icon-gray {
-
   opacity: 0.5;
 }
 
