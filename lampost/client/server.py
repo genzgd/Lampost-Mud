@@ -20,6 +20,8 @@ URL_CONNECT = "connect"
 URL_LSP = "lsp"
 URL_EDITOR = "editor"
 URL_SETTINGS = "settings"
+URL_REGISTER = "register"
+URL_UNREGISTER = 'unregister'
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 m_requires("log", __name__)
@@ -39,6 +41,8 @@ class WebServer(Resource):
         self.putChild(URL_CONNECT, ConnectResource())
         self.putChild(URL_EDITOR, EditorResource())
         self.putChild(URL_SETTINGS, SettingsResource())
+        self.putChild(URL_REGISTER, RegisterResource())
+        self.putChild(URL_UNREGISTER, UnregisterResource())
 
         self._lsp_server = LspServerResource()
         self.putChild(URL_LSP, self._lsp_server)

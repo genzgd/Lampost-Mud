@@ -26,6 +26,7 @@ class SettingsResource(Resource):
         self.putChild('send_name', SendAccountName())
         self.putChild('temp_password', TempPassword())
         self.putChild('set_password', SetPassword())
+        self.putChild('notifications', SetNotifications())
 
 
 class SettingsGet(Resource):
@@ -177,6 +178,14 @@ class SetPassword(Resource):
         user = session.user
         user.password = make_hash(content.password)
         user.password_reset = False
+        save_object(user)
+
+
+class SetNotifications(Resource):
+    @request
+    def render_POST(self, content, session):
+        user = session.user
+        user.notifies = content.notifies
         save_object(user)
 
 

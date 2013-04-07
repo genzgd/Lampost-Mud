@@ -9,7 +9,7 @@ from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires
 from lampost.util.lmutil import build_object, PermError, StateError
 
-m_requires('log', 'session_manager', 'json_decode', 'json_encode', __name__)
+m_requires('log', 'session_manager', 'client_services', 'json_decode', 'json_encode',  __name__)
 
 
 def find_session_id(request):
@@ -30,6 +30,7 @@ def request(func):
             if result is None:
                 request.setResponseCode(204)
                 return ''
+            request.setHeader('Content-Type', 'application/json')
             return json_encode(result)
         except PermError:
             request.setResponseCode(403)
@@ -80,10 +81,20 @@ class ActionResource(Resource):
         action = cgi.escape(content.action).strip()
         if action in ["quit", "logout", "log out"]:
             return session_manager.logout(session)
-        session.activity_time = datetime.now()
         player.parse(action)
         return session.pull_output()
 
+
+class RegisterResource(Resource):
+    @request
+    def render_POST(self, content, session):
+        return client_services.register(content.service_id, session, getattr(content, 'data', None))
+
+
+class UnregisterResource(Resource):
+    @request
+    def render_POST(self, content, session):
+        return client_services.unregister(content.service_id, session)
 
 class LspServerResource(Resource):
     IsLeaf = True

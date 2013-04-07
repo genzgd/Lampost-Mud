@@ -2,10 +2,11 @@ from lampost.context.resource import provides, requires
 from lampost.model.player import Player
 from lampost.util.lmutil import PermError
 
+
 @provides('perm', True)
 @requires('datastore')
 class Permissions(object):
-    levels = {'supreme':100000, 'admin':10000, 'creator':1000, 'none':0}
+    levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0}
 
     def __init__(self):
         self.rev_levels = {}
@@ -54,4 +55,3 @@ class Permissions(object):
 
     def perm_to_level(self, label):
         return self.levels.get(label)
-

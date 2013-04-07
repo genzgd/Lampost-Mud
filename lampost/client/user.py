@@ -10,7 +10,7 @@ m_requires('log', 'datastore', __name__)
 
 class User(RootDBO):
     dbo_key_type = "user"
-    dbo_fields = "user_name", "email", "password", "password_reset", "player_ids", "toolbar", "displays"
+    dbo_fields = "user_name", "email", "password", "password_reset", "player_ids", "toolbar", "displays", "notifies"
     dbo_set_key = "users"
     dbo_indexes = "user_name", "email"
 
@@ -24,6 +24,7 @@ class User(RootDBO):
         self.player_ids = []
         self.toolbar = []
         self.displays = {}
+        self.notifies = []
 
 
 @requires('config_manager', 'nature')
@@ -109,9 +110,9 @@ class UserManager(object):
 
     def client_data(self, user, player=None):
         result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
-                  'password_reset': user.password_reset}
+                  'password_reset': user.password_reset, 'notifies': user.notifies}
         if player:
-            result.update({'name': player.name, 'privilege': player.imm_level, 'editors':self.nature.editors(player)})
+            result.update({'name': player.name, 'privilege': player.imm_level, 'editors': self.nature.editors(player)})
         return result
 
     def login_player(self, player_id):

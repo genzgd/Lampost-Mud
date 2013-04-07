@@ -19,8 +19,8 @@ class Dispatcher:
         self.pulse_interval = pulse_interval
         self.pulses_per_second = 1 / pulse_interval
 
-    def register(self, event_type, callback):
-        return self._add_registration(Registration(event_type, callback))
+    def register(self, event_type, callback, owner=None):
+        return self._add_registration(Registration(event_type, callback, owner))
 
     def unregister(self, registration):
         registration.cancel()
@@ -85,18 +85,18 @@ class Dispatcher:
 
 
 class Registration(object):
-    def __init__(self, event_type, callback):
+    def __init__(self, event_type, callback, owner=None):
         self.event_type = event_type
         self.callback = callback
-        self.owner = getattr(callback, 'im_self', self)
+        self.owner = owner if owner else getattr(callback, 'im_self', self)
 
     def cancel(self):
         pass
 
 
 class PulseRegistration(Registration):
-    def __init__(self, freq, callback):
-        super(PulseRegistration, self).__init__('pulse_i', callback)
+    def __init__(self, freq, callback, owner=None):
+        super(PulseRegistration, self).__init__('pulse_i', callback, owner)
         self.freq = freq
 
     def cancel(self):

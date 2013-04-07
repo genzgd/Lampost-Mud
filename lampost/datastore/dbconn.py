@@ -41,6 +41,7 @@ class RedisStore():
     def evict_object(self, dbo):
         try:
             del self._object_map[dbo.dbo_key]
+            del dbo
         except KeyError:
             warn("Failed to evict " + dbo.dbo_key + " from db cache", self)
 
@@ -61,8 +62,7 @@ class RedisStore():
         return dbo
 
     def object_exists(self, obj_type, obj_id):
-        key = unicode('{}:{}'.format(obj_type, obj_id))
-        return key in self.redis.keys(key)
+        return self.redis.exists(unicode('{}:{}'.format(obj_type, obj_id)))
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
@@ -92,6 +92,18 @@ class RedisStore():
 
     def fetch_set_keys(self, set_key):
         return self.redis.smembers(set_key)
+
+    def add_set_key(self, set_key, value):
+        self.redis.sadd(set_key, value)
+
+    def delete_set_key(self, set_key, value):
+        self.redis.srem(set_key, value)
+
+    def set_key_exists(self, set_key, value):
+        return self.redis.sismember(set_key, value)
+
+    def delete_key(self, key):
+        self.redis.delete(key)
 
     def set_index(self, index_name, key, value):
         return self.redis.hset(index_name, key, value)
@@ -134,22 +146,6 @@ class RedisStore():
             except (ValueError, TypeError):
                 warn("Missing dbo object {} from set key {}".format(dbo_id, dbo_cls.dbo_set_key, self))
 
-    def _load_class(self, dbo_dict, base_class):
-        class_path = dbo_dict.get("class_name")
-        if not class_path:
-            return self.cls_registry(base_class)
-        cls = self._class_map.get(class_path)
-        if cls:
-            return cls
-        split_path = class_path.split(".")
-        module_name = ".".join(split_path[:-1])
-        class_name = split_path[-1]
-        module = __import__(module_name, globals(), locals(), [class_name])
-        cls = getattr(module, class_name)
-        cls = self.cls_registry(cls)
-        self._class_map[class_path] = cls
-        return cls
-
     def hydrate_dbo(self, dbo, dbo_dict):
         for field_name in dbo.dbo_fields:
             try:
@@ -183,3 +179,20 @@ class RedisStore():
                     trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name, self)
         dbo.on_loaded()
         return True
+
+    def _load_class(self, dbo_dict, base_class):
+        class_path = dbo_dict.get("class_name")
+        if not class_path:
+            return self.cls_registry(base_class)
+        cls = self._class_map.get(class_path)
+        if cls:
+            return cls
+        split_path = class_path.split(".")
+        module_name = ".".join(split_path[:-1])
+        class_name = split_path[-1]
+        module = __import__(module_name, globals(), locals(), [class_name])
+        cls = getattr(module, class_name)
+        cls = self.cls_registry(cls)
+        self._class_map[class_path] = cls
+        return cls
+

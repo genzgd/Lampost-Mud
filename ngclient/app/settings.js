@@ -3,7 +3,8 @@ angular.module('lampost').controller('SettingsCtrl', ['$scope', 'lmRemote', 'lmD
 
     $scope.headings = [{id:"account", label:"Account", class:"active"},
         {id:"characters", label:"Characters", class:""},
-        {id:"display", label:"Text Display", class:""}];
+        {id:"display", label:"Text Display", class:""},
+        {id:"notify", label:"Notifications", class:""}];
     $scope.headingId = "account";
     $scope.click = function (headingId) {
         $scope.headingId = headingId;
@@ -131,5 +132,9 @@ angular.module('lampost').controller('DisplayTabCtrl', ['$scope', '$timeout', 'l
                 , 3000);
             })
     }
+
+}]);
+
+angular.module('lampost').controller('NotifyTabCtrl', ['$scope', 'lmData', 'lmRemote', function($scope, lmData, lmRemote) {
 
 }]);

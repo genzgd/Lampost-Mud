@@ -24,6 +24,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.historyIx = 0;
         self.editorWindow = null;
         self.userDisplays = {};
+        self.notifies = [];
     }
 
     function updateDisplay(display) {
@@ -53,10 +54,12 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     function setUser(data) {
         self.userId = data.user_id;
         self.playerIds = data.player_ids;
+        self.notifies = data.notifies;
         if (data.password_reset) {
             lmBus.dispatch('password_reset');
         }
     }
+
 
     lmBus.register('client_config', function(data) {
         self.defaultDisplays = data.default_displays;
@@ -64,6 +67,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
     lmBus.register("login", function(data) {
         setUser(data);
+        self.editors = data.editors;
         self.playerIds = data.player_ids;
         self.playerName = data.name;
         self.userDisplays = data.displays;
@@ -72,11 +76,6 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
     }, null, -100);
 
     lmBus.register("user_login", setUser, null, -100);
-
-    lmBus.register("player_list", function(data) {
-        self.playerList = data;
-    });
-
     lmBus.register("display", updateDisplay, null, -100);
     lmBus.register("logout", clear, null, -100);
 
@@ -84,14 +83,3 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
 
 }]);
 
-
-function PlayerListCtrl($scope, lmData, lmBus) {
-
-    lmBus.register("player_list", update, $scope);
-    update();
-
-    function update() {
-        $scope.playerList = lmData.playerList;
-    }
-}
-PlayerListCtrl.$inject = ['$scope', 'lmData', 'lmBus'];

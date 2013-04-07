@@ -1,5 +1,6 @@
 from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
+from lampost.client.services import client_services, ClientServiceManager
 from lampost.context.classes import ClassRegistry
 from lampost.context.resource import register, provides, context_post_init
 from lampost.client.server import WebServer
@@ -30,8 +31,8 @@ class Context(object):
         EmailSender()
 
         MudNature(flavor)
+        ClientServiceManager()
         web_server = WebServer(int(port))
-
         context_post_init()
 
         web_server.start_service(server_interface)

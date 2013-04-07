@@ -23,7 +23,7 @@ class SessionManager(object):
         self.player_info_map = {}
         self.player_session_map = {}
         register_p(self._refresh_link_status, seconds=5)
-        register_p(self._push_player_list, seconds=30)
+        register_p(self._broadcast_player_list, seconds=30)
 
     def get_session(self, session_id):
         return self.session_map.get(session_id, None)
@@ -35,7 +35,7 @@ class SessionManager(object):
         session_id = self._get_next_id()
         session = UserSession()
         self.session_map[session_id] = session
-        return self._respond(connect=session_id, client_config=self.config_manager.client_config)
+        return {'connect': session_id, 'client_config': self.config_manager.client_config}
 
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)
@@ -43,8 +43,8 @@ class SessionManager(object):
             return self.start_session()
         session.player.display_line("-- Reconnecting Session --", SYSTEM_DISPLAY)
         session.player.parse("look")
-        return self._respond(login=self.user_manager.client_data(session.user, session.player),
-                             client_config=self.config_manager.client_config, connect=session_id)
+        return {'login': self.user_manager.client_data(session.user, session.player),
+                'client_config': self.config_manager.client_config, 'connect': session_id}
 
     def login(self, session, user_name, password):
         user_name = unicode(user_name).lower()
@@ -56,12 +56,7 @@ class SessionManager(object):
             return self.start_player(session, user.player_ids[0])
         if user_name != user.user_name:
             return self.start_player(session, user_name)
-        return self._respond(user_login=self.user_manager.client_data(session.user))
-
-    def push_event(self, event_type, data):
-        for session in self.session_map.values():
-            if event_type in session.push_events:
-                session.append({event_type: data})
+        return {'user_login': self.user_manager.client_data(session.user)}
 
     def start_player(self, session, player_id):
         old_session = self.player_session(player_id)
@@ -74,24 +69,26 @@ class SessionManager(object):
         else:
             player = self.user_manager.login_player(player_id)
             intro_line = "Welcome " + player.name
+            dispatch('player_login', player)
         if player.user_id != session.user.dbo_id:
             raise StateError("Player user does not match session user")
         self.player_info_map[player.dbo_id] = session.connect_player(player)
         self.player_session_map[player.dbo_id] = session
         player.display_line(intro_line, SYSTEM_DISPLAY)
         player.parse("look")
-        return self._respond(login=self.user_manager.client_data(session.user, player))
+        return {'login': self.user_manager.client_data(session.user, player)}
 
     def logout(self, session):
         player = session.player
         if player:
-            self.user_manager.logout_player(player)
             player.last_logout = int(time.time())
+            self.user_manager.logout_player(player)
             session.player = None
             del self.player_info_map[player.dbo_id]
             del self.player_session_map[player.dbo_id]
+            dispatch('player_logout', player)
         session.user = None
-        return self._respond(logout="logout")
+        return {'logout': 'logout'}
 
     def _get_next_id(self):
         u_session_id = b64encode(str(urandom(16)))
@@ -107,21 +104,19 @@ class SessionManager(object):
                     if session.player:
                         self.logout(session)
                     del self.session_map[session_id]
-                    continue
+                    session.disconnect()
             elif session.request:
                 if now - session.attach_time >= LINK_IDLE_REFRESH:
                     session.append({"keep_alive": True})
             elif now - session.attach_time > LINK_DEAD_INTERVAL:
                 session.link_failed("Timeout")
+
+    def _broadcast_player_list(self):
+        now = datetime.now()
+        for session in self.player_session_map.itervalues():
             if session.player:
                 self.player_info_map[session.player.dbo_id] = session.player_info(now)
-
-    def _push_player_list(self):
-        self.push_event('player_list', self.player_info_map)
-
-    def _respond(self, **response):
-        response['player_list'] = self.player_info_map
-        return response
+        dispatch('player_list', self.player_info_map)
 
 
 @requires('json_encode')
@@ -136,7 +131,6 @@ class UserSession(object):
         self.player = None
         self.ld_time = None
         self.user = None
-        self.push_events = {'player_list'}
 
     def attach(self, request):
         if self.request:
@@ -152,6 +146,7 @@ class UserSession(object):
         self._output.update(data)
 
     def pull_output(self):
+        self.activity_time = datetime.now()
         output = self._output
         if self._pulse_reg:
             unregister(self._pulse_reg)
@@ -190,6 +185,10 @@ class UserSession(object):
             warn("Link failed for {} ".format(self.player.name, repr(error)), self)
         self.ld_time = datetime.now()
         self.request = None
+
+    def disconnect(self):
+        dispatch('session_disconnect', self)
+        detach_events(self)
 
     def _push_output(self):
         if self.request:

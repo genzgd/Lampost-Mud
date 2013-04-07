@@ -1,5 +1,6 @@
 from lampost.client.user import User
 from lampost.context.resource import m_requires
+from lampost.datastore.dbutil import build_indexes
 from lampost.setup.scripts import build_default_displays
 from base64 import b64decode
 from lampost.util.encrypt import make_hash
@@ -38,6 +39,14 @@ def passwords():
 def user_indexes():
     datastore.redis.delete("user_name_index")
     build_indexes(User)
+
+
+def player_age():
+    for player_id in fetch_set_keys('players'):
+        player = load_object(Player, player_id)
+        if not player:
+            error('Missing player id {}'.format(player_id))
+
 
 
 
