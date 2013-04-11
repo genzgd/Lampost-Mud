@@ -1,20 +1,32 @@
-from lampost.context.resource import provides, requires
+from lampost.context.resource import provides, m_requires
 from lampost.model.player import Player
 from lampost.util.lmutil import PermError
 
+m_requires('datastore', __name__)
 
 @provides('perm', True)
-@requires('datastore')
 class Permissions(object):
     levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0}
 
     def __init__(self):
         self.rev_levels = {}
+        self.immortals = {}
         for name, level in self.levels.iteritems():
             self.rev_levels[level] = name
 
+    def _post_init(self):
+        self.immortals = get_all_index('immortals')
+
     def perm_name(self, num_level):
         return self.rev_levels.get(num_level, 'none')
+
+    def update_immortal_list(self, player):
+        if player.imm_level:
+            set_index('immortals', player.dbo_id, player.imm_level)
+            self.immortals[player.dbo_id] = player.imm_level
+        else:
+            delete_index('immortals', player.dbo_id)
+            del self.immortals[player.dbo_id]
 
     def has_perm(self, player, action):
         try:
@@ -45,8 +57,7 @@ class Permissions(object):
         owner_id = getattr(action, 'owner_id', None)
         if not owner_id or player.dbo_id == owner_id:
             return
-        owner = self.datastore.load_object(Player, owner_id)
-        if owner and player_level > owner.imm_level:
+        if player_level > self.immortals.get(owner_id, 0):
             return
         raise PermError
 

@@ -1,8 +1,9 @@
 from collections import defaultdict
-from lampost.context.resource import provides
+from lampost.context.resource import provides, m_requires
 from lampost.gameops.action import make_action, ActionError, simple_action
 from lampost.util.lmutil import dump
 
+m_requires('friend_manager', __name__)
 mud_actions = []
 imm_actions = []
 
@@ -65,3 +66,15 @@ def help_action(source, args, **ignored):
 def score(source, **ignored):
     for line in dump(source.get_score()):
         source.display_line(line)
+
+
+@mud_action('friend', msg_class='player')
+def friend(source, target, **ignored):
+    if source == target or friend_manager.is_friend(source, target):
+        return "{} is already your friend.".format(target.name)
+    if target.session:
+        target.session.append({'friend_request': {'name': source.name, 'id': source.dbo_id}})
+        return "Friend request sent"
+    return "{} is no longer on line".format(target.name)
+
+

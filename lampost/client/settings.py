@@ -26,7 +26,7 @@ class SettingsResource(Resource):
         self.putChild('send_name', SendAccountName())
         self.putChild('temp_password', TempPassword())
         self.putChild('set_password', SetPassword())
-        self.putChild('notifications', SetNotifications())
+        self.putChild('notifies', SetNotifies())
 
 
 class SettingsGet(Resource):
@@ -164,7 +164,7 @@ class TempPassword(Resource):
         if not user or not user.email:
             raise DataError("No Email On File For {}".format(content.info))
         temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _unused in range(12))
-        email_msg = "Your {} temporary password is {}.\nYou wil be asked to change it after you log in."\
+        email_msg = "Your {} temporary password is {}.\nYou will be asked to change it after you log in."\
             .format(config_manager.name, temp_pw)
         user.password = make_hash(temp_pw)
         user.password_reset = True
@@ -181,7 +181,7 @@ class SetPassword(Resource):
         save_object(user)
 
 
-class SetNotifications(Resource):
+class SetNotifies(Resource):
     @request
     def render_POST(self, content, session):
         user = session.user

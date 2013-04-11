@@ -47,38 +47,10 @@
         </div>
       </div>
 
-      <div class="row-fluid" ng-controller="DataPaneCtrl">
-        <div class="span12 tabbable" style="height:60%">
-          <ul class="nav nav-tabs" id="myTabs">
-            <li ng-class="tabClass('playerList')"><a ng-click="changeTab('playerList')">Players</a></li>
-            <li ng-class="tabClass('testPane')"><a ng-click="changeTab('testPane')">Test</a></li>
-          </ul>
+      <div class="row-fluid" ng-include="'view/data_tabs.html'">
 
-          <div class="tab-content span12">
-            <div class="tab-pane" ng-class="tabClass('playerList')" ng-controller="PlayerListCtrl">
-              <table class="table table-condensed">
-                <thead>
-                <tr>
-                  <th class="span2">Name</th>
-                  <th class="span2">Status</th>
-                  <th class="span7">Location</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="player in playerList">
-                  <td class="span2">{{player.name}}</td>
-                  <td class="span2">{{player.status}}</td>
-                  <td class="span7">{{player.loc}}</td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-              <div class="tab-pane" ng-class="tabClass('testPane')">
-                TEST TEST TEST
-              </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 </div>
+<div ng-include="'sound/sound_list.html'"></div>

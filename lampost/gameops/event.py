@@ -10,7 +10,7 @@ m_requires("log", __name__)
 
 @provides('dispatcher', True)
 class Dispatcher:
-    def __init__(self, max_pulse_queue=1000, pulse_interval=.25):
+    def __init__(self, max_pulse_queue=1000, pulse_interval=.25, maintenance_interval=60):
         self._registrations = defaultdict(set)
         self._pulse_map = defaultdict(set)
         self._owner_map = defaultdict(set)
@@ -18,6 +18,7 @@ class Dispatcher:
         self.max_pulse_queue = max_pulse_queue
         self.pulse_interval = pulse_interval
         self.pulses_per_second = 1 / pulse_interval
+        self.maintenance_interval = maintenance_interval
 
     def register(self, event_type, callback, owner=None):
         return self._add_registration(Registration(event_type, callback, owner))
@@ -81,7 +82,9 @@ class Dispatcher:
     @logged
     def _post_init(self):
         task.LoopingCall(self._pulse).start(self.pulse_interval)
-        info("Event heartbeat started", self)
+        info("Pulse Event heartbeat started at {} seconds".format(self.pulse_interval), self)
+        task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * self.maintenance_interval)
+        info("Maintenance Event heartbeat started at {} minutes".format(self.maintenance_interval), self)
 
 
 class Registration(object):

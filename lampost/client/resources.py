@@ -65,6 +65,7 @@ class LoginResource(Resource):
 class LinkResource(Resource):
     @logged
     def render_POST(self, request):
+        request.setHeader('Content-Type', 'application/json')
         session = session_manager.get_session(find_session_id(request))
         if not session:
             return json_encode({'link_status': 'session_not_found'})
@@ -95,6 +96,7 @@ class UnregisterResource(Resource):
     @request
     def render_POST(self, content, session):
         return client_services.unregister(content.service_id, session)
+
 
 class LspServerResource(Resource):
     IsLeaf = True

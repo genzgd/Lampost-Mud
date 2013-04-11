@@ -135,6 +135,28 @@ angular.module('lampost').controller('DisplayTabCtrl', ['$scope', '$timeout', 'l
 
 }]);
 
-angular.module('lampost').controller('NotifyTabCtrl', ['$scope', 'lmData', 'lmRemote', function($scope, lmData, lmRemote) {
+angular.module('lampost').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote', function($scope, $timeout, lmData, lmRemote) {
+
+    $scope.showSuccess = false;
+    $scope.notifies = {friendSound: false, friendNotify: false, friendEmail:false};
+    angular.forEach(lmData.notifies, function(value) {
+        $scope.notifies[value] = true;
+    });
+    $scope.desktopAvailable = window.webkitNotifications && true;
+    $scope.updateNotifies = function() {
+        var newNotifies = [];
+        angular.forEach($scope.notifies, function(value, key) {
+            if (value) {
+                newNotifies.push(key);
+            }
+        });
+        lmRemote.request('settings/notifies',  {notifies: newNotifies}).then(function() {
+            $scope.showSuccess = true;
+            lmData.notifies = newNotifies;
+            $timeout(function() {
+                $scope.showSuccess = false;
+            }, 3000)
+        })
+    }
 
 }]);

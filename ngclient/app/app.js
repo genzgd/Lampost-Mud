@@ -12,13 +12,12 @@ angular.module('lampost').config(['$routeProvider', '$locationProvider', functio
 
 // Using here so they get instantiated.
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmDialog',
-    function ($rootScope, lmBus, lmRemote, lmData, lmDialog) {
+angular.module('lampost').run(['$rootScope', 'lmBus', 'lmRemote', 'lmData', 'lmDialog', 'lmComm',
+    function ($rootScope, lmBus, lmRemote, lmData, lmDialog, lmComm) {
         window.onbeforeunload = function () {
             if (lmData.editorWindow && !lmData.editorWindow.closed) {
                 return "Closing or reloading this window will close the editor.  Continue?";
             }
-            return null;
         };
 
         window.onunload = function() {

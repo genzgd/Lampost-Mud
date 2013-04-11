@@ -25,6 +25,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.editorWindow = null;
         self.userDisplays = {};
         self.notifies = [];
+        self.validTabs = ['playerList', 'globalChannel']
     }
 
     function updateDisplay(display) {
@@ -72,6 +73,7 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.playerName = data.name;
         self.userDisplays = data.displays;
         self.playerId = self.playerName.toLocaleLowerCase();
+        self.validTabs = ['messages', 'playerList', 'globalChannel'];
         localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
     }, null, -100);
 

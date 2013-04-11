@@ -35,7 +35,7 @@ class Player(Entity, RootDBO):
 
     def display_channel(self, message):
         if message.source != self:
-            self.session.display_line({'text': message.text, 'display': message.display})
+            self.display_line(message.text, message.display)
 
     def display_line(self, text, display='default'):
         if text:

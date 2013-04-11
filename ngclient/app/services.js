@@ -101,7 +101,6 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
 }]);
 
 
-
 angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'lmLog', 'lmBus', 'lmDialog',
     function($timeout, $http, $q, lmLog, lmBus, lmDialog) {
 
@@ -112,6 +111,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
     var waitCount = 0;
     var waitDialogId = null;
     var services = {};
+    var resourceRoot = '/';
     var reconnectTemplate = '<div class="modal fade hide">' +
         '<div class="modal-header"><h3>Reconnecting To Server</h3></div>' +
         '<div class="modal-body"><p>Reconnecting in {{time}} seconds.</p></div>' +
@@ -120,7 +120,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
 
     function serverRequest(resource, data) {
         return $http({method: 'POST',
-            url: '/' + resource,
+            url: resourceRoot + resource,
             data: data || {},
             headers: {'X-Lampost-Session': sessionId}}).success(lmBus.dispatchMap).error(linkFailure);
     }
@@ -140,7 +140,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         }
 
         var deferred = $q.defer();
-        $http({method: 'POST', url: '/' + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
+        $http({method: 'POST', url: resourceRoot + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
             .success(function(data) {
                 checkWait();
                 deferred.resolve(data);
@@ -302,7 +302,8 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
     function validateService(serviceId) {
         var service = services[serviceId];
         if (service.refCount < 0) {
-            lmLog.error("Service " + serviceId + " has refCount " + refCount);
+            lmLog.log("Error: Service " + serviceId + " has refCount " + refCount);
+            service.refCount = 0;
         }
         if (service.refCount == 0 && service.registered && !service.inFlight) {
             service.inFlight = true;
@@ -522,7 +523,6 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
             dialog.element.modal("hide");
         }
     }
-
 
     this.show = function (args) {
         return showDialog(args);

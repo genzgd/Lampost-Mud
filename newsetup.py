@@ -1,5 +1,5 @@
 import sys
-from lampost.setup.newsetup import NewSetup
+from lampost.setup.newsetup import new_setup
 
 if __name__ != "__main__":
     print "Invalid usage"
@@ -18,4 +18,4 @@ if not setup_args.get('imm_name'):
     print "Please supply an imm_name argument to identify the root user"
     sys.exit(2)
 
-NewSetup(**setup_args)
+new_setup(**setup_args)

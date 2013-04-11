@@ -18,7 +18,7 @@ class PlayerResource(Resource):
 class PlayerList(Resource):
     @request
     def render_POST(self, content, session):
-        return [player_dto(key.split(':')[1]) for key in fetch_set_keys("players")]
+        return [player_dto(dbo_id) for dbo_id in fetch_set_keys("players")]
 
 
 @requires('user_manager')

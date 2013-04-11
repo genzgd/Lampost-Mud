@@ -31,10 +31,10 @@
               <div class="controls">
                 <input class="span10" type="text" ng-model="user.email" name="email"/>
               </div>
-               <div class="alert alert-error" ng-show="emailInUse">
-                  <button type="button" class="close" ng-click="emailInUse = false">×</button>
-                  This email is already associated with another account.
-                </div>
+              <div class="alert alert-error" ng-show="emailInUse">
+                <button type="button" class="close" ng-click="emailInUse = false">×</button>
+                This email is already associated with another account.
+              </div>
             </div>
             <div class="control-group">
               <label class="control-label">New Password</label>
@@ -78,6 +78,7 @@
         </div>
         <div class="row-fluid">
           <p></p>
+
           <div class="span4 alert alert-error" ng-show="errorText">
             <button type="button" class="close" ng-click="errorText = null">×</button>
             {{errorText}}
@@ -116,7 +117,7 @@
           </div>
           <div class="span3">
             <button class="btn btn-primary" title="Reset to game default" ng-click="updateDisplay()">Update Display</button>
-             <div class="alert alert-success" ng-show="showSuccess">
+            <div class="alert alert-success" ng-show="showSuccess">
               <button type="button" class="close" ng-click="showSuccess = false">×</button>
               Display Settings Updated
             </div>
@@ -125,26 +126,30 @@
       </div>
 
       <div ng-switch-when="notify" ng-controller="NotifyTabCtrl">
+
         <div class="row-fluid">
-          <div class="span3 offset9">
-            <button class="btn btn-primary" ng-click="updateNotifications()">Update Notifications</button>
+          <div class="span9">
+            <h5>Friend Login Notifications</h5>
+
+            <div class="controls">
+              <label class="checkbox">
+                <input type="checkbox" ng-model="notifies.friendSound"> Play Sound
+              </label>
+              <label class="checkbox" ng-disabled="!desktopAvailable">
+                <input type="checkbox" ng-model="notifies.friendDesktop"> Desktop Notification
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" ng-model="notifies.friendEmail"> Email (Offline only)
+              </label>
+            </div>
           </div>
-           <div class="alert alert-success" ng-show="showSuccess">
+
+          <div class="span3">
+            <button class="btn btn-primary" ng-click="updateNotifies()">Update Notifications</button>
+            <div class="alert alert-success" ng-show="showSuccess">
               <button type="button" class="close" ng-click="showSuccess = false">×</button>
               Notifications Updated
             </div>
-        </div>
-        <div class="row-fluid">
-           <h5 class="span6">Friend Login Notifications</h5>
-        </div>
-        <div class="row-fluid">
-           <div class="controls span2">
-              <label class="checkbox">
-                 <input type="checkbox" ng-model="friendSound"> Play Sound
-              </label>
-              <label class="checkbox">
-                <input type="checkbox" ng-model="friendDesktop"> Desktop Notification
-              </label>
           </div>
         </div>
 

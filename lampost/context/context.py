@@ -9,6 +9,7 @@ from lampost.gameops.event import Dispatcher
 from lampost.client.session import SessionManager
 from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.config import ConfigManager
+from lampost.gameops.friend import FriendManager
 from lampost.gameops.permissions import Permissions
 from lampost.util.lmlog import Log
 from lampost.mud.mud import MudNature
@@ -32,6 +33,7 @@ class Context(object):
 
         MudNature(flavor)
         ClientServiceManager()
+        FriendManager()
         web_server = WebServer(int(port))
         context_post_init()
 

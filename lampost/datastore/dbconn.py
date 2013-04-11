@@ -8,7 +8,7 @@ from lampost.context.resource import requires, provides, m_requires
 m_requires('log', __name__)
 
 
-@provides('datastore', True)
+@provides('datastore', export_methods=True)
 @requires('json_decode', 'json_encode', 'cls_registry')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
@@ -31,7 +31,7 @@ class RedisStore():
             self.update_indexes(dbo)
         self.redis.set(dbo.dbo_key, self.json_encode(dbo.save_dbo_dict))
         if dbo.dbo_set_key:
-            self.redis.sadd(dbo.dbo_set_key, dbo.dbo_key)
+            self.redis.sadd(dbo.dbo_id, dbo.dbo_key)
         trace("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo
 
@@ -41,7 +41,6 @@ class RedisStore():
     def evict_object(self, dbo):
         try:
             del self._object_map[dbo.dbo_key]
-            del dbo
         except KeyError:
             warn("Failed to evict " + dbo.dbo_key + " from db cache", self)
 
@@ -75,7 +74,7 @@ class RedisStore():
         key = dbo.dbo_key
         self.redis.delete(key)
         if dbo.dbo_set_key:
-            self.redis.srem(dbo.dbo_set_key, key)
+            self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)
         for dbo_col in dbo.dbo_collections:
             if dbo_col.key_type:
                 coll = getattr(dbo, dbo_col.field_name, set())
@@ -85,10 +84,9 @@ class RedisStore():
             ix_value = getattr(dbo, ix_name, None)
             if ix_value is not None and ix_value != '':
                 self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
-        debug("object deleted: " + key, self)
+        debug("object deleted: {}".format(key), self)
         if self._object_map.get(dbo.dbo_key):
             del self._object_map[dbo.dbo_key]
-        return True
 
     def fetch_set_keys(self, set_key):
         return self.redis.smembers(set_key)
@@ -111,6 +109,9 @@ class RedisStore():
     def get_index(self, index_name, key):
         return self.redis.hget(index_name, key)
 
+    def get_all_index(self, index_name):
+        return self.redis.hgetall(index_name)
+
     def delete_index(self, index_name, key):
         return self.redis.hdel(index_name, key)
 
@@ -131,20 +132,7 @@ class RedisStore():
             if new_val is not None and new_val != '':
                 if self.get_index(ix_key, new_val):
                     raise NonUniqueError(ix_key, new_val)
-                self.set_index(ix_key, new_val, dbo.dbo_key)
-
-    def build_indexes(self, dbo_cls):
-        for ix_name in dbo_cls.dbo_indexes:
-            self.redis.delete('ix:{}:{}'.format(dbo_cls.dbo_key_type, ix_name))
-        for dbo_id in self.fetch_set_keys(dbo_cls.dbo_set_key):
-            try:
-                dbo_dict = self.json_decode(self.redis.get(dbo_id))
-                for ix_name in dbo_cls.dbo_indexes:
-                    ix_value = dbo_dict.get(ix_name)
-                    if ix_value is not None and ix_value != '':
-                        self.set_index('ix:{}:{}'.format(dbo_cls.dbo_key_type, ix_name), ix_value, dbo_id)
-            except (ValueError, TypeError):
-                warn("Missing dbo object {} from set key {}".format(dbo_id, dbo_cls.dbo_set_key, self))
+                self.set_index(ix_key, new_val, dbo.dbo_id)
 
     def hydrate_dbo(self, dbo, dbo_dict):
         for field_name in dbo.dbo_fields:

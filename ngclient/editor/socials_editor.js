@@ -130,10 +130,7 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
         function loadSocials() {
             $scope.ready = false;
             lmRemote.request($scope.editor.url + '/list', null, true).then(function(socials) {
-                $scope.socials = [];
-                for (var i = 0; i < socials.length; i++) {
-                    $scope.socials.push(socials[i].split(':')[1])
-                }
+                $scope.socials = socials;
                 $scope.socials.sort();
                 $scope.ready = true;
             });

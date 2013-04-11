@@ -198,6 +198,7 @@ def promote(source, target, obj, **ignored):
         return "That is not a valid level"
     target.imm_level = imm_level
     nature.baptise_imm(target)
+    update_immortal_list()
     source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
 
 

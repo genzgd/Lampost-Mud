@@ -2,7 +2,7 @@ from collections import defaultdict
 from lampost.context.resource import m_requires, provides
 from lampost.util.lmutil import StateError
 
-m_requires('session_manager', 'dispatcher', __name__)
+m_requires('log', 'session_manager', 'dispatcher', __name__)
 
 client_services = {}
 
@@ -22,7 +22,10 @@ class ClientService(object):
         self.sessions.add(session)
 
     def unregister(self, session):
-        self.sessions.remove(session)
+        try:
+            self.sessions.remove(session)
+        except KeyError:
+            warn("Attempting to remove unregistered session", self)
 
     def _session_dispatch(self, event):
         for session in self.sessions:

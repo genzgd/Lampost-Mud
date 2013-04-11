@@ -1,10 +1,10 @@
 from lampost.gameops.action import make_action
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, provides, requires
 
-m_requires('dispatcher', __name__)
+m_requires('dispatcher', 'datastore', __name__)
 
-
-class Channel():
+@requires('channel_manager')
+class Channel(object):
     def __init__(self, verb):
         make_action(self, verb)
         self.display = verb + "_channel"
@@ -18,8 +18,17 @@ class Channel():
         source.display_line(statement, self.display)
 
 
-class ChannelMessage():
+class ChannelMessage(object):
     def __init__(self, source, text, display):
         self.source = source
         self.text = text
         self.color = display
+
+
+@provides('channel_manager')
+class ChannelManager(object):
+    def _post_init(self):
+        register('maintenance', self._prune_channels)
+
+    def _prune_channels(self):
+        pass

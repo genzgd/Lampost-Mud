@@ -1,0 +1,9 @@
+<div class="span12 tabbable" ng-controller="DataPaneCtrl" style="height:60%">
+  <ul class="nav nav-tabs" id="myTabs">
+    <li class="unselectable" ng-repeat="tab in tabList" ng-class="tabClass(tab)"><a ng-click="changeTab(tab)">{{tab.label}}</a></li>
+  </ul>
+
+  <div class="tab-content span12 wrapper">
+    <div class="tab-pane" ng-class="tabClass(tab)" ng-repeat="tab in tabList" ng-include="tab.include"></div>
+  </div>
+</div>

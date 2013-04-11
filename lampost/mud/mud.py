@@ -63,9 +63,10 @@ class MudNature():
             save_object(player)
 
     def baptise_imm(self, player):
-        player.enhance_soul(self.imm_channel)
-        player.register_channel(self.imm_channel)
-        player.build_mode = True
+        if player.imm_level:
+            player.enhance_soul(self.imm_channel)
+            player.register_channel(self.imm_channel)
+            player.build_mode = True
         for cmd in imm_actions:
             if player.imm_level >= perm_level(cmd.imm_level):
                 player.enhance_soul(cmd)
@@ -80,9 +81,7 @@ class Mud():
         self.area_map = {}
 
     def load_areas(self):
-        area_keys = fetch_set_keys("areas")
-        for area_key in area_keys:
-            area_id = area_key.split(":")[1]
+        for area_id in fetch_set_keys("areas"):
             area = load_object(Area, area_id)
             self.add_area(area)
         for area in self.area_map.itervalues():
