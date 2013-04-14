@@ -5,7 +5,7 @@ from lampost.datastore.dbo import RootDBO
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 
-m_requires('log', 'datastore', __name__)
+m_requires('log', 'datastore', 'dispatcher', __name__)
 
 
 class User(RootDBO):
@@ -27,7 +27,7 @@ class User(RootDBO):
         self.notifies = []
 
 
-@requires('config_manager', 'nature')
+@requires('config_manager')
 @provides('user_manager')
 class UserManager(object):
     def validate_user(self, user_name, password):
@@ -35,6 +35,7 @@ class UserManager(object):
         if not user:
             return "not_found", None
         if not check_password(password, user.password):
+            evict_object(user)
             return "not_found", None
         return "ok", user
 
@@ -51,13 +52,12 @@ class UserManager(object):
 
     def delete_user(self, user):
         for player_id in user.player_ids:
-            player = load_object(Player, player_id)
-            delete_object(player)
+            self._player_delete(player_id)
         delete_object(user)
 
-    def delete_player(self, user, player):
-        delete_object(player)
-        user.player_ids.remove(player.dbo_id)
+    def delete_player(self, user, player_id):
+        _player_delete(player_id)
+        user.player_ids.remove(player.player_id)
         save_object(user)
 
     def attach_player(self, user, player):
@@ -92,13 +92,14 @@ class UserManager(object):
                 if account_name == player_id.lower():
                     return "ok"
 
-        player = load_object(Player, account_name)
-        if player:
-            unload_player(player)
+        if self.player_exists(account_name):
             return "player_exists"
         if get_index("ix:user:user_name", account_name):
             return "user exists"
         return "ok"
+
+    def player_exists(self, player_id):
+        return object_exists(Player.dbo_key_type, player_id)
 
     def user_imm_level(self, user):
         imm_levels = []
@@ -109,15 +110,16 @@ class UserManager(object):
         return max(imm_levels)
 
     def client_data(self, user, player=None):
-        result = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
-                  'password_reset': user.password_reset, 'notifies': user.notifies}
+        client_data = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
+                       'password_reset': user.password_reset, 'notifies': user.notifies}
         if player:
-            result.update({'name': player.name, 'privilege': player.imm_level, 'editors': self.nature.editors(player)})
-        return result
+            client_data.update({'name': player.name, 'privilege': player.imm_level})
+            dispatch('client_data', player, client_data)
+        return client_data
 
     def login_player(self, player_id):
         player = load_object(Player, player_id)
-        self.nature.baptise(player)
+        dispatch('baptise_player', player)
         player.last_login = int(time.time())
         if not player.created:
             player.created = player.last_login
@@ -130,6 +132,20 @@ class UserManager(object):
         player.detach()
         save_object(player)
         evict_object(player)
+
+    def id_to_name(self, player_id):
+        try:
+            return unicode(player_id.capitalize())
+        except AttributeError:
+            pass
+
+    def name_to_id(self, player_name):
+        return unicode(player_name.lower())
+
+    def _player_delete(self, player_id):
+        player = load_object(Player, player_id)
+        delete_object(player)
+        dispatch('player_deleted', player)
 
 
 def unload_player(player):

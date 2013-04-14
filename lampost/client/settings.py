@@ -122,8 +122,7 @@ class PlayerDelete(Resource):
             raise DataError("Incorrect account password")
         if not content.player_id in user.player_ids:
             raise StateError("Player not longer associated with user")
-        player = load_object(Player, content.player_id)
-        user_manager.delete_player(user, player)
+        user_manager.delete_player(user, player_id)
         return player_list(user.player_ids)
 
 

@@ -37,7 +37,7 @@ class PlayerDelete(Resource):
             check_perm(session, 'supreme')
         else:
             check_perm(session, 'admin')
-        self.user_manager.delete_player(user, player)
+        self.user_manager.delete_player(user, player.dbo_id)
         if not user.player_ids:
             self.user_manager.delete_user(user)
 

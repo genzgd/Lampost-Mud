@@ -1,6 +1,7 @@
 from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
-from lampost.client.services import client_services, ClientServiceManager
+from lampost.client.services import ClientServiceManager
+from lampost.comm.message import MessageService
 from lampost.context.classes import ClassRegistry
 from lampost.context.resource import register, provides, context_post_init
 from lampost.client.server import WebServer
@@ -9,7 +10,7 @@ from lampost.gameops.event import Dispatcher
 from lampost.client.session import SessionManager
 from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.config import ConfigManager
-from lampost.gameops.friend import FriendManager
+from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions
 from lampost.util.lmlog import Log
 from lampost.mud.mud import MudNature
@@ -33,7 +34,8 @@ class Context(object):
 
         MudNature(flavor)
         ClientServiceManager()
-        FriendManager()
+        FriendService()
+        MessageService()
         web_server = WebServer(int(port))
         context_post_init()
 

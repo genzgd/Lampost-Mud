@@ -5,11 +5,10 @@ from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 from lampost.util.lmlog import logged
 from lampost.context.resource import requires, provides, m_requires
 
-m_requires('log', __name__)
+m_requires('log', 'json_encode', 'json_decode', 'cls_registry', __name__)
 
 
 @provides('datastore', export_methods=True)
-@requires('json_decode', 'json_encode', 'cls_registry')
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
@@ -29,9 +28,9 @@ class RedisStore():
             dbo.dbo_rev = 1 if not rev else rev + 1
         if dbo.dbo_indexes:
             self.update_indexes(dbo)
-        self.redis.set(dbo.dbo_key, self.json_encode(dbo.save_dbo_dict))
+        self.redis.set(dbo.dbo_key, json_encode(dbo.save_dbo_dict))
         if dbo.dbo_set_key:
-            self.redis.sadd(dbo.dbo_id, dbo.dbo_key)
+            self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
         trace("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo
 
@@ -53,7 +52,7 @@ class RedisStore():
         json_str = self.redis.get(dbo_key)
         if not json_str:
             return None
-        dbo_dict = self.json_decode(json_str)
+        dbo_dict = json_decode(json_str)
         dbo = self._load_class(dbo_dict, base_class)(key)
         if dbo.dbo_key_type:
             self._object_map[dbo.dbo_key] = dbo
@@ -100,6 +99,9 @@ class RedisStore():
     def set_key_exists(self, set_key, value):
         return self.redis.sismember(set_key, value)
 
+    def db_counter(self, counter_id, inc=1):
+        return self.redis.incr(counter_id, inc)
+
     def delete_key(self, key):
         self.redis.delete(key)
 
@@ -112,12 +114,24 @@ class RedisStore():
     def get_all_index(self, index_name):
         return self.redis.hgetall(index_name)
 
+    def set_db_hash(self, hash_id, hash_key, value):
+        return self.redis.hset(hash_id, hash_key, json_encode(value))
+
+    def get_db_hash(self, hash_id, hash_key):
+        return json_decode(self.redis.hget(hash_id, hash_key))
+
+    def remove_db_hash(self, hash_id, hash_key):
+        self.redis.hdel(hash_id, hash_key)
+
+    def get_all_db_hash(self, hash_id):
+        return [json_decode(value) for value in self.redis.hgetall(hash_id).itervalues()]
+
     def delete_index(self, index_name, key):
         return self.redis.hdel(index_name, key)
 
     def update_indexes(self, dbo):
         try:
-            old_dbo = self.json_decode(self.redis.get(dbo.dbo_key))
+            old_dbo = json_decode(self.redis.get(dbo.dbo_key))
         except TypeError:
             old_dbo = None
 
@@ -171,7 +185,7 @@ class RedisStore():
     def _load_class(self, dbo_dict, base_class):
         class_path = dbo_dict.get("class_name")
         if not class_path:
-            return self.cls_registry(base_class)
+            return cls_registry(base_class)
         cls = self._class_map.get(class_path)
         if cls:
             return cls
@@ -180,7 +194,7 @@ class RedisStore():
         class_name = split_path[-1]
         module = __import__(module_name, globals(), locals(), [class_name])
         cls = getattr(module, class_name)
-        cls = self.cls_registry(cls)
+        cls = cls_registry(cls)
         self._class_map[class_path] = cls
         return cls
 

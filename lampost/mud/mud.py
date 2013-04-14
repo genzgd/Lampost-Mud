@@ -10,7 +10,7 @@ from lampost.comm.channel import Channel
 
 from lampost.model.area import Area
 
-m_requires('log', 'datastore', 'perm', __name__)
+m_requires('log', 'datastore', 'dispatcher', 'perm', __name__)
 
 
 @requires('context')
@@ -24,6 +24,8 @@ class MudNature():
         self.social_registry = SocialRegistry()
 
     def _post_init(self):
+        register('client_data', self._client_data)
+        register('baptise_player', self._baptise)
         info("Loading mud", self)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")
@@ -35,7 +37,18 @@ class MudNature():
         self.social_registry.load_socials()
         info("Mud loaded", self)
 
-    def editors(self, player):
+    def baptise_imm(self, player):
+        if player.imm_level:
+            player.enhance_soul(self.imm_channel)
+            player.register_channel(self.imm_channel)
+            player.build_mode = True
+        for cmd in imm_actions:
+            if player.imm_level >= perm_level(cmd.imm_level):
+                player.enhance_soul(cmd)
+            else:
+                player.diminish_soul(cmd)
+
+    def _client_data(self, player, client_data):
         editors = []
         if has_perm(player, 'supreme'):
             editors.append('config')
@@ -45,9 +58,9 @@ class MudNature():
             editors.append('display')
         if has_perm(player, 'creator'):
             editors.append('areas')
-        return editors
+        client_data['editors'] = editors
 
-    def baptise(self, player):
+    def _baptise(self, player):
         player.baptise(set())
         if player.imm_level:
             self.baptise_imm(player)
@@ -61,17 +74,6 @@ class MudNature():
         if not getattr(player, "room_id", None):
             player.room_id = player.env.dbo_id
             save_object(player)
-
-    def baptise_imm(self, player):
-        if player.imm_level:
-            player.enhance_soul(self.imm_channel)
-            player.register_channel(self.imm_channel)
-            player.build_mode = True
-        for cmd in imm_actions:
-            if player.imm_level >= perm_level(cmd.imm_level):
-                player.enhance_soul(cmd)
-            else:
-                player.diminish_soul(cmd)
 
 
 @requires('config_manager')

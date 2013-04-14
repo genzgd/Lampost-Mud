@@ -1,3 +1,4 @@
 *.pyc
 *.idea
+src_ext
 data

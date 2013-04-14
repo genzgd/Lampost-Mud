@@ -4,7 +4,7 @@ angular.module('lampost').service('lmComm', ['lmBus', 'lmData', 'lmDialog', func
     lmBus.register('friend_login', friendLogin);
 
     function friendLogin(friend_info) {
-        if (lmData.notifies.indexOf('friendNotify') > -1) {
+        if (lmData.notifies.indexOf('friendDesktop') > -1) {
             self.notify({icon: 'image/friendNotify.png', title: "Your friend " +  friend_info.name + " logged into " + lampost_config.title, content: ''});
         }
         if (lmData.notifies.indexOf('friendSound') > -1) {

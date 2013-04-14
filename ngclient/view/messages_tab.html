@@ -1,1 +1,4 @@
-Message tab
+<div class="wrapper">
+  <div ng-repeat="msg in messages" ng-include="'view/' + msg.msg_type + '_msg.html'">
+  </div>
+</div>

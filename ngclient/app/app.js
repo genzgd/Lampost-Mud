@@ -241,7 +241,7 @@ angular.module('lampost').controller('NewAccountCtrl', ['$scope', '$timeout', 'l
                     lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterCtrl", noEscape:true});
                 })
             }, function(error) {
-                $scope.errorText = error.text;
+                $scope.errorText = "Account name " + error.text + "is in use.";
             });
     }
 }]);

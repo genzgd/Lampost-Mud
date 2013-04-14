@@ -32,8 +32,6 @@ class BaseItem(RootDBO):
 
     def config_targets(self):
         self.target_id = tuple(unicode(self.title).lower().split(" "))
-        if not self.aliases:
-            return
         self.target_aliases = [tuple(unicode(alias).split(" ")) for alias in self.aliases]
 
     def enter_env(self, new_env):
@@ -48,7 +46,6 @@ class BaseItem(RootDBO):
 
     def detach(self):
         self.detach_events(self)
-        self.detached = True
         self.env = None
 
 

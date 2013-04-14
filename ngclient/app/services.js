@@ -12,6 +12,17 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
     var self = this;
     var registry = {};
 
+    function applyCallback(callback, args, scope) {
+         var phase = scope && scope.$root.$$phase;
+         if (!phase || phase == '$apply' || phase == '$digest') {
+            callback.apply(this, args);
+        } else {
+            scope.$apply(function() {
+                callback.apply(scope, args)
+            });
+        }
+    }
+
     this.register = function(event_type, callback, scope, priority) {
         if (!registry[event_type]) {
             registry[event_type] = [];
@@ -83,12 +94,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
         var registrations = registry[event_type];
         if (registrations) {
             for (i = 0; i < registrations.length; i++) {
-                var registration = registrations[i];
-                if (registration.scope && !registration.scope.$$phase) {
-                    registration.scope.$apply(registration.callback.apply(registration.scope, args));
-                } else {
-                    registration.callback.apply(this, args);
-                }
+                applyCallback(registrations[i].callback, args, registrations[i].scope)
             }
         }
     };
@@ -138,14 +144,17 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
                 waitDialogId = null;
             }
         }
+        return rawRequest(resource, data, checkWait);
+    }
 
+    function rawRequest(resource, data, checkWait) {
         var deferred = $q.defer();
         $http({method: 'POST', url: resourceRoot + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
             .success(function(data) {
-                checkWait();
+                checkWait && checkWait();
                 deferred.resolve(data);
             }).error(function(data, status) {
-                checkWait();
+                checkWait && checkWait();
                 if (status == 409) {
                     var errorResult = {id: 'Error', raw: data, text: data};
                     var colon_ix = data.indexOf(':');
@@ -159,7 +168,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
                     deferred.reject(errorResult);
                 } else if (status == 403) {
                     lmDialog.showOk("Denied", "You do not have permission for that action");
-                } else {
+                } else if (status) {
                     lmDialog.showOk("Server Error: " + status, data);
                 }
             });
@@ -186,7 +195,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         }
         connected = false;
         lmLog.log("Link stopped: " + status);
-        setTimeout(function() {
+        $timeout(function() {
             if (!connected && !window.windowClosing) {
                 lmDialog.show({template: reconnectTemplate, controller: ReconnectCtrl, noEscape:true});
             }
@@ -198,21 +207,25 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         if (status == "good") {
             link();
         } else if (status == "session_not_found") {
-            lmBus.dispatch("logout", "invalid_session");
             sessionId = '';
+            connected = false;
+            for (var serviceId in services) {
+                services[serviceId].registered = false;
+            }
+            lmBus.dispatch("logout", "invalid_session");
             serverRequest("connect");
         } else if (status == "no_login") {
             lmBus.dispatch("logout", "invalid_session");
-        } else {
-            lmDialog.showOk("Unknown Server Error", status);
+        } else if (status == "cancel") {
+            lmLog.log("Outstanding request cancelled");
         }
     }
 
     function onConnect(data) {
+        connected = true;
         sessionId = data;
         for (var serviceId in services) {
-            services[serviceId].registered = false;
-            validateService(serviceId);
+            validateService(serviceId)
         }
         link();
     }
@@ -300,6 +313,9 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
     }
 
     function validateService(serviceId) {
+        if (!connected) {
+            return;
+        }
         var service = services[serviceId];
         if (service.refCount < 0) {
             lmLog.log("Error: Service " + serviceId + " has refCount " + refCount);
@@ -333,6 +349,10 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         }).then(function() {
                 return resourceRequest(resource, args)
             });
+    };
+
+    this.asyncRequest = function(resource, args) {
+        return rawRequest(resource, args);
     };
 
     this.registerService = function(serviceId, data) {

@@ -3,6 +3,7 @@ from twisted.web.resource import Resource
 from twisted.web.server import Site
 from twisted.web.static import File
 from twisted.web.util import Redirect
+from lampost.client.messages import MessagesResource
 
 from lampost.editor.editor import EditorResource
 from lampost.client.resources import *
@@ -20,6 +21,7 @@ URL_CONNECT = "connect"
 URL_LSP = "lsp"
 URL_EDITOR = "editor"
 URL_SETTINGS = "settings"
+URL_MESSAGES = "messages"
 URL_REGISTER = "register"
 URL_UNREGISTER = 'unregister'
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
@@ -43,6 +45,7 @@ class WebServer(Resource):
         self.putChild(URL_SETTINGS, SettingsResource())
         self.putChild(URL_REGISTER, RegisterResource())
         self.putChild(URL_UNREGISTER, UnregisterResource())
+        self.putChild(URL_MESSAGES, MessagesResource())
 
         self._lsp_server = LspServerResource()
         self.putChild(URL_LSP, self._lsp_server)

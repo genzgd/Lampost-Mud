@@ -1,3 +1,7 @@
+import time
+
+from datetime import datetime
+
 pronouns = {'none': ['it', 'it', 'its', 'itself'],
             'male': ['he', 'him', 'his', 'himself'],
             'female': ['she', 'her', 'hers', 'herself']}
@@ -5,6 +9,15 @@ pronouns = {'none': ['it', 'it', 'its', 'itself'],
 
 def l_just(value, size):
     return value.ljust(size).replace(' ', '&nbsp;')
+
+
+def timestamp(record):
+    ts = int(time.time())
+    try:
+        record['timestamp'] = ts
+        return record
+    except KeyError:
+        return ':'.join([record, ts])
 
 
 def dump(dump_dict):

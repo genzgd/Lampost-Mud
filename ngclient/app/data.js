@@ -1,4 +1,4 @@
-angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
+angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, lmUtil) {
 
     var maxLines = 1000;
     var self = this;
@@ -25,7 +25,9 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.editorWindow = null;
         self.userDisplays = {};
         self.notifies = [];
-        self.validTabs = ['playerList', 'globalChannel']
+        self.validTabs = ['playerList', 'chat'];
+        self.validChat = ['gossip'];
+        self.messages = [];
     }
 
     function updateDisplay(display) {
@@ -73,15 +75,18 @@ angular.module('lampost').service('lmData', ['lmBus', function(lmBus) {
         self.playerName = data.name;
         self.userDisplays = data.displays;
         self.playerId = self.playerName.toLocaleLowerCase();
-        self.validTabs = ['messages', 'playerList', 'globalChannel'];
+        self.validTabs = ['messages', 'playerList', 'chat'];
+        self.messages = data.messages;
+        lmUtil.intSort(self.messages, 'msg_id');
         localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
     }, null, -100);
 
     lmBus.register("user_login", setUser, null, -100);
     lmBus.register("display", updateDisplay, null, -100);
     lmBus.register("logout", clear, null, -100);
-
-
+    lmBus.register("new_message", function(message) {
+        self.messages.push(message);
+    }, null, -100);
 
 }]);
 

@@ -156,5 +156,41 @@ hr:after {
     background: white;
 }
 
+div.friend-req {
+  padding: 0 8px 4px 4px;
+  border-style: double;
+  background: antiquewhite;
+  display: inline-block;
+}
 
+div.system-msg {
+  margin: 0;
+  padding: 0 4px 4px 4px;
+  border-style: double;
+  background: paleturquoise;
+  display: inline-block;
+}
+
+div.player-msg {
+  margin: 0;
+  padding: 0 4px 4px 4px;
+  border-style: double;
+  background: antiquewhite;
+  display: inline-block;
+}
+
+.gen-close {
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 20px;
+  color: #000000;
+  text-shadow: 0 1px 0 #ffffff;
+  opacity: 0.2;
+  filter: alpha(opacity=20);
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  -webkit-appearance: none;
+}
 
