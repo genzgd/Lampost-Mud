@@ -26,7 +26,10 @@ class Permissions(object):
             self.immortals[player.dbo_id] = player.imm_level
         else:
             delete_index('immortals', player.dbo_id)
-            del self.immortals[player.dbo_id]
+            try:
+                del self.immortals[player.dbo_id]
+            except KeyError:
+                pass
 
     def has_perm(self, player, action):
         try:

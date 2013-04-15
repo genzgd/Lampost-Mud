@@ -16,8 +16,7 @@ class SocialRegistry(object):
     def load_socials(self):
         self.mud_actions.add_verb(('socials',), self.socials)
         self.emote.__func__.msg_class = 'rec_social'
-        for social_key in self.datastore.fetch_set_keys("socials"):
-            social_id = social_key.split(":")[1]
+        for social_id in self.datastore.fetch_set_keys("socials"):
             social = self.datastore.load_object(Social, social_id)
             self.insert(social)
 

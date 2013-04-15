@@ -204,7 +204,10 @@ def promote(source, target, obj, **ignored):
 
 @imm_action('run_update', imm_level='supreme')
 def run_update(args, **ignored):
-    lampost.setup.update.__dict__[args[0]]()
+    try:
+        lampost.setup.update.__dict__[args[0]]()
+    except KeyError:
+        return "No such update."
 
 
 @imm_action('email', imm_level='admin')

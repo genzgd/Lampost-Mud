@@ -1,3 +1,4 @@
+from lampost.env.room import Room
 import lampost.mud.immortal
 import lampost.comm.chat
 import lampost.mud.inventory
@@ -125,4 +126,6 @@ class Mud():
             room = self.find_room(player.room_id)
         if not room:
             room = self.find_room(self.config_manager.start_room)
+        if not room:
+            room = Room("temp_start_room", "A Temporary Room when Start Room is Missing")
         player.change_env(room)

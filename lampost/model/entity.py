@@ -102,7 +102,6 @@ class Entity(BaseItem):
         target_keys = list(self.gen_ids(prefix + target_id))
         self.add_target_keys(target_keys, target)
 
-
     def add_target_keys(self, target_keys, target):
         for target_key in target_keys:
             self.target_map[target].append(target_key)
