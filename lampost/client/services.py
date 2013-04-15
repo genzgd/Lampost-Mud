@@ -54,6 +54,16 @@ class PlayerListService(ClientService):
         self._session_dispatch({'player_list': player_list})
 
 
+@client_service('any_login')
+class AnyLoginService(ClientService):
+
+    def _post_init(self):
+        register('player_login', self._process_login)
+
+    def _process_login(self, player):
+        self._session_dispatch({'any_login': {'name': player.name}})
+
+
 @provides('client_services')
 class ClientServiceManager(object):
 

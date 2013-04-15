@@ -111,6 +111,9 @@ class RedisStore():
     def get_index(self, index_name, key):
         return self.redis.hget(index_name, key)
 
+    def delete_index(self, index_name, key):
+        return self.redis.hdel(index_name, key)
+
     def get_all_index(self, index_name):
         return self.redis.hgetall(index_name)
 
@@ -125,9 +128,6 @@ class RedisStore():
 
     def get_all_db_hash(self, hash_id):
         return [json_decode(value) for value in self.redis.hgetall(hash_id).itervalues()]
-
-    def delete_index(self, index_name, key):
-        return self.redis.hdel(index_name, key)
 
     def update_indexes(self, dbo):
         try:

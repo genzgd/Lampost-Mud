@@ -9,7 +9,7 @@ from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lmutil import StateError
 
-m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', __name__)
+m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service', __name__)
 
 
 class SettingsResource(Resource):
@@ -186,6 +186,7 @@ class SetNotifies(Resource):
         user = session.user
         user.notifies = content.notifies
         save_object(user)
+        friend_service.update_notifies(user.dbo_id, user.notifies)
 
 
 def player_list(player_ids):

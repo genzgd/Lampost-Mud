@@ -23,6 +23,12 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
         }
     }
 
+    function dispatchMap(eventMap) {
+        for (var key in eventMap) {
+            self.dispatch(key, eventMap[key]);
+        }
+    }
+
     this.register = function(event_type, callback, scope, priority) {
         if (!registry[event_type]) {
             registry[event_type] = [];
@@ -100,8 +106,10 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
     };
 
     this.dispatchMap = function(eventMap) {
-        for (var key in eventMap) {
-            self.dispatch(key, eventMap[key]);
+        if (Array.isArray(eventMap)) {
+            angular.forEach(eventMap, dispatchMap);
+        } else {
+            dispatchMap(eventMap);
         }
     }
 }]);

@@ -1,5 +1,6 @@
-from lampost.context.resource import m_requires, provides, requires
-from lampost.util.lmutil import timestamp, StateError
+from lampost.context.resource import m_requires, provides
+from lampost.gameops.action import ActionError
+from lampost.util.lmutil import timestamp
 
 m_requires('log', 'datastore', 'dispatcher', 'session_manager', 'user_manager', __name__)
 
@@ -16,7 +17,7 @@ class MessageService(object):
 
     def add_message(self, msg_type, content, player_id, source_id=None):
         if self.is_blocked(player_id, source_id):
-            raise StateError("You are blocked from sending messages to that player.")
+            raise ActionError("You are blocked from sending messages to that player.")
         msg_id = db_counter("messages")
         message = {'msg_type': msg_type, 'msg_id': msg_id, 'content': content, 'source': user_manager.id_to_name(source_id)}
         timestamp(message)

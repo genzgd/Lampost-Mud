@@ -135,10 +135,11 @@ angular.module('lampost').controller('DisplayTabCtrl', ['$scope', '$timeout', 'l
 
 }]);
 
-angular.module('lampost').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote', function($scope, $timeout, lmData, lmRemote) {
+angular.module('lampost').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', function($scope, $timeout, lmBus, lmData, lmRemote) {
 
     $scope.showSuccess = false;
-    $scope.notifies = {friendSound: false, friendNotify: false, friendEmail:false};
+    $scope.hasPlayerEditor = lmData.editors.indexOf('players') > -1;
+    $scope.notifies = {friendSound: false, friendDesktop: false, friendEmail:false, allSound: false, allDesktop: false, allEmail: false};
     angular.forEach(lmData.notifies, function(value) {
         $scope.notifies[value] = true;
     });
@@ -155,7 +156,8 @@ angular.module('lampost').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lm
             lmData.notifies = newNotifies;
             $timeout(function() {
                 $scope.showSuccess = false;
-            }, 3000)
+            }, 3000);
+            lmBus.dispatch('notifies_updated');
         })
     }
 

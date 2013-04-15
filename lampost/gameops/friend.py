@@ -1,9 +1,12 @@
+from lampost.client.user import User
 from lampost.context.resource import m_requires, provides
 from lampost.util.lmutil import StateError
 
-m_requires('datastore', 'dispatcher', 'session_manager', 'user_manager', 'perm',  __name__)
+m_requires('datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm', 'config_manager', __name__)
 
 _REQUEST_KEY = "friend_requests"
+_FRIEND_EMAIL_KEY = "friend_email_notifies"
+_ALL_EMAIL_KEY = "all_email_notifies"
 
 
 @provides('friend_service')
@@ -37,24 +40,38 @@ class FriendService(object):
     def is_friend(self, player_id, friend_id):
         return set_key_exists(friend_key(player_id), friend_id)
 
+    def update_notifies(self, user_id, notifies):
+        if 'friendEmail' in notifies:
+            add_set_key(_FRIEND_EMAIL_KEY, user_id)
+        else:
+            delete_set_key(_FRIEND_EMAIL_KEY, user_id)
+        if 'allEmail' in notifies:
+            add_set_key(_ALL_EMAIL_KEY, user_id)
+        else:
+            delete_set_key(_ALL_EMAIL_KEY, user_id)
+
     def _check_friends(self, player):
-        email_notifies = fetch_set_keys('email_notifies')
-        friend_ids = set()
-        email_player_ids = set()
-        for immortal_id, perm_level in perm.immortals.iteritems():
-            if perm_level >= perm.perm_level('admin') and player.dbo_id != immortal_id:
-                friend_ids.add(immortal_id)
-        friend_ids.update(fetch_set_keys(friend_key(player.dbo_id)))
-        for friend_id in friend_ids:
-            try:
-                session_manager.player_session_map[friend_id].append({'friend_login': {'name': player.name}})
-            except KeyError:
-                if friend_id in email_notifies:
-                    email_player_ids.add(friend_id)
+        logged_in_players = set(session_manager.player_session_map.keys())
+        friends = set(fetch_set_keys(friend_key(player.dbo_id)))
+        logged_in_friends = logged_in_players.intersection(friends)
+        for friend_id in logged_in_friends:
+            session_manager.player_session_map[friend_id].append({'friend_login': {'name': player.name}})
+        notify_user_ids = {get_index('ix:player:user', player_id) for player_id in friends.difference(logged_in_friends)}
+        notify_user_ids = notify_user_ids.intersection(fetch_set_keys(_FRIEND_EMAIL_KEY))
+        notify_user_ids = notify_user_ids.union(fetch_set_keys(_ALL_EMAIL_KEY))
+        logged_in_user_ids = {session_manager.player_session_map[player_id].player.user_id for player_id in logged_in_players}
+        notify_user_ids = notify_user_ids.difference(logged_in_user_ids)
+
+        users = [load_object(User, user_id) for user_id in notify_user_ids]
+        if users:
+            email_sender.send_targeted_email("{} Login".format(player.name),
+                                             "Your friend {} just logged into {}.".
+                                             format(player.name, config_manager.config.title), users)
 
     def _delete_player(self, player):
         for friend_id in fetch_set_keys(friend_key(player.dbo_id)):
             self.del_friend(player.dbo_id, friend_id)
+
 
 def friend_key(player_id):
     return 'friends:{}'.format(player_id)

@@ -64,6 +64,7 @@ class UserManager(object):
         user.player_ids.append(player.dbo_id)
         self.config_manager.config_player(player)
         player.user_id = user.dbo_id
+        set_index('ix:player:user', player.dbo_id, user.dbo_id)
         save_object(player)
         save_object(user)
         return user
@@ -80,6 +81,7 @@ class UserManager(object):
         user.password = make_hash(unicode(password))
         user.email = email
         user.player_ids = []
+        user.notifies = ['friendSound', 'friendDesktop']
         save_object(user)
         return user
 
@@ -145,6 +147,7 @@ class UserManager(object):
     def _player_delete(self, player_id):
         player = load_object(Player, player_id)
         delete_object(player)
+        delete_index('ix:player:user', player_id)
         dispatch('player_deleted', player)
 
 

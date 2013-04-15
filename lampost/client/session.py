@@ -69,11 +69,12 @@ class SessionManager(object):
         else:
             player = self.user_manager.login_player(player_id)
             intro_line = "Welcome " + player.name
-            dispatch('player_login', player)
         if player.user_id != session.user.dbo_id:
             raise StateError("Player user does not match session user")
         self.player_info_map[player.dbo_id] = session.connect_player(player)
         self.player_session_map[player.dbo_id] = session
+        if not old_session:
+            dispatch('player_login', player)
         player.display_line(intro_line, SYSTEM_DISPLAY)
         player.parse("look")
         return {'login': self.user_manager.client_data(session.user, player)}
@@ -123,7 +124,8 @@ class SessionManager(object):
 class UserSession(object):
 
     def __init__(self):
-        self._output = {}
+        self._lines = []
+        self._output = []
         self._pulse_reg = None
 
         self.attach_time = datetime.now()
@@ -141,9 +143,10 @@ class UserSession(object):
         self.request.notifyFinish().addErrback(self.link_failed)
 
     def append(self, data):
+        if data not in self._output:
+            self._output.append(data)
         if not self._pulse_reg:
             self._pulse_reg = register("pulse", self._push_output)
-        self._output.update(data)
 
     def pull_output(self):
         self.activity_time = datetime.now()
@@ -151,7 +154,8 @@ class UserSession(object):
         if self._pulse_reg:
             unregister(self._pulse_reg)
             self._pulse_reg = None
-        self._output = {}
+        self._output = []
+        self._lines = []
         return output
 
     def connect_user(self, user):
@@ -176,9 +180,9 @@ class UserSession(object):
         return {'status': status, 'name': self.player.name, 'loc': self.player.env.title}
 
     def display_line(self, display_line):
-        display = self._output.get('display', {'lines':[]})
-        display['lines'].append(display_line)
-        self.append({'display': display})
+        if not self._lines:
+            self.append({'display': {'lines': self._lines}})
+        self._lines.append(display_line)
 
     def link_failed(self, error):
         if self.player:
@@ -192,9 +196,10 @@ class UserSession(object):
 
     def _push_output(self):
         if self.request:
-            self._output['link_status'] = "good"
+            self._output.append({'link_status':"good"})
             self._push(self._output)
-            self._output = {}
+            self._output = []
+            self._lines = []
             unregister(self._pulse_reg)
             self._pulse_reg = None
 

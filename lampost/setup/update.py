@@ -63,6 +63,7 @@ def player_stats():
                 player.age = 0
                 save_object(player)
             update_immortal_list(player)
+            set_index('ix:player:user', player_id, player.user_id)
         else:
             error('Missing player id {}'.format(player_id))
 

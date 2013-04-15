@@ -38,8 +38,12 @@ class Player(Entity, RootDBO):
             self.display_line(message.text, message.display)
 
     def display_line(self, text, display='default'):
-        if text:
+        if not text:
+            return
+        try:
             self.session.display_line({'text': text, 'display': display})
+        except AttributeError:
+            pass
 
     def output(self, output):
         self.session.append(output)

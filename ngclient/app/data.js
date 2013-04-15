@@ -25,7 +25,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         self.editorWindow = null;
         self.userDisplays = {};
         self.notifies = [];
-        self.validTabs = ['playerList', 'chat'];
+        self.validTabs = ['playerList'];
         self.validChat = ['gossip'];
         self.messages = [];
     }
@@ -75,7 +75,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         self.playerName = data.name;
         self.userDisplays = data.displays;
         self.playerId = self.playerName.toLocaleLowerCase();
-        self.validTabs = ['messages', 'playerList', 'chat'];
+        self.validTabs = ['playerList', 'messages'];
         self.messages = data.messages;
         lmUtil.intSort(self.messages, 'msg_id');
         localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
