@@ -9,7 +9,7 @@ class MessageService(object):
 
     def _post_init(self):
         register("player_deleted", self._remove_player_messages)
-        register("client_data", self._client_data)
+        register("player_connect", self._player_connect)
         register("player_message", self.add_message)
 
     def get_messages(self, player_id):
@@ -18,7 +18,7 @@ class MessageService(object):
     def add_message(self, msg_type, content, player_id, source_id=None):
         if self.is_blocked(player_id, source_id):
             raise ActionError("You are blocked from sending messages to that player.")
-        msg_id = db_counter("messages")
+        msg_id = db_counter("message_id")
         message = {'msg_type': msg_type, 'msg_id': msg_id, 'content': content, 'source': user_manager.id_to_name(source_id)}
         timestamp(message)
         set_db_hash(_message_key(player_id), msg_id, message)
@@ -49,12 +49,13 @@ class MessageService(object):
         delete_key(_message_key(player.dbo_id))
         delete_key(_block_key(player.dbo_id))
 
-    def _client_data(self, player, client_data):
-        client_data['messages'] = self.get_messages(player.dbo_id)
+    def _player_connect(self, player, connect):
+        connect['messages'] = self.get_messages(player.dbo_id)
 
 
 def _message_key(player_id):
     return "messages:{}".format(player_id)
+
 
 def _block_key(player_id):
     return "blocks:{}".format(player_id)

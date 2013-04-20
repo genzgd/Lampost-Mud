@@ -11,19 +11,12 @@ class ConfigManager():
         self.config_id = config_id
 
     def _post_init(self):
+        register('session_connect', self._session_connect)
         self.config = load_object(Config, self.config_id)
         if self.config:
             dispatch("config_updated", self.config_js)
         else:
             error("No configuration found", self)
-
-    def next_user_id(self):
-        result = str(self.config.next_user_id)
-        self.config.next_user_id += 1
-        while object_exists('user', self.config.next_user_id):
-            self.config.next_user_id += 1
-        save_object(self.config)
-        return result
 
     def save_config(self):
         save_object(self.config)
@@ -36,13 +29,12 @@ class ConfigManager():
         if not player.imm_level:
             player.imm_level = self.config.auto_imm_level
 
+    def _session_connect(self, session, connect):
+        connect['client_config'] = {'default_displays': self.config.default_displays}
+
     @property
     def start_room(self):
         return self.config.start_room
-
-    @property
-    def client_config(self):
-        return {'default_displays': self.config.default_displays}
 
     @property
     def name(self):
@@ -61,10 +53,9 @@ class ConfigManager():
 
 class Config(RootDBO):
     dbo_key_type = "config"
-    dbo_fields = ('title', 'description', 'start_room', 'next_user_id', 'auto_imm_level', 'default_displays')
+    dbo_fields = ('title', 'description', 'start_room', 'auto_imm_level', 'default_displays')
     title = "Lampost (New Install)"
     description = "A fresh install of Lampost Mud"
-    next_user_id = 1
     auto_imm_level = 0
 
     def __init__(self, dbo_id):

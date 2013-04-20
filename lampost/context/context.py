@@ -1,6 +1,7 @@
+from lampost.client.services import PlayerListService, AnyLoginService
 from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
-from lampost.client.services import ClientServiceManager
+from lampost.comm.channel import ChannelService
 from lampost.comm.message import MessageService
 from lampost.context.classes import ClassRegistry
 from lampost.context.resource import register, provides, context_post_init
@@ -33,9 +34,11 @@ class Context(object):
         EmailSender()
 
         MudNature(flavor)
-        ClientServiceManager()
+        ChannelService()
         FriendService()
         MessageService()
+        PlayerListService()
+        AnyLoginService()
         web_server = WebServer(int(port))
         context_post_init()
 

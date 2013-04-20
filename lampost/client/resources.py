@@ -6,10 +6,10 @@ from twisted.web.server import NOT_DONE_YET
 from lampost.datastore.exceptions import DataError
 
 from lampost.util.lmlog import logged
-from lampost.context.resource import m_requires
+from lampost.context.resource import m_requires, get_resource
 from lampost.util.lmutil import build_object, PermError, StateError
 
-m_requires('log', 'session_manager', 'client_services', 'json_decode', 'json_encode',  __name__)
+m_requires('log', 'session_manager', 'json_decode', 'json_encode',  __name__)
 
 
 def find_session_id(request):
@@ -89,13 +89,13 @@ class ActionResource(Resource):
 class RegisterResource(Resource):
     @request
     def render_POST(self, content, session):
-        return client_services.register(content.service_id, session, getattr(content, 'data', None))
+        return get_resource(content.service_id).register(session, getattr(content, 'data', None))
 
 
 class UnregisterResource(Resource):
     @request
     def render_POST(self, content, session):
-        return client_services.unregister(content.service_id, session)
+        get_resource(content.service_id).unregister(session)
 
 
 class LspServerResource(Resource):

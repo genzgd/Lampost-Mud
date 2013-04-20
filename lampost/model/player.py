@@ -1,5 +1,8 @@
+from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.model.entity import Entity
+
+m_requires('log', __name__)
 
 
 class Player(Entity, RootDBO):
@@ -22,6 +25,7 @@ class Player(Entity, RootDBO):
         self.name = dbo_id.capitalize()
         self.last_tell = None
         self.equip_slots = {}
+        self.active_channels = []
 
     def on_loaded(self):
         if not self.desc:
@@ -32,10 +36,6 @@ class Player(Entity, RootDBO):
 
     def rec_glance(self, source, **ignored):
         source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))
-
-    def display_channel(self, message):
-        if message.source != self:
-            self.display_line(message.text, message.display)
 
     def display_line(self, text, display='default'):
         if not text:
@@ -49,7 +49,16 @@ class Player(Entity, RootDBO):
         self.session.append(output)
 
     def register_channel(self, channel):
-        self.register(channel, self.display_channel)
+        self.enhance_soul(channel)
+        self.active_channels.append(channel.id)
+
+    def unregister_channel(self, channel):
+        self.diminish_soul(channel)
+        try:
+            self.active_channels.remove(channel.id)
+        except ValueError:
+            warn("Removing channel {} not in list".format(channel.display), self)
+
 
     def rec_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)

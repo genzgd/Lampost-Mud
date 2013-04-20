@@ -1,15 +1,35 @@
-angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', function ($scope, $timeout, lmBus, lmData, lmRemote) {
+angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', 'lmUtil',
+    function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
 
-    var tabInfo = {player_list: {id: 'playerList', label: 'Player List', include: 'view/player_list_tab.html'},
-        messages: {id: 'messages', label: 'Messages', include: "view/messages_tab.html"},
-        chat: {id: 'chat', label: 'Chat'}};
+    var tabInfo = [{id: 'messages', label: 'Messages', include: "view/messages_tab.html"},
+         {id: 'playerList', label: 'Player List', include: 'view/player_list_tab.html'},
+         {id: 'channel', label: 'Channel', include: "view/channel_tab.html"}];
 
+    var tabMap = {};
+
+    angular.forEach(tabInfo, function(tab) {
+        tabMap[tab.id] = tab;
+    });
 
     function updateMsgCount() {
-        tabInfo.messages.label = "Messages (" + $scope.messages.length + ")";
+        tabMap.messages.label = "Messages (" + $scope.messages.length + ")";
+    }
+
+    function sortChannels() {
+        $scope.channelMessages = [];
+        angular.forEach(lmData.channels, function(msg_list, channel_id) {
+           angular.forEach(msg_list, function(msg) {
+               msg.id = channel_id;
+               lmData.adjustLine(msg, msg.id + "_channel");
+               $scope.channelMessages.push(msg);
+           })
+        });
+        lmUtil.descIntSort($scope.channelMessages, 'timestamp');
     }
 
     function updateTabs() {
+        sortChannels();
+        $scope.availChannels = lmData.availChannels;
         $scope.tabList = [];
         $scope.messages = lmData.messages;
         $scope.playerList = lmData.playerList;
@@ -29,7 +49,7 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
 
         if (!lmData.activeTab) {
             if (lmData.messages.length > 0) {
-                $scope.changeTab(tabInfo.messages);
+                $scope.changeTab(tabMap.messages);
             } else {
                 $scope.changeTab($scope.tabList[0]);
             }
@@ -40,9 +60,8 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
     lmBus.register('logout', updateTabs, $scope);
     lmBus.register('new_message', function () {
         updateMsgCount();
-        var messageTab = tabInfo.messages;
-        if (messageTab.visible) {
-            $scope.changeTab(messageTab)
+        if (tabMap.messages.visible) {
+            $scope.changeTab(tabMap.messages);
         }
     }, $scope);
 
@@ -57,9 +76,9 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
             return;
         }
         if (tab.id == 'playerList') {
-            lmRemote.registerService('player_list');
+            lmRemote.registerService('player_list_service');
         } else if (lmData.activeTab == 'playerList') {
-            lmRemote.unregisterService('player_list');
+            lmRemote.unregisterService('player_list_service');
         }
         lmData.activeTab = tab.id;
     };
@@ -83,6 +102,13 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
     lmBus.register("player_logout", function (logout) {
         delete lmData.playerList[logout.id];
     }, $scope);
+
+    lmBus.register("channels", sortChannels, $scope);
+    lmBus.register("channel", function(msg) {
+        lmData.adjustLine(msg, msg.id + "_channel");
+        $scope.channelMessages.unshift(msg);
+    }, $scope);
+
 
     $scope.deleteMessage = function (msg) {
         lmRemote.asyncRequest("messages/delete", {msg_id: msg.msg_id, player_id: lmData.playerId}).then(function () {

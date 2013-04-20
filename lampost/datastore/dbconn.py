@@ -31,7 +31,8 @@ class RedisStore():
         self.redis.set(dbo.dbo_key, json_encode(dbo.save_dbo_dict))
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
-        trace("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
+        if __debug__:
+            debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo
 
     def load_cached(self, key):
@@ -83,7 +84,8 @@ class RedisStore():
             ix_value = getattr(dbo, ix_name, None)
             if ix_value is not None and ix_value != '':
                 self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
-        debug("object deleted: {}".format(key), self)
+        if __debug__:
+            debug("object deleted: {}".format(key), self)
         if self._object_map.get(dbo.dbo_key):
             del self._object_map[dbo.dbo_key]
 
@@ -100,7 +102,7 @@ class RedisStore():
         return self.redis.sismember(set_key, value)
 
     def db_counter(self, counter_id, inc=1):
-        return self.redis.incr(counter_id, inc)
+        return self.redis.incr("counter:{}".format(counter_id), inc)
 
     def delete_key(self, key):
         self.redis.delete(key)
@@ -128,6 +130,15 @@ class RedisStore():
 
     def get_all_db_hash(self, hash_id):
         return [json_decode(value) for value in self.redis.hgetall(hash_id).itervalues()]
+
+    def get_db_list(self, list_id, start=0, end=-1):
+        return [json_decode(value) for value in self.redis.lrange(list_id, start, end)]
+
+    def add_db_list(self, list_id, value):
+        self.redis.lpush(list_id, json_encode(value))
+
+    def trim_db_list(self, list_id, start, end):
+        return self.redis.ltrim(list_id, start, end)
 
     def update_indexes(self, dbo):
         try:
@@ -168,8 +179,8 @@ class RedisStore():
                     except AttributeError:
                         warn("{} json failed to load for coll {} in {}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)), self)
             except KeyError:
-                if dbo.dbo_key_type:
-                    trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name, self)
+                if __debug__ and dbo.dbo_key_type :
+                    debug("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name, self)
 
         for dbo_ref in dbo.dbo_refs:
             try:
@@ -177,8 +188,8 @@ class RedisStore():
                 ref_obj = self.load_by_key(dbo_ref.key_type, ref_key, dbo_ref.base_class)
                 setattr(dbo, dbo_ref.field_name, ref_obj)
             except KeyError:
-                if dbo.dbo_key_type:
-                    trace("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name, self)
+                if __debug__ and dbo.dbo_key_type:
+                    debug("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name, self)
         dbo.on_loaded()
         return True
 

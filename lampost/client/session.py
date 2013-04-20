@@ -16,7 +16,7 @@ m_requires('log', 'dispatcher', __name__)
 
 
 @provides('session_manager')
-@requires('user_manager', 'config_manager')
+@requires('user_manager')
 class SessionManager(object):
     def __init__(self):
         self.session_map = {}
@@ -35,7 +35,9 @@ class SessionManager(object):
         session_id = self._get_next_id()
         session = UserSession()
         self.session_map[session_id] = session
-        return {'connect': session_id, 'client_config': self.config_manager.client_config}
+        connect = {'connect': session_id}
+        dispatch('session_connect', session, connect)
+        return connect
 
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)
@@ -43,8 +45,12 @@ class SessionManager(object):
             return self.start_session()
         session.player.display_line("-- Reconnecting Session --", SYSTEM_DISPLAY)
         session.player.parse("look")
-        return {'login': self.user_manager.client_data(session.user, session.player),
-                'client_config': self.config_manager.client_config, 'connect': session_id}
+        client_data = {}
+        connect = {'connect': session_id, 'login': client_data}
+        dispatch('session_connect', session, connect)
+        dispatch('user_connect', session.user, client_data)
+        dispatch('player_connect', session.player, client_data)
+        return connect
 
     def login(self, session, user_name, password):
         user_name = unicode(user_name).lower()
@@ -56,7 +62,9 @@ class SessionManager(object):
             return self.start_player(session, user.player_ids[0])
         if user_name != user.user_name:
             return self.start_player(session, user_name)
-        return {'user_login': self.user_manager.client_data(session.user)}
+        client_data = {}
+        dispatch('user_connect', user, client_data)
+        return {'user_login': client_data}
 
     def start_player(self, session, player_id):
         old_session = self.player_session(player_id)
@@ -77,7 +85,10 @@ class SessionManager(object):
             dispatch('player_login', player)
         player.display_line(intro_line, SYSTEM_DISPLAY)
         player.parse("look")
-        return {'login': self.user_manager.client_data(session.user, player)}
+        client_data = {}
+        dispatch('user_connect', session.user, client_data)
+        dispatch('player_connect', player, client_data)
+        return {'login': client_data}
 
     def logout(self, session):
         player = session.player
@@ -105,6 +116,7 @@ class SessionManager(object):
                     if session.player:
                         self.logout(session)
                     del self.session_map[session_id]
+                    dispatch('session_disconnect', session)
                     session.disconnect()
             elif session.request:
                 if now - session.attach_time >= LINK_IDLE_REFRESH:
@@ -191,12 +203,11 @@ class UserSession(object):
         self.request = None
 
     def disconnect(self):
-        dispatch('session_disconnect', self)
         detach_events(self)
 
     def _push_output(self):
         if self.request:
-            self._output.append({'link_status':"good"})
+            self._output.append({'link_status': "good"})
             self._push(self._output)
             self._output = []
             self._lines = []

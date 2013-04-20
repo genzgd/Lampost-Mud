@@ -1,4 +1,5 @@
 from lampost.client.user import UserManager
+from lampost.comm.channel import ChannelService
 from lampost.context.resource import m_requires, context_post_init
 from lampost.env.room import Room
 from lampost.gameops.config import Config, ConfigManager
@@ -22,6 +23,7 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None,
         return
 
     Permissions()
+    ChannelService()
 
     config = Config(config_id)
     room_id = "{0}:0".format(start_area)

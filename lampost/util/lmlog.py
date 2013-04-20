@@ -6,7 +6,7 @@ from lampost.context.resource import m_requires, provides, get_resource
 
 m_requires('dispatcher', __name__)
 
-LOG_LEVELS = {"fatal": 0, "error": 10, "warn": 20, "info": 30, "debug": 40, "trace": 50}
+LOG_LEVELS = {"fatal": 0, "error": 10, "warn": 20, "info": 30, "debug": 40}
 
 
 def logged(func):
@@ -64,11 +64,9 @@ class Log(object):
     def warn(self, log_msg, log_name="root", exception=None):
         self._log('warn', log_msg, log_name, exception)
 
+    def info(self, log_msg, log_name="root", exception=None):
+        self._log('info', log_msg, log_name, exception)
+
     def debug(self, log_msg, log_name="root", exception=None):
         self._log('debug', log_msg, log_name, exception)
 
-    def trace(self, log_msg, log_name="root", exception=None):
-        self._log('trace', log_msg, log_name, exception)
-
-    def info(self, log_msg, log_name="root", exception=None):
-        self._log('info', log_msg, log_name, exception)

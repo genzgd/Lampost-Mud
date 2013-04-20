@@ -30,6 +30,11 @@ class User(RootDBO):
 @requires('config_manager')
 @provides('user_manager')
 class UserManager(object):
+
+    def _post_init(self):
+        register("user_connect", self._user_connect)
+        register("player_connect", self._player_connect)
+
     def validate_user(self, user_name, password):
         user = self.find_user(user_name)
         if not user:
@@ -75,7 +80,7 @@ class UserManager(object):
         return player
 
     def create_user(self, user_name, password, email=""):
-        user_id = self.config_manager.next_user_id()
+        user_id = db_counter('user_id')
         user = User(user_id)
         user.user_name = unicode(user_name) if user_name else player.name
         user.password = make_hash(unicode(password))
@@ -111,13 +116,14 @@ class UserManager(object):
             unload_player(player)
         return max(imm_levels)
 
-    def client_data(self, user, player=None):
-        client_data = {'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
-                       'password_reset': user.password_reset, 'notifies': user.notifies}
-        if player:
-            client_data.update({'name': player.name, 'privilege': player.imm_level})
-            dispatch('client_data', player, client_data)
-        return client_data
+
+    def _user_connect(self, user, client_data):
+        client_data.update({'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
+                            'password_reset': user.password_reset, 'notifies': user.notifies})
+
+    def _player_connect(self, player, client_data):
+        client_data.update({'name': player.name, 'privilege': player.imm_level})
+
 
     def login_player(self, player_id):
         player = load_object(Player, player_id)

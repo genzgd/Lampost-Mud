@@ -315,7 +315,6 @@ class Entity(BaseItem):
         self.leave_env()
         self.detach()
         self.status = 'dead'
-        del self
 
     def equip_article(self, article):
         pass

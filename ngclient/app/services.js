@@ -638,6 +638,12 @@ angular.module('lampost_svc').service('lmUtil', [function() {
         })
     };
 
+    this.descIntSort = function(array, field) {
+        array.sort(function(a, b) {
+            return b[field] - a[field];
+        })
+    };
+
     this.urlVars = function() {
         var vars = {};
         var keyValuesPairs = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');

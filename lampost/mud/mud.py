@@ -25,7 +25,7 @@ class MudNature():
         self.social_registry = SocialRegistry()
 
     def _post_init(self):
-        register('client_data', self._client_data)
+        register('player_connect', self._player_connect)
         register('baptise_player', self._baptise)
         info("Loading mud", self)
         self.shout_channel = Channel("shout")
@@ -33,24 +33,23 @@ class MudNature():
         self.context.set('article_load_types', ['equip', 'default'])
         self.context.set('broadcast_types', broadcast_types)
         self.context.set('broadcast_tokens', broadcast_tokens)
-        self.mud_actions.add_action(self.shout_channel)
         self.mud.load_areas()
         self.social_registry.load_socials()
         info("Mud loaded", self)
 
     def baptise_imm(self, player):
         if player.imm_level:
-            player.enhance_soul(self.imm_channel)
-            player.register_channel(self.imm_channel)
             player.build_mode = True
+            player.register_channel(self.imm_channel)
         for cmd in imm_actions:
             if player.imm_level >= perm_level(cmd.imm_level):
                 player.enhance_soul(cmd)
             else:
                 player.diminish_soul(cmd)
 
-    def _client_data(self, player, client_data):
+    def _player_connect(self, player, client_data):
         editors = []
+        channels = ['shout_channel']
         if has_perm(player, 'supreme'):
             editors.append('config')
         if has_perm(player, 'admin'):
@@ -59,7 +58,10 @@ class MudNature():
             editors.append('display')
         if has_perm(player, 'creator'):
             editors.append('areas')
+            channels.append('imm_channel')
         client_data['editors'] = editors
+        client_data['avail_channels'] = channels
+        client_data['active_channels'] = player.active_channels
 
     def _baptise(self, player):
         player.baptise(set())

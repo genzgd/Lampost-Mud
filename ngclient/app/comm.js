@@ -5,19 +5,24 @@ angular.module('lampost').service('lmComm', ['lmBus', 'lmData', 'lmRemote', 'lmD
     lmBus.register('friend_login', friendLogin);
     lmBus.register('any_login', anyLogin);
     lmBus.register('login', checkAllLogins);
-    lmBus.register('logout', checkAllLogins);
+    lmBus.register('logout', function() {
+        checkAllLogins();
+        lmRemote.asyncRequest('channel/gen_channels').then(function(gen_channels) {
+            lmBus.dispatch("gen_channels", gen_channels);
+        });
+    });
     lmBus.register('notifies_updated', checkAllLogins);
 
     function checkAllLogins() {
         if (lmData.notifies.indexOf('allDesktop') > -1 || lmData.notifies.indexOf('allSound') > -1) {
             if (!allLogins) {
-                lmRemote.registerService('any_login');
+                lmRemote.registerService('any_login_service');
                 allLogins = true;
             }
         } else {
             if (allLogins) {
                 allLogins = false;
-                lmRemote.unregisterService('any_login');
+                lmRemote.unregisterService('any_login_service');
 
             }
         }

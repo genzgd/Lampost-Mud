@@ -150,13 +150,13 @@ def home(source, **ignored):
 def register_display(source, args, **ignored):
     if not args:
         return "No event specified"
-    source.register(args[0], source.display_line)
+    register(args[0], source.display_line)
     source.display_line("Events of type {0} will now be displayed".format(args[0]))
 
 
 @imm_action('unregister display')
 def unregister_display(source, args, **ignored):
-    source.unregister_type(source, args[0])
+    unregister_type(source, args[0])
     source.display_line("Events of type {0} will no longer be displayed".format(args[0]))
 
 
@@ -164,6 +164,7 @@ def unregister_display(source, args, **ignored):
 def describe(source, target, **ignored):
     for line in target.rec_describe():
         source.display_line(line)
+
 
 @imm_action('buildmode')
 def build_mode(source, **ignored):
@@ -177,8 +178,8 @@ def reset(source, **ignored):
     source.env.reset()
     return "Room reset"
 
-@imm_action("loglevel", imm_level='supreme')
 
+@imm_action("loglevel", imm_level='supreme')
 def log_level(args, **ignored):
     log = get_resource("log")
     if args:
