@@ -61,8 +61,8 @@ class UserManager(object):
         delete_object(user)
 
     def delete_player(self, user, player_id):
-        _player_delete(player_id)
-        user.player_ids.remove(player.player_id)
+        self._player_delete(player_id)
+        user.player_ids.remove(player_id)
         save_object(user)
 
     def attach_player(self, user, player):

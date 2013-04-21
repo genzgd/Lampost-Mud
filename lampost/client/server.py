@@ -60,7 +60,7 @@ class WebServer(Resource):
     #noinspection PyUnresolvedReferences
     @logged
     def start_service(self, interface):
-        info("Starting web server", self)
+        info("Starting web server on port {}".format(self.port), self)
         reactor.listenTCP(self.port, Site(self), interface=interface)
         reactor.run()
 
