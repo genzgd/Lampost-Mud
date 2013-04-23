@@ -3,12 +3,14 @@ from lampost.client.resources import request
 from lampost.context.resource import requires
 from lampost.editor.areas import AreaResource
 from lampost.editor.articles import ArticleResource
+from lampost.editor.base import EditResource
 from lampost.editor.config import ConfigResource
 from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.rooms import RoomResource
 from lampost.editor.socials import SocialsResource
+from lampost.model.race import PlayerRace
 
 
 class EditorResource(Resource):
@@ -23,6 +25,7 @@ class EditorResource(Resource):
         self.putChild('constants', PropertiesResource())
         self.putChild('socials', SocialsResource())
         self.putChild('display', DisplayResource())
+        self.putChild('race', EditResource(PlayerRace))
 
 
 @requires('context')

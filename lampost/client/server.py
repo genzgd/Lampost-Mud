@@ -4,6 +4,7 @@ from twisted.web.server import Site
 from twisted.web.static import File
 from twisted.web.util import Redirect
 from lampost.client.channel import ChannelResource
+from lampost.client.clientdata import ClientDataResource
 from lampost.client.messages import MessagesResource
 
 from lampost.editor.editor import EditorResource
@@ -21,6 +22,7 @@ URL_LINK = "link"
 URL_CONNECT = "connect"
 URL_LSP = "lsp"
 URL_EDITOR = "editor"
+URL_CLIENT_DATA = "client_data"
 URL_SETTINGS = "settings"
 URL_MESSAGES = "messages"
 URL_CHANNEL = "channel"
@@ -49,6 +51,7 @@ class WebServer(Resource):
         self.putChild(URL_UNREGISTER, UnregisterResource())
         self.putChild(URL_MESSAGES, MessagesResource())
         self.putChild(URL_CHANNEL, ChannelResource())
+        self.putChild(URL_CLIENT_DATA, ClientDataResource())
 
         self._lsp_server = LspServerResource()
         self.putChild(URL_LSP, self._lsp_server)

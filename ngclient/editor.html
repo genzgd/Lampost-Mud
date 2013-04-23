@@ -11,7 +11,7 @@
   <link href="css/spectrum.css" rel="stylesheet">
 </head>
 
-<body ng-cloak class="container-fluid v-full">
+<body ng-cloak class="container-fluid v-full" style="padding-top: 6px;">
   <div class="v-full" ng-controller="EditorCtrl" ng-switch="loadStatus">
     <div ng-switch-when="loading">Loading Data From Server</div>
     <div ng-switch-when="loaded" class="row-fluid wrapper">
@@ -37,6 +37,7 @@
   <script src="editor/player_editor.js"></script>
   <script src="editor/socials_editor.js"></script>
   <script src="editor/display_editor.js"></script>
+  <script src="editor/gen_editor.js"></script>
   <script src="lib/spectrum.js"></script>
 </body>
 </html>

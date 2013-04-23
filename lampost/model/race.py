@@ -1,0 +1,15 @@
+from lampost.datastore.dbo import RootDBO
+
+
+class PlayerRace(RootDBO):
+    dbo_key_type = "race"
+    dbo_set_key = "races"
+    dbo_fields = "name", "desc", "base_attrs"
+
+    attr_list = []
+    base_attr_value = 5
+
+    def __init__(self, dbo_id):
+        self.dbo_id = dbo_id
+        self.base_attrs = {attr_name: self.base_attr_value for attr_name in self.attr_list}
+

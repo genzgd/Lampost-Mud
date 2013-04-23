@@ -1,11 +1,17 @@
-__author__ = 'Geoff'
+ATTR_MAP = {'con': {'name': 'Constitution', 'category': 'Brawn', 'hidden': False},
+            'str': {'name': 'Strength', 'category': 'Brawn', 'hidden': False},
+            'agi': {'name': 'Agility', 'category': 'Brawn', 'hidden': False},
+            'adv': {'name': 'Adventuresome', 'category': 'Brawn', 'hidden': True},
 
-master_attr = {'Brawn': {'con': 'Constitution', 'str': 'Strength', 'agi': 'Agility'},
-               'Brain': {'int': 'Intelligence', 'wis': 'Wisdom', 'kno': 'Knowledge'},
-               'Bravado': {'cha': 'Charm', 'bal': 'Balance', 'gui': 'Guile'}}
+            'int': {'name': 'Intelligence', 'category': 'Brain', 'hidden': False},
+            'wis': {'name': 'Wisdom', 'category': 'Brain', 'hidden': False},
+            'kno': {'name': 'Knowledge', 'category': 'Brain', 'hidden': False},
+            'cur': {'name': 'Curiosity', 'category': 'Brain', 'hidden': True},
 
-attr_dict = {}
+            'cha': {'name': 'Charm', 'category': 'Bravado', 'hidden': False},
+            'bal': {'name': 'Balance', 'category': 'Bravado', 'hidden': False},
+            'gui': {'name': 'Guile', 'category': 'Bravado', 'hidden': False},
+            'inq': {'name': 'Inquiry', 'category': 'Bravado', 'hidden': True}}
 
-[attr_dict.update(att_list) for att_list in master_attr.values()]
 
-attr_list = tuple(attr_dict.keys())
+ATTR_LIST = tuple(ATTR_MAP.keys())

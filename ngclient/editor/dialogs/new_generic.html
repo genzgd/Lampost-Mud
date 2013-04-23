@@ -1,0 +1,21 @@
+<div class="modal">
+  <div class="modal-header">
+    <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+    <h4>Create New {{objLabel}}</h4>
+  </div>
+  <form ng-submit="submitNewObject()" >
+    <div class="modal-body">
+      <label>{{objLabel}} Id</label>
+      <input type="text" ng-model="newObject.dbo_id" ng-change="objectExists = false" required="true"/>
+      <div class="alert alert-error" ng-show="objectExists">
+        <button type="button" class="close" ng-click="objectExists = false">×</button>
+        {{objLabel}} with id {{newObject.dbo_id}} already exists.
+      </div>
+      <div ng-include="newObjectInclude"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success">Create {{objLabel}}</button>
+      <button ng-click="dismiss()" class="btn">Cancel</button>
+    </div>
+  </form>
+</div>

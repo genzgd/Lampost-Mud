@@ -49,7 +49,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         articles: {label:"Articles", url:"article", childType:'article'},
         article: {label:"", url:"article", model_props:['model'], newObject:{id:'', title:'', desc:'', level:1, weight: 1}},
         socials: {label:"Socials", url:"socials"},
-        display: {label:"Display", url:"display"}
+        display: {label:"Display", url:"display"},
+        race: {label:"Races", url:"race"}
     };
 
     function Editor(type, parent) {

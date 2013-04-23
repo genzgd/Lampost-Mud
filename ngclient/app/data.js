@@ -98,6 +98,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         self.userDisplays = data.displays;
         self.playerId = self.playerName.toLocaleLowerCase();
         self.validTabs = ['channel', 'messages', 'playerList'];
+        self.activeTab = null;
         self.messages = data.messages;
 
         lmUtil.intSort(self.messages, 'msg_id');
