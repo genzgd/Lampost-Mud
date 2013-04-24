@@ -3,7 +3,13 @@ angular.module('lampost').controller('NewCharacterCtrl', ['$scope', 'lmData', 'l
 
     $scope.playerName = '';
     $scope.errorText = null;
-    $scope.playerData = {sex: 'select', size: 'select'};
+    $scope.activeScreen = 'race';
+    $scope.playerData = {sex: 'select', size: 'select', race: 'select'};
+
+    lmRemote.request("client_data/new_char").then(function(newCharData) {
+       $scope.races = newCharData.races;
+       $scope.ready = true;
+    });
 
     $scope.tryCancel = function() {
         if (lmData.playerIds.length == 0) {
@@ -19,8 +25,6 @@ angular.module('lampost').controller('NewCharacterCtrl', ['$scope', 'lmData', 'l
         }
     };
 
-
-
     $scope.createCharacter = function() {
         if ($scope.playerData.sex == 'select') {
             $scope.errorText = "Please choose your sex.";
@@ -30,6 +34,11 @@ angular.module('lampost').controller('NewCharacterCtrl', ['$scope', 'lmData', 'l
             $scope.errorText = "Please choose your size.";
             return;
         }
+        if ($scope.playerData.race == 'select') {
+            $scope.errorText = "Please choose your race.";
+            return;
+        }
+
         if ($scope.playerName.indexOf(" ") > -1) {
             $scope.errorText = "Spaces not permitted in character names";
             return;

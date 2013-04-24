@@ -1,4 +1,4 @@
-<div class="modal medium">
+<div class="modal medium" ng-show="ready">
   <div class="modal-header">
     <button type="button" class="close" ng-click="tryCancel()">×</button>
     <h4>Create New Character</h4>
@@ -10,16 +10,12 @@
           <h6>Character Name</h6>
           <input title="Your player's name. This is the name other players will know you by in the game. No spaces are permitted.  Use common sense. Players with inappropriate names will be deleted."
               class="span11" type="text" ng-model="playerName" ng-change="errorText = null" required/>
-        </div>
-        <div class="span2">
           <h6>Sex</h6>
           <select class="input-small" ng-model="playerData.sex">
             <option value="select">Select...</option>
             <option value="female">Female</option>
             <option value="male">Male</option>
           </select>
-        </div>
-        <div class="span2">
           <h6>Size</h6>
           <select class="input-small" ng-model="playerData.size">
             <option value="select">Select...</option>
@@ -27,6 +23,22 @@
             <option value="small">Small</option>
             <option value="large">Large</option>
           </select>
+        </div>
+        <div class="span8" ng-switch="activeScreen">
+          <div ng-switch-when="race">
+            <div class="form-horizontal">
+              <h6>Character Race</h6>
+              <select class="input-large" ng-model="playerData.race">
+                <option value="select">Select...</option>
+                <option ng-repeat="(race_id, race) in races" value="{{race_id}}">{{race.name}}</option>
+              </select>
+            </div>
+            <div ng-show="playerData.race != 'select'">
+              <br/>
+              <p>{{races[playerData.race].desc}}</p>
+            </div>
+          </div>
+
         </div>
       </div>
       <div class="row-fluid">
