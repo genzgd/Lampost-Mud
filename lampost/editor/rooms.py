@@ -252,7 +252,7 @@ def exit_dto(room_exit, start_id=None):
 
 
 def mobile_reset_dto(mobile_reset):
-    dto = mobile_reset.dbo_dict
+    dto = mobile_reset.dto_value
     mobile = mud.get_mobile(mobile_reset.mobile_id)
     if mobile:
         dto['desc'] = mobile.desc if mobile.desc else mobile.title
@@ -264,7 +264,7 @@ def mobile_reset_dto(mobile_reset):
 
 
 def article_reset_dto(article_reset):
-    dto = article_reset.dbo_dict
+    dto = article_reset.dto_value
     article = mud.get_article(article_reset.article_id)
     if article:
         dto['desc'] = article.desc if article.desc else article.title

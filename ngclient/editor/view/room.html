@@ -143,7 +143,7 @@
             </thead>
             <tbody>
             <tr class="table-bordered" ng-repeat="mobile in room.mobiles">
-              <td class="use-ellipses" style="width: 70%;">{{mobile.mobile_id}} {{mobile.title}}</td>
+              <td class="use-ellipses" style="width: 70%;">{{mobile.dbo_id}} {{mobile.title}}</td>
               <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_count"/></td>
               <td class="edit-cell" style="width: 15%;"><input ng-change="dirty()" class="span12 edit-cell cell-right" type="number" min="1" ng-model="mobile.mob_max"/></td>
               <td style="width: 20%;">

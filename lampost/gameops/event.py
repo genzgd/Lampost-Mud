@@ -20,8 +20,8 @@ class Dispatcher:
         self.pulses_per_second = 1 / pulse_interval
         self.maintenance_interval = maintenance_interval
 
-    def register(self, event_type, callback, owner=None):
-        return self._add_registration(Registration(event_type, callback, owner))
+    def register(self, event_type, callback, owner=None, priority=0):
+        return self._add_registration(Registration(event_type, callback, owner, priority))
 
     def unregister(self, registration):
         registration.cancel()
@@ -39,7 +39,7 @@ class Dispatcher:
             if registration.event_type == event_type:
                 self.unregister(registration)
 
-    def register_p(self, callback, pulses=0, seconds=0, randomize=0):
+    def register_p(self, callback, pulses=0, seconds=0, randomize=0, priority=0):
         if seconds:
             pulses = int(seconds * self.pulses_per_second)
             randomize = int(randomize * self.pulses_per_second)
@@ -47,12 +47,13 @@ class Dispatcher:
             raise ValueError("Pulse Frequency Greater Than Pulse Queue Size")
         if randomize:
             randomize = randint(0, randomize)
-        registration = PulseRegistration(pulses, callback)
+        registration = PulseRegistration(pulses, callback, priority=priority)
         self._add_pulse(self.pulse_count + randomize, registration)
         return self._add_registration(registration)
 
     def dispatch(self, event_type, *args, **kwargs):
-        for registration in self._registrations.get(event_type, set()).copy():
+        sorted_events = sorted(self._registrations.get(event_type, []), key=lambda reg: reg.priority)
+        for registration in sorted_events:
             registration.callback(*args, **kwargs)
 
     def detach_events(self, owner):
@@ -63,10 +64,10 @@ class Dispatcher:
     def _pulse(self):
         self.dispatch('pulse')
         map_loc = self.pulse_count % self.max_pulse_queue
-        for event in self._pulse_map[map_loc]:
-            if event.freq:
-                event.callback()
-                self._add_pulse(self.pulse_count, event)
+        for reg in sorted(self._pulse_map[map_loc], key=lambda reg: reg.priority):
+            if reg.freq:
+                reg.callback()
+                self._add_pulse(self.pulse_count, reg)
         del self._pulse_map[map_loc]
         self.pulse_count += 1
 
@@ -88,18 +89,19 @@ class Dispatcher:
 
 
 class Registration(object):
-    def __init__(self, event_type, callback, owner=None):
+    def __init__(self, event_type, callback, owner=None, priority=0):
         self.event_type = event_type
         self.callback = callback
         self.owner = owner if owner else getattr(callback, 'im_self', self)
+        self.priority = priority
 
     def cancel(self):
         pass
 
 
 class PulseRegistration(Registration):
-    def __init__(self, freq, callback, owner=None):
-        super(PulseRegistration, self).__init__('pulse_i', callback, owner)
+    def __init__(self, freq, callback, owner=None, priority=0):
+        super(PulseRegistration, self).__init__('pulse_i', callback, owner, priority)
         self.freq = freq
 
     def cancel(self):

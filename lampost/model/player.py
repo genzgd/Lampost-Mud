@@ -5,11 +5,11 @@ from lampost.model.entity import Entity
 m_requires('log', __name__)
 
 
-class Player(Entity, RootDBO):
+class Player(RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = Entity.dbo_fields + ("imm_level", "room_id", "home_room", "age",
-                                      "user_id", "created", "last_login", "last_logout")
+    dbo_fields = "imm_level", "room_id", "home_room", "age", "user_id", "created", "last_login", "last_logout"
+
     imm_level = 0
     user_id = 0
     last_login = 0
@@ -20,12 +20,13 @@ class Player(Entity, RootDBO):
     rec_player = True
 
     def __init__(self, dbo_id):
-        self.dbo_id = unicode(dbo_id).lower()
+        super(Player, self).__init__(dbo_id)
         self.target_id = self.dbo_id,
-        self.name = dbo_id.capitalize()
+        self.name = self.dbo_id.capitalize()
         self.last_tell = None
         self.equip_slots = {}
         self.active_channels = []
+        self.followers = set()
 
     def on_loaded(self):
         if not self.desc:
@@ -59,9 +60,12 @@ class Player(Entity, RootDBO):
         except ValueError:
             warn("Removing channel {} not in list".format(channel.display), self)
 
-
     def rec_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)
+
+    def rec_follow(self, source, **ignored):
+        self.followers.add(source)
+        source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
 
     def get_score(self):
         score = {}

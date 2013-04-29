@@ -6,6 +6,7 @@ from lampost.merc.util import scale32, range_limit
 base_thdef0 = 18  # Roll required to hit Defense 0 at level 1
 base_thdef32 = 6  # Roll required to hit Defense 0 at level 32
 
+
 def basic_hit(source, target):
     thdef0 = scale32(source.level, base_thdef0, base_thdef32)  # TODO -- strength modifier
     defense = max(-15, target.defense / 10)

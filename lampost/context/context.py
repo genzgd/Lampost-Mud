@@ -13,11 +13,13 @@ from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.config import ConfigManager
 from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions
-from lampost.util.lmlog import Log
+from lampost.util.lmlog import Log, logged
 from lampost.mud.mud import MudNature
 
 @provides('context')
 class Context(object):
+
+    @logged
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
                  flavor='lpflavor', config_id='lampost', server_interface='127.0.0.1',
                  log_level="info", log_file=None):

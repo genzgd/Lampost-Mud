@@ -5,7 +5,7 @@ from lampost.merc.constants import MAX_ITEMS, weight_capacity, MAX_LEVEL, XP_PER
 from lampost.model.player import Player
 
 
-class PlayerMerc(Player):
+class PlayerMerc(Entity, Player):
 
     dbo_fields = Player.dbo_fields + ("level", "health", "max_health", "status", "experience",
                                       "perm_str", "perm_dex", "perm_wis", "perm_int", "perm_con",)

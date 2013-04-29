@@ -7,9 +7,11 @@ class PlayerRace(RootDBO):
     dbo_fields = "name", "desc", "base_attrs"
 
     attr_list = []
+    name = "Unnamed"
+    desc = ""
     base_attr_value = 5
 
     def __init__(self, dbo_id):
-        self.dbo_id = dbo_id
+        super(PlayerRace, self).__init__(dbo_id)
         self.base_attrs = {attr_name: self.base_attr_value for attr_name in self.attr_list}
 

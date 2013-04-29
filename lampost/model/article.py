@@ -12,8 +12,9 @@ class Article(BaseItem):
     rec_wear = True
     equip_slot = None
 
-    def __init__(self, article_id):
-        self.article_id = article_id
+    @property
+    def name(self):
+        return self.title
 
     def short_desc(self, observer=None):
         if self.title.lower().startswith(('a', 'an')):
@@ -22,10 +23,6 @@ class Article(BaseItem):
             prefix = "An" if self.title[0] in VOWELS else "A"
         equipped = ' (equipped)' if self.equip_slot else ''
         return "{0} {1}.{2}".format(prefix, self.title, equipped)
-
-    @property
-    def name(self):
-        return self.title
 
     @property
     def rec_get(self):
@@ -52,8 +49,7 @@ class Article(BaseItem):
 
 
 class Container(Article):
-    def __init__(self, article_id):
-        super(Container, self).__init__(article_id)
+    def __init__(self, dbo_id):
         self.contents = []
 
 

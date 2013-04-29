@@ -1,8 +1,9 @@
 from lampost.context.resource import requires
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, dbo_describe
+
 
 @requires('dispatcher')
-class BaseItem(RootDBO):
+class BaseItem(object):
     dbo_fields = "desc", "title", "aliases"
 
     desc = ""
@@ -19,7 +20,11 @@ class BaseItem(RootDBO):
         source.display_line(self.desc if self.desc else self.title)
 
     def rec_glance(self, source, **ignored):
-        source.display_line(self.title)
+        if source.can_see(self):
+            source.display_line(self.title)
+
+    def rec_describe(self):
+        return dbo_describe(self)
 
     def rec_broadcast(self, broadcast):
         pass

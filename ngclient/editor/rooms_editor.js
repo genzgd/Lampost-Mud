@@ -242,7 +242,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
 
         function mobileUpdated(newmobile) {
             angular.forEach($scope.room.mobiles, function(mobile) {
-               if (mobile.mobile_id == newmobile.dbo_id) {
+               if (mobile.dbo.id == newmobile.dbo_id) {
                    mobile.title = newmobile.title;
                    mobile.desc = newmobile.desc;
                }
@@ -251,12 +251,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
 
         function mobileDeleted(mobileId) {
             angular.forEach($scope.room.mobiles.slice(),  function(mobile) {
-                if (mobile.mobile_id = mobileId) {
+                if (mobile.dbo.id = mobileId) {
                     $scope.room.mobiles.splice($scope.room.mobiles.indexOf(mobile), 1);
                 }
             });
             angular.forEach(roomCopy.mobiles.slice(), function(mobile) {
-               if (mobile.mobile_id = mobileId) {
+               if (mobile.dbo.id = mobileId) {
                    roomCopy.mobiles.splice(roomCopy.mobiles.indexOf(mobile), 1);
                }
             });
@@ -264,7 +264,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
 
         function articleUpdated(newarticle) {
             angular.forEach($scope.room.articles, function(article) {
-                if (article.article_id == newarticle.dbo_id) {
+                if (article.dbo_id == newarticle.dbo_id) {
                     article.title = newarticle.title;
                     article.desc = newarticle.desc;
                 }
@@ -273,12 +273,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
 
         function articleDeleted(articleId) {
             angular.forEach($scope.room.articles.slice(),  function(article) {
-                if (article.article_id = articleId) {
+                if (article.dbo_id = articleId) {
                     $scope.room.articles.splice($scope.room.articles.indexOf(article), 1);
                 }
             });
             angular.forEach(roomCopy.articles.slice(), function(article) {
-                if (article.article_id = articleId) {
+                if (article.dbo_id = articleId) {
                     roomCopy.articles.splice(roomCopy.articles.indexOf(article), 1);
                 }
             });
@@ -475,6 +475,9 @@ angular.module('lampost_editor').controller('NewResetCtrl', ['$scope', 'addFunc'
             } else {
                 $scope.disabled = false;
             }
+            angular.forEach(objects, function(object) {
+               object.objectId = object.dbo_id.split(':')[1];
+            });
             $scope.objects = objects;
             $scope.reset.object = objects[0];
         }

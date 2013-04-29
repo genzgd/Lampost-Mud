@@ -4,6 +4,7 @@ from lampost.context.resource import m_requires
 
 m_requires('log', 'channel_service', __name__)
 
+
 class ChannelResource(Resource):
     def __init__(self):
         Resource.__init__(self)

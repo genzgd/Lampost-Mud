@@ -34,6 +34,10 @@ class RootDBO(object):
     dbo_indexes = ()
     dbo_id = None
 
+    def __init__(self, dbo_id=None):
+        if dbo_id:
+            self.dbo_id = unicode(str(dbo_id).lower())
+
     def on_loaded(self):
         pass
 
@@ -54,89 +58,92 @@ class RootDBO(object):
 
     @property
     def save_dbo_dict(self):
-        return self._to_dbo_dict(True)
+        return to_dbo_dict(self, True)
 
     @property
     def dbo_dict(self):
-        return self._to_dbo_dict()
+        return to_dbo_dict(self)
 
     @property
     def dto_value(self):
-        dbo_dict = self._to_dbo_dict()
+        dbo_dict = to_dbo_dict(self)
         dbo_dict['dbo_id'] = self.dbo_id
         return dbo_dict
 
     @property
     def json(self):
-        return json_encode(self._to_dbo_dict())
+        return json_encode(to_dbo_dict(self))
 
     def autosave(self):
         save_object(self, autosave=True)
 
-    def rec_describe(self, level=0, follow_refs=True):
-        display = []
+    def rec_describe(self):
+        return dbo_describe(self)
 
-        def append(key, value):
-            display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;"  + unicode(value))
 
-        if self.dbo_id:
-            append("key", self.dbo_key)
-        class_name =  cls_name(self.__class__)
-        base_class_name = cls_name(cls_registry(self.dbo_base_class))
-        if base_class_name != class_name:
-            append("class", class_name)
-        if self.dbo_set_key:
-            append("set_key", self.dbo_set_key)
-        for field in self.dbo_fields:
-            append(field, getattr(self, field, "None"))
+def dbo_describe(dbo, level=0, follow_refs=True):
+    display = []
 
-        for ref in self.dbo_refs:
-            child_dbo = getattr(self, ref.field_name, None)
-            if child_dbo:
+    def append(key, value):
+        display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
+
+    if getattr(dbo, 'dbo_id', None):
+        append("key", dbo.dbo_key)
+
+    append("class", cls_name(dbo.__class__))
+    if getattr(dbo, 'dbo_set_key', None):
+        append("set_key", dbo.dbo_set_key)
+    for field in getattr(dbo, 'dbo_fields', []):
+        append(field, getattr(dbo, field, "None"))
+
+    for ref in getattr(dbo, 'dbo_refs', []):
+        child_dbo = getattr(dbo, ref.field_name, None)
+        if child_dbo:
+            if follow_refs or not child_dbo.dbo_key_type:
+                display.extend(dbo_describe(child_dbo, level + 1))
+            else:
+                append(ref.field_name, child_dbo.dbo_key)
+        else:
+            append(ref.field_name, "None")
+    for col in getattr(dbo, 'dbo_collections', []):
+        child_coll = getattr(dbo, col.field_name, None)
+        if child_coll:
+            append(col.field_name, "")
+            for child_dbo in child_coll:
                 if follow_refs or not child_dbo.dbo_key_type:
-                    display.extend(child_dbo.rec_describe(level + 1))
+                    display.extend(dbo_describe(child_dbo, level + 1, False))
                 else:
-                    append(ref.field_name, child_dbo.dbo_key)
-            else:
-                append(ref.field_name, "None")
-        for col in self.dbo_collections:
-            child_coll = getattr(self, col.field_name, None)
-            if child_coll:
-                append(col.field_name, "")
-                for child_dbo in child_coll:
-                    if follow_refs or not child_dbo.dbo_key_type:
-                        display.extend(child_dbo.rec_describe(level + 1, False))
-                    else:
-                        append(col.field_name, child_dbo.dbo_key)
-            else:
-                append(col.field_name, "None")
-        return display
+                    append(col.field_name, child_dbo.dbo_key)
+        else:
+            append(col.field_name, "None")
+    return display
 
-    def _to_dbo_dict(self, use_defaults=False):
-        dbo_dict = {}
-        if self.__class__ != cls_registry(self.dbo_base_class):
-            dbo_dict["class_name"] = self.__module__ + "." + self.__class__.__name__
-        for field_name in self.dbo_fields:
-            if use_defaults:
-                default = getattr(self.__class__, field_name, None)
-                instance = getattr(self, field_name, None)
-                if instance != default:
-                    dbo_dict[field_name] = getattr(self, field_name, None)
+
+def to_dbo_dict(dbo, use_defaults=False):
+    dbo_dict = {}
+    if dbo.__class__ != cls_registry(dbo.dbo_base_class):
+        dbo_dict["class_name"] = cls_name(dbo.__class__)
+    for field_name in dbo.dbo_fields:
+        if use_defaults:
+            default = getattr(dbo.__class__, field_name, None)
+            instance = getattr(dbo, field_name, None)
+            if instance != default:
+                dbo_dict[field_name] = getattr(dbo, field_name, None)
+        else:
+            dbo_dict[field_name] = getattr(dbo, field_name, None)
+    for dbo_col in dbo.dbo_collections:
+        coll_list = list()
+        for child_dbo in getattr(dbo, dbo_col.field_name):
+            if dbo_col.key_type:
+                coll_list.append(child_dbo.dbo_id)
             else:
-                dbo_dict[field_name] = getattr(self, field_name, None)
-        for dbo_col in self.dbo_collections:
-            coll_list = list()
-            for child_dbo in getattr(self, dbo_col.field_name):
-                if dbo_col.key_type:
-                    coll_list.append(child_dbo.dbo_id)
-                else:
-                    coll_list.append(child_dbo._to_dbo_dict(use_defaults))
-            dbo_dict[dbo_col.field_name] = coll_list
-        for dbo_ref in self.dbo_refs:
-            ref = getattr(self, dbo_ref.field_name, None)
-            if ref:
-                dbo_dict[dbo_ref.field_name] = ref.dbo_id
-        return dbo_dict
+                coll_list.append(to_dbo_dict(child_dbo, use_defaults))
+        dbo_dict[dbo_col.field_name] = coll_list
+    for dbo_ref in dbo.dbo_refs:
+        ref = getattr(dbo, dbo_ref.field_name, None)
+        if ref:
+            dbo_dict[dbo_ref.field_name] = ref.dbo_id
+    return dbo_dict
 
 
 class DBORef():

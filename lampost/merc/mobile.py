@@ -1,10 +1,12 @@
 from random import randint
 from lampost.merc.combat import basic_hit
 from lampost.merc.util import nudge, scale32
+from lampost.model.entity import Entity
 from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.util.lmutil import cls_name
 
-class MobileMerc(Mobile):
+
+class MobileMerc(Mobile, Entity):
 
     def calc_damage(self, target):
         damage = randint(self.level / 2, self.level * 3 / 2 )
@@ -44,7 +46,6 @@ class MobileMerc(Mobile):
 class MobileTemplateMerc(MobileTemplate):
     template_fields = MobileTemplate.template_fields + ("level",)
     dbo_fields = MobileTemplate.dbo_fields + ("level",)
-    instance_class = cls_name(MobileMerc)
     level = 1
 
     def config_instance(self, mobile):

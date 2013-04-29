@@ -8,6 +8,7 @@ mud_actions = []
 imm_actions = []
 
 mud_actions.append(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
+mud_actions.append(simple_action("follow", "follow"))
 
 
 def mud_action(verbs, msg_class=None):
@@ -134,6 +135,9 @@ def unblock(source, args, **ignored):
         message_service.unblock_messages(source.dbo_id, block_id)
         return "You unblock messages from {}".format(block_id)
     return "You are not blocking messages from {}".format(block_id)
+
+
+
 
 
 

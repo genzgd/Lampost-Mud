@@ -5,9 +5,7 @@ from lampost.model.entity import Entity
 from lampost.util.lmutil import cls_name
 
 
-class Mobile(Entity):
-    def __init__(self, mobile_id):
-        self.mobile_id = mobile_id
+class Mobile():
 
     @property
     def name(self):
@@ -15,15 +13,12 @@ class Mobile(Entity):
 
 
 class MobileTemplate(Template, RootDBO):
-    template_fields = Mobile.dbo_fields
-    dbo_fields = Template.dbo_fields + template_fields
     dbo_key_type = "mobile"
-    instance_class = cls_name(Mobile)
     sex = 'none'
     size = 'medium'
 
-    def __init__(self, mobile_id):
-        super(MobileTemplate, self).__init__(mobile_id)
+    def __init__(self, dbo_id):
+        super(MobileTemplate, self).__init__(dbo_id)
         self.aliases = []
 
     def config_instance(self, instance):
@@ -40,4 +35,3 @@ class MobileReset(RootDBO):
     def __init__(self):
         super(MobileReset, self).__init__()
         self.article_loads = []
-

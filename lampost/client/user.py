@@ -20,14 +20,13 @@ class User(RootDBO):
     email = ""
 
     def __init__(self, dbo_id):
-        self.dbo_id = unicode(dbo_id)
+        super(User, self).__init__(dbo_id)
         self.player_ids = []
         self.toolbar = []
         self.displays = {}
         self.notifies = []
 
 
-@requires('config_manager')
 @provides('user_manager')
 class UserManager(object):
 
@@ -67,7 +66,7 @@ class UserManager(object):
 
     def attach_player(self, user, player):
         user.player_ids.append(player.dbo_id)
-        self.config_manager.config_player(player)
+        dispatch('player_create', player)
         player.user_id = user.dbo_id
         set_index('ix:player:user', player.dbo_id, user.dbo_id)
         save_object(player)
@@ -116,14 +115,12 @@ class UserManager(object):
             unload_player(player)
         return max(imm_levels)
 
-
     def _user_connect(self, user, client_data):
         client_data.update({'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
                             'password_reset': user.password_reset, 'notifies': user.notifies})
 
     def _player_connect(self, player, client_data):
         client_data.update({'name': player.name, 'privilege': player.imm_level})
-
 
     def login_player(self, player_id):
         player = load_object(Player, player_id)

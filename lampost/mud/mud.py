@@ -80,7 +80,6 @@ class MudNature():
             save_object(player)
 
 
-@requires('config_manager')
 @provides('mud')
 class Mud():
     def __init__(self):
@@ -127,8 +126,6 @@ class Mud():
         room = None
         if getattr(player, "room_id", None):
             room = self.find_room(player.room_id)
-        if not room:
-            room = self.find_room(self.config_manager.start_room)
         if not room:
             room = Room("temp_start_room", "A Temporary Room when Start Room is Missing")
         player.change_env(room)

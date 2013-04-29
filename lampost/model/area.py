@@ -25,7 +25,7 @@ class Area(RootDBO):
     reset_pulse = 20  # we get the reset pulse every 20 seconds
 
     def __init__(self, dbo_id):
-        self.dbo_id = unicode(dbo_id)
+        super(Area, self).__init__(dbo_id)
         self.rooms = DBODict()
         self.mobiles = DBODict()
         self.articles = DBODict()

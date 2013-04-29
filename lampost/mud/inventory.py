@@ -16,6 +16,7 @@ def inven(source, **ignored):
     else:
         source.display_line("You aren't carrying anything.")
 
+
 class InvenContainer:
     def __init__(self):
         self.contents = []

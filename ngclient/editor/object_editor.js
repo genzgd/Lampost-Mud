@@ -21,6 +21,9 @@ angular.module('lampost_editor').controller('ObjectListCtrl', ['$scope', 'lmEdit
 
         function loadObjects() {
             lmEditor.loadObjects($scope.type, $scope.areaId).then(function(objects) {
+                angular.forEach(objects, function(object) {
+                    object.objectId = object.dbo_id.split(':')[1]
+                });
                 $scope.objects = objects;
                 $scope.ready = true;
             }, function() {

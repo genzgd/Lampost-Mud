@@ -1,12 +1,10 @@
-import lampost.model.player
-import lampost.model.article
-import lampost.model.mobile
-
-import lampost.merc.player
-import lampost.merc.article
-import lampost.merc.mobile
-
+from lampost.merc.article import ArticleTemplateMerc
 from lampost.merc.combat import basic_hit
+from lampost.merc.mobile import MobileTemplateMerc
+from lampost.merc.player import PlayerMerc
+from lampost.model.article import ArticleTemplate
+from lampost.model.mobile import MobileTemplate
+from lampost.model.player import Player
 from lampost.mud.action import mud_action
 
 from lampost.context.resource import m_requires
@@ -20,12 +18,13 @@ equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
 
 def _post_init():
-    cls_registry.set_class(lampost.model.player.Player, lampost.merc.player.PlayerMerc)
-    cls_registry.set_class(lampost.model.article.ArticleTemplate, lampost.merc.article.ArticleTemplateMerc)
-    cls_registry.set_class(lampost.model.mobile.MobileTemplate, lampost.merc.mobile.MobileTemplateMerc)
+    cls_registry.set_class(Player, PlayerMerc)
+    cls_registry.set_class(ArticleTemplate, ArticleTemplateMerc)
+    cls_registry.set_class(MobileTemplate, MobileTemplateMerc)
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
+
 
 @mud_action(('kill', 'attack'), 'violence')
 def kill(source, target, target_method, **ignored):

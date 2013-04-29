@@ -10,7 +10,7 @@ from lampost.mud.mud import MudNature
 from lampost.setup.dbcontext import DbContext
 from lampost.setup.scripts import build_default_displays
 
-m_requires('datastore', 'cls_registry', 'perm', __name__)
+m_requires('datastore', 'cls_registry', 'dispatcher', 'perm', __name__)
 
 
 def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
@@ -35,6 +35,7 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     user_manager = UserManager()
 
     context_post_init()
+    dispatch('first_time_setup')
 
     player = cls_registry(Player)(imm_name)
 
@@ -54,7 +55,6 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     player.room_id = room_id
     player.home_room = room_id
     player.imm_level = perm_level('supreme')
-    save_object(player)
     set_index('immortals', player.dbo_id, player.imm_level)
 
     user = user_manager.create_user(imm_account, imm_password)

@@ -12,6 +12,7 @@ class ConfigManager():
 
     def _post_init(self):
         register('session_connect', self._session_connect)
+        register('player_create', self._player_create)
         self.config = load_object(Config, self.config_id)
         if self.config:
             dispatch("config_updated", self.config_js)
@@ -25,16 +26,13 @@ class ConfigManager():
         update_object(self.config, config_update)
         dispatch("config_updated", self.config_js)
 
-    def config_player(self, player):
+    def _player_create(self, player):
         if not player.imm_level:
             player.imm_level = self.config.auto_imm_level
+        player.room_id = self.config.start_room
 
     def _session_connect(self, session, connect):
         connect['client_config'] = {'default_displays': self.config.default_displays}
-
-    @property
-    def start_room(self):
-        return self.config.start_room
 
     @property
     def name(self):
@@ -61,3 +59,4 @@ class Config(RootDBO):
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id
         self.default_displays = {}
+

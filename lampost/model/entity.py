@@ -1,20 +1,18 @@
 import math
-import itertools
 from lampost.gameops.action import ActionError
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
-from lampost.context.resource import m_requires, requires
+from lampost.context.resource import m_requires
+from lampost.gameops.parser import ParseError, find_actions, parse_actions
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
 
 
-@requires('mud_actions')
 class Entity(BaseItem):
     dbo_fields = BaseItem.dbo_fields + ("size", "sex")
 
-    env = None
     status = 'awake'
     sex = 'none'
     size = 'medium'
@@ -185,80 +183,36 @@ class Entity(BaseItem):
             self.remove_action(sub_action)
 
     def parse(self, command):
-        command = unicode(command)
+        actions = find_actions(self, command)
+        actions = self.filter_actions(actions)
         try:
-            matches, response = self.parse_command(command)
+            action, act_args = parse_actions(self, actions)
+            act_args['command'] = command
+            act_args['source'] = self
+            response = self.process_action(action, act_args)
         except PermError:
             return self.display_line("You do not have permission to do that.")
         except ActionError as action_error:
             return self.display_line(action_error.message, action_error.display)
-        if not matches:
-            matches, response = self.parse_command('{0} {1}'.format('say', command))
-            if not matches:
-                return self.display_line("What?")
-        if len(matches) > 1:
-            return self.display_line("Ambiguous command.")
+        except ParseError as error:
+            response = self.handle_parse_error(error, command)
         if isinstance(response, basestring):
-            return self.display_line(response)
-        if response:
+            self.display_line(response)
+        elif response:
             self.output(response)
 
-    def parse_command(self, command):
-        words = command.lower().split()
-        matches = list(self.match_actions(words))
-        if not matches:
-            return None, None
-        if len(matches) > 1:
-            return matches, None
-        action, verb, args, target, target_method, obj, obj_method = matches[0]
-        return matches, action(source=self, target=target, verb=verb, args=args,
-                               target_method=target_method, command=command, obj=obj, obj_method=obj_method)
+    def filter_actions(self, matches):
+        return matches
 
-    def match_actions(self, words):
-        for verb_size in range(1, len(words) + 1):
-            verb = tuple(words[:verb_size])
-            args = words[verb_size:]
-            actions = itertools.chain.from_iterable([self.actions.get(verb, []), self.mud_actions.verb_list(verb)])
-            for action in actions:
-                msg_class = getattr(action, "msg_class", None)
-                if msg_class == 'no_args':
-                    if args:
-                        continue
-                    else:
-                        msg_class = None
-                if not msg_class:
-                    yield action, verb, tuple(args), action, None, None, None
-                    continue
-                if getattr(action, 'prep', None):
-                    try:
-                        prep_loc = args.index(action.prep)
-                    except ValueError:
-                        continue
-                    obj_args = tuple(args[(prep_loc + 1):])
-                    args = tuple(args[:prep_loc])
-                    obj_msg_class = getattr(action, "obj_msg_class", None)
-                else:
-                    args = tuple(args)
-                    obj_args = None
-                fixed_targets = getattr(action, "fixed_targets", None)
-                for target, target_method in self.matching_targets(args, msg_class):
-                    if not fixed_targets or target in fixed_targets:
-                        if obj_args:
-                            if not obj_msg_class:
-                                yield action, verb, args, target, target_method, obj_args, None
-                                continue
-                            for obj, obj_method in self.matching_targets(args, obj_msg_class):
-                                yield action, verb, args, target, target_method, obj, obj_method
-                        else:
-                            yield action, verb, args, target, target_method, None, None
+    def process_action(self, action, act_args):
+        try:
+            action.prepare_action(self)
+        except AttributeError:
+            pass
+        action(**act_args)
 
-    def matching_targets(self, target_args, msg_class):
-        target_list = self.target_key_map.get(target_args, []) if target_args else [self.env]
-        for target in target_list:
-            target_method = getattr(target, msg_class, None)
-            if target_method:
-                yield target, target_method
-                return
+    def handle_parse_error(self, error, command):
+        self.parse('say {}'.format(command))
 
     def rec_social(self, **ignored):
         pass
@@ -307,6 +261,9 @@ class Entity(BaseItem):
 
     def update_score(self):
         pass
+
+    def can_see(self, target):
+        return True
 
     def die(self):
         self.exit_msg = Broadcast(s="{n} expires, permanently.", color=0xE6282D)

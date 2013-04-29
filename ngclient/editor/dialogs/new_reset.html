@@ -8,7 +8,7 @@
       <div class="row-fluid">
         <div class="span8">
           <h6 style="padding-top: 0; margin-top: 0">{{resetType}}</h6>
-          <select class="span8" ng-disabled="disabled" ng-model="reset.object" ng-options="object.dbo_id for object in objects" required="true" autofocus="true">
+          <select class="span8" ng-disabled="disabled" ng-model="reset.object" ng-options="object.objectId for object in objects" required autofocus>
           </select>
         </div>
         <div class="span4">
@@ -29,7 +29,7 @@
       <div class="row-fluid">
         <div class="span8">
         <h6>Source Area</h6>
-         <select class="span6" ng-model="areaId" ng-change="changeArea()" ng-options="tempAreaId for tempAreaId in areaList" required="true"></select>
+         <select class="span6" ng-model="areaId" ng-change="changeArea()" ng-options="tempAreaId for tempAreaId in areaList" required></select>
         </div>
       </div>
     </div>

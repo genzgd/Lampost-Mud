@@ -15,6 +15,7 @@ class Exit(RootDBO):
     desc = None
 
     def __init__(self, direction=None, destination=None):
+        super(Exit, self).__init__()
         self.direction = direction
         self.destination = destination
         self.aliases = []
@@ -56,7 +57,7 @@ class Room(RootDBO):
     dbo_rev = 0
 
     def __init__(self, dbo_id, title=None, desc=None):
-        self.dbo_id = dbo_id
+        super(Room, self).__init__(dbo_id)
         self.title = title
         self.desc = desc
         self.contents = []
@@ -147,7 +148,7 @@ class Room(RootDBO):
             if not template:
                 error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
                 continue
-            curr_count = len([entity for entity in self.contents if getattr(entity, "mobile_id", None) == m_reset.mobile_id])
+            curr_count = len([entity for entity in self.contents if getattr(entity, 'template', None) == template])
             for unused in range(m_reset.mob_count - curr_count):
                 self.add_mobile(template, m_reset)
             if m_reset.mob_count <= curr_count < m_reset.mob_max:
@@ -157,7 +158,7 @@ class Room(RootDBO):
             if not template:
                 error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
                 continue
-            curr_count = len([entity for entity in self.contents if getattr(entity, "article_id", None) == a_reset.article_id])
+            curr_count = len([entity for entity in self.contents if getattr(entity, template, None) == template])
             for unused in range(a_reset.article_count - curr_count):
                 self.add_template(template)
             if a_reset.article_count <= curr_count < a_reset.article_max:
