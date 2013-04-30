@@ -14,11 +14,12 @@ class Exit(RootDBO):
     dbo_fields = "dir_name", "desc", "aliases"
     desc = None
 
-    def __init__(self, direction=None, destination=None):
+    def __init__(self, direction=None, destination=None, room=None):
         super(Exit, self).__init__()
         self.direction = direction
         self.destination = destination
         self.aliases = []
+        self.room = room
 
     @property
     def verbs(self):
@@ -32,6 +33,12 @@ class Exit(RootDBO):
     def dir_desc(self):
         return self.direction.desc
 
+    @property
+    def from_desc(self):
+        from_dir = Direction.ref_map.get(self.direction.rev_key, None)
+        if from_dir:
+            return from_dir.desc
+
     @dir_name.setter
     def dir_name(self, value):
         self.direction = Direction.ref_map[value]
@@ -43,7 +50,7 @@ class Exit(RootDBO):
             source.display_line(self.direction.desc)
 
     def __call__(self, source, **ignored):
-        source.change_env(self.destination)
+        source.change_env(self.destination, self)
         return self.destination.rec_examine(source)
 
 
@@ -51,10 +58,12 @@ class Exit(RootDBO):
 class Room(RootDBO):
 
     dbo_key_type = "room"
-    dbo_fields = "title", "desc", "dbo_rev"
+    dbo_fields = "title", "desc", "dbo_rev", "size"
     dbo_collections = DBORef("exits", Exit), DBORef("extras", BaseItem), DBORef("mobile_resets", MobileReset), \
         DBORef("article_resets", ArticleReset)
     dbo_rev = 0
+
+    size = 10
 
     def __init__(self, dbo_id, title=None, desc=None):
         super(Room, self).__init__(dbo_id)
@@ -180,6 +189,10 @@ class Room(RootDBO):
         instance = template.create_instance()
         instance.enter_env(self)
         return instance
+
+    def on_loaded(self):
+        for room_exit in self.exits:
+            room_exit.room = self
 
 
 

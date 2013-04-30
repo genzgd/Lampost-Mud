@@ -1,4 +1,5 @@
 import math
+import time
 from lampost.gameops.action import ActionError
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
@@ -17,8 +18,6 @@ class Entity(BaseItem):
     sex = 'none'
     size = 'medium'
     living = True
-    entry_msg = Broadcast(e="{n} arrives.", silent=True)
-    exit_msg = Broadcast(e="{n} leaves.", silent=True)
     current_target = None
 
     def baptise(self, soul):
@@ -30,6 +29,8 @@ class Entity(BaseItem):
         self.target_map[self] = []
         self.add_target_keys([self.target_id], self)
         self.add_actions(soul)
+        self.entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
+        self.exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
 
     def equip(self, inven):
         self.inven = inven
@@ -183,33 +184,39 @@ class Entity(BaseItem):
             self.remove_action(sub_action)
 
     def parse(self, command):
+        if __debug__:
+            debug("Starting parse: {}".format(time.time()))
         actions = find_actions(self, command)
         actions = self.filter_actions(actions)
         try:
             action, act_args = parse_actions(self, actions)
             act_args['command'] = command
             act_args['source'] = self
-            response = self.process_action(action, act_args)
-        except PermError:
-            return self.display_line("You do not have permission to do that.")
-        except ActionError as action_error:
-            return self.display_line(action_error.message, action_error.display)
+            self.start_action(action, act_args)
         except ParseError as error:
-            response = self.handle_parse_error(error, command)
-        if isinstance(response, basestring):
-            self.display_line(response)
-        elif response:
-            self.output(response)
+            self.handle_parse_error(error, command)
+        if __debug__:
+            debug("Ending parse: {}".format(time.time()))
 
     def filter_actions(self, matches):
         return matches
 
+    def start_action(self, action, act_args):
+        if hasattr(action, 'prepare_action'):
+            action.prepare_action(self)
+        self.process_action(action, act_args)
+
     def process_action(self, action, act_args):
         try:
-            action.prepare_action(self)
-        except AttributeError:
-            pass
-        action(**act_args)
+            response = action(**act_args)
+            if isinstance(response, basestring):
+                self.display_line(response)
+            elif response:
+                self.output(response)
+        except PermError:
+            self.display_line("You do not have permission to do that.")
+        except ActionError as action_error:
+            self.display_line(action_error.message, action_error.display)
 
     def handle_parse_error(self, error, command):
         self.parse('say {}'.format(command))
@@ -226,23 +233,31 @@ class Entity(BaseItem):
         else:
             source.display_line("Nothing")
 
-    def change_env(self, new_env):
-        self.leave_env()
-        self.enter_env(new_env)
+    def change_env(self, new_env, ex=None):
+        self.leave_env(ex)
+        self.enter_env(new_env, ex)
 
-    def leave_env(self):
+    def leave_env(self, ex=None):
         if self.env:
             self.remove_actions(self.env.elements)
             self.remove_target(self.env)
             self.remove_targets(self.env.elements)
+            try:
+                self.exit_msg.target = ex.dir_desc
+            except AttributeError:
+                self.exit_msg.target = None
             self.env.rec_entity_leaves(self)
 
-    def enter_env(self, new_env):
+    def enter_env(self, new_env, ex=None):
         self.env = new_env
         self.room_id = new_env.room_id
         self.add_actions(new_env.elements)
         self.add_target(new_env)
         self.add_targets(new_env.elements, new_env)
+        try:
+            self.entry_msg.target = ex.from_desc
+        except AttributeError:
+            self.entry_msg.target = None
         self.env.rec_entity_enters(self)
 
     def broadcast(self, broadcast=None, display='default', **kwargs):

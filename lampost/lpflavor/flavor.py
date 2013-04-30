@@ -1,5 +1,5 @@
 from lampost.env.room import Exit
-from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, POOL_LIST, calc_pools
+from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
 from lampost.lpflavor.skill import SkillService
@@ -31,6 +31,7 @@ def _post_init():
     context.set('attr_map', ATTR_MAP)
     register('first_time_setup', _first_time_setup)
     register('player_create', _player_create)
+    register('player_baptise', _player_baptise)
 
 
 def _first_time_setup():
@@ -44,9 +45,12 @@ def _player_create(player):
     for attr_name, start_value in race.base_attrs.iteritems():
         setattr(player, attr_name, start_value)
         setattr(player, 'perm_{}'.format(attr_name), start_value)
-    for attr in POOL_LIST:
-        setattr(player, attr, 0)
-    calc_pools(player)
+    fill_pools(player)
+
+
+def _player_baptise(player):
+    base_pools(player)
+    player.start_refresh()
 
 
 

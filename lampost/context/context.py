@@ -19,10 +19,10 @@ from lampost.mud.mud import MudNature
 @provides('context')
 class Context(object):
 
-    @logged
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
                  flavor='lpflavor', config_id='lampost', server_interface='127.0.0.1',
                  log_level="info", log_file=None):
+
         self.properties = {}
         Log(log_level, log_file)
         select_json()

@@ -9,7 +9,7 @@ from lampost.model.mobile import MobileReset
 from lampost.model.article import ArticleReset
 from lampost.model.item import BaseItem
 
-m_requires('datastore', 'perm', 'mud', __name__)
+m_requires('datastore', 'cls_registry', 'perm', 'mud', __name__)
 
 
 class RoomResource(Resource):
@@ -57,7 +57,7 @@ class RoomCreate(Resource):
         room_id = content.area_id + ':' + str(room_dto['id'])
         if area.get_room(room_id):
             raise DataError("RoomExists:")
-        room = Room(room_id, room_dto['title'], room_dto['desc'])
+        room = cls_registry(Room)(room_id, room_dto['title'], room_dto['desc'])
         save_object(room)
         area.rooms.append(room)
         area.inc_next_room(room_dto['id'])
@@ -142,7 +142,7 @@ class CreateExit(Resource):
         if content.is_new:
             if area.get_room(other_id):
                 raise DataError("Room " + other_id + " already exists")
-            other_room = Room(other_id, content.dest_title, content.dest_title)
+            other_room = cls_registry(Room)(other_id, content.dest_title, content.dest_title)
         else:
             other_area, other_room = get_room(other_id, session)
             if not content.one_way and other_room.find_exit(rev_dir):
@@ -153,12 +153,12 @@ class CreateExit(Resource):
             other_contents = None
         else:
             other_contents = save_contents(other_room)
-        this_exit = Exit(new_dir, other_room)
+        this_exit = cls_registry(Exit)(new_dir, other_room, room)
         room.exits.append(this_exit)
         save_object(room, True)
         result = {}
         if not content.one_way:
-            other_exit = Exit(rev_dir, room)
+            other_exit = cls_registry(Exit)(rev_dir, room, other_room)
             other_room.exits.append(other_exit)
             result['other_exit'] = exit_dto(other_exit, other_id)
         if content.is_new:

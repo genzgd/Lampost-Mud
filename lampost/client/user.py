@@ -124,7 +124,7 @@ class UserManager(object):
 
     def login_player(self, player_id):
         player = load_object(Player, player_id)
-        dispatch('baptise_player', player)
+        dispatch('player_baptise', player)
         player.last_login = int(time.time())
         if not player.created:
             player.created = player.last_login

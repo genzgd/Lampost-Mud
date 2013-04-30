@@ -50,7 +50,7 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
         action.fixed_targets = fixed_targets
     if prep:
         action.prep = prep
-        action.obj_msg_class = "rec_{0}".format(msg_class)
+        action.obj_msg_class = "rec_{0}".format(obj_msg_class)
     return action
 
 

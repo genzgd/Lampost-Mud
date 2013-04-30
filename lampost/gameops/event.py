@@ -60,7 +60,6 @@ class Dispatcher:
         for registration in self._owner_map[owner].copy():
             self.unregister(registration)
 
-    @logged
     def _pulse(self):
         self.dispatch('pulse')
         map_loc = self.pulse_count % self.max_pulse_queue
@@ -80,11 +79,12 @@ class Dispatcher:
         next_loc = (start + event.freq) % self.max_pulse_queue
         self._pulse_map[next_loc].add(event)
 
-    @logged
     def _post_init(self):
-        task.LoopingCall(self._pulse).start(self.pulse_interval)
+        pulse_lc = task.LoopingCall(self._pulse).start(self.pulse_interval)
+        pulse_lc.addErrback(heartbeat_failed)
         info("Pulse Event heartbeat started at {} seconds".format(self.pulse_interval), self)
-        task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * self.maintenance_interval)
+        maint_lc = task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * self.maintenance_interval)
+        maint_lc.addErrback(heartbeat_failed)
         info("Maintenance Event heartbeat started at {} minutes".format(self.maintenance_interval), self)
 
 
@@ -106,4 +106,8 @@ class PulseRegistration(Registration):
 
     def cancel(self):
         self.freq = 0
+
+
+def heartbeat_failed(failure):
+    error(failure.getTraceback(), "Dispatcher")
 

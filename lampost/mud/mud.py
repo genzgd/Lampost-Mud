@@ -26,7 +26,7 @@ class MudNature():
 
     def _post_init(self):
         register('player_connect', self._player_connect)
-        register('baptise_player', self._baptise)
+        register('player_baptise', self._baptise)
         info("Loading mud", self)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")

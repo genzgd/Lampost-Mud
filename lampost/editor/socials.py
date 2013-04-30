@@ -4,7 +4,6 @@ from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
 from lampost.mud.socials import Social
-from lampost.util.lmutil import Blank
 from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
 m_requires('datastore', 'perm', 'mud', __name__)
@@ -68,16 +67,9 @@ class SocialPreview(Resource):
     @request
     def render_POST(self, content, session):
         preview = {}
-        source = Blank()
-        source.name = content.source
-        if content.self_source:
-            target = source
-        else:
-            target = Blank()
-            target.name = content.target
         broadcast_map = BroadcastMap()
         broadcast_map.populate(content.map)
-        broadcast = Broadcast(broadcast_map, source, target)
+        broadcast = Broadcast(broadcast_map, content.source, content.source if content.self_source else content.target)
         for broadcast_type in broadcast_types:
             preview[broadcast_type['id']] = broadcast.substitute(broadcast_type['id'])
         return preview

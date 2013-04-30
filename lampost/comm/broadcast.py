@@ -73,7 +73,7 @@ class Broadcast(object):
             return self.substitute('t')
         if not self.target:
             return self.substitute('e')
-        if getattr(self.target, 'living'):
+        if getattr(self.target, 'living', False):
             if self.source == observer:
                 return self.substitute('st')
             return self.substitute('et')
@@ -84,12 +84,12 @@ class Broadcast(object):
     def substitute(self, version):
         message = self.broadcast_map[version]
         if self.source:
-            s_name = self.source.name
+            s_name = getattr(self.source, 'name', self.source)
             s_sub, s_obj, s_poss, s_self = pronouns[getattr(self.source, 'sex', 'none')]
         else:
             s_name = s_sub = s_obj = s_poss = s_self = None
         if self.target:
-            t_name = self.target.name
+            t_name = getattr(self.target, 'name', self.target)
             t_sub, t_obj, t_poss, t_self = pronouns[getattr(self.target, 'sex', 'none')]
         else:
             t_name = t_sub = t_obj = t_poss = t_self = None

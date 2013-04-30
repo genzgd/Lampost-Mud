@@ -1,5 +1,5 @@
 from lampost.lpflavor.archetype import Archetype
-from lampost.lpflavor.attributes import calc_pools
+from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
 from lampost.model.mobile import Mobile, MobileTemplate
 
@@ -19,7 +19,7 @@ def config_instance(self, mobile):
     else:
         for attr_name in Archetype.attr_list:
             setattr(mobile, attr_name, Archetype.base_attr_value * mobile.level)
-    calc_pools(mobile)
+    fill_pools(mobile)
     mobile.baptise(set())
     mobile.equip(set())
 

@@ -7,7 +7,7 @@ from lampost.datastore.exceptions import DataError
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, get_resource
-from lampost.util.lmutil import build_object, PermError, StateError
+from lampost.util.lmutil import PermError, StateError, Blank
 
 m_requires('log', 'session_manager', 'json_decode', 'json_encode',  __name__)
 
@@ -21,7 +21,7 @@ def find_session_id(request):
 def request(func):
     @logged
     def wrapper(self, request):
-        content = build_object(json_decode(request.content.getvalue()))
+        content = Blank(**json_decode(request.content.getvalue()))
         session = session_manager.get_session(find_session_id(request))
         if not session:
             return json_encode({'link_status': 'session_not_found'})
@@ -47,7 +47,7 @@ def request(func):
 class ConnectResource(Resource):
     @logged
     def render_POST(self, request):
-        content = build_object(json_decode(request.content.getvalue()))
+        content = Blank(**json_decode(request.content.getvalue()))
         session_id = find_session_id(request)
         if session_id:
             return json_encode(session_manager.reconnect_session(session_id, content.player_id))

@@ -1,3 +1,4 @@
+from collections import defaultdict
 import time
 
 from datetime import datetime
@@ -56,15 +57,9 @@ def javascript_safe(value):
     return value
 
 
-def build_object(source):
-    dto = Blank()
-    for key, value in source.iteritems():
-        setattr(dto, key, value)
-    return dto
-
-
 class Blank(object):
-    pass
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 
 class PermError(Exception):
