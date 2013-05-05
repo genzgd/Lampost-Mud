@@ -1,5 +1,5 @@
 from lampost.context.resource import requires, m_requires
-from lampost.datastore.dbo import RootDBO, DBORef
+from lampost.datastore.dbo import RootDBO, DBORef, DBOList
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset
 from lampost.model.item import BaseItem
@@ -13,6 +13,7 @@ m_requires('log', __name__)
 class Exit(RootDBO):
     dbo_fields = "dir_name", "desc", "aliases"
     desc = None
+    can_follow = True
 
     def __init__(self, direction=None, destination=None, room=None):
         super(Exit, self).__init__()
@@ -59,21 +60,21 @@ class Room(RootDBO):
 
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev", "size"
-    dbo_collections = DBORef("exits", Exit), DBORef("extras", BaseItem), DBORef("mobile_resets", MobileReset), \
-        DBORef("article_resets", ArticleReset)
+    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseItem), DBOList("mobile_resets", MobileReset), \
+        DBOList("article_resets", ArticleReset)
     dbo_rev = 0
 
     size = 10
+    exits = []
+    extras = []
+    mobile_resets = []
+    article_resets = []
 
     def __init__(self, dbo_id, title=None, desc=None):
         super(Room, self).__init__(dbo_id)
         self.title = title
         self.desc = desc
         self.contents = []
-        self.exits = []
-        self.mobile_resets = []
-        self.article_resets = []
-        self.extras = []
 
     @property
     def room_id(self):

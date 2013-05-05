@@ -50,16 +50,20 @@ class ConnectResource(Resource):
         content = Blank(**json_decode(request.content.getvalue()))
         session_id = find_session_id(request)
         if session_id:
-            return json_encode(session_manager.reconnect_session(session_id, content.player_id))
-        return json_encode(session_manager.start_session())
+            session = session_manager.reconnect_session(session_id, content.player_id)
+        else:
+            session = session_manager.start_session()
+        return json_encode(session.pull_output())
 
 
 class LoginResource(Resource):
     @request
     def render_POST(self, content, session):
         if session.user and hasattr(content, 'player_id'):
-            return session_manager.start_player(session, content.player_id)
-        return session_manager.login(session, content.user_id, content.password)
+            session_manager.start_player(session, content.player_id)
+        else:
+            session_manager.login(session, content.user_id, content.password)
+        return session.pull_output()
 
 
 class LinkResource(Resource):
@@ -81,21 +85,24 @@ class ActionResource(Resource):
             return {"link_status": "no_login"}
         action = cgi.escape(content.action).strip()
         if action in ["quit", "logout", "log out"]:
-            return session_manager.logout(session)
-        player.parse(action)
+            session_manager.logout(session)
+        else:
+            player.parse(action)
         return session.pull_output()
 
 
 class RegisterResource(Resource):
     @request
     def render_POST(self, content, session):
-        return get_resource(content.service_id).register(session, getattr(content, 'data', None))
+        get_resource(content.service_id).register(session, getattr(content, 'data', None))
+        return session.pull_output()
 
 
 class UnregisterResource(Resource):
     @request
     def render_POST(self, content, session):
         get_resource(content.service_id).unregister(session)
+        return session.pull_output()
 
 
 class LspServerResource(Resource):

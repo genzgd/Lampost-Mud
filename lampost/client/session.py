@@ -35,36 +35,41 @@ class SessionManager(object):
         session_id = self._get_next_id()
         session = UserSession()
         self.session_map[session_id] = session
-        connect = {'connect': session_id}
-        dispatch('session_connect', session, connect)
-        return connect
+        session.append({'connect': session_id})
+        dispatch('session_connect', session)
+        return session
 
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)
         if not session or not session.ld_time or not session.player or session.player.dbo_id != player_id:
             return self.start_session()
-        session.player.display_line("-- Reconnecting Session --", SYSTEM_DISPLAY)
-        session.player.parse("look")
+        stale_output = session.pull_output()
         client_data = {}
-        connect = {'connect': session_id, 'login': client_data}
-        dispatch('session_connect', session, connect)
+        session.append({'connect': session_id})
+        dispatch('session_connect', session)
+        session.append({'login': client_data})
         dispatch('user_connect', session.user, client_data)
         dispatch('player_connect', session.player, client_data)
-        return connect
+        session.append_list(stale_output)
+        session.player.display_line("-- Reconnecting Session --", SYSTEM_DISPLAY)
+        session.player.parse("look")
+        return session
 
     def login(self, session, user_name, password):
         user_name = unicode(user_name).lower()
         result, user = self.user_manager.validate_user(user_name, password)
         if result != "ok":
-            return {"login_failure": result}
+            session.append({"login_failure": result})
+            return
         session.connect_user(user)
         if len(user.player_ids) == 1:
-            return self.start_player(session, user.player_ids[0])
-        if user_name != user.user_name:
-            return self.start_player(session, user_name)
-        client_data = {}
-        dispatch('user_connect', user, client_data)
-        return {'user_login': client_data}
+            self.start_player(session, user.player_ids[0])
+        elif user_name != user.user_name:
+            self.start_player(session, user_name)
+        else:
+            client_data = {}
+            dispatch('user_connect', user, client_data)
+            session.append({'user_login': client_data})
 
     def start_player(self, session, player_id):
         old_session = self.player_session(player_id)
@@ -73,24 +78,25 @@ class SessionManager(object):
             old_session.player = None
             old_session.user = None
             old_session.append({'logout': 'other_location'})
-            intro_line = '-- Existing Session Logged Out --'
+            session.display_line({'text': '-- Existing Session Logged Out --', 'display': SYSTEM_DISPLAY})
         else:
             player = self.user_manager.login_player(player_id)
-            intro_line = "Welcome " + player.name
+            session.display_line({'text': "Welcome " + player.name, 'display': SYSTEM_DISPLAY})
         if player.user_id != session.user.dbo_id:
             raise StateError("Player user does not match session user")
         self.player_info_map[player.dbo_id] = session.connect_player(player)
         self.player_session_map[player.dbo_id] = session
-        if not old_session:
-            dispatch('player_login', player)
-        player.display_line(intro_line, SYSTEM_DISPLAY)
         player.parse("look")
         client_data = {}
         dispatch('user_connect', session.user, client_data)
         dispatch('player_connect', player, client_data)
-        return {'login': client_data}
+        session.append({'login': client_data})
+        if not old_session:
+            dispatch('player_login', player)
+        self._broadcast_player_list()
 
     def logout(self, session):
+        session.append({'logout': 'logout'})
         player = session.player
         if player:
             player.last_logout = int(time.time())
@@ -98,9 +104,8 @@ class SessionManager(object):
             session.player = None
             del self.player_info_map[player.dbo_id]
             del self.player_session_map[player.dbo_id]
-            dispatch('player_logout', player)
         session.user = None
-        return {'logout': 'logout'}
+        self._broadcast_player_list()
 
     def _get_next_id(self):
         u_session_id = b64encode(str(urandom(16)))
@@ -155,10 +160,14 @@ class UserSession(object):
         self.request.notifyFinish().addErrback(self.link_failed)
 
     def append(self, data):
-        if data not in self._output:
+        if data and data not in self._output:
             self._output.append(data)
         if not self._pulse_reg:
             self._pulse_reg = register("pulse", self._push_output)
+
+    def append_list(self, data):
+        self._output += data
+        self.append(None)
 
     def pull_output(self):
         self.activity_time = datetime.now()

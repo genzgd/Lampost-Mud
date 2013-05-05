@@ -18,7 +18,7 @@ class RedisStore():
     def create_object(self, dbo):
         if self.object_exists(dbo.dbo_key_type, dbo.dbo_id):
             raise ObjectExistsError(dbo.dbo_key)
-        save_object(dbo)
+        self.save_object(dbo)
         dbo.on_loaded()
 
     def save_object(self, dbo, update_rev=False, autosave=False):
@@ -74,7 +74,7 @@ class RedisStore():
         self.redis.delete(key)
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)
-        for dbo_col in dbo.dbo_collections:
+        for dbo_col in dbo.dbo_lists + dbo.dbo_maps:
             if dbo_col.key_type:
                 coll = getattr(dbo, dbo_col.field_name, set())
                 for child_dbo in coll:
@@ -164,22 +164,42 @@ class RedisStore():
                 setattr(dbo, field_name, dbo_dict[field_name])
             except KeyError:
                 pass
-        for dbo_col in dbo.dbo_collections:
-            coll = getattr(dbo, dbo_col.field_name, [])
-            try:
-                for child_json in dbo_dict[dbo_col.field_name]:
+
+        for dbo_col in dbo.dbo_lists:
+            raw_list = dbo_dict.get(dbo_col.field_name, None)
+            if not raw_list:
+                continue
+            coll = dbo_col.instance(dbo)
+            if dbo_col.key_type:
+                for child_dbo_id in raw_list:
                     try:
-                        if dbo_col.key_type:
-                            child_dbo = self.load_by_key(dbo_col.key_type, child_json, dbo_col.base_class)
-                        else:
-                            child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
-                            self.hydrate_dbo(child_dbo, child_json)
+                        child_dbo = self.load_by_key(dbo_col.key_type, child_dbo_id, dbo_col.base_class)
                         coll.append(child_dbo)
                     except AttributeError as exp:
-                        warn("{} json failed to load for coll {} in {}".format(child_json, dbo_col.field_name, unicode(dbo.dbo_id)), self, exp)
-            except KeyError:
-                if __debug__ and dbo.dbo_key_type :
-                    debug("db: Object " + unicode(dbo.dbo_debug_key) + " json missing collection " + dbo_col.field_name, self)
+                        warn("{} json failed to load for list {} in {}".format(child_dbo_id, dbo_col.field_name, dbo.dbo_id), self, exp)
+            else:
+                for child_json in raw_list:
+                    child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
+                    self.hydrate_dbo(child_dbo, child_json)
+                    coll.append(child_dbo)
+
+        for dbo_col in dbo.dbo_maps:
+            raw_list = dbo_dict.get(dbo_col.field_name, None)
+            if not raw_list:
+                continue
+            coll = dbo_col.instance(dbo)
+            if dbo_col.key_type:
+                for child_dbo_id in raw_list:
+                    try:
+                        child_dbo = self.load_by_key(dbo_col.key_type, child_dbo_id, dbo_col.base_class)
+                        coll[child_dbo_id] = child_dbo
+                    except AttributeError as exp:
+                        warn("{} json failed to load for map {} in {}".format(child_dbo_id, dbo_col.field_name, dbo.dbo_id), self, exp)
+            else:
+                for child_dbo_id, child_json in raw_list.iteritems():
+                    child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
+                    self.hydrate_dbo(child_dbo, child_json)
+                    coll[child_dbo_id] = child_dbo
 
         for dbo_ref in dbo.dbo_refs:
             try:

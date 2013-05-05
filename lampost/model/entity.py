@@ -1,10 +1,10 @@
 import math
 import time
-from lampost.gameops.action import ActionError
+from lampost.gameops.action import ActionError, action_handler
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
 from lampost.context.resource import m_requires
-from lampost.gameops.parser import ParseError, find_actions, parse_actions
+from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, MISSING_VERB
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import PermError
 
@@ -12,15 +12,15 @@ m_requires('log', __name__)
 
 
 class Entity(BaseItem):
-    dbo_fields = BaseItem.dbo_fields + ("size", "sex")
+    dbo_fields = BaseItem.dbo_fields + ("status", "size", "sex")
 
     status = 'awake'
     sex = 'none'
     size = 'medium'
     living = True
-    current_target = None
 
     def baptise(self, soul):
+        self.followers = set()
         self.registrations = set()
         self.soul = soul
         self.target_map = {}
@@ -83,7 +83,7 @@ class Entity(BaseItem):
             target_id = target.target_id
         except AttributeError:
             return
-        if self.target_map.get(target):  #Should not happen
+        if self.target_map.get(target):
             error("Trying to add " + target_id + " more than once")
             return
         self.target_map[target] = []
@@ -201,25 +201,35 @@ class Entity(BaseItem):
     def filter_actions(self, matches):
         return matches
 
+    @action_handler
     def start_action(self, action, act_args):
         if hasattr(action, 'prepare_action'):
-            action.prepare_action(self)
+            action.prepare_action(**act_args)
         self.process_action(action, act_args)
+        self.check_follow(action, act_args)
 
+
+    @action_handler
     def process_action(self, action, act_args):
-        try:
-            response = action(**act_args)
-            if isinstance(response, basestring):
-                self.display_line(response)
-            elif response:
-                self.output(response)
-        except PermError:
-            self.display_line("You do not have permission to do that.")
-        except ActionError as action_error:
-            self.display_line(action_error.message, action_error.display)
+        response = action(**act_args)
+        if isinstance(response, basestring):
+            self.display_line(response)
+        elif response:
+            self.output(response)
+
+    def check_follow(self, action, act_args):
+        if getattr(action, 'can_follow', False):
+            for follower in self.followers:
+                if has_action(follower, action, act_args['verb']):
+                    follow_args = act_args.copy()
+                    follow_args['source'] = follower
+                    follower.start_action(action, follow_args)
 
     def handle_parse_error(self, error, command):
-        self.parse('say {}'.format(command))
+        if error.error_code == MISSING_VERB:
+            self.parse('say {}'.format(command))
+        else:
+            self.display_line(error.message)
 
     def rec_social(self, **ignored):
         pass

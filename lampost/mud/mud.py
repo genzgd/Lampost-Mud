@@ -26,7 +26,7 @@ class MudNature():
 
     def _post_init(self):
         register('player_connect', self._player_connect)
-        register('player_baptise', self._baptise)
+        register('player_baptise', self._baptise, priority=-100)
         info("Loading mud", self)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")
@@ -81,6 +81,7 @@ class MudNature():
 
 
 @provides('mud')
+@requires('config_manager')
 class Mud():
     def __init__(self):
         self.area_map = {}
@@ -126,6 +127,8 @@ class Mud():
         room = None
         if getattr(player, "room_id", None):
             room = self.find_room(player.room_id)
+        if not room:
+            room = self.find_room(self.config_manager.start_room)
         if not room:
             room = Room("temp_start_room", "A Temporary Room when Start Room is Missing")
         player.change_env(room)

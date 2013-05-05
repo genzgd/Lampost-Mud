@@ -31,8 +31,12 @@ class ConfigManager():
             player.imm_level = self.config.auto_imm_level
         player.room_id = self.config.start_room
 
-    def _session_connect(self, session, connect):
-        connect['client_config'] = {'default_displays': self.config.default_displays}
+    def _session_connect(self, session):
+        session.append({'client_config': {'default_displays': self.config.default_displays}})
+
+    @property
+    def start_room(self):
+        return self.config.start_room
 
     @property
     def name(self):

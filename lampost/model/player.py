@@ -26,7 +26,6 @@ class Player(RootDBO):
         self.last_tell = None
         self.equip_slots = {}
         self.active_channels = []
-        self.followers = set()
 
     def on_loaded(self):
         if not self.desc:
@@ -76,5 +75,8 @@ class Player(RootDBO):
 
     def detach(self):
         super(Player, self).detach()
+        for follower in self.followers:
+            del follower.following
+            follower.display_line("You are no longer following {}.".format(self.name))
         self.session = None
 

@@ -53,7 +53,7 @@ class ArticleCreate(Resource):
         template = self.cls_registry(ArticleTemplate)(article_id)
         hydrate_dbo(template, content.object)
         save_object(template)
-        area.articles.append(template)
+        area.append_map('articles', template)
         save_object(area)
         return template.dto_value
 
@@ -70,7 +70,7 @@ class ArticleDelete(Resource):
                 room.article_resets.remove(article_reset)
                 save_object(room, True)
         delete_object(article)
-        area.articles.remove(article)
+        area.remove_map('articles', article)
         save_object(area)
 
 

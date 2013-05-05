@@ -1,27 +1,13 @@
 from lampost.context.resource import m_requires
-from lampost.gameops.action import ActionError
 
 m_requires('log', 'mud_actions', __name__)
 
-
-def parse_actions(entity, actions):
-    if not actions:
-        raise ParseError("What?")
-    matches = find_targets(entity, actions)
-    if not matches:
-        raise ParseError("That is not here.")
-    matches = find_objects(entity, matches)
-    if not matches:
-        raise ParseError("Incomplete command.")
-    matches = validate_targets(matches)
-    matches = list(validate_objects(matches))
-    if not matches:
-        raise ParseError("You can't do that to that.")
-    if len(matches) > 1:
-        raise ParseError("Ambiguous command.")
-    match = matches[0]
-    return match[0], {'verb': match[1], 'args': match[2], 'target': match[3], 'obj': match[4],
-                      'target_method': match[5], 'obj_method': match[6]}
+MISSING_VERB = 1
+MISSING_TARGET = 2
+MISSING_OBJECT = 3
+INVALID_TARGET = 4
+INVALID_OBJECT = 5
+AMBIGUOUS = 6
 
 
 def find_actions(entity, command):
@@ -33,6 +19,36 @@ def find_actions(entity, command):
         actions += [(action, verb, args) for action in entity.actions.get(verb, [])]
         actions += [(action, verb, args) for action in mud_actions.verb_list(verb)]
     return actions
+
+
+def parse_actions(entity, actions):
+    if not actions:
+        raise ParseError(MISSING_VERB, "What?")
+    matches = find_targets(entity, actions)
+    if not matches:
+        raise ParseError(MISSING_TARGET, "That is not here.")
+    matches = find_objects(entity, matches)
+    if not matches:
+        raise ParseError(MISSING_OBJECT, "Incomplete command.")
+    matches = validate_targets(matches)
+    if not matches:
+        raise ParseError(INVALID_TARGET, "You can't do that to that")
+    matches = list(validate_objects(matches))
+    if not matches:
+        raise ParseError(INVALID_OBJECT, "You can't do that with that.")
+    if len(matches) > 1:
+        raise ParseError(AMBIGUOUS, "Ambiguous command.")
+    match = matches[0]
+    return match[0], {'verb': match[1], 'args': match[2], 'target': match[3], 'obj': match[4],
+                      'target_method': match[5], 'obj_method': match[6]}
+
+
+def has_action(entity, action, verb):
+    if action in entity.actions.get(verb, []):
+        return True
+    if action in mud_actions.verb_list(verb):
+        return True
+    return False
 
 
 def find_targets(entity, matches):
@@ -99,4 +115,6 @@ def validate_objects(matches):
 
 
 class ParseError(Exception):
-    pass
+    def __init__(self, error_code, message):
+        super(ParseError, self).__init__(message)
+        self.error_code = error_code

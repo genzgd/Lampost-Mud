@@ -1,23 +1,36 @@
+from lampost.gameops.action import action_handler
 from lampost.lpflavor.attributes import need_refresh
 from lampost.model.entity import Entity
 
 
 class EntityLP(Entity):
-    dbo_fields = Entity.dbo_fields + ("effects", "skills")
+    dbo_fields = Entity.dbo_fields
+
+    weapon = None
+    current_target = None
+
     _refresh_pulse = None
     _current_action = None
     _current_args = None
     _next_command = None
     _action_pulse = None
+    effects = []
+    skills = {}
+
+    @property
+    def weapon_type(self):
+        if self.weapon:
+            return self.weapon_type
 
     def filter_actions(self, matches):
         if not self._current_action:
             return matches
         return [(action, verb, args) for action, verb, args in matches if not hasattr(action, 'duration')]
 
+    @action_handler
     def start_action(self, action, act_args):
         if hasattr(action, 'prepare_action'):
-            action.prepare_action(self)
+            action.prepare_action(**act_args)
         priority = -len(self.followers)
         duration = getattr(action, 'duration', None)
         if duration:
@@ -26,12 +39,7 @@ class EntityLP(Entity):
             self._action_pulse = self.register_p(self._finish_action, pulses=duration, priority=priority)
         else:
             super(EntityLP, self).process_action(action, act_args)
-        if hasattr(action, 'followable'):
-            for follower in self.followers:
-                if action in follower.actions.get(act_args['verb'], []):
-                    follow_args = act_args.copy()
-                    follow_args['source'] = follower
-                    follower.start_action(action, follow_args)
+        self.check_follow(action, act_args)
 
     def handle_parse_error(self, error, command):
         if self._current_action:
@@ -42,8 +50,12 @@ class EntityLP(Entity):
         else:
             super(EntityLP, self).handle_parse_error(error, command)
 
+    @action_handler
     def _finish_action(self):
         self.unregister(self._action_pulse)
+        target = self._current_args['target']
+        if target and not target in self.target_map:
+            raise ActionError("{} is no longer here.", target.name)
         super(EntityLP, self).process_action(self._current_action, self._current_args)
         del self._current_action
         del self._current_args
@@ -63,3 +75,7 @@ class EntityLP(Entity):
         else:
             self.unregister(self._refresh_pulse)
             del self._refresh_pulse
+
+    def rec_attack(self, source, attack):
+        pass
+

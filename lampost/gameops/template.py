@@ -9,7 +9,7 @@ class TemplateException(Exception):
     pass
 
 
-class Template(RootDBO):
+class Template():
     dbo_fields = ("dbo_rev", "instance_class", "world_max")
     instance_count = 0
     world_max = 1000000

@@ -53,7 +53,7 @@ class Container(Article):
         self.contents = []
 
 
-class ArticleTemplate(Template, RootDBO):
+class ArticleTemplate(RootDBO, Template):
     template_fields = Article.dbo_fields
     dbo_fields = Template.dbo_fields + template_fields
     dbo_key_type = "article"

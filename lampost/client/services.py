@@ -31,19 +31,11 @@ class PlayerListService(ClientService):
 
     def _post_init(self):
         super(PlayerListService, self)._post_init()
-        register('player_login', self._process_login)
-        register('player_logout', self._process_logout)
         register('player_list', self._process_list)
 
     def register(self, session, data):
         super(PlayerListService, self).register(session, data)
-        return {'player_list': session_manager.player_info_map}
-
-    def _process_login(self, player):
-        self._session_dispatch({'player_login': {'id': player.dbo_id, 'data': {'status': 'Logging In', 'name': player.name, 'loc': player.env.title}}})
-
-    def _process_logout(self, player):
-        self._session_dispatch({'player_logout': {'id': player.dbo_id}})
+        session.append({'player_list': session_manager.player_info_map})
 
     def _process_list(self, player_list):
         self._session_dispatch({'player_list': player_list})

@@ -1,7 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.util.lmutil import cls_name
 
-m_requires('datastore', 'encode', 'cls_registry', __name__)
+m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
 
 
 class RootDBOMeta(type):
@@ -12,24 +12,14 @@ class RootDBOMeta(type):
         return cls
 
 
-class DBODict(dict):
-    def append(self, dbo):
-        self[dbo.dbo_id] = dbo
-
-    def __iter__(self):
-        return self.itervalues()
-
-    def remove(self, dbo):
-        del self[dbo.dbo_id]
-
-
 class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
     dbo_set_type = None
     dbo_set_id = None
     dbo_fields = ()
-    dbo_collections = ()
+    dbo_lists = ()
+    dbo_maps = ()
     dbo_refs = ()
     dbo_indexes = ()
     dbo_id = None
@@ -37,6 +27,34 @@ class RootDBO(object):
     def __init__(self, dbo_id=None):
         if dbo_id:
             self.dbo_id = unicode(str(dbo_id).lower())
+
+    def append_list(self, attr_name, value):
+        try:
+            self.__dict__[attr_name].append(value)
+        except KeyError:
+            new_list = list()
+            setattr(self, attr_name, new_list)
+            new_list.append(value)
+
+    def remove_list(self, attr_name, value):
+        my_list = getattr(self, attr_name)
+        my_list.remove(value)
+        if not my_list:
+            del self.__dict__[attr_name]
+
+    def append_map(self, attr_name, value):
+        try:
+            self.__dict__[attr_name][value.dbo_id] = value
+        except KeyError:
+            new_map = dict()
+            setattr(self, attr_name, new_map)
+            new_map[value.dbo_id] = value
+
+    def remove_map(self, attr_name, value):
+        my_map = getattr(self, attr_name)
+        del my_map[value.dbo_id]
+        if not my_map:
+            del self.__dict__[attr_name]
 
     def on_loaded(self):
         pass
@@ -81,7 +99,7 @@ class RootDBO(object):
         return dbo_describe(self)
 
 
-def dbo_describe(dbo, level=0, follow_refs=True):
+def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
     display = []
 
     def append(key, value):
@@ -89,8 +107,11 @@ def dbo_describe(dbo, level=0, follow_refs=True):
 
     if getattr(dbo, 'dbo_id', None):
         append("key", dbo.dbo_key)
+    elif dict_key:
+        append("key", dict_key)
 
-    append("class", cls_name(dbo.__class__))
+    if level == 0 or dbo.__class__ != getattr(dbo, 'dbo_base_class', None):
+        append("class", cls_name(dbo.__class__))
     if getattr(dbo, 'dbo_set_key', None):
         append("set_key", dbo.dbo_set_key)
     for field in getattr(dbo, 'dbo_fields', []):
@@ -105,17 +126,26 @@ def dbo_describe(dbo, level=0, follow_refs=True):
                 append(ref.field_name, child_dbo.dbo_key)
         else:
             append(ref.field_name, "None")
-    for col in getattr(dbo, 'dbo_collections', []):
-        child_coll = getattr(dbo, col.field_name, None)
+    for col in getattr(dbo, 'dbo_lists', ()):
+        child_coll = getattr(dbo, col.field_name)
         if child_coll:
             append(col.field_name, "")
             for child_dbo in child_coll:
                 if follow_refs or not child_dbo.dbo_key_type:
                     display.extend(dbo_describe(child_dbo, level + 1, False))
                 else:
-                    append(col.field_name, child_dbo.dbo_key)
+                    append(col.field_name, child_dbo.dbo_debug_key)
         else:
             append(col.field_name, "None")
+    for col in getattr(dbo, 'dbo_maps', ()):
+        child_coll = getattr(dbo, col.field_name)
+        if child_coll:
+            append(col.field_name, "")
+            for child_dbo_id, child_dbo in child_coll.iteritems():
+                if follow_refs or not child_dbo.dbo_key_type:
+                    display.extend(dbo_describe(child_dbo, level + 1, False, child_dbo_id))
+                else:
+                    append(child_dbo_id, "")
     return display
 
 
@@ -131,18 +161,13 @@ def to_dbo_dict(dbo, use_defaults=False):
                 dbo_dict[field_name] = getattr(dbo, field_name, None)
         else:
             dbo_dict[field_name] = getattr(dbo, field_name, None)
-    for dbo_col in dbo.dbo_collections:
-        coll_list = list()
-        for child_dbo in getattr(dbo, dbo_col.field_name):
-            if dbo_col.key_type:
-                coll_list.append(child_dbo.dbo_id)
-            else:
-                coll_list.append(to_dbo_dict(child_dbo, use_defaults))
-        dbo_dict[dbo_col.field_name] = coll_list
+    for dbo_col in dbo.dbo_lists + dbo.dbo_maps:
+        dbo_col.build_dbo(dbo, dbo_dict, use_defaults)
     for dbo_ref in dbo.dbo_refs:
-        ref = getattr(dbo, dbo_ref.field_name, None)
-        if ref:
-            dbo_dict[dbo_ref.field_name] = ref.dbo_id
+        try:
+            dbo_dict[dbo_ref.field_name] = getattr(dbo, dbo_ref.field_name).dbo_id
+        except AttributeError:
+            pass
     return dbo_dict
 
 
@@ -152,3 +177,40 @@ class DBORef():
         self.base_class = base_class
         self.key_type = key_type
 
+
+class DBOList(DBORef):
+    coll_class = list
+
+    def instance(self, dbo):
+        if self.field_name in dbo.__dict__:
+            warn("dbo {} already has instance of {}".format(dbo.dbo_debug_key, self.field_name))
+            return dbo.__dict__[self.field_name]
+        instance = self.coll_class()
+        setattr(dbo, self.field_name, instance)
+        return instance
+
+    def build_dbo(self, dbo, dbo_dict, use_defaults):
+        if use_defaults:
+            try:
+                dbo_list = dbo.__dict__[self.field_name]
+            except KeyError:
+                return
+        else:
+            dbo_list = getattr(dbo, self.field_name)
+        self._add_raw_coll(dbo_dict, dbo_list, use_defaults)
+
+    def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
+        if self.key_type:
+            dbo_dict[self.field_name] = [child.dbo_id for child in dbo_list]
+        else:
+            dbo_dict[self.field_name] = [to_dbo_dict(child_dbo, use_defaults) for child_dbo in dbo_list]
+
+
+class DBOMap(DBOList):
+    coll_class = dict
+
+    def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
+        if self.key_type:
+            dbo_dict[self.field_name] = [dbo_key for dbo_key in dbo_list]
+        else:
+            dbo_dict[self.field_name] = {dbo_id: to_dbo_dict(child_dbo, use_defaults) for dbo_id, child_dbo in dbo_list.iteritems()}

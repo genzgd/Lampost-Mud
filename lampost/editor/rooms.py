@@ -55,11 +55,9 @@ class RoomCreate(Resource):
         check_perm(session, area)
         room_dto = content.room
         room_id = content.area_id + ':' + str(room_dto['id'])
-        if area.get_room(room_id):
-            raise DataError("RoomExists:")
         room = cls_registry(Room)(room_id, room_dto['title'], room_dto['desc'])
-        save_object(room)
-        area.rooms.append(room)
+        create_object(room)
+        area.append_map('rooms', room)
         area.inc_next_room(room_dto['id'])
         save_object(area)
         return {'next_room_id': area.next_room_id, 'room': room_stub_dto(room)}
@@ -81,7 +79,7 @@ class RoomDelete(Resource):
                     restore_contents(other_room, other_contents)
                     deleted_exits.append(exit_dto(other_exit, other_room.dbo_id))
         delete_object(room)
-        area.rooms.remove(room)
+        area.remove_map('rooms', room)
         save_object(area, True)
         for entity in main_contents:
             if entity.dbo_key_type == 'player':
@@ -108,22 +106,19 @@ class RoomUpdate(Resource):
         contents = save_contents(room)
         room.title = content.title
         room.desc = content.desc
-        room.extras = []
         for extra_json in content.extras:
             if extra_json.get('title', None):
                 extra = BaseItem()
                 hydrate_dbo(extra, extra_json)
-                room.extras.append(extra)
-        room.mobile_resets = []
+                room.append_list('extras', extra)
         for mobile_json in content.mobiles:
             mobile_reset = MobileReset()
             hydrate_dbo(mobile_reset, mobile_json)
-            room.mobile_resets.append(mobile_reset)
-        room.article_resets = []
+            room.append_list('mobile_resets', mobile_reset)
         for article_json in content.articles:
             article_reset = ArticleReset()
             hydrate_dbo(article_reset, article_json)
-            room.article_resets.append(article_reset)
+            room.append_list('article_reset', article_reset)
         save_object(room, True)
         restore_contents(room, contents)
         return room_dto(room)
@@ -154,16 +149,16 @@ class CreateExit(Resource):
         else:
             other_contents = save_contents(other_room)
         this_exit = cls_registry(Exit)(new_dir, other_room, room)
-        room.exits.append(this_exit)
+        room.append_list('exits', this_exit)
         save_object(room, True)
         result = {}
         if not content.one_way:
             other_exit = cls_registry(Exit)(rev_dir, room, other_room)
-            other_room.exits.append(other_exit)
+            other_room.append_list('exits', other_exit)
             result['other_exit'] = exit_dto(other_exit, other_id)
         if content.is_new:
             save_object(other_room)
-            area.rooms.append(other_room)
+            area.append_map('rooms', other_room)
             area.inc_next_room(content.dest_id)
             result['next_room_id'] = area.next_room_id
             result['new_room'] = room_stub_dto(other_room)
@@ -186,7 +181,7 @@ class DeleteExit(Resource):
         if not local_exit:
             raise DataError('Exit does not exist')
         contents = save_contents(room)
-        room.exits.remove(local_exit)
+        room.remove_list('exits', local_exit)
         save_object(room, True)
         restore_contents(room, contents)
 
@@ -197,11 +192,11 @@ class DeleteExit(Resource):
         other_exit = other_room.find_exit(direction.rev_dir)
         if not other_exit:
             return result
-        other_room.exits.remove(other_exit)
+        other_room.remove_list('exits', other_exit)
         if not other_room.dbo_rev and not other_room.exits:
             other_room.dbo_rev = -1
             delete_object(other_room)
-            area.rooms.remove(other_room)
+            area.remove_map('rooms', other_room)
             result['room_deleted'] = other_room.dbo_id
             save_object(area)
         else:

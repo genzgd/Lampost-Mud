@@ -1,6 +1,7 @@
 import inspect
 
 from types import MethodType
+from lampost.util.lmutil import PermError
 
 
 def simple_action(verbs, msg_class=None):
@@ -52,6 +53,17 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
         action.prep = prep
         action.obj_msg_class = "rec_{0}".format(obj_msg_class)
     return action
+
+
+def action_handler(func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            func(self, *args, **kwargs)
+        except PermError:
+            self.display_line("You do not have permission to do that.")
+        except ActionError as action_error:
+            self.display_line(action_error.message, action_error.display)
+    return wrapper
 
 
 class ActionError(Exception):

@@ -48,10 +48,10 @@ class ChannelService(ClientService):
     def gen_channels(self):
         return [self._channel_messages('shout')]
 
-    def _session_connect(self, session, connect):
+    def _session_connect(self, session):
         self.register(session, None)
         session.channel_ids = (['shout'])
-        connect['gen_channels'] = self.gen_channels()
+        session.append({'gen_channels': self.gen_channels()})
 
     def _channel_messages(self, channel_id):
         return {'id': channel_id, 'messages': get_db_list(channel_key(channel_id))}

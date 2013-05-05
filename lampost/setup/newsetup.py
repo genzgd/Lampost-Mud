@@ -49,7 +49,7 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     room.title = "Immortal Start Room"
     room.desc = "A brand new start room for immortals."
     save_object(room)
-    area.rooms.append(room)
+    area.append_map('rooms', room)
     save_object(area)
 
     player.room_id = room_id

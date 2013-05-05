@@ -26,12 +26,10 @@ class AreaNew(Resource):
     @request
     def render_POST(self, content, session):
         area_id = content.id.lower()
-        if datastore.load_object(Area, area_id):
-                return "AREA_EXISTS"
         area = self.cls_registry(Area)(area_id)
         area.name = content.name
         area.owner_id = session.player.dbo_id
-        datastore.save_object(area)
+        create_object(area)
         self.mud.add_area(area)
         return area_dto(area)
 
@@ -45,7 +43,7 @@ class AreaDelete(Resource):
         if area:
             check_perm(session, area)
             self.dispatcher.detach_events(area)
-            datastore.delete_object(area)
+            delete_object(area)
             del self.mud.area_map[area_id]
             return "OK"
 
@@ -60,7 +58,7 @@ class AreaUpdate(Resource):
         check_perm(session, area)
         area.name = area_info['name']
         area.next_room_id = area_info['next_room_id']
-        datastore.save_object(area, True)
+        save_object(area, True)
         return area_dto(area)
 
 

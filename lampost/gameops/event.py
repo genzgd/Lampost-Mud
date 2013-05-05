@@ -10,7 +10,7 @@ m_requires("log", __name__)
 
 @provides('dispatcher', True)
 class Dispatcher:
-    def __init__(self, max_pulse_queue=1000, pulse_interval=.25, maintenance_interval=60):
+    def __init__(self, max_pulse_queue=1000, pulse_interval=.1, maintenance_interval=60):
         self._registrations = defaultdict(set)
         self._pulse_map = defaultdict(set)
         self._owner_map = defaultdict(set)

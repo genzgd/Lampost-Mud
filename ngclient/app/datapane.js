@@ -1,9 +1,9 @@
 angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', 'lmUtil',
     function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
 
-    var tabInfo = [{id: 'messages', label: 'Messages', include: "view/messages_tab.html"},
-         {id: 'playerList', label: 'Player List', include: 'view/player_list_tab.html'},
-         {id: 'channel', label: 'Channel', include: "view/channel_tab.html"}];
+    var tabInfo = [{id: 'playerList', label: 'Player List', include: 'view/player_list_tab.html'},
+         {id: 'channel', label: 'Channel', include: "view/channel_tab.html"},
+         {id: 'messages', label: 'Messages', include: "view/messages_tab.html"}];
 
     var tabMap = {};
 
@@ -47,12 +47,10 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
             }
         });
 
-        if (!lmData.activeTab) {
-            if (lmData.messages.length > 0) {
-                $scope.changeTab(tabMap.messages);
-            } else {
-                $scope.changeTab($scope.tabList[0]);
-            }
+        if (lmData.messages.length > 0) {
+            $scope.changeTab(tabMap.messages);
+         } else {
+            $scope.changeTab($scope.tabList[0]);
         }
     }
 
@@ -87,22 +85,11 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
     $timeout(updateTabs);
 
 
-    lmBus.register("player_list", function (data) {
-        lmData.playerList = data;
-        $scope.playerList = lmData.playerList;
-    }, $scope);
-
-    lmBus.register("player_login", function (login) {
-        if (lmData.playerList[login.id]) {
-            return;
+    lmBus.register("player_list_update", function() {
+        if ($scope.playerList != lmData.playerList) {
+            $scope.playerList = lmData.playerList;
         }
-        lmData.playerList[login.id] = login.data;
     }, $scope);
-
-    lmBus.register("player_logout", function (logout) {
-        delete lmData.playerList[logout.id];
-    }, $scope);
-
     lmBus.register("channels", sortChannels, $scope);
     lmBus.register("channel", function(msg) {
         lmData.adjustLine(msg, msg.id + "_channel");
@@ -127,7 +114,14 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmB
             result += " " + date.toLocaleDateString();
         }
         return result;
-    }
+    };
+
+    $scope.$on('$destroy', function() {
+        if (lmData.activeTab == 'playerList') {
+            lmRemote.unregisterService('player_list_service');
+        }
+        lmData.activeTab = null;
+    })
 }]);
 
 angular.module('lampost').controller('FriendReqCtrl', ['$scope', 'lmData', 'lmRemote', function ($scope, lmData, lmRemote) {

@@ -1,7 +1,7 @@
 from random import randint
 
 from lampost.context.resource import requires, m_requires
-from lampost.datastore.dbo import RootDBO, DBORef, DBODict
+from lampost.datastore.dbo import RootDBO, DBOMap
 from lampost.env.room import Room
 from lampost.model.mobile import MobileTemplate
 from lampost.model.article import ArticleTemplate
@@ -15,20 +15,19 @@ class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
     dbo_fields = ("name", "next_room_id", "owner_id", "dbo_rev")
-    dbo_collections = DBORef("rooms", Room, "room"),  DBORef("mobiles", MobileTemplate, "mobile"), \
-        DBORef("articles", ArticleTemplate, "article")
+    dbo_maps = DBOMap("rooms", Room, "room"),  DBOMap("mobiles", MobileTemplate, "mobile"), \
+        DBOMap("articles", ArticleTemplate, "article")
 
     next_room_id = 0
     dbo_rev = 0
+    rooms = {}
+    mobiles = {}
+    articles = {}
 
     reset_time = 180  # reset every 3 minutes
     reset_pulse = 20  # we get the reset pulse every 20 seconds
 
-    def __init__(self, dbo_id):
-        super(Area, self).__init__(dbo_id)
-        self.rooms = DBODict()
-        self.mobiles = DBODict()
-        self.articles = DBODict()
+    def on_loaded(self):
         self.reset_wait = randint(-180, 0)  # Start resets at staggered intervals
 
     def start(self):

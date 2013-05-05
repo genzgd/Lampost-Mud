@@ -53,7 +53,7 @@ class MobileCreate(Resource):
         template = self.cls_registry(MobileTemplate)(mobile_id)
         hydrate_dbo(template, content.object)
         save_object(template)
-        area.mobiles.append(template)
+        area.append_map('mobiles', template)
         save_object(area)
         return template.dto_value
 
@@ -67,10 +67,10 @@ class MobileDelete(Resource):
             if not content.force:
                 raise DataError('InUse:')
             for room, mobile_reset in mobile_resets:
-                room.mobile_resets.remove(mobile_reset)
+                room.remove_list('mobile_resets', mobile_reset)
                 save_object(room, True)
         delete_object(mobile)
-        area.mobiles.remove(mobile)
+        area.remove_map('mobiles', mobile)
         save_object(area)
 
 

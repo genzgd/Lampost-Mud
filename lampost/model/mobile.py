@@ -1,8 +1,6 @@
-from lampost.datastore.dbo import RootDBO, DBORef
+from lampost.datastore.dbo import RootDBO, DBOList
 from lampost.gameops.template import Template
 from lampost.model.article import ArticleLoad
-from lampost.model.entity import Entity
-from lampost.util.lmutil import cls_name
 
 
 class Mobile():
@@ -12,14 +10,11 @@ class Mobile():
         return self.title
 
 
-class MobileTemplate(Template, RootDBO):
+class MobileTemplate(RootDBO, Template):
     dbo_key_type = "mobile"
     sex = 'none'
     size = 'medium'
-
-    def __init__(self, dbo_id):
-        super(MobileTemplate, self).__init__(dbo_id)
-        self.aliases = []
+    aliases = []
 
     def config_instance(self, instance):
         instance.baptise(set())
@@ -28,10 +23,7 @@ class MobileTemplate(Template, RootDBO):
 
 class MobileReset(RootDBO):
     dbo_fields = "mobile_id", "mob_count", "mob_max"
-    dbo_collections = DBORef("article_loads", ArticleLoad),
+    dbo_lists = DBOList("article_loads", ArticleLoad),
     mob_count = 1
     mob_max = 1
-
-    def __init__(self):
-        super(MobileReset, self).__init__()
-        self.article_loads = []
+    article_loads = []

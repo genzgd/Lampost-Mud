@@ -4,23 +4,22 @@ from lampost.gameops.action import make_action, ActionError, simple_action
 from lampost.util.lmutil import dump, StateError
 
 m_requires('user_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
-mud_actions = []
-imm_actions = []
+mud_actions = set()
+imm_actions = set()
 
-mud_actions.append(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
-mud_actions.append(simple_action("follow", "follow"))
+mud_actions.add(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
 
 
 def mud_action(verbs, msg_class=None):
     def dec_wrapper(func):
-        mud_actions.append(func)
+        mud_actions.add(func)
         return make_action(func, verbs, msg_class)
     return dec_wrapper
 
 
 def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
     def dec_wrapper(func):
-        imm_actions.append(func)
+        imm_actions.add(func)
         func.imm_level = imm_level
         return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
@@ -29,7 +28,7 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
 @provides('mud_actions')
 class MudActions(object):
 
-    def __init__(self):
+    def _post_init(self):
         self._verbs = defaultdict(set)
         for action in mud_actions:
             self.add_action(action)
@@ -135,6 +134,32 @@ def unblock(source, args, **ignored):
         message_service.unblock_messages(source.dbo_id, block_id)
         return "You unblock messages from {}".format(block_id)
     return "You are not blocking messages from {}".format(block_id)
+
+
+@mud_action('follow', msg_class='follow')
+def follow(source, target, target_method, **ignored):
+    if hasattr(source, 'following'):
+        return "You are already following {}.".format(source.following.name)
+    target_method(source)
+    source.following = target
+
+
+@mud_action('unfollow')
+def unfollow(source, args,  **ignored):
+    if not hasattr(source, 'following'):
+        return "You aren't following anyone."
+    if args and args[0].lower() != source.following.name.lower():
+        return "You aren't following {}.".format(args[0])
+    source.display_line("You are no longer following {}".format(source.following.name))
+    source.following.display_line("{} is no longer following you.".format(source.name))
+    source.following.followers.remove(source)
+    del source.following
+
+
+
+
+
+
 
 
 

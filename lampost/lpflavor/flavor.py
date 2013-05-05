@@ -1,5 +1,7 @@
 from lampost.env.room import Exit
+from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
+from lampost.lpflavor.combat import AttackSkill
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
 from lampost.lpflavor.skill import SkillService
@@ -29,15 +31,9 @@ def _post_init():
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
     context.set('attr_map', ATTR_MAP)
-    register('first_time_setup', _first_time_setup)
+    register('first_time_setup', setup.first_time_setup)
     register('player_create', _player_create)
     register('player_baptise', _player_baptise)
-
-
-def _first_time_setup():
-    unknown_race = PlayerRace('unknown')
-    unknown_race.name = "Unknown"
-    save_object(unknown_race)
 
 
 def _player_create(player):

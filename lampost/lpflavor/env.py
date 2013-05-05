@@ -16,9 +16,8 @@ def find_cost(room):
 
 class ExitLP(Exit):
     duration = 1
-    followable = True
 
-    def prepare_action(self, source):
+    def prepare_action(self, source, **ignored):
         source.display_line("You head {}.".format(self.direction.desc))
 
     def __call__(self, source, **ignored):
