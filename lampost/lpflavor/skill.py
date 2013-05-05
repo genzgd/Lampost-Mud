@@ -78,13 +78,17 @@ class SkillCost(object):
 
 
 class BaseSkill():
-    dbo_fields = 'verb', 'desc', 'costs',  'pre_reqs', 'prep_time', 'cool_down'
+    dbo_fields = 'verb', 'desc', 'costs',  'pre_reqs', 'prep_time', 'cool_down', 'prep_map', 'success_map', 'fail_map'
     verb = None
     desc = None
     prep_time = 0
     cool_down = 0
     pre_reqs = []
     skill_cost = SkillCost()
+    prep_map = {}
+    success_map = {}
+    fail_map = {}
+    display = 'default'
 
     def on_loaded(self):
         if not self.verb:
@@ -101,22 +105,18 @@ class BaseSkill():
         for pool, cost in value.iteritems():
             self.skill_cost.add(pool, cost)
 
-    def prepare_action(self, source, **kwargs):
+    def prepare_action(self, source, target, **kwargs):
         skill_status = source.skills[self.dbo_id]
         if skill_status.last_used + self.cool_down > dispatcher.pulse_count:
             raise ActionError("You cannot {} yet.".format(self.verb))
+        if self.prep_map:
+            source.broadcast(display=self.display, target=target, **self.prep_map)
 
     def __call__(self, source, **kwargs):
         self.skill_cost.apply(source)
         skill_status = source.skills[self.dbo_id]
         self.invoke(skill_status, source, **kwargs)
         skill_status.last_used = dispatcher.pulse_count
-
-
-
-
-
-
 
 
 

@@ -7,7 +7,7 @@ m_requires('log', 'dispatcher', __name__)
 
 DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
                 'pierce': {'desc': 'Piercing damage (spears, arrows)'},
-                'slash': {'desc' : 'Slash damage (swords, knives)'},
+                'slash': {'desc': 'Slash damage (swords, knives)'},
                 'cold': {'desc': 'Cold'},
                 'fire': {'desc': 'Fire'},
                 'shock': {'desc': 'Electric'},
@@ -38,14 +38,13 @@ class AttackSkill(BaseSkill, RootDBO):
     accuracy_calc = {}
     weapon_type = 'unused'
 
-    def prepare_action(self, source, **kwargs):
-        super(AttackSkill, self).prepare_action(source, **kwargs)
-        target = kwargs['target']
+    def prepare_action(self, source, target, **kwargs):
         if source == target:
             raise ActionError("You cannot harm yourself.  This is a happy place.")
         self._validate_weapon(source.weapon_type)
         if 'dual_wield' in self.pre_reqs:
             self._validate_weapon(source.second_type)
+        super(AttackSkill, self).prepare_action(source, target, **kwargs)
 
     def _validate_weapon(self, weapon_type):
         if self.weapon_type == 'unused':
@@ -59,8 +58,9 @@ class AttackSkill(BaseSkill, RootDBO):
         if self.weapon_type != 'any' and self.weapon_type != source.weapon:
             raise ActionError("You need a different weapon for that.")
 
-    def invoke(self, skill_status, source, target, **ignored):
+    def invoke(self, skill_status, source, target_method, **ignored):
         attack = Attack(self, skill_status.skill_level, source)
+        target_method(source, attack)
 
     def calc_damage(self, source):
         return sum(getattr(source, attr, 0) * damage for attr, damage in self.damage_calc.iteritems())

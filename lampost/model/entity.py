@@ -26,8 +26,8 @@ class Entity(BaseItem):
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
-        self.target_map[self] = []
-        self.add_target_keys([self.target_id], self)
+        self.target_map[self] = {}
+        self.add_target_keys([self.target_id], self, self.target_map[self])
         self.add_actions(soul)
         self.entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
         self.exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
@@ -86,33 +86,31 @@ class Entity(BaseItem):
         if self.target_map.get(target):
             error("Trying to add " + target_id + " more than once")
             return
-        self.target_map[target] = []
-        self.add_target_key_set(target, target_id, parent)
+        target_entry = {}
+        self.add_target_key_set(target, target_entry, target_id, parent)
         for target_id in getattr(target, "target_aliases", []):
-            self.add_target_key_set(target, target_id, parent)
+            self.add_target_key_set(target, target_entry, target_id, parent)
+        self.target_map[target] = target_entry
 
-    def add_target_key_set(self, target, target_id, parent):
+    def add_target_key_set(self, target, target_entry, target_id, parent):
         if parent == self.env:
             prefix = unicode("the"),
         elif parent == self.inven:
             prefix = unicode("my"),
         else:
             prefix = ()
-        target_keys = list(self.gen_ids(prefix + target_id))
-        self.add_target_keys(target_keys, target)
+        target_keys = self.gen_ids(prefix + target_id)
+        self.add_target_keys(target_keys, target, target_entry)
 
-    def add_target_keys(self, target_keys, target):
+    def add_target_keys(self, target_keys, target, target_entry):
         for target_key in target_keys:
-            self.target_map[target].append(target_key)
-            key_data = self.target_key_map.get(target_key)
-            if key_data:
-                key_data.append(target)
-                new_count = len(key_data)
-                if new_count == 2:
-                    self.target_key_map[target_key + ("1",)] = [key_data[0]]
-                self.target_key_map[target_key + (unicode(new_count),)] = [target]
-            else:
-                self.target_key_map[target_key] = [target]
+            current_key = target_key
+            key_count = 1
+            while self.target_key_map.get(current_key):
+                key_count += 1
+                current_key = target_key + (unicode(key_count),)
+            self.target_key_map[current_key] = target
+            target_entry[target_key] = key_count
 
     def gen_ids(self, target_id):
         prefix_count = len(target_id) - 1
@@ -135,23 +133,23 @@ class Entity(BaseItem):
         if not target_keys:
             return
         del self.target_map[target]
-        for target_key in target_keys:
-            key_data = self.target_key_map[target_key]
-            if len(key_data) == 1:
-                del self.target_key_map[target_key]
+        for target_key, key_count in target_keys.iteritems():
+            if key_count > 1:
+                prev_key = target_key + (unicode(key_count),)
             else:
-                target_loc = key_data.index(target)
-                key_data.pop(target_loc)
-                self.renumber_keys(target_key, key_data)
-
-    def renumber_keys(self, target_key, key_data):
-        for ix in range(len(key_data) + 1):
-            number_key = target_key + (unicode(ix + 1),)
-            del self.target_key_map[number_key]
-        if len(key_data) < 2:
-            return
-        for ix, target in enumerate(key_data):
-            self.target_key_map[target_key + (unicode(ix + 1),)] = [target]
+                prev_key = target_key
+            del self.target_key_map[prev_key]
+            key_count += 1
+            next_key = target_key + (unicode(key_count),)
+            next_target = self.target_key_map.get(next_key)
+            while next_target:
+                self.target_key_map[prev_key] = next_target
+                self.target_map[next_target][target_key] = key_count - 1
+                del self.target_key_map[next_key]
+                prev_key = next_key
+                key_count += 1
+                next_key = target_key + (unicode(key_count),)
+                next_target = self.target_key_map.get(next_key)
 
     def add_actions(self, actions):
         for action in actions:
@@ -179,7 +177,7 @@ class Entity(BaseItem):
                 if len(bucket) == 0:
                     del self.actions[verb]
             else:
-                error("Removing action " + verb + " that does not exist from " + self.short_desc(self))
+                error("Removing action {} that does not exist from {}".format(verb, self.name))
         for sub_action in getattr(action, "sub_providers", []):
             self.remove_action(sub_action)
 

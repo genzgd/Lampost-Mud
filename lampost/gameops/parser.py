@@ -71,8 +71,9 @@ def find_targets(entity, matches):
                 continue
         if target_args:
             fixed_targets = getattr(action, "fixed_targets", None)
-            target_matches += [(action, verb, args, target, obj_args) for target in entity.target_key_map.get(target_args, [])
-                               if not fixed_targets or target in fixed_targets]
+            target = entity.target_key_map.get(target_args)
+            if target and (not fixed_targets or target in fixed_targets):
+                target_matches.append((action, verb, args, target, obj_args))
         else:
             target_matches.append((action, verb, args, entity.env, obj_args))
     return target_matches

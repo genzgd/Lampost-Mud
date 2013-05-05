@@ -8,9 +8,10 @@ VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
 class Article(BaseItem):
-    dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "art_type")
+    dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "art_type", "level")
     rec_wear = True
     equip_slot = None
+    level = 1
 
     @property
     def name(self):

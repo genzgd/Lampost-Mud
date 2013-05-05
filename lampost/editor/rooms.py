@@ -106,15 +106,18 @@ class RoomUpdate(Resource):
         contents = save_contents(room)
         room.title = content.title
         room.desc = content.desc
+        room.extras = []
         for extra_json in content.extras:
             if extra_json.get('title', None):
                 extra = BaseItem()
                 hydrate_dbo(extra, extra_json)
                 room.append_list('extras', extra)
+        room.mobile_resets = []
         for mobile_json in content.mobiles:
             mobile_reset = MobileReset()
             hydrate_dbo(mobile_reset, mobile_json)
             room.append_list('mobile_resets', mobile_reset)
+        room.article_resets = []
         for article_json in content.articles:
             article_reset = ArticleReset()
             hydrate_dbo(article_reset, article_json)
@@ -221,7 +224,7 @@ def get_room(room_id, session=None):
 def save_contents(start_room):
     safe_room = Room("safe_room", "A Temporary Safe Room")
     contents = []
-    for entity in start_room.contents:
+    for entity in start_room.contents[:]:
         if hasattr(entity, 'change_env'):
             entity.change_env(safe_room)
             contents.append(entity)

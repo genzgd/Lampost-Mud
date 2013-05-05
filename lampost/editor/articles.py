@@ -21,7 +21,7 @@ class ArticleList(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
-        return [article_template.dto_value for article_template in area.articles]
+        return [article_template.dto_value for article_template in area.articles.itervalues()]
 
 
 class ArticleGet(Resource):
@@ -47,7 +47,7 @@ class ArticleCreate(Resource):
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
         check_perm(session, area)
-        article_id = ":".join([area.dbo_id, content.object.id])
+        article_id = ":".join([area.dbo_id, content.object['id']])
         if area.get_article(article_id):
             raise DataError(article_id + " already exists in this area")
         template = self.cls_registry(ArticleTemplate)(article_id)
@@ -67,7 +67,7 @@ class ArticleDelete(Resource):
             if not content.force:
                 raise DataError('InUse:')
             for room, article_reset in article_resets:
-                room.article_resets.remove(article_reset)
+                room.remove_list('article_resets', article_reset)
                 save_object(room, True)
         delete_object(article)
         area.remove_map('articles', article)

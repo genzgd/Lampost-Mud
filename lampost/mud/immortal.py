@@ -137,12 +137,11 @@ def force(source, command, **ignored):
             remainder = None
         else:
             remainder = remainder[space_ix + 1:]
-        targets = [target for target in source.target_key_map.get(words[:ix + 1], []) if hasattr(target, 'parse')]
-        if not targets:
-            continue
-        if match or len(targets) > 1:
-            return "Ambiguous target"
-        match = targets[0], remainder
+        target = source.target_key_map.get(words[:ix + 1])
+        if target and hasattr(target, 'parse'):
+            if match:
+                return "Ambiguous target"
+            match = target, remainder
     if not match:
         return "No target found"
     target, force_cmd = match

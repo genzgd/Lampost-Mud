@@ -22,5 +22,6 @@ def default_skills():
     punch_skill.weapon_type = "unarmed"
     punch_skill.damage_calc = {'str': 2}
     punch_skill.accuracy_calc = {'agi': 5}
+    punch_skill.prep_map = {'s': 'You wind up to wallop {N}.', 't': '{n} winds up to wallup you!', 'e': "{n} winds up to wallop {N}"}
     create_object(punch_skill)
 

@@ -42,6 +42,7 @@ angular.module('lampost_editor').controller('NewObjectCtrl', ['$scope', 'lmRemot
 
         $scope.createObject = function () {
             lmRemote.request('editor/' + type + '/create', {area_id:areaId, object:$scope.newObject}).then(function (object) {
+                object.objectId = object.dbo_id.split(':')[1];
                 lmEditor.objectAdded(type, object);
                 $scope.dismiss();
             }, function (error) {

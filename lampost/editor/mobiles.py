@@ -21,7 +21,7 @@ class MobileList(Resource):
     @request
     def render_POST(self, content, session):
         area = mud.get_area(content.area_id)
-        return [mobile_template.dto_value for mobile_template in area.mobiles]
+        return [mobile_template.dto_value for mobile_template in area.mobiles.itervalues()]
 
 
 class MobileGet(Resource):

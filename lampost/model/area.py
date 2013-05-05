@@ -72,13 +72,13 @@ class Area(RootDBO):
             room.reset()
 
     def find_mobile_resets(self, mobile_id):
-        for room in self.rooms:
+        for room in self.rooms.itervalues():
             for mobile_reset in room.mobile_resets:
                 if mobile_reset.mobile_id == mobile_id:
                     yield room, mobile_reset
 
     def find_article_resets(self, article_id):
-        for room in self.rooms:
+        for room in self.rooms.itervalues():
             for article_reset in room.article_resets:
                 if article_reset.article_id == article_id:
                     yield room, article_reset
