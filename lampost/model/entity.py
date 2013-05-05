@@ -184,8 +184,6 @@ class Entity(BaseItem):
             self.remove_action(sub_action)
 
     def parse(self, command):
-        if __debug__:
-            debug("Starting parse: {}".format(time.time()))
         actions = find_actions(self, command)
         actions = self.filter_actions(actions)
         try:
@@ -195,8 +193,6 @@ class Entity(BaseItem):
             self.start_action(action, act_args)
         except ParseError as error:
             self.handle_parse_error(error, command)
-        if __debug__:
-            debug("Ending parse: {}".format(time.time()))
 
     def filter_actions(self, matches):
         return matches

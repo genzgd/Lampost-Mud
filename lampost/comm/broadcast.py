@@ -2,28 +2,28 @@ import re
 
 from lampost.util.lmutil import pronouns
 
-defaults = {'e':'s', 't':'e', 'st':'s', 'et':'e', 'sf':'s', 'ef':'e', 'sa':'st', 'ea':'et'}
+defaults = {'e': 's', 't': 'e', 'st': 's', 'et': 'e', 'sf': 's', 'ef': 'e', 'sa': 'st', 'ea': 'et'}
 
-broadcast_types = [{'id':'s', 'label':'To self (no target)', 'reduce':'s'},
-                   {'id':'e', 'label':'To others (no target)', 'reduce':'s'},
-                   {'id':'t', 'label':'To target (target is other)', 'reduce':'e'},
-                   {'id':'st', 'label':'To self (target is other)', 'reduce':'s'},
-                   {'id':'et', 'label':'To others (target is other)', 'reduce': 'e'},
-                   {'id':'sf', 'label':'To self (target is self)', 'reduce':'s'},
-                   {'id':'ef', 'label':'To others (target is self)', 'reduce': 'e'},
-                   {'id':'sa', 'label':'To self (target is not living)', 'reduce':'st'},
-                   {'id':'ea', 'label':'To environment (target is not living)', 'reduce':'et'}]
+broadcast_types = [{'id': 's', 'label': 'To self (no target)', 'reduce': 's'},
+                   {'id': 'e', 'label': 'To others (no target)', 'reduce': 's'},
+                   {'id': 't', 'label': 'To target (target is other)', 'reduce': 'e'},
+                   {'id': 'st', 'label': 'To self (target is other)', 'reduce': 's'},
+                   {'id': 'et', 'label': 'To others (target is other)', 'reduce': 'e'},
+                   {'id': 'sf', 'label': 'To self (target is self)', 'reduce': 's'},
+                   {'id': 'ef', 'label': 'To others (target is self)', 'reduce': 'e'},
+                   {'id': 'sa', 'label': 'To self (target is not living)', 'reduce': 'st'},
+                   {'id': 'ea', 'label': 'To environment (target is not living)', 'reduce': 'et'}]
 
-broadcast_tokens = [{'id':'n', 'token':'Subject name'},
-                    {'id':'N', 'token':'Target name'},
-                    {'id':'e', 'token':'Subject pronoun'},
-                    {'id':'E', 'token':'Target pronoun'},
-                    {'id':'s', 'token':'Subject possessive pronoun'},
-                    {'id':'S', 'token':'Target possessive pronoun'},
-                    {'id':'m', 'token':'Subject objective pronoun'},
-                    {'id':'M', 'token':'Target objective pronoun'},
-                    {'id':'f', 'token':'Subject self pronoun'},
-                    {'id':'F', 'token':'Target self pronoun'}]
+broadcast_tokens = [{'id': 'n', 'token': 'Subject name'},
+                    {'id': 'N', 'token': 'Target name'},
+                    {'id': 'e', 'token': 'Subject pronoun'},
+                    {'id': 'E', 'token': 'Target pronoun'},
+                    {'id': 's', 'token': 'Subject possessive pronoun'},
+                    {'id': 'S', 'token': 'Target possessive pronoun'},
+                    {'id': 'm', 'token': 'Subject objective pronoun'},
+                    {'id': 'M', 'token': 'Target objective pronoun'},
+                    {'id': 'f', 'token': 'Subject self pronoun'},
+                    {'id': 'F', 'token': 'Target self pronoun'}]
 
 token_pattern = re.compile('\$([nNeEsSmMfF])')
 

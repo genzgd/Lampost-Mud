@@ -44,10 +44,10 @@
 
     <div class="row-fluid scrollable" >
       <div class="row-fluid" ng-repeat="broadcast_type in constants.broadcast_types">
-        <div ng-hide="displayMode == 'edit'" class="span12" style="color: mediumslateblue;">{{social.map[broadcast_type.id]}}</div>
+        <div ng-hide="displayMode == 'edit'" class="span12" style="color: mediumslateblue;">{{social.b_map[broadcast_type.id]}}</div>
         <div ng-hide="displayMode == 'edit'" class="span12" title="{{broadcast_type.label}}">&nbsp&nbsp{{preview[broadcast_type.id]}}</div>
 
-        <textarea ng-model="social.map[broadcast_type.id]" lines="2" class="span12" ng-hide="displayMode == 'view'" title="{{broadcast_type.label}}"></textarea>
+        <textarea ng-model="social.b_map[broadcast_type.id]" lines="2" class="span12" ng-hide="displayMode == 'view'" title="{{broadcast_type.label}}"></textarea>
       </div>
     </div>
     </div>

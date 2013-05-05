@@ -25,18 +25,18 @@ class EntityLP(Entity):
     def filter_actions(self, matches):
         if not self._current_action:
             return matches
-        return [(action, verb, args) for action, verb, args in matches if not hasattr(action, 'duration')]
+        return [(action, verb, args) for action, verb, args in matches if not hasattr(action, 'prep_time')]
 
     @action_handler
     def start_action(self, action, act_args):
         if hasattr(action, 'prepare_action'):
             action.prepare_action(**act_args)
         priority = -len(self.followers)
-        duration = getattr(action, 'duration', None)
-        if duration:
+        prep_time = getattr(action, 'prep_time', None)
+        if prep_time:
             self._current_action = action
             self._current_args = act_args
-            self._action_pulse = self.register_p(self._finish_action, pulses=duration, priority=priority)
+            self._action_pulse = self.register_p(self._finish_action, pulses=prep_time, priority=priority)
         else:
             super(EntityLP, self).process_action(action, act_args)
         self.check_follow(action, act_args)

@@ -78,16 +78,18 @@ class SkillCost(object):
 
 
 class BaseSkill():
-    dbo_fields = 'desc', 'costs',  'pre_reqs', 'cool_down', 'duration'
+    dbo_fields = 'verb', 'desc', 'costs',  'pre_reqs', 'prep_time', 'cool_down'
     verb = None
     desc = None
+    prep_time = 0
     cool_down = 0
-    duration = 0
     pre_reqs = []
     skill_cost = SkillCost()
 
     def on_loaded(self):
-        make_action(self, self.dbo_id, self.msg_class)
+        if not self.verb:
+            self.verb = self.dbo_id
+        make_action(self, self.verb, self.msg_class)
 
     @property
     def costs(self):
@@ -99,13 +101,16 @@ class BaseSkill():
         for pool, cost in value.iteritems():
             self.skill_cost.add(pool, cost)
 
-    def __call__(self, source, **kwargs):
+    def prepare_action(self, source, **kwargs):
         skill_status = source.skills[self.dbo_id]
         if skill_status.last_used + self.cool_down > dispatcher.pulse_count:
             raise ActionError("You cannot {} yet.".format(self.verb))
+
+    def __call__(self, source, **kwargs):
         self.skill_cost.apply(source)
+        skill_status = source.skills[self.dbo_id]
         self.invoke(skill_status, source, **kwargs)
-        skill_status.last_used= dispatcher.pulse_count
+        skill_status.last_used = dispatcher.pulse_count
 
 
 

@@ -52,7 +52,8 @@ class Exit(RootDBO):
 
     def __call__(self, source, **ignored):
         source.change_env(self.destination, self)
-        return self.destination.rec_examine(source)
+        if getattr(source, 'session', None):
+            return self.destination.rec_examine(source)
 
 
 @requires('mud')
@@ -183,7 +184,7 @@ class Room(RootDBO):
                 continue
             article = article_template.create_instance()
             instance.add_inven(article)
-            if article_load.type == "equip":
+            if article_load.load_type == "equip":
                 instance.equip_article(article)
 
     def add_template(self, template):

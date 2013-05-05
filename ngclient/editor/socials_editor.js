@@ -46,7 +46,7 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
 
         $scope.previewSocial = function() {
             lmRemote.request($scope.editor.url + '/preview', {target:$scope.target, self_source:$scope.sourceSelf,
-                source:$scope.source, map:$scope.social.map})
+                source:$scope.source, b_map:$scope.social.b_map})
                 .then( function(preview) {
                    $scope.preview = preview;
                     $scope.displayMode = 'view';
@@ -75,7 +75,7 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
         };
 
         $scope.revertSocial = function() {
-            $scope.social.map = oldMap;
+            $scope.social.b_map = oldMap;
         };
 
         $scope.saveSocial = function() {
@@ -116,10 +116,10 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
             angular.forEach($scope.constants.broadcast_types, function(broadcast_type) {
                 var id = broadcast_type.id;
 
-                if (!$scope.social.map[id] && !oldMap[id]) {
+                if (!$scope.social.b_map[id] && !oldMap[id]) {
                     return;
                 }
-                if ($scope.social.map[id] == oldMap[id]) {
+                if ($scope.social.b_map[id] == oldMap[id]) {
                     return;
                 }
                 matched = false;
@@ -143,7 +143,7 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
         }
 
         function editSocial(social) {
-            oldMap = jQuery.extend(true, {}, social.map);
+            oldMap = jQuery.extend(true, {}, social.b_map);
             $scope.social = social;
             $scope.social_valid = true;
             if ($scope.displayMode == 'view') {
@@ -157,12 +157,12 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
 angular.module('lampost_editor').controller('NewSocialCtrl', ['$scope', 'lmRemote', 'updateFunc',
     function($scope, lmRemote, updateFunc) {
 
-        $scope.social = {social_id:"", map:{}};
+        $scope.social = {social_id:"", b_map:{}};
 
         $scope.changeSocial = function() {
             $scope.social.social_id = $scope.social.social_id.replace(' ', '');
             $scope.social.social_id = $scope.social.social_id.toLocaleLowerCase();
-            $scope.social.map.s = 'You ' + $scope.social.social_id + '.';
+            $scope.social.b_map.s = 'You ' + $scope.social.social_id + '.';
             $scope.socialExists = false;
         };
 

@@ -17,7 +17,7 @@ def default_skills():
     punch_skill = AttackSkill('punch')
     punch_skill.desc = "The basic, time honored punch."
     punch_skill.costs = {'action': 10, 'stamina': 10}
-    punch_skill.duration = 10
+    punch_skill.prep_time = 10
     punch_skill.damage_type = "blunt"
     punch_skill.weapon_type = "unarmed"
     punch_skill.damage_calc = {'str': 2}

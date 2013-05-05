@@ -123,7 +123,37 @@ def sethome(source, **ignored):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('zap', msg_class='damage')
+@imm_action('force')
+def force(source, command, **ignored):
+    space_ix = command.find(" ")
+    if space_ix == -1:
+        raise ActionError("Force who?")
+    remainder = command[space_ix + 1:]
+    words = tuple(remainder.split(' '))
+    match = None
+    for ix in xrange(0, len(words)):
+        space_ix = remainder.find(' ')
+        if space_ix == -1:
+            remainder = None
+        else:
+            remainder = remainder[space_ix + 1:]
+        targets = [target for target in source.target_key_map.get(words[:ix + 1], []) if hasattr(target, 'parse')]
+        if not targets:
+            continue
+        if match or len(targets) > 1:
+            return "Ambiguous target"
+        match = targets[0], remainder
+    if not match:
+        return "No target found"
+    target, force_cmd = match
+    if not force_cmd:
+        return "Force {} to do what?".format(target.name)
+    check_perm(source, target)
+    target.display_line("{} forces you to {}.".format(source.name, force_cmd))
+    target.parse(force_cmd)
+
+
+@imm_action('zap', msg_class='attack')
 def zap(source, target_method, target, **ignored):
     source.broadcast(s="{n} calls forth mysterious power from the heavens, zapping {N}!", target=target)
     target_method(1000000)
@@ -221,8 +251,3 @@ def email(verb, args, command, **ignored):
     user = load_object(User, player.user_id)
     message = find_extra(verb, 1, command)
     return email_sender.send_targeted_email('Lampost Message', message, [user])
-
-
-
-
-

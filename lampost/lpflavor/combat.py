@@ -21,9 +21,8 @@ class Attack(object):
     def __init__(self, skill, skill_level, source):
         self.damage_type = skill.damage_type
         self.accuracy = skill.calc_accuracy(source) * skill_level
-        #self.damage = damage
-        #self.speed = speed
-        #self.pool = pool
+        self.damage = skill.calc_damage(source) * skill_level
+        self.damage_pool = skill.damage_pool
 
 
 @base_skill()
@@ -33,13 +32,15 @@ class AttackSkill(BaseSkill, RootDBO):
     dbo_set_key = 'skill_attack'
 
     msg_class = 'attack'
-    effect = None
-    weapon_type = 'unused'
     damage_type = 'weapon'
     damage_calc = {}
+    damage_pool = 'health'
     accuracy_calc = {}
+    weapon_type = 'unused'
 
-    def prepare_action(self, source, target, **ignored):
+    def prepare_action(self, source, **kwargs):
+        super(AttackSkill, self).prepare_action(source, **kwargs)
+        target = kwargs['target']
         if source == target:
             raise ActionError("You cannot harm yourself.  This is a happy place.")
         self._validate_weapon(source.weapon_type)
@@ -60,6 +61,9 @@ class AttackSkill(BaseSkill, RootDBO):
 
     def invoke(self, skill_status, source, target, **ignored):
         attack = Attack(self, skill_status.skill_level, source)
+
+    def calc_damage(self, source):
+        return sum(getattr(source, attr, 0) * damage for attr, damage in self.damage_calc.iteritems())
 
     def calc_accuracy(self, source):
         return sum(getattr(source, attr, 0) * accuracy for attr, accuracy in self.accuracy_calc.iteritems())

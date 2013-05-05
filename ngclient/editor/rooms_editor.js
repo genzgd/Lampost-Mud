@@ -527,16 +527,16 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lmEdi
 
         $scope.addArticleLoad = function() {
             var articleLoad = {article_id:$scope.newArticle.dbo_id, count: 1};
-            if ($scope.newArticle.type == "weapon") {
-                articleLoad.type = "equip";
+            if ($scope.newArticle.art_type == "weapon") {
+                articleLoad.load_type = "equip";
                 for (var i = 0; i < reset.article_loads.length; i++) {
-                    if (reset.article_loads[i].type == 'equip') {
-                        articleLoad.type = 'default';
+                    if (reset.article_loads[i].load_type == 'equip') {
+                        articleLoad.load_type = 'default';
                         break;
                     }
                 }
             } else {
-                articleLoad.type = "default";
+                articleLoad.load_type = "default";
             }
             $scope.article_loads.push(articleLoad);
 

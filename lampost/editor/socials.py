@@ -40,7 +40,7 @@ class SocialUpdate(Resource):
     def render_POST(self, content, session):
         check_perm(session, 'admin')
         social = self.cls_registry(Social)(content.social_id.lower())
-        social.map = content.map
+        social.b_map = content.b_map
         save_object(social)
         self.social_registry.insert(social)
 
@@ -68,7 +68,7 @@ class SocialPreview(Resource):
     def render_POST(self, content, session):
         preview = {}
         broadcast_map = BroadcastMap()
-        broadcast_map.populate(content.map)
+        broadcast_map.populate(content.b_map)
         broadcast = Broadcast(broadcast_map, content.source, content.source if content.self_source else content.target)
         for broadcast_type in broadcast_types:
             preview[broadcast_type['id']] = broadcast.substitute(broadcast_type['id'])

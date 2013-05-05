@@ -8,7 +8,7 @@ VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
 class Article(BaseItem):
-    dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "type")
+    dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "art_type")
     rec_wear = True
     equip_slot = None
 
@@ -61,7 +61,7 @@ class ArticleTemplate(RootDBO, Template):
     aliases= []
     weight = 0
     slot = "none"
-    type = "treasure"
+    art_type = "treasure"
 
 
 class ArticleReset(RootDBO):
@@ -71,6 +71,6 @@ class ArticleReset(RootDBO):
 
 
 class ArticleLoad(RootDBO):
-    dbo_fields = 'article_id', 'type', 'count'
+    dbo_fields = 'article_id', 'load_type', 'count'
     count = 1
-    type = 'equip'
+    load_type = 'equip'

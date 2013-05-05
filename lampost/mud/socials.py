@@ -21,7 +21,7 @@ class SocialRegistry(object):
             self.insert(social)
 
     def insert(self, social):
-        self._socials[social.dbo_id] = BroadcastMap(**social.map)
+        self._socials[social.dbo_id] = BroadcastMap(**social.b_map)
         self.mud_actions.add_verb((social.dbo_id,), self.emote)
 
     def delete(self, social_verb):
@@ -38,11 +38,10 @@ class SocialRegistry(object):
 class Social(RootDBO):
     dbo_set_key = 'socials'
     dbo_key_type = 'social'
-    dbo_fields = 'map',
+    dbo_fields = 'b_map',
 
-    def __init__(self, social_id):
-        self.dbo_id = social_id
-        self.map = {}
+    b_map = {}
+
 
 
 

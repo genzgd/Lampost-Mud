@@ -27,7 +27,7 @@ class MobileMerc(Mobile, Entity):
             self.die()
 
     def equip_article(self, article):
-        if not self.weapon and article.type == "weapon":
+        if not self.weapon and article.art_type == "weapon":
             self.weapon = article
 
     def add_exp(self):

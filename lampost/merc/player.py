@@ -53,7 +53,7 @@ class PlayerMerc(Entity, Player):
         if self.level < article.level:
             raise ActionError('That item is too powerful for you.')
 
-        if article.type == 'weapon' and self.weapon:
+        if article.art_type == 'weapon' and self.weapon:
             self.remove_article(self.weapon)
         equip_slot = self._equip_slot(article.slot)
         if self._slot_filled(equip_slot):
@@ -61,7 +61,7 @@ class PlayerMerc(Entity, Player):
             if self._slot_filled(equip_slot):
                 raise ActionError('You have no place to put that.')
         self._do_equip(article, equip_slot)
-        if article.type == 'weapon':
+        if article.art_type == 'weapon':
             self.weapon = article
 
     def remove_article(self, article):
@@ -75,7 +75,7 @@ class PlayerMerc(Entity, Player):
         else:
             self.equip_slots[article.equip_slot] = None
         article.equip_slot = None
-        if article.type == 'weapon':
+        if article.art_type == 'weapon':
             self.weapon = None
         self._unadjust_stats(article)
         self.broadcast(s="You remove {N}", e="{n} removes {N}", target=article)
