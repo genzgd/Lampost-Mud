@@ -264,11 +264,11 @@ class Entity(BaseItem):
             self.entry_msg.target = None
         self.env.rec_entity_enters(self)
 
-    def broadcast(self, broadcast=None, display='default', **kwargs):
+    def broadcast(self, broadcast=None, **kwargs):
         if isinstance(broadcast, basestring):
             broadcast = SingleBroadcast(broadcast, display)
         elif not broadcast:
-            broadcast = Broadcast(display=display, **kwargs)
+            broadcast = Broadcast(**kwargs)
         broadcast.source = self
         self.env.rec_broadcast(broadcast)
 
@@ -285,7 +285,7 @@ class Entity(BaseItem):
         return True
 
     def die(self):
-        self.exit_msg = Broadcast(s="{n} expires, permanently.", color=0xE6282D)
+        self.exit_msg = Broadcast(s="{n} expires, permanently.")
         for article in self.inven.copy():
             self.drop_inven(article)
         self.leave_env()

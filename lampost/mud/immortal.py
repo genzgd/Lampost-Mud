@@ -152,10 +152,6 @@ def force(source, command, **ignored):
     target.parse(force_cmd)
 
 
-@imm_action('zap', msg_class='attack')
-def zap(source, target_method, target, **ignored):
-    source.broadcast(s="{n} calls forth mysterious power from the heavens, zapping {N}!", target=target)
-    target_method(1000000)
 
 
 @imm_action('unmake', 'general')

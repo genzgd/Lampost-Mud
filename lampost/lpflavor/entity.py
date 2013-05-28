@@ -16,6 +16,8 @@ class EntityLP(Entity):
     _action_pulse = None
     effects = []
     skills = {}
+    avoid_skills = []
+    absorb_skills = []
 
     @property
     def weapon_type(self):
@@ -72,10 +74,37 @@ class EntityLP(Entity):
         if need_refresh(self):
             self.action += min(40, self.base_action - self.action)
             self.stamina += min(1, self.base_stamina - self.stamina)
+            self.health += min(1, self.base_health - self.health)
         else:
             self.unregister(self._refresh_pulse)
             del self._refresh_pulse
 
     def rec_attack(self, source, attack):
-        pass
+        adj_accuracy, miss_msg = self.check_avoid(attack.damage_type, attack.accuracy)
+        if adj_accuracy <= 0:
+            source.broadcast(target=self, **(miss_msg if miss_msg else attack.fail_map))
+            return
+        adj_damage, absorb_msg = self.check_absorb(attack.damage_type, attack.damage)
+        if adj_damage <= 0:
+            source.broadcast(target=self, **(miss_msg if miss_msg else attack.fail_map))
+            return
+        source.broadcast(target=self, **attack.success_map)
+        current_pool = getattr(self, attack.damage_pool)
+        setattr(self, attack.damage_pool, current_pool - adj_damage)
+        self.check_status()
+
+    def check_avoid(self, damage_type, accuracy):
+        for skill in self.avoid_skills:
+            if skill.damage_type != damage_type and skill.damage_type != 'any':
+                continue
+
+
+    def check_absorb(self, damage_type, damage):
+        return damage, None
+
+    def check_status(self):
+        if self.health < 0:
+            self.die()
+
+
 

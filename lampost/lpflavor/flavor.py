@@ -1,7 +1,7 @@
 from lampost.env.room import Exit
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
-from lampost.lpflavor.combat import AttackSkill
+from lampost.lpflavor.combat import AttackSkill, Attack
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
 from lampost.lpflavor.skill import SkillService
@@ -11,8 +11,9 @@ from lampost.lpflavor.player import PlayerLP
 
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
+from lampost.mud.action import imm_action
 
-m_requires('cls_registry', 'context', 'dispatcher', 'datastore', __name__)
+m_requires('cls_registry', 'context', 'dispatcher', 'datastore', 'perm', __name__)
 
 equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
@@ -47,6 +48,13 @@ def _player_create(player):
 def _player_baptise(player):
     base_pools(player)
     player.start_refresh()
+
+
+@imm_action('zap', msg_class='attack')
+def zap(source, target_method, target, **ignored):
+    check_perm(source, target)
+    source.broadcast(s="{n} calls forth mysterious power from the heavens, zapping {N}!", target=target)
+    target_method(source, Attack().raw(1000000, 10000))
 
 
 

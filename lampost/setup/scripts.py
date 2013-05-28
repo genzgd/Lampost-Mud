@@ -16,6 +16,7 @@ def build_default_displays():
     add_display(TELL_FROM_DISPLAY, "Tells from other players", '#00a2e8')
     add_display(TELL_TO_DISPLAY, "Tells to other players", '#0033f8')
     add_display(SAY_DISPLAY, "Say", '#e15a00')
+    add_display(COMBAT_DISPLAY, "Combat Messages", '#ee0000')
 
     add_display('shout_channel', 'Shout Channel', '#109010')
     add_display('imm_channel', 'Immortal Channel', '#ed1c24')

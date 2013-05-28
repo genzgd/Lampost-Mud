@@ -9,11 +9,9 @@ SKILL_TYPES = []
 DEFAULT_SKILLS = ['punch']
 
 
-def base_skill():
-    def wrapper(cls):
-        SKILL_TYPES.append(cls)
-        return cls
-    return wrapper
+def base_skill(cls):
+    SKILL_TYPES.append(cls)
+    return cls
 
 
 class SkillStatus(RootDBO):
@@ -107,7 +105,7 @@ class BaseSkill():
 
     def prepare_action(self, source, target, **kwargs):
         skill_status = source.skills[self.dbo_id]
-        if skill_status.last_used + self.cool_down > dispatcher.pulse_count:
+        if self.cool_down and skill_status.last_used + self.cool_down > dispatcher.pulse_count:
             raise ActionError("You cannot {} yet.".format(self.verb))
         if self.prep_map:
             source.broadcast(display=self.display, target=target, **self.prep_map)
