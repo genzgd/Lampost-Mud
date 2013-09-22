@@ -152,8 +152,6 @@ def force(source, command, **ignored):
     target.parse(force_cmd)
 
 
-
-
 @imm_action('unmake', 'general')
 def unmake(source, target, **ignored):
     if target.env == source.env:
@@ -246,3 +244,12 @@ def email(verb, args, command, **ignored):
     user = load_object(User, player.user_id)
     message = find_extra(verb, 1, command)
     return email_sender.send_targeted_email('Lampost Message', message, [user])
+
+
+@imm_action('combat_log', 'attack', self_default=True)
+def combat_log(source, target, **ignored):
+    if getattr(target, 'combat_log', None):
+        del target.combat_log
+        return "Combat log removed from {}.".format(target.name)
+    target.combat_log = source
+    return "Combat logging added to {}.".format(target.name)

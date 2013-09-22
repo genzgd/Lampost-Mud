@@ -14,4 +14,3 @@ class PlayerRace(RootDBO):
     def __init__(self, dbo_id):
         super(PlayerRace, self).__init__(dbo_id)
         self.base_attrs = {attr_name: self.base_attr_value for attr_name in self.attr_list}
-

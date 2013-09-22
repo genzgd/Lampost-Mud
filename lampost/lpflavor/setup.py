@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.lpflavor.combat import AttackSkill
+from lampost.lpflavor.combat import AttackSkill, DefenseSkill
 from lampost.lpflavor.skill import DEFAULT_SKILLS
 from lampost.model.race import PlayerRace
 
@@ -22,6 +22,9 @@ def default_skills():
     punch_skill.weapon_type = "unarmed"
     punch_skill.damage_calc = {'str': 2}
     punch_skill.accuracy_calc = {'agi': 5}
-    punch_skill.prep_map = {'s': 'You wind up to wallop {N}.', 't': '{n} winds up to wallup you!', 'e': "{n} winds up to wallop {N}"}
+    punch_skill.prep_map = {'s': 'You wind up to wallop {N}.', 't': '{n} winds up to wallop you!', 'e': "{n} winds up to wallop {N}"}
     create_object(punch_skill)
+
+    dodge_skill = DefenseSkill('dodge')
+    dodge_skill.desc = "The instinctive attemmpt to get out of the way"
 

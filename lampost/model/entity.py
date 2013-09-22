@@ -18,6 +18,7 @@ class Entity(BaseItem):
     sex = 'none'
     size = 'medium'
     living = True
+    combat = False
 
     def baptise(self, soul):
         self.followers = set()
@@ -201,7 +202,6 @@ class Entity(BaseItem):
             action.prepare_action(**act_args)
         self.process_action(action, act_args)
         self.check_follow(action, act_args)
-
 
     @action_handler
     def process_action(self, action, act_args):

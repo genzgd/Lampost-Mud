@@ -44,11 +44,7 @@ def parse_actions(entity, actions):
 
 
 def has_action(entity, action, verb):
-    if action in entity.actions.get(verb, []):
-        return True
-    if action in mud_actions.verb_list(verb):
-        return True
-    return False
+    return action in entity.actions.get(verb, []) or action in mud_actions.verb_list(verb)
 
 
 def find_targets(entity, matches):
@@ -75,7 +71,10 @@ def find_targets(entity, matches):
             if target and (not fixed_targets or target in fixed_targets):
                 target_matches.append((action, verb, args, target, obj_args))
         else:
-            target_matches.append((action, verb, args, entity.env, obj_args))
+            if getattr(action, 'self_default', None):
+                target_matches.append((action, verb, args, entity, obj_args))
+            else:
+                target_matches.append((action, verb, args, entity.env, obj_args))
     return target_matches
 
 

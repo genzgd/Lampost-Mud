@@ -63,15 +63,18 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
         var found = false;
         var i;
         for (i = 0; i < registrations.length; i++) {
-            if (registrations[i] == registration) {
+            if (registrations[i] === registration) {
                 registrations.splice(i, 1);
                 found = true;
                 break;
             }
-            if (!registrations.length) {
+
+        }
+
+         if (!registrations.length) {
                 delete registry[registration.event_type];
             }
-        }
+
         if (!found) {
             lmLog.log("Failed to unregister event " + registration.event_type + " " + registration.callback);
             return;
@@ -79,7 +82,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function(lmLog) {
         if (registration.scope) {
             var listeners = registration.scope.lm_regs;
             for (i = 0; i < listeners.length; i++) {
-                if (listeners[i] == registration) {
+                if (listeners[i] === registration) {
                     listeners.splice(i, 1);
                     break;
                 }
@@ -526,7 +529,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         element.on(jQuery.support.transition && 'hidden' || 'hide', function() {
            destroy();
         });
-        element.on(jQuery.support.transition && 'shown' || 'shown', function () {
+        element.on(jQuery.support.transition && 'shown' || 'show', function () {
             var focusElement = $('input:text:visible:first', element);
             if (!focusElement.length) {
                 focusElement = $(".lmdialogfocus" + dialog.id + ":first");

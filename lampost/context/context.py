@@ -15,6 +15,8 @@ from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions
 from lampost.util.lmlog import Log, logged
 from lampost.mud.mud import MudNature
+from lampost.util.tools import Tools
+
 
 @provides('context')
 class Context(object):
@@ -24,9 +26,10 @@ class Context(object):
                  log_level="info", log_file=None):
 
         self.properties = {}
-        Log(log_level, log_file)
+        Log(log_level, log_file).info('starting server with {}'.format(locals()))
         select_json()
         ClassRegistry()
+        Tools()
         Dispatcher()
         RedisStore(db_host, int(db_port), int(db_num), db_pw)
         Permissions()

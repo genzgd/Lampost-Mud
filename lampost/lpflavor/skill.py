@@ -47,10 +47,10 @@ class SkillService(object):
         for skill_id, skill_status in entity.skills.iteritems():
             try:
                 skill = self.skills[skill_id]
-                if skill.dbo_set_key == 'skill_attack':
+                if skill.auto_start:
+                    skill(entity)
+                else:
                     entity.enhance_soul(skill)
-                if skill.dbo_set_key == 'skill_defense':
-                    entity.add_defense(skill)
             except KeyError:
                 log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
 
@@ -76,7 +76,7 @@ class SkillCost(object):
 
 
 class BaseSkill():
-    dbo_fields = 'verb', 'desc', 'costs',  'pre_reqs', 'prep_time', 'cool_down', 'prep_map', 'success_map', 'fail_map'
+    dbo_fields = 'verb', 'desc', 'costs',  'pre_reqs', 'prep_time', 'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
     verb = None
     desc = None
     prep_time = 0
@@ -87,6 +87,8 @@ class BaseSkill():
     success_map = {}
     fail_map = {}
     display = 'default'
+    auto_start = False
+    weapon_type = None
 
     def on_loaded(self):
         if not self.verb:
@@ -115,6 +117,22 @@ class BaseSkill():
         skill_status = source.skills[self.dbo_id]
         self.invoke(skill_status, source, **kwargs)
         skill_status.last_used = dispatcher.pulse_count
+
+    def _validate_weapon(self, weapon_type):
+        if not self.weapon_type:
+            return
+        if self.weapon_type == 'unarmed':
+            if weapon_type:
+                raise ActionError("You can't do that with a weapon.")
+            return
+        if not weapon_type:
+            raise ActionError("That requires a weapon.")
+        if self.weapon_type != 'any' and self.weapon_type != source.weapon:
+            raise ActionError("You need a different weapon for that.")
+
+
+
+
 
 
 

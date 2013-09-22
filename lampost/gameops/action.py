@@ -26,7 +26,7 @@ def add_action(verbs, method, msg_class=None):
     return action
 
 
-def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fixed_targets=None):
+def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, **kw_args):
     def add_verb(verb):
         action.verbs.add(tuple(verb.split(' ')))
     try:
@@ -47,11 +47,11 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, fi
                 action.msg_class = 'no_args'
         except TypeError:
             pass
-    if fixed_targets:
-        action.fixed_targets = fixed_targets
     if prep:
         action.prep = prep
         action.obj_msg_class = "rec_{0}".format(obj_msg_class)
+    for arg_name, value in kw_args.iteritems():
+        setattr(action, arg_name, value)
     return action
 
 
@@ -75,3 +75,4 @@ class ActionError(Exception):
 class _ActionObject(object):
     def __call__(self, **kwargs):
         return self.execute(**kwargs)
+

@@ -65,7 +65,10 @@ class Dispatcher:
         map_loc = self.pulse_count % self.max_pulse_queue
         for reg in sorted(self._pulse_map[map_loc], key=lambda reg: reg.priority):
             if reg.freq:
-                reg.callback()
+                try:
+                    reg.callback()
+                except Exception as pulse_error:
+                    error('Pulse Error', 'Dispatcher', pulse_error)
                 self._add_pulse(self.pulse_count, reg)
         del self._pulse_map[map_loc]
         self.pulse_count += 1
