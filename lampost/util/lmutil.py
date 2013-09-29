@@ -98,3 +98,6 @@ def patch_object(obj, prop, new_value):
         setattr(obj, prop, new_value)
     except:
         raise PatchError("Failed to set value.")
+
+def args_print(**kwargs):
+   return ''.join(['{0}:{1} '.format(key, str(value)) for key, value in kwargs.iteritems()])

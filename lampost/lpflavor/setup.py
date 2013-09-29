@@ -26,5 +26,5 @@ def default_skills():
     create_object(punch_skill)
 
     dodge_skill = DefenseSkill('dodge')
-    dodge_skill.desc = "The instinctive attemmpt to get out of the way"
+    dodge_skill.desc = "The instinctive attempt to get out of the way"
 

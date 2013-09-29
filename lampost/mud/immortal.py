@@ -1,4 +1,5 @@
 from lampost.client.user import User
+from lampost.comm.broadcast import substitute
 import lampost.setup.update
 
 from lampost.gameops.action import ActionError
@@ -253,3 +254,8 @@ def combat_log(source, target, **ignored):
         return "Combat log removed from {}.".format(target.name)
     target.combat_log = source
     return "Combat logging added to {}.".format(target.name)
+
+
+@imm_action('status', 'status', self_default=True)
+def status(target, **ignored):
+    return substitute(target.rec_status(), target=target)

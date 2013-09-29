@@ -4,6 +4,7 @@ from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.skill import base_skill, BaseSkill
+from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
 
@@ -42,6 +43,11 @@ class Attack(object):
         self.__dict__.update(locals())
         return self
 
+    def combat_log(self):
+        return ''.join(['{n} ATTACK-- ',
+                        args_print(damage_type=self.damage_type, accuracy=self.accuracy,
+                                   damage=self.damage)])
+
 
 @base_skill
 class AttackSkill(BaseSkill, RootDBO):
@@ -69,7 +75,7 @@ class AttackSkill(BaseSkill, RootDBO):
 
     def invoke(self, skill_status, source, target_method, **ignored):
         attack = Attack().from_skill(self, skill_status.skill_level, source)
-        combat_log(source, '$n attack {}'.format(vars(attack)))
+        combat_log(source, attack)
         target_method(source, attack)
 
 
@@ -84,7 +90,7 @@ class DefenseSkill(BaseSkill, RootDBO):
     weapon_type = 'unused'
     accuracy_calc = {}
     absorb_calc = {}
-    success_map = {'s' : 'You avoid {N}\'s attack', 't': '{n} avoids your attack', 'e': '{n} avoids {N}\'s attack'}
+    success_map = {'s': 'You avoid {N}\'s attack', 't': '{n} avoids your attack', 'e': '{n} avoids {N}\'s attack'}
 
     def invoke(self, source, **ignored):
         pass
@@ -105,17 +111,3 @@ class DefenseSkill(BaseSkill, RootDBO):
             return
         if self.delivery != attack.delivery:
             raise ActionError("You need a different weapon for that")
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,8 +2,9 @@ from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler
 from lampost.lpflavor.attributes import need_refresh
 from lampost.model.entity import Entity
+from lampost.util.lmutil import args_print
 
-m_requires('log', __name__)
+m_requires('log', 'tools', __name__)
 
 
 class EntityLP(Entity):
@@ -87,11 +88,15 @@ class EntityLP(Entity):
         source.broadcast(target=self, **attack.success_map)
         current_pool = getattr(self, attack.damage_pool)
         setattr(self, attack.damage_pool, current_pool - attack.adj_damage)
+        combat_log(source, self.rec_status, self)
         self.check_status()
 
     def check_status(self):
         if self.health < 0:
             self.die()
+
+    def rec_status(self):
+        return ''.join(['{N} STATUS--', args_print(health=self.health)])
 
 
 
