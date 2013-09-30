@@ -3,7 +3,7 @@ from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
 from lampost.lpflavor.combat import AttackSkill, Attack
 from lampost.lpflavor.env import ExitLP
-from lampost.lpflavor.mobile import MobileLP
+from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
 from lampost.lpflavor.skill import SkillService
 from lampost.model.mobile import Mobile, MobileTemplate
 from lampost.model.player import Player
@@ -28,6 +28,7 @@ def _post_init():
     cls_registry.set_class(Player, PlayerLP)
     cls_registry.set_class(Mobile, MobileLP)
     cls_registry.set_class(Exit, ExitLP)
+    cls_registry.set_class(MobileTemplate, MobileTemplateLP)
     MobileTemplate.template_class(MobileLP)
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)

@@ -10,6 +10,6 @@ class Tools(object):
             except AttributeError:
                 try:
                     message = message()
-                except Exception as igor:
+                except TypeError:
                     pass
             source.combat_log.display_line(substitute(message, source, target))

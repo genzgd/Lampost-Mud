@@ -10,6 +10,7 @@ from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.rooms import RoomResource
 from lampost.editor.socials import SocialsResource
+from lampost.lpflavor.skill import BaseSkill
 from lampost.model.race import PlayerRace
 
 
@@ -26,6 +27,7 @@ class EditorResource(Resource):
         self.putChild('socials', SocialsResource())
         self.putChild('display', DisplayResource())
         self.putChild('race', EditResource(PlayerRace))
+        self.putChild('skills', Editresource(BaseSkill))
 
 
 @requires('context')

@@ -26,6 +26,24 @@ def attr_calc(source, calc):
     return sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
 
 
+def validate_weapon(ability, weapon_type):
+    if not ability.weapon_type or ability.weapon_type == 'unused':
+        return
+    if ability.weapon_type == 'unarmed':
+        if weapon_type:
+            raise ActionError("You can't do that with a weapon.")
+        return
+    if not weapon_type:
+        raise ActionError("That requires a weapon.")
+    if ability.weapon_type != 'any' and ability.weapon_type != weapon_type:
+        raise ActionError("You need a different weapon for that.")
+
+
+def validate_delivery(ability, attack):
+    if attack.delivery not in ability.delivery:
+        raise ActionError("This doesn't work against that.")
+
+
 class Attack(object):
     def from_skill(self, skill, skill_level, source):
         self.success_map = skill.success_map
@@ -37,6 +55,7 @@ class Attack(object):
         self.adj_damage = self.damage
         self.adj_accuracy = self.accuracy
         self.delivery = skill.delivery
+        self.source = source
         return self
 
     def raw(self, damage, accuracy=100, damage_type='spirit', damage_pool='health'):
@@ -68,9 +87,9 @@ class AttackSkill(BaseSkill, RootDBO):
     def prepare_action(self, source, target, **kwargs):
         if source == target:
             raise ActionError("You cannot harm yourself.  This is a happy place.")
-        self._validate_weapon(source.weapon_type)
+        validate_weapon(self, source.weapon_type)
         if 'dual_wield' in self.pre_reqs:
-            self._validate_weapon(source.second_type)
+            validate_weapon(self, source.second_type)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)
 
     def invoke(self, skill_status, source, target_method, **ignored):
@@ -86,7 +105,7 @@ class DefenseSkill(BaseSkill, RootDBO):
     dbo_set_key = 'skill_defense'
 
     damage_type = 'any'
-    delivery = 'melee'
+    delivery = {'melee'}
     weapon_type = 'unused'
     accuracy_calc = {}
     absorb_calc = {}
@@ -97,17 +116,14 @@ class DefenseSkill(BaseSkill, RootDBO):
 
     def apply(self, owner, attack):
         try:
-            self._validate_weapon(owner.weapon_type)
-            self._validate_delivery(attack)
+            validate_weapon(self, owner)
+            validate_delivery(self, attack)
         except ActionError:
             return
-        attack.adj_accuracy -= attr_calc(owner, accuracy_calc)
+        adj_accuracy = attr_calc(owner, self.accuracy_calc)
+        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' adj_accuracy: ', str(adj_accuracy)]), self)
+        attack.adj_accuracy -= attr_calc(owner, self.accuracy_calc)
         if attack.adj_accuracy < 0:
             return
-        attack.adj_damage -= attr_calc(owner, absorb_calc)
+        attack.adj_damage -= attr_calc(owner, self.absorb_calc)
 
-    def _validate_delivery(self, attack):
-        if self.delivery == 'any':
-            return
-        if self.delivery != attack.delivery:
-            raise ActionError("You need a different weapon for that")

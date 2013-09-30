@@ -1,13 +1,27 @@
+from lampost.context.resource import m_requires
 from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
 from lampost.model.mobile import Mobile, MobileTemplate
+
+m_requires('log', 'skill_service', __name__)
+
+
+class MobileTemplateLP(MobileTemplate):
+
+    def on_loaded(self):
+        self.defenses = set()
+        self.defenses.add(skill_service.skills['dodge'])
 
 
 class MobileLP(Mobile, EntityLP):
     dbo_fields = EntityLP.dbo_fields + ('archetype', 'level')
     level = 0
     archetype = None
+
+    @property
+    def defenses(self):
+        return self.template.defenses
 
 
 def config_instance(self, mobile):

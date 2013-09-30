@@ -31,7 +31,7 @@ class SkillEffect(RootDBO):
 @provides('skill_service')
 class SkillService(object):
 
-    def _post_init(self):
+    def __init__(self):
         register('player_create', self._player_create)
         register('player_baptise', self._baptise)
         self.skills = {}
@@ -91,9 +91,10 @@ class BaseSkill():
     weapon_type = None
 
     def on_loaded(self):
-        if not self.verb:
-            self.verb = self.dbo_id
-        make_action(self, self.verb, self.msg_class)
+        if not self.auto_start:
+            if not self.verb:
+                self.verb = self.dbo_id
+            make_action(self, self.verb, self.msg_class)
 
     @property
     def costs(self):
@@ -118,17 +119,7 @@ class BaseSkill():
         self.invoke(skill_status, source, **kwargs)
         skill_status.last_used = dispatcher.pulse_count
 
-    def _validate_weapon(self, weapon_type):
-        if not self.weapon_type:
-            return
-        if self.weapon_type == 'unarmed':
-            if weapon_type:
-                raise ActionError("You can't do that with a weapon.")
-            return
-        if not weapon_type:
-            raise ActionError("That requires a weapon.")
-        if self.weapon_type != 'any' and self.weapon_type != source.weapon:
-            raise ActionError("You need a different weapon for that.")
+
 
 
 

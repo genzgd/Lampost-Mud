@@ -1,0 +1,54 @@
+<div class="v-full" ng-controller="GenEditorCtrl" ng-show="ready">
+  <div class="span2">
+    <h4>Combat Skills ({{objectList.length}})</h4>
+    <button ng-click="newObjectDialog()" class="btn btn-small btn-success">New Skill</button>
+    <div style="padding-bottom: 15px;"></div>
+
+  </div>
+  <div class="span2 scrollable wrapper">
+    <table class="table table-condensed table-bordered" ng-controller="TableCtrl">
+      <thead>
+      <tr>
+        <th>Skill</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="edit-row" ng-class="objectRowClass(race)" ng-click="editObject(race)" ng-repeat="race in objectList">
+        <td class="span8">{{race.dbo_id}}</td>
+        <td class="span4">
+          <a ng-click="deleteObject($event, race)" title="Delete Skill" class="icon-link"><i class="icon-remove"></i></a>
+          <a ng-click="copyObject($event, race)" title="Copy Skill" class="icon-link"><i class="icon-share"></i></a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="span8 v-full" ng-hide="!activeObject">
+    <div class="row-fluid">
+      <div class="span6"></div>
+      <div class="span3">
+        <h5>Starting Attributes</h5>
+      </div>
+      <div class="span3">
+        <button type="button" class="btn" ng-click="revertObject()" ng-disabled="!isDirty">Revert</button>
+        <button type="button" class="btn btn-primary" ng-click="updateObject()" ng-disabled="!isDirty">Update</button>
+      </div>
+    </div>
+    <div class="row-fluid scrollable">
+      <div class="span6">
+        <label>Skill Command</label>
+        <input type="text" ng-model="activeObject.verb" ng-change="dirty()" required="true"/>
+        <label>Description</label>
+        <textarea class="span12" rows="8" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
+      </div>
+      <div class="span6 form-horizontal">
+        <div class="control-group" ng-repeat="(att_id, att_value) in constants.attr_map">
+          <label class="control-label">{{att_value.name}}:</label>
+          <div class="controls">
+            <input class="input-mini" type="number" ng-change="dirty()" ng-model="activeObject.base_attrs[att_id]" min="1"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

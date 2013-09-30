@@ -27,4 +27,9 @@ def default_skills():
 
     dodge_skill = DefenseSkill('dodge')
     dodge_skill.desc = "The instinctive attempt to get out of the way"
+    dodge_skill.delivery = {"melee"}
+    dodge_skill.accuracy_calc = {'agi': 50, 'bal': 1}
+    dodge_skill.auto_start = True
+    create_object(dodge_skill)
+
 
