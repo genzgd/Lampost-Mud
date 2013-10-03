@@ -22,8 +22,14 @@ DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
 DAMAGE_DELIVERY = {'melee', 'ranged', 'psychic'}
 
 
-def attr_calc(source, calc):
-    return sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
+def roll_calc(source, attr_calc):
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in attr_calc.iteritems())
+    roll = randint(0, 20)
+    if roll == 0:
+        roll = -5
+    if roll == 19:
+        roll = 40
+    return base_calc + roll
 
 
 def validate_weapon(ability, weapon_type):
@@ -49,8 +55,8 @@ class Attack(object):
         self.success_map = skill.success_map
         self.fail_map = skill.fail_map
         self.damage_type = skill.damage_type
-        self.accuracy = attr_calc(source, skill.accuracy_calc) * skill_level + randint(0, 50)
-        self.damage = (attr_calc(source, skill.damage_calc) + randint(0, 20)) * skill_level
+        self.accuracy = roll_calc(source, skill.accuracy_calc)
+        self.damage = roll_calc(source, skill.damage_calc)
         self.damage_pool = skill.damage_pool
         self.adj_damage = self.damage
         self.adj_accuracy = self.accuracy
@@ -109,7 +115,7 @@ class DefenseSkill(BaseSkill, RootDBO):
     weapon_type = 'unused'
     accuracy_calc = {}
     absorb_calc = {}
-    success_map = {'s': 'You avoid {N}\'s attack', 't': '{n} avoids your attack', 'e': '{n} avoids {N}\'s attack'}
+    success_map = {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'}
 
     def invoke(self, source, **ignored):
         pass
@@ -120,10 +126,10 @@ class DefenseSkill(BaseSkill, RootDBO):
             validate_delivery(self, attack)
         except ActionError:
             return
-        adj_accuracy = attr_calc(owner, self.accuracy_calc)
+        adj_accuracy = roll_calc(owner, self.accuracy_calc)
         combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' adj_accuracy: ', str(adj_accuracy)]), self)
-        attack.adj_accuracy -= attr_calc(owner, self.accuracy_calc)
+        attack.adj_accuracy -= roll_calc(owner, self.accuracy_calc)
         if attack.adj_accuracy < 0:
             return
-        attack.adj_damage -= attr_calc(owner, self.absorb_calc)
+        attack.adj_damage -= roll_calc(owner, self.absorb_calc)
 

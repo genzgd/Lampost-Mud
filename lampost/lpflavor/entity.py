@@ -21,7 +21,6 @@ class EntityLP(Entity):
     defenses = set()
     skills = {}
 
-
     @property
     def weapon_type(self):
         if self.weapon:
@@ -83,7 +82,10 @@ class EntityLP(Entity):
         for defense in self.defenses:
             defense.apply(self, attack)
             if attack.adj_damage < 0 or attack.adj_accuracy < 0:
-                source.broadcast(target=self, **(defense.success_msg if defense.success_msg else attack.fail_map))
+                if defense.success_map:
+                    self.broadcast(target=source, **defense.success_map)
+                else:
+                    source.broadcast(target=self, **attack.fail_map)
                 return
         source.broadcast(target=self, **attack.success_map)
         current_pool = getattr(self, attack.damage_pool)
@@ -97,6 +99,3 @@ class EntityLP(Entity):
 
     def rec_status(self):
         return ''.join(['{N} STATUS--', args_print(health=self.health)])
-
-
-

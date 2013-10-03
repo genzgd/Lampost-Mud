@@ -86,7 +86,7 @@ def patch(source, verb, args, command, **ignored):
     return "Object successfully patched"
 
 
-@imm_action('patchdb', imm_level='supreme')
+@imm_action('patch_db', imm_level='supreme')
 def patch_db(verb, args, command, **ignored):
     if len(args) == 0:
         return "Type required."
@@ -118,8 +118,8 @@ def patch_db(verb, args, command, **ignored):
     return "Object " + key + " patched"
 
 
-@imm_action('sethome')
-def sethome(source, **ignored):
+@imm_action('set_home')
+def set_home(source, **ignored):
     source.home_room = source.env.dbo_id
     source.display_line("{0} is now your home room".format(source.env.title))
 
@@ -190,7 +190,7 @@ def describe(source, target, **ignored):
         source.display_line(line)
 
 
-@imm_action('buildmode')
+@imm_action('build_mode')
 def build_mode(source, **ignored):
     current = getattr(source, "build_mode", False)
     source.build_mode = not current
@@ -203,7 +203,7 @@ def reset(source, **ignored):
     return "Room reset"
 
 
-@imm_action("loglevel", imm_level='supreme')
+@imm_action("log_level", imm_level='supreme')
 def log_level(args, **ignored):
     log = get_resource("log")
     if args:
