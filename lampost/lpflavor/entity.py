@@ -18,7 +18,7 @@ class EntityLP(Entity):
     _next_command = None
     _action_pulse = None
     effects = []
-    defenses = set()
+    defenses = []
     skills = {}
 
     @property

@@ -15,6 +15,7 @@ def first_time_setup():
 
 def default_skills():
     punch_skill = AttackSkill('punch')
+    punch_skill.verb = 'punch'
     punch_skill.desc = "The basic, time honored punch."
     punch_skill.costs = {'action': 10, 'stamina': 10}
     punch_skill.prep_time = 10

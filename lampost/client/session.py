@@ -22,6 +22,8 @@ class SessionManager(object):
         self.session_map = {}
         self.player_info_map = {}
         self.player_session_map = {}
+
+    def _post_init(self):
         register_p(self._refresh_link_status, seconds=5)
         register_p(self._broadcast_player_list, seconds=30)
 

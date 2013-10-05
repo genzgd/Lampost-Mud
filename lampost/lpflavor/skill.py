@@ -91,9 +91,7 @@ class BaseSkill():
     weapon_type = None
 
     def on_loaded(self):
-        if not self.auto_start:
-            if not self.verb:
-                self.verb = self.dbo_id
+        if not self.auto_start and self.verb:
             make_action(self, self.verb, self.msg_class)
 
     @property

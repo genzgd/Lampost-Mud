@@ -5,7 +5,7 @@ from twisted.internet import task
 from lampost.context.resource import provides, m_requires
 from lampost.util.lmlog import logged
 
-m_requires("log", __name__)
+m_requires("log", "datastore", __name__)
 
 
 @provides('dispatcher', True)
@@ -14,7 +14,6 @@ class Dispatcher:
         self._registrations = defaultdict(set)
         self._pulse_map = defaultdict(set)
         self._owner_map = defaultdict(set)
-        self.pulse_count = 0
         self.max_pulse_queue = max_pulse_queue
         self.pulse_interval = pulse_interval
         self.pulses_per_second = 1 / pulse_interval
@@ -83,6 +82,12 @@ class Dispatcher:
         self._pulse_map[next_loc].add(event)
 
     def _post_init(self):
+        try:
+            self.pulse_count = load_raw('event_pulse')
+        except TypeError:
+            self.pulse_count = 0
+            save_raw('event_pulse', self.pulse_count)
+        self.register_p(lambda: save_raw('event_pulse', self.pulse_count), 100)
         pulse_lc = task.LoopingCall(self._pulse).start(self.pulse_interval)
         pulse_lc.addErrback(heartbeat_failed)
         info("Pulse Event heartbeat started at {} seconds".format(self.pulse_interval), self)

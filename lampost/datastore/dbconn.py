@@ -34,6 +34,12 @@ class RedisStore():
             debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo
 
+    def save_raw(self, key, raw):
+        self.redis.set(key, json_encode(raw))
+
+    def load_raw(self, key):
+        return json_decode(self.redis.get(key))
+
     def load_cached(self, key):
         return self._object_map.get(key)
 
