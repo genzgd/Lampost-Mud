@@ -1,5 +1,6 @@
 from lampost.context.resource import m_requires
 from lampost.lpflavor.attributes import POOL_LIST
+from lampost.lpflavor.setup import default_skills
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_displays
@@ -22,6 +23,10 @@ def player_race():
         for pool in POOL_LIST:
             setattr(player, pool, 0)
         save_object(player)
+
+
+def update_skills():
+    default_skills()
 
 
 

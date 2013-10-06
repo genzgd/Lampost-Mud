@@ -2,11 +2,13 @@ from collections import defaultdict
 from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import make_action, ActionError
+from lampost.mud.action import imm_actions
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
 
 SKILL_TYPES = []
 DEFAULT_SKILLS = ['punch']
+DEFAULT_IMM = ['zap']
 
 
 def base_skill(cls):
@@ -34,6 +36,7 @@ class SkillService(object):
     def __init__(self):
         register('player_create', self._player_create)
         register('player_baptise', self._baptise)
+        register('imm_baptise', self._imm_baptise)
         self.skills = {}
         for skill_type in SKILL_TYPES:
             self.skills.update({skill_id: load_object(skill_type, skill_id) for skill_id in fetch_set_keys(skill_type.dbo_set_key)})
@@ -53,6 +56,20 @@ class SkillService(object):
                     entity.enhance_soul(skill)
             except KeyError:
                 log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
+
+
+    def _imm_baptise(self, player):
+        for skill_id in DEFAULT_IMM:
+            if skill_id in player.skills:
+                continue
+            imm_skill = self.skills.get(skill_id)
+            if imm_skill:
+                player.skills[skill_id] = SkillStatus()
+                imm_skill.imm_level = 'creator'
+                if imm_skill.auto_start:
+                    imm_skill(player)
+                else:
+                    player.enhance_soul(imm_skill)
 
 
 class SkillCost(object):

@@ -22,14 +22,14 @@ DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
 DAMAGE_DELIVERY = {'melee', 'ranged', 'psychic'}
 
 
-def roll_calc(source, attr_calc):
-    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in attr_calc.iteritems())
+def roll_calc(source, calc, skill_level=0):
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
     roll = randint(0, 20)
     if roll == 0:
         roll = -5
     if roll == 19:
         roll = 40
-    return base_calc + roll
+    return base_calc + roll * calc.get('roll_adjust', 1) + skill_level * calc.get('skill', 1)
 
 
 def validate_weapon(ability, weapon_type):
@@ -55,17 +55,13 @@ class Attack(object):
         self.success_map = skill.success_map
         self.fail_map = skill.fail_map
         self.damage_type = skill.damage_type
-        self.accuracy = roll_calc(source, skill.accuracy_calc)
-        self.damage = roll_calc(source, skill.damage_calc)
+        self.accuracy = roll_calc(source, skill.accuracy_calc, skill_level)
+        self.damage = roll_calc(source, skill.damage_calc, skill_level)
         self.damage_pool = skill.damage_pool
         self.adj_damage = self.damage
         self.adj_accuracy = self.accuracy
         self.delivery = skill.delivery
         self.source = source
-        return self
-
-    def raw(self, damage, accuracy=100, damage_type='spirit', damage_pool='health'):
-        self.__dict__.update(locals())
         return self
 
     def combat_log(self):

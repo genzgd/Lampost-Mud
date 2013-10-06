@@ -51,13 +51,6 @@ def _player_baptise(player):
     player.start_refresh()
 
 
-@imm_action('zap', msg_class='attack')
-def zap(source, target_method, target, **ignored):
-    check_perm(source, target)
-    source.broadcast(s="{n} calls forth mysterious power from the heavens, zapping {N}!", target=target)
-    target_method(source, Attack().raw(1000000, 10000))
-
-
 
 
 

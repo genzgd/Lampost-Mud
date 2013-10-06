@@ -8,7 +8,7 @@ from lampost.mud.action import imm_action
 from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
-m_requires('session_manager', 'mud', 'datastore', 'perm', 'nature', 'email_sender', 'user_manager', __name__)
+m_requires('session_manager', 'mud', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
 
 @imm_action('edit')
 def edit(source, **ignored):
@@ -222,7 +222,7 @@ def promote(source, target, obj, **ignored):
     if imm_level is None:
         return "That is not a valid level"
     target.imm_level = imm_level
-    nature.baptise_imm(target)
+    dispatch('imm_baptise', target)
     update_immortal_list()
     source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
 

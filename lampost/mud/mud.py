@@ -27,6 +27,7 @@ class MudNature():
     def _post_init(self):
         register('player_connect', self._player_connect)
         register('player_baptise', self._baptise, priority=-100)
+        register('imm_baptise', self._imm_baptise, priority=-100)
         info("Loading mud", self)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")
@@ -37,10 +38,9 @@ class MudNature():
         self.social_registry.load_socials()
         info("Mud loaded", self)
 
-    def baptise_imm(self, player):
-        if player.imm_level:
-            player.build_mode = True
-            player.register_channel(self.imm_channel)
+    def _imm_baptise(self, player):
+        player.build_mode = True
+        player.register_channel(self.imm_channel)
         for cmd in imm_actions:
             if player.imm_level >= perm_level(cmd.imm_level):
                 player.enhance_soul(cmd)
@@ -68,7 +68,7 @@ class MudNature():
     def _baptise(self, player):
         player.baptise(set())
         if player.imm_level:
-            self.baptise_imm(player)
+            dispatch("imm_baptise", player)
         player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
