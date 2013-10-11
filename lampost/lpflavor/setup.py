@@ -28,7 +28,7 @@ def default_skills():
 
     zap_skill = AttackSkill('zap')
     zap_skill.verb = 'zap'
-    zap_skill.desc = "The all power immortal zap skill."
+    zap_skill.desc = "The all powerful immortal zap skill."
     zap_skill.damage_type = "spirit"
     zap_skill.weapon_type = "unused"
     zap_skill.damage_calc = {'skill': 1000000}

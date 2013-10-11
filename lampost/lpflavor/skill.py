@@ -1,8 +1,9 @@
 from collections import defaultdict
+import sys
 from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import make_action, ActionError
-from lampost.mud.action import imm_actions
+from lampost.mud.action import imm_actions, mud_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
 
@@ -40,6 +41,7 @@ class SkillService(object):
         self.skills = {}
         for skill_type in SKILL_TYPES:
             self.skills.update({skill_id: load_object(skill_type, skill_id) for skill_id in fetch_set_keys(skill_type.dbo_set_key)})
+        setattr(sys.modules[__name__], 'skill_service', self)
 
     def _player_create(self, player):
         player.skills = {}
@@ -134,21 +136,14 @@ class BaseSkill():
         self.invoke(skill_status, source, **kwargs)
         skill_status.last_used = dispatcher.pulse_count
 
+@mud_action("skills")
+def skills(source, **ignored):
+    source.display_line("Your Skills:")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    for skill_id, skill_status in source.skills.iteritems():
+        skill = skill_service.skills.get(skill_id)
+        if not skill:
+            warn("{} has missing skill {} ".format(source.name, skill_id))
+            continue
+        source.display_line("{}:   Level: {}".format(skill.verb, str(skill_status.skill_level)))
+        source.display_line("--{}".format(skill.desc))
