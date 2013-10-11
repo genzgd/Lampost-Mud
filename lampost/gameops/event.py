@@ -91,8 +91,8 @@ class Dispatcher:
         pulse_lc = task.LoopingCall(self._pulse).start(self.pulse_interval)
         pulse_lc.addErrback(heartbeat_failed)
         info("Pulse Event heartbeat started at {} seconds".format(self.pulse_interval), self)
-        maint_lc = task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * self.maintenance_interval)
-        maint_lc.addErrback(heartbeat_failed)
+        maintenance_lc = task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * self.maintenance_interval)
+        maintenance_lc.addErrback(heartbeat_failed)
         info("Maintenance Event heartbeat started at {} minutes".format(self.maintenance_interval), self)
 
 

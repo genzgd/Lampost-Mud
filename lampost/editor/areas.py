@@ -3,7 +3,7 @@ from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.model.area import Area
 
-m_requires('datastore', 'mud', 'perm', __name__)
+m_requires('datastore', 'mud', 'perm', 'dispatcher',__name__)
 
 
 class AreaResource(Resource):
@@ -34,7 +34,7 @@ class AreaNew(Resource):
         return area_dto(area)
 
 
-@requires('mud', 'dispatcher')
+@requires('mud')
 class AreaDelete(Resource):
     @request
     def render_POST(self, content, session):
@@ -42,7 +42,7 @@ class AreaDelete(Resource):
         area = datastore.load_object(Area, area_id)
         if area:
             check_perm(session, area)
-            self.dispatcher.detach_events(area)
+            detach_events(area)
             delete_object(area)
             del self.mud.area_map[area_id]
             return "OK"
