@@ -28,12 +28,14 @@ class MudNature():
         register('player_connect', self._player_connect)
         register('player_baptise', self._baptise, priority=-100)
         register('imm_baptise', self._imm_baptise, priority=-100)
-        info("Loading mud", self)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")
         self.context.set('article_load_types', ['equip', 'default'])
         self.context.set('broadcast_types', broadcast_types)
         self.context.set('broadcast_tokens', broadcast_tokens)
+
+    def start_service(self):
+        info("Loading mud", self)
         self.mud.load_areas()
         self.social_registry.load_socials()
         info("Mud loaded", self)
@@ -64,6 +66,7 @@ class MudNature():
         client_data['editors'] = editors
         client_data['avail_channels'] = channels
         client_data['active_channels'] = player.active_channels
+        player.parse('look')
 
     def _baptise(self, player):
         player.baptise(set())
@@ -72,7 +75,7 @@ class MudNature():
         player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
-            player.register("log", player.display_line)
+            register("log", player.display_line)
 
         player.equip(set())
         self.mud.start_player(player)

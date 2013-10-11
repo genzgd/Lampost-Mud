@@ -64,5 +64,6 @@ class ChannelService(ClientService):
         for channel_id in self.known_channels:
             trim_db_list(channel_key(channel_id), 0, MAX_CHANNEL_HISTORY)
 
+
 def channel_key(channel_id):
     return 'channel:{}'.format(channel_id)

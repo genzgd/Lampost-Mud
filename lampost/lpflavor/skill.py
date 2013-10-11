@@ -33,7 +33,7 @@ class SkillEffect(RootDBO):
 @provides('skill_service')
 class SkillService(object):
 
-    def __init__(self):
+    def _post_init(self):
         register('player_create', self._player_create)
         register('player_baptise', self._baptise)
         register('imm_baptise', self._imm_baptise)
@@ -56,7 +56,6 @@ class SkillService(object):
                     entity.enhance_soul(skill)
             except KeyError:
                 log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
-
 
     def _imm_baptise(self, player):
         for skill_id in DEFAULT_IMM:

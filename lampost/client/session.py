@@ -88,7 +88,6 @@ class SessionManager(object):
             raise StateError("Player user does not match session user")
         self.player_info_map[player.dbo_id] = session.connect_player(player)
         self.player_session_map[player.dbo_id] = session
-        player.parse("look")
         client_data = {}
         dispatch('user_connect', session.user, client_data)
         dispatch('player_connect', player, client_data)

@@ -38,15 +38,16 @@ class Context(object):
         ConfigManager(config_id)
         EmailSender()
 
-        MudNature(flavor)
         ChannelService()
         FriendService()
         MessageService()
         PlayerListService()
         AnyLoginService()
+        mud_nature = MudNature(flavor)
         web_server = WebServer(int(port))
         context_post_init()
 
+        mud_nature.start_service()
         web_server.start_service(server_interface)
 
     def set(self, key, value):
