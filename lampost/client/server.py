@@ -28,6 +28,7 @@ URL_MESSAGES = "messages"
 URL_CHANNEL = "channel"
 URL_REGISTER = "register"
 URL_UNREGISTER = 'unregister'
+URL_REMOTE_LOG = 'remote_log'
 URL_START = "/" + URL_WEB_CLIENT + "/lampost.html"
 
 m_requires("log", __name__)
@@ -52,6 +53,7 @@ class WebServer(Resource):
         self.putChild(URL_MESSAGES, MessagesResource())
         self.putChild(URL_CHANNEL, ChannelResource())
         self.putChild(URL_CLIENT_DATA, ClientDataResource())
+        self.putChild(URL_REMOTE_LOG, RemoteLogResource())
 
         self._lsp_server = LspServerResource()
         self.putChild(URL_LSP, self._lsp_server)

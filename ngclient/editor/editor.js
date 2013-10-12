@@ -1,22 +1,21 @@
 angular.module('lampost_editor', ['lampost_svc', 'lampost_dir']);
 
 angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemote', function ($timeout, lmUtil, lmEditor, lmRemote) {
-  try {
-    var playerId = name.split('_')[1];
-    var sessionId = localStorage.getItem('lm_session_' + playerId);
-    if (!sessionId) {
-      throw ("No session found");
-    }
-    var editorList = $.parseJSON(localStorage.getItem('lm_editors_' + playerId));
-    if (!editorList) {
-      throw ("Invalid editor list");
-    }
-    lmRemote.childSession(sessionId);
-    lmEditor.startEditors(editorList);
-  } catch (e) {
-    alert("No valid edit session:\n" + e);
+
+  var playerId = name.split('_')[1];
+  var sessionId = localStorage.getItem('lm_session_' + playerId);
+  if (!sessionId) {
+    alert("No Editor Session Found");
     window.close();
   }
+  var editorList = $.parseJSON(localStorage.getItem('lm_editors_' + playerId));
+  if (!editorList) {
+    alert("No Editor List Found");
+    window.close();
+  }
+  lmRemote.childSession(sessionId);
+  lmEditor.startEditors(editorList);
+
   window.editLampostRoom = function (roomId) {
     $timeout(function () {
         lmEditor.addEditor('room', roomId);
@@ -52,11 +51,11 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       socials: {label: "Socials", url: "socials"},
       display: {label: "Display", url: "display"},
       race: {label: "Races", url: "race"},
-      skills: {label: "Skills", url: "skills"}
-      };
+      attack: {label: "Attacks", url: "attack"},
+      defense: {label: "Defenses", url: "defense"}
+    };
 
-    function Editor(type, parent) {
-      var eType = types[type];
+    function Editor(type, eType, parent) {
       this.label = eType.label ? eType.label : parent;
       this.label_class = parent ? "small" : "";
       this.controller = eType.controller;
@@ -107,11 +106,16 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     this.startEditors = function (editorList) {
       self.editors = [];
       currentMap = {};
-      for (var i = 0; i < editorList.length; i++) {
-        var editor = new Editor(editorList[i]);
-        self.editors.push(editor);
-        currentMap[editor.id] = editor;
-      }
+      angular.forEach(editorList, function (key) {
+        var eType = types[key];
+        if (eType) {
+          var editor = new Editor(key, eType);
+          self.editors.push(editor);
+          currentMap[editor.id] = editor;
+        } else {
+          lmRemote.log("Missing editor type: " + key);
+        }
+      });
       self.currentEditor = self.editors[0];
       self.refreshData();
     };

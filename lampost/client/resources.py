@@ -135,3 +135,13 @@ class LspServerResource(Resource):
             return self.ChildResource(self.documents[path])
         except KeyError:
             return NoResource()
+
+
+class RemoteLogResource(Resource):
+    @logged
+    def render_POST(self, request):
+        warn(str(request.content.getvalue()), 'Remote')
+        request.setResponseCode(204)
+        return ''
+
+

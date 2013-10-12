@@ -365,6 +365,10 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         });
     };
 
+    this.log = function(logMessage) {
+      rawRequest("remote_log", logMessage)
+    };
+
     this.asyncRequest = function (resource, args) {
       return rawRequest(resource, args);
     };
