@@ -29,7 +29,7 @@ def roll_calc(source, calc, skill_level=0):
         roll = -5
     if roll == 19:
         roll = 40
-    return base_calc + roll * calc.get('roll_adjust', 1) + skill_level * calc.get('skill', 1)
+    return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
 def validate_weapon(ability, weapon_type):

@@ -1,7 +1,7 @@
 from lampost.env.room import Exit
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
-from lampost.lpflavor.combat import AttackSkill, Attack
+from lampost.lpflavor.combat import AttackSkill, Attack, DAMAGE_TYPES, DAMAGE_DELIVERY
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
 from lampost.lpflavor.skill import SkillService
@@ -33,6 +33,12 @@ def _post_init():
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
     context.set('attr_map', ATTR_MAP)
+    context.set('damage_types', DAMAGE_TYPES)
+    context.set('damage_delivery', list(DAMAGE_DELIVERY))
+    calc_map = {key: value['name'] for key, value in ATTR_MAP.iteritems()}
+    calc_map.update({'roll': "Dice roll adjust (20 sided)",
+                     'skill': "Skill level adjust"})
+    context.set('calc_map', calc_map)
     register('first_time_setup', setup.first_time_setup)
     register('player_create', _player_create)
     register('player_baptise', _player_baptise)

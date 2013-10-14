@@ -156,7 +156,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     };
 
     this.addEditor = function (type, parent) {
-      var editor = new Editor(type, parent);
+      var editor = new Editor(type, types[type], parent);
       if (currentMap.hasOwnProperty(editor.id)) {
         editor = currentMap[editor.id];
       } else {

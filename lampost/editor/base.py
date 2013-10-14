@@ -11,17 +11,27 @@ class EditResource(Resource):
     def __init__(self, obj_class, imm_level='admin'):
         Resource.__init__(self)
         self.obj_class = cls_registry(obj_class)
-        self.putChild('list', EditListResource(obj_class, imm_level))
-        self.putChild('create', EditCreateResource(obj_class, imm_level))
-        self.putChild('delete', EditDeleteResource(obj_class, imm_level))
-        self.putChild('update', EditUpdateResource(obj_class, imm_level))
+        self.putChild('list', EditListResource(self, obj_class, imm_level))
+        self.putChild('create', EditCreateResource(self, obj_class, imm_level))
+        self.putChild('delete', EditDeleteResource(self, obj_class, imm_level))
+        self.putChild('update', EditUpdateResource(self, obj_class, imm_level))
+
+    def on_delete(self, del_obj):
+        pass
+
+    def on_create(self, new_obj):
+        pass
+
+    def on_update(self, existing_obj):
+        pass
 
 
 class EditBaseResource(Resource):
-    def __init__(self, obj_class, imm_level):
+    def __init__(self, editor, obj_class, imm_level):
         Resource.__init__(self)
         self.obj_class = obj_class
         self.imm_level = imm_level
+        self.editor = editor
 
 
 class EditListResource(EditBaseResource):
@@ -41,6 +51,7 @@ class EditCreateResource(EditBaseResource):
             raise ObjectExistsError(content.dbo_id)
         new_obj = self.obj_class(content.dbo_id)
         update_object(new_obj, content.dbo)
+        self.editor.on_create(new_obj)
         return new_obj.dto_value
 
 
@@ -49,7 +60,9 @@ class EditDeleteResource(EditBaseResource):
     @request
     def render_POST(self, content, session):
         check_perm(session, self.imm_level)
-        delete_object(load_object(self.obj_class, content.dbo_id))
+        del_obj = load_object(self.obj_class, content.dbo_id)
+        delete_object(del_obj)
+        self.editor.on_delete(del_obj)
 
 
 class EditUpdateResource(EditBaseResource):
@@ -57,11 +70,12 @@ class EditUpdateResource(EditBaseResource):
     @request
     def render_POST(self, content, session):
         check_perm(session, self.imm_level)
-        existing = load_object(self.obj_class, content.dbo['dbo_id'])
-        if not existing:
+        existing_obj = load_object(self.obj_class, content.dbo['dbo_id'])
+        if not existing_obj:
             raise DataError("Object with key {} no longer exists.".format(content.dbo['dbo.id']))
-        update_object(existing, content.dbo)
-        return existing.dto_value
+        update_object(existing_obj, content.dbo)
+        self.editor.on_update(existing_obj)
+        return existing_obj.dto_value
 
 
 

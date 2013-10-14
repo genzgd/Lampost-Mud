@@ -1,4 +1,4 @@
-<div class="v-full" ng-controller="GenEditorCtrl" ng-show="ready">
+<div class="v-full" ng-controller="AttackEditorCtrl" ng-show="ready">
   <div class="span2">
     <h4>Attack Skills ({{objectList.length}})</h4>
     <button ng-click="newObjectDialog()" class="btn btn-small btn-success">New Attack</button>
@@ -9,7 +9,7 @@
     <table class="table table-condensed table-bordered" ng-controller="TableCtrl">
       <thead>
       <tr>
-        <th>Skill</th>
+        <th>Attack</th>
       </tr>
       </thead>
       <tbody>
@@ -26,28 +26,38 @@
   <div class="span8 v-full" ng-hide="!activeObject">
     <div class="row-fluid">
       <div class="span6"></div>
-      <div class="span3">
-        <h5>Starting Attributes</h5>
-      </div>
-      <div class="span3">
+      <div class="offset3 span3">
         <button type="button" class="btn" ng-click="revertObject()" ng-disabled="!isDirty">Revert</button>
         <button type="button" class="btn btn-primary" ng-click="updateObject()" ng-disabled="!isDirty">Update</button>
       </div>
     </div>
     <div class="row-fluid scrollable">
       <div class="span6">
-        <label>Skill Command</label>
+        <label>Attack Command</label>
         <input type="text" ng-model="activeObject.verb" ng-change="dirty()" required="true"/>
         <label>Description</label>
-        <textarea class="span12" rows="8" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
+        <textarea class="span12" rows="5" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
+        <label></label>
       </div>
-      <div class="span6 form-horizontal">
-        <div class="control-group" ng-repeat="(att_id, att_value) in constants.attr_map">
-          <label class="control-label">{{att_value.name}}:</label>
-          <div class="controls">
-            <input class="input-mini" type="number" ng-change="dirty()" ng-model="activeObject.base_attrs[att_id]" min="1"/>
-          </div>
-        </div>
+      <div class="span6">
+        <table class="table table-condensed" style="width: 100%">
+          <thead>
+            <th title="Player Attribute">Attr</th>
+            <th>Accuracy</th>
+            <th>Damage</th>
+          </thead>
+          <tbody>
+            <tr class="table-bordered" ng-repeat="(calc, desc) in constants.calc_map">
+              <td title="{{desc}}" style="width: 18%;">{{calc}}</td>
+              <td class="edit-cell" style="width: 28%;"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="number"
+                  ng-model="activeObject.accuracy_calc[calc]"/>
+              </td>
+              <td class="edit-cell" style="width: 28%;"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="number" ng-model="activeObject.damage_calc[calc]"/>
+              </td>
+
+          </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

@@ -40,7 +40,7 @@ class RootDBO(object):
         my_list = getattr(self, attr_name)
         my_list.remove(value)
         if not my_list:
-            del self.__dict__[attr_name]
+            self.__dict__.pop(attr_name, None)
 
     def append_map(self, attr_name, value):
         try:
@@ -52,9 +52,9 @@ class RootDBO(object):
 
     def remove_map(self, attr_name, value):
         my_map = getattr(self, attr_name)
-        del my_map[value.dbo_id]
+        my_map.pop(value.dbo_id, None)
         if not my_map:
-            del self.__dict__[attr_name]
+            self.__dict__.pop(attr_name, None)
 
     def on_loaded(self):
         pass
