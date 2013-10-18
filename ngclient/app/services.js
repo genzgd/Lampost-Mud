@@ -14,7 +14,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function (lmLog) {
 
   function applyCallback(callback, args, scope) {
     var phase = scope && scope.$root.$$phase;
-    if (!phase || phase == '$apply' || phase == '$digest') {
+    if (!phase || phase === '$apply' || phase === '$digest') {
       callback.apply(this, args);
     } else {
       scope.$apply(function () {
@@ -34,8 +34,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function (lmLog) {
       registry[event_type] = [];
     }
 
-    var registration = {event_type: event_type, callback: callback,
-      priority: priority ? priority : 0};
+    var registration = {event_type: event_type, callback: callback,priority: priority || 0};
     registry[event_type].push(registration);
     registry[event_type].sort(function (a, b) {
       return a.priority - b.priority
@@ -169,7 +168,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
           deferred.resolve(data);
         }).error(function (data, status) {
           checkWait && checkWait();
-          if (status == 409) {
+          if (status === 409) {
             var errorResult = {id: 'Error', raw: data, text: data};
             var colon_ix = data.indexOf(':');
             if (colon_ix > 0) {
@@ -180,7 +179,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
               }
             }
             deferred.reject(errorResult);
-          } else if (status == 403) {
+          } else if (status === 403) {
             lmDialog.showOk("Denied", "You do not have permission for that action");
           } else if (status) {
             lmDialog.showOk("Server Error: " + status, data);
