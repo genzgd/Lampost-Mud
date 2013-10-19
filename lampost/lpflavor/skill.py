@@ -1,9 +1,10 @@
-from collections import defaultdict
 import sys
+
+from collections import defaultdict
 from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import make_action, ActionError
-from lampost.mud.action import imm_actions, mud_action
+from lampost.mud.action import imm_actions, mud_action, imm_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
 
@@ -110,7 +111,7 @@ class BaseSkill():
 
     def on_loaded(self):
         if not self.auto_start and self.verb:
-            make_action(self, self.verb, self.msg_class)
+            make_action(self, self.verb)
 
     @property
     def costs(self):
@@ -135,14 +136,20 @@ class BaseSkill():
         self.invoke(skill_status, source, **kwargs)
         skill_status.last_used = dispatcher.pulse_count
 
-@mud_action("skills")
-def skills(source, **ignored):
-    source.display_line("Your Skills:")
 
-    for skill_id, skill_status in source.skills.iteritems():
+@mud_action("skills", "has_skills", self_target=True)
+def skills(source, target, **ignored):
+    source.display_line("{}'s Skills:".format(target.name))
+
+    for skill_id, skill_status in target.skills.iteritems():
         skill = skill_service.skills.get(skill_id)
-        if not skill:
-            warn("{} has missing skill {} ".format(source.name, skill_id))
-            continue
-        source.display_line("{}:   Level: {}".format(skill.verb, str(skill_status.skill_level)))
-        source.display_line("--{}".format(skill.desc))
+        if skill:
+            source.display_line("{}:   Level: {}".format(skill.verb, str(skill_status.skill_level)))
+            source.display_line("--{}".format(skill.desc))
+        else:
+            warn("{} has missing skill {} ".format(target.name, skill_id))
+
+
+@imm_action("add skill", "args", prep="to", obj_msg_class="has_skills", self_object=True)
+def add_skill(source, target, obj, **ignored):
+    return "Adding {} to {}".format(target, obj.name)

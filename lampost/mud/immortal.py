@@ -211,7 +211,7 @@ def log_level(args, **ignored):
     return "Log level at {0}".format(log.level_desc)
 
 
-@imm_action('promote', 'player', prep='to', imm_level='admin')
+@imm_action('promote', 'player', prep='to', obj_msg_class='args', imm_level='admin')
 def promote(source, target, obj, **ignored):
     if source == target:
         return "Let someone else do that."
@@ -223,7 +223,7 @@ def promote(source, target, obj, **ignored):
         return "That is not a valid level"
     target.imm_level = imm_level
     dispatch('imm_baptise', target)
-    update_immortal_list()
+    update_immortal_list(target)
     source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
 
 
@@ -247,7 +247,7 @@ def email(verb, args, command, **ignored):
     return email_sender.send_targeted_email('Lampost Message', message, [user])
 
 
-@imm_action('combat_log', 'attack', self_default=True)
+@imm_action('combat_log', 'attack', self_target=True)
 def combat_log(source, target, **ignored):
     if getattr(target, 'combat_log', None):
         del target.combat_log
@@ -256,6 +256,6 @@ def combat_log(source, target, **ignored):
     return "Combat logging added to {}.".format(target.name)
 
 
-@imm_action('status', 'status', self_default=True)
+@imm_action('status', 'status', self_target=True)
 def status(target, **ignored):
     return substitute(target.rec_status(), target=target)

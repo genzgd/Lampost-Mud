@@ -76,7 +76,7 @@ class AttackSkill(BaseSkill, RootDBO):
     dbo_key_type = 'skill'
     dbo_set_key = 'skill_attack'
 
-    msg_class = 'attack'
+    msg_class = 'rec_attack'
     damage_type = 'blunt'
     delivery = 'melee'
     damage_calc = {}

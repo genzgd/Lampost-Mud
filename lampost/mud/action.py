@@ -10,10 +10,10 @@ imm_actions = set()
 mud_actions.add(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
 
 
-def mud_action(verbs, msg_class=None):
+def mud_action(verbs, msg_class=None, **kwargs):
     def dec_wrapper(func):
         mud_actions.add(func)
-        return make_action(func, verbs, msg_class)
+        return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
 
 

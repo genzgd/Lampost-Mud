@@ -2,26 +2,26 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'Edit
 
   EditorHelper.prepareScope(this, $scope);
 
-   function removeNulls() {
-     angular.forEach($scope.activeObject.accuracy_calc, function(value, key) {
+  function removeNulls() {
+    angular.forEach($scope.activeObject.accuracy_calc, function (value, key) {
       if (!value) {
-        delete $scope.activeObject[key]
+        delete $scope.activeObject.accuracy_calc[key]
       }
     });
 
-     angular.forEach($scope.activeObject.damage_calc, function(value, key) {
+    angular.forEach($scope.activeObject.damage_calc, function (value, key) {
       if (!value) {
-        delete $scope.activeObject[key]
+        delete $scope.activeObject.damage_calc[key]
       }
     });
 
   }
 
-  this.preUpdate = function() {
+  this.preUpdate = function () {
     removeNulls();
   };
 
-  this.preCreate = function() {
+  this.preCreate = function () {
     removeNulls();
   };
 

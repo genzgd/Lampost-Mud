@@ -38,9 +38,13 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, **
     except AttributeError:
         for verb in verbs:
             add_verb(unicode(verb))
+
     if msg_class:
-        action.msg_class = "rec_{0}".format(msg_class)
-    else:
+        if msg_class.startswith('has_'):
+            action.msg_class = msg_class[4:]
+        else:
+            action.msg_class = 'rec_{0}'.format(msg_class)
+    elif not hasattr(action, 'msg_class'):
         try:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
             if not args or (len(args) == 1 and args[0] == 'source'):
@@ -49,7 +53,10 @@ def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, **
             pass
     if prep:
         action.prep = prep
-        action.obj_msg_class = "rec_{0}".format(obj_msg_class)
+        if obj_msg_class.startswith('has_'):
+            action.obj_msg_class = obj_msg_class[4:]
+        else:
+            action.obj_msg_class = 'rec_{0}'.format(obj_msg_class)
     for arg_name, value in kw_args.iteritems():
         setattr(action, arg_name, value)
     return action

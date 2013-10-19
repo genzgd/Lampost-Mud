@@ -26,7 +26,7 @@ def parse_actions(entity, actions):
         raise ParseError(MISSING_VERB, "What?")
     matches = find_targets(entity, actions)
     if not matches:
-        raise ParseError(MISSING_TARGET, "That is not here.")
+        raise ParseError(MISSING_TARGET, "You can't do that.")
     matches = find_objects(entity, matches)
     if not matches:
         raise ParseError(MISSING_OBJECT, "Incomplete command.")
@@ -61,28 +61,40 @@ def find_targets(entity, matches):
         prep = getattr(action, 'prep', None)
         if prep:
             try:
-                target_args = args[:args.index(action.prep)]
+                prep_loc = args.index(action.prep)
+                target_args = args[:prep_loc]
                 obj_args = args[(prep_loc + 1):]
             except ValueError:
-                continue
+                if not hasattr(action, 'self_object'):
+                    continue
+        if msg_class == "rec_args":
+            if target_args:
+                target_matches.append((action, verb, args, target_args, obj_args))
+            continue
         if target_args:
             fixed_targets = getattr(action, "fixed_targets", None)
             target = entity.target_key_map.get(target_args)
             if target and (not fixed_targets or target in fixed_targets):
                 target_matches.append((action, verb, args, target, obj_args))
-        else:
-            if getattr(action, 'self_default', None):
-                target_matches.append((action, verb, args, entity, obj_args))
-            else:
-                target_matches.append((action, verb, args, entity.env, obj_args))
+            continue
+        if hasattr(action, 'self_target'):
+            target_matches.append((action, verb, args, entity, obj_args))
+            continue
+        target_matches.append((action, verb, args, entity.env, obj_args))
     return target_matches
 
 
 def find_objects(entity, matches):
     object_matches = []
     for action, verb, args, target, obj_args in matches:
-        if obj_args:
-            object_matches += [(action, verb, args, target, obj) for obj in entity.target_key_map.get(obj_args, [])]
+        if getattr(action, 'obj_msg_class', None) == "rec_args":
+            object_matches.append((action, verb, args, target, obj_args))
+        elif obj_args:
+            obj = entity.target_key_map.get(obj_args)
+            if obj:
+                object_matches.append((action, verb, args, target, obj))
+        elif hasattr(action, 'self_object'):
+            object_matches.append((action, verb, args, target, entity))
         else:
             object_matches.append((action, verb, args, target, None))
     return object_matches
@@ -91,7 +103,9 @@ def find_objects(entity, matches):
 def validate_targets(matches):
     target_matches = []
     for action, verb, args, target, obj in matches:
-        if target:
+        if getattr(action, 'msg_class', None) == 'rec_args':
+            target_matches.append((action, verb, args, target, obj, None))
+        elif target:
             try:
                 target_matches.append((action, verb, args, target, obj, getattr(target, action.msg_class)))
             except AttributeError:
@@ -104,13 +118,13 @@ def validate_targets(matches):
 def validate_objects(matches):
     object_matches = []
     for action, verb, args, target, obj, target_method in matches:
-        if obj:
+        if not obj or action.obj_msg_class == "rec_args":
+            object_matches.append((action, verb, args, target, obj, target_method, None))
+        else:
             try:
                 object_matches.append((action, verb, args, target, obj, target_method, getattr(obj, action.obj_msg_class)))
             except AttributeError:
                 pass
-        else:
-            object_matches.append((action, verb, args, target, obj, target_method, None))
     return object_matches
 
 
