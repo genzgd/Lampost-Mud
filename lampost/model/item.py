@@ -2,17 +2,20 @@ from lampost.context.resource import requires
 from lampost.datastore.dbo import RootDBO, dbo_describe
 
 
+
+
 @requires('dispatcher')
 class BaseItem(object):
-    dbo_fields = "desc", "title", "aliases"
+    template_fields = "desc", "title", "aliases"
 
     desc = ""
-    suffix = None
-    env = None
     title = ""
+    aliases = []
+
     sex = "none"
     living = False
-    aliases = []
+    env = None
+
     target_aliases = []
     rec_general = True
 

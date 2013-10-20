@@ -14,12 +14,12 @@ class Exit(RootDBO):
     dbo_fields = "dir_name", "desc", "aliases"
     desc = None
     can_follow = True
+    aliases = []
 
     def __init__(self, direction=None, destination=None, room=None):
         super(Exit, self).__init__()
         self.direction = direction
         self.destination = destination
-        self.aliases = []
         self.room = room
 
     @property

@@ -7,21 +7,11 @@ from lampost.model.mobile import Mobile, MobileTemplate
 m_requires('log', 'skill_service', __name__)
 
 
-class MobileTemplateLP(MobileTemplate):
-
-    def on_loaded(self):
-        self.defenses = set()
-        self.defenses.add(skill_service.skills['dodge'])
-
-
 class MobileLP(Mobile, EntityLP):
-    dbo_fields = EntityLP.dbo_fields + ('archetype', 'level')
-    level = 0
-    archetype = None
+    template_fields = 'archetype', 'level'
 
-    @property
-    def defenses(self):
-        return self.template.defenses
+    archetype = None
+    level = 1
 
 
 def config_instance(self, mobile):

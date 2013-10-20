@@ -10,11 +10,8 @@ class Mobile():
         return self.title
 
 
-class MobileTemplate(RootDBO, Template):
+class MobileTemplate(Template):
     dbo_key_type = "mobile"
-    sex = 'none'
-    size = 'medium'
-    aliases = []
 
     def config_instance(self, instance):
         instance.baptise(set())

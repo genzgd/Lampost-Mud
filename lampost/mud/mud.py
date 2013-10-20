@@ -1,4 +1,7 @@
 from lampost.env.room import Room
+from lampost.gameops.template import template_class
+from lampost.model.article import ArticleTemplate, Article
+from lampost.model.mobile import MobileTemplate, Mobile
 import lampost.mud.immortal
 import lampost.comm.chat
 import lampost.mud.inventory
@@ -25,14 +28,20 @@ class MudNature():
         self.social_registry = SocialRegistry()
 
     def _post_init(self):
-        register('player_connect', self._player_connect)
-        register('player_baptise', self._baptise, priority=-100)
-        register('imm_baptise', self._imm_baptise, priority=-100)
         self.shout_channel = Channel("shout")
         self.imm_channel = Channel("imm")
+
         self.context.set('article_load_types', ['equip', 'default'])
         self.context.set('broadcast_types', broadcast_types)
         self.context.set('broadcast_tokens', broadcast_tokens)
+
+        template_class(ArticleTemplate, Article)
+        template_class(MobileTemplate, Mobile)
+
+        register('player_connect', self._player_connect)
+        register('player_baptise', self._baptise, priority=-100)
+        register('imm_baptise', self._imm_baptise, priority=-100)
+
 
     def start_service(self):
         info("Loading mud", self)

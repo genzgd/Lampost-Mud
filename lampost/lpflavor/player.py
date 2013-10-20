@@ -7,7 +7,7 @@ from lampost.model.player import Player
 
 
 class PlayerLP(Player, EntityLP):
-    dbo_fields = Player.dbo_fields + EntityLP.dbo_fields + ATTR_LIST + tuple(['perm_{}'.format(attr) for attr in ATTR_LIST]) + POOL_LIST + ('race',)
+    dbo_fields = EntityLP.template_fields + ATTR_LIST + tuple(['perm_{}'.format(attr) for attr in ATTR_LIST]) + POOL_LIST + ('race',)
     dbo_maps = DBOMap("skills", SkillStatus),
     dbo_lists = DBOList('effects', SkillEffect),
 

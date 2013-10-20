@@ -8,8 +8,6 @@ m_requires('log', 'tools', __name__)
 
 
 class EntityLP(Entity):
-    dbo_fields = Entity.dbo_fields
-
     weapon = None
     current_target = None
 

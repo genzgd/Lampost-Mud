@@ -8,10 +8,16 @@ VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
 class Article(BaseItem):
-    dbo_fields = BaseItem.dbo_fields + ("weight", "slot", "equip_slot", "art_type", "level")
+    template_fields = "weight", "slot", "equip_slot", "art_type", "level"
+
+    weight = 0
+    slot = "none"
+    art_type = "treasure"
+    level = 1
+
     rec_wear = True
     equip_slot = None
-    level = 1
+
 
     @property
     def name(self):
@@ -54,15 +60,8 @@ class Container(Article):
         self.contents = []
 
 
-class ArticleTemplate(RootDBO, Template):
-    template_fields = Article.dbo_fields
-    dbo_fields = Template.dbo_fields + template_fields
+class ArticleTemplate(Template):
     dbo_key_type = "article"
-    instance_class = cls_name(Article)
-    aliases= []
-    weight = 0
-    slot = "none"
-    art_type = "treasure"
 
 
 class ArticleReset(RootDBO):

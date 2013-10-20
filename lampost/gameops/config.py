@@ -55,7 +55,7 @@ class ConfigManager():
 
 class Config(RootDBO):
     dbo_key_type = "config"
-    dbo_fields = ('title', 'description', 'start_room', 'auto_imm_level', 'default_displays')
+    dbo_fields = 'title', 'description', 'start_room', 'auto_imm_level', 'default_displays'
     title = "Lampost (New Install)"
     description = "A fresh install of Lampost Mud"
     auto_imm_level = 0

@@ -12,11 +12,12 @@ m_requires('log', __name__)
 
 
 class Entity(BaseItem):
-    dbo_fields = BaseItem.dbo_fields + ("status", "size", "sex")
+    template_fields = "size", "sex"
 
-    status = 'awake'
     sex = 'none'
     size = 'medium'
+
+    status = 'awake'
     living = True
     combat = False
 

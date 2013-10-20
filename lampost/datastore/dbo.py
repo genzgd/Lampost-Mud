@@ -5,11 +5,22 @@ m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
 
 
 class RootDBOMeta(type):
-    def __new__(mcs, class_name, bases, new_attrs):
-        cls = type.__new__(mcs, class_name, bases, new_attrs)
+
+    def __init__(cls, class_name, bases, new_attrs):
         if "RootDBO" in [base.__name__ for base in bases]:
             cls.dbo_base_class = cls
-        return cls
+
+        def build_coll(coll_name):
+            coll = set()
+            for base in bases:
+                coll.update(base.__dict__.get(coll_name, ()))
+            coll.update(new_attrs.get(coll_name, ()))
+            setattr(cls, coll_name, coll)
+
+        build_coll('dbo_fields')
+        build_coll('dbo_maps')
+        build_coll('dbo_lists')
+        build_coll('dbo_refs')
 
 
 class RootDBO(object):
@@ -17,10 +28,7 @@ class RootDBO(object):
     dbo_key_type = None
     dbo_set_type = None
     dbo_set_id = None
-    dbo_fields = ()
-    dbo_lists = ()
-    dbo_maps = ()
-    dbo_refs = ()
+
     dbo_indexes = ()
     dbo_id = None
 
@@ -161,8 +169,9 @@ def to_dbo_dict(dbo, use_defaults=False):
                 dbo_dict[field_name] = getattr(dbo, field_name, None)
         else:
             dbo_dict[field_name] = getattr(dbo, field_name, None)
-    for dbo_col in dbo.dbo_lists + dbo.dbo_maps:
-        dbo_col.build_dbo(dbo, dbo_dict, use_defaults)
+    for coll_type in dbo.dbo_lists, dbo.dbo_maps:
+        for dbo_col in coll_type:
+            dbo_col.build_dbo(dbo, dbo_dict, use_defaults)
     for dbo_ref in dbo.dbo_refs:
         try:
             dbo_dict[dbo_ref.field_name] = getattr(dbo, dbo_ref.field_name).dbo_id

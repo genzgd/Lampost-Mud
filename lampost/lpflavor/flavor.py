@@ -1,17 +1,16 @@
 from lampost.env.room import Exit
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
-from lampost.lpflavor.combat import AttackSkill, Attack, DAMAGE_TYPES, DAMAGE_DELIVERY
+from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY
 from lampost.lpflavor.env import ExitLP
-from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
+from lampost.lpflavor.mobile import MobileLP
 from lampost.lpflavor.skill import SkillService
-from lampost.model.mobile import Mobile, MobileTemplate
+from lampost.model.mobile import Mobile
 from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
 
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
-from lampost.mud.action import imm_action
 
 m_requires('cls_registry', 'context', 'dispatcher', 'datastore', 'perm', __name__)
 
@@ -25,20 +24,22 @@ SkillService()
 
 def _post_init():
     PlayerRace.attr_list = ATTR_LIST
+
     cls_registry.set_class(Player, PlayerLP)
     cls_registry.set_class(Mobile, MobileLP)
     cls_registry.set_class(Exit, ExitLP)
-    cls_registry.set_class(MobileTemplate, MobileTemplateLP)
-    MobileTemplate.template_class(MobileLP)
+
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
     context.set('attr_map', ATTR_MAP)
     context.set('damage_types', DAMAGE_TYPES)
     context.set('damage_delivery', list(DAMAGE_DELIVERY))
+
     calc_map = {key: value['name'] for key, value in ATTR_MAP.iteritems()}
     calc_map.update({'roll': "Dice roll adjust (20 sided)",
                      'skill': "Skill level adjust"})
     context.set('calc_map', calc_map)
+
     register('first_time_setup', setup.first_time_setup)
     register('player_create', _player_create)
     register('player_baptise', _player_baptise)
