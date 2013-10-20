@@ -51,6 +51,7 @@ class Template(RootDBO):
 
     def on_loaded(self):
         attrs = {name: getattr(self, name) for name in self.template_fields}
+        attrs['template'] = self
         self.instance_cls = type.__new__(type, str(self.dbo_id), (self.instance_base,), attrs)
 
 
