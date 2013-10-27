@@ -1,6 +1,4 @@
 from lampost.env.room import Exit
-from lampost.lpflavor.skill import SkillCost
-
 
 exit_cost_map = {}
 
@@ -9,8 +7,7 @@ def find_cost(room):
     try:
         return exit_cost_map[room.size]
     except KeyError:
-        skill_cost = SkillCost('action', room.size).add('stamina', room.size / 2)
-        exit_cost_map[room.size] = skill_cost
+        exit_cost_map[room.size] = {'action': room.size, 'stamina' : room.size / 2}
         return skill_cost
 
 

@@ -37,6 +37,9 @@ class Template(RootDBO):
     def config_instance(self, instance):
         pass
 
+    def config_instance_cls(self):
+        pass
+
     def create_instance(self):
         if self.instance_count >= self.world_max:
             raise TemplateException
@@ -53,6 +56,8 @@ class Template(RootDBO):
         attrs = {name: getattr(self, name) for name in self.template_fields}
         attrs['template'] = self
         self.instance_cls = type.__new__(type, str(self.dbo_id), (self.instance_base,), attrs)
+        self.config_instance_cls()
+
 
 
 

@@ -8,6 +8,11 @@ m_requires('log', 'tools', __name__)
 
 
 class EntityLP(Entity):
+    health = 0
+    stamina = 0
+    mental = 0
+    action = 0
+
     weapon = None
     current_target = None
 
@@ -16,7 +21,6 @@ class EntityLP(Entity):
     _next_command = None
     _action_pulse = None
     effects = []
-    defenses = []
     skills = {}
 
     @property
@@ -91,9 +95,18 @@ class EntityLP(Entity):
         combat_log(source, self.rec_status, self)
         self.check_status()
 
+    def apply_costs(self, costs):
+        for pool, cost in costs.iteritems():
+            if getattr(self, pool, 0) < cost:
+                entity.start_refresh()
+                raise ActionError("Your condition prevents you from doing that.")
+        for pool, cost in costs.iteritems():
+            setattr(self, pool, getattr(self, pool) - cost)
+        self.start_refresh()
+
     def check_status(self):
-        if self.health < 0:
+        if self.health <= 0:
             self.die()
 
     def rec_status(self):
-        return ''.join(['{N} STATUS--', args_print(health=self.health)])
+        return ''.join(['{N} STATUS--', args_print(health=self.health, followers=self.followers)])

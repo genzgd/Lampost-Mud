@@ -79,7 +79,7 @@ class MudNature():
         player.parse('look')
 
     def _baptise(self, player):
-        player.baptise(set())
+        player.baptise()
         if player.imm_level:
             dispatch("imm_baptise", player)
         player.register_channel(self.shout_channel)

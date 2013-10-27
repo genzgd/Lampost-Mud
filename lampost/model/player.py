@@ -1,3 +1,4 @@
+from collections import defaultdict
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.model.entity import Entity
@@ -25,6 +26,7 @@ class Player(RootDBO):
         self.name = self.dbo_id.capitalize()
         self.last_tell = None
         self.equip_slots = {}
+        self.soul = defaultdict(set)
         self.active_channels = []
 
     def on_loaded(self):
@@ -75,8 +77,5 @@ class Player(RootDBO):
 
     def detach(self):
         super(Player, self).detach()
-        for follower in self.followers:
-            del follower.following
-            follower.display_line("You are no longer following {}.".format(self.name))
         self.session = None
 

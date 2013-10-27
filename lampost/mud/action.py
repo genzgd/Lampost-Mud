@@ -34,11 +34,13 @@ class MudActions(object):
             self.add_action(action)
 
     def add_action(self, action):
-        for verb in getattr(action, 'verbs', []):
+        for verb in action.verbs:
             self._verbs[verb].add(action)
 
     def rem_verb(self, verb, action):
         self._verbs.get(verb).remove(action)
+        if not self._verbs.get(verb):
+            del self._verbs[verb]
 
     def add_verb(self, verb, action):
         self._verbs[verb].add(action)

@@ -21,18 +21,18 @@ class Entity(BaseItem):
     living = True
     combat = False
 
-    def baptise(self, soul):
+    entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
+    exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
+
+    def baptise(self):
         self.followers = set()
         self.registrations = set()
-        self.soul = soul
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
         self.target_map[self] = {}
         self.add_target_keys([self.target_id], self, self.target_map[self])
-        self.add_actions(soul)
-        self.entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
-        self.exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
+
 
     def equip(self, inven):
         self.inven = inven
@@ -58,13 +58,14 @@ class Entity(BaseItem):
         self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
 
     def enhance_soul(self, action):
-        self.add_action(action)
-        self.soul.add(action)
+        for verb in action.verbs:
+            self.soul[verb].add(action)
 
     def diminish_soul(self, action):
-        if action in self.soul:
-            self.soul.remove(action)
-            self.remove_action(action)
+        for verb in action.verbs:
+            self.soul.get(verb).remove(action)
+            if not self._verbs.get(verb):
+                del self._verbs[verb]
 
     def rec_entity_enter_env(self, entity):
         self.add_target(entity)
@@ -290,8 +291,17 @@ class Entity(BaseItem):
         for article in self.inven.copy():
             self.drop_inven(article)
         self.leave_env()
-        self.detach()
         self.status = 'dead'
+        self.detach()
+
+    def detach(self):
+        for follower in self.followers:
+            del follower.following
+            follower.display_line("You are no longer following {}.".format(self.name))
+        if hasattr(self, 'following'):
+            self.following.display_line("{} is no longer following you.".format(self.name))
+            del self.following
+        super(Entity, self).detach()
 
     def equip_article(self, article):
         pass

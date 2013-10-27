@@ -18,8 +18,8 @@ def edit(source, **ignored):
 
 @imm_action(('cmds', 'commands'))
 def cmds(source, **ignored):
-    soul_actions = [action for action in source.soul if getattr(action, 'imm_level', None)]
-    verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in soul_actions]
+
+    verb_lists = [" ".join(["/".join(list(verb)) for verb in source.soul])]
     return ", ".join(sorted(verb_lists))
 
 

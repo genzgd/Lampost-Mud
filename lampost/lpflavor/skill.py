@@ -1,5 +1,6 @@
 import sys
 
+from random import randint
 from collections import defaultdict
 from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO
@@ -10,7 +11,6 @@ m_requires('log', 'datastore', 'dispatcher', __name__)
 
 SKILL_TYPES = []
 DEFAULT_SKILLS = ['punch']
-DEFAULT_IMM = ['zap']
 
 
 def base_skill(cls):
@@ -18,27 +18,22 @@ def base_skill(cls):
     return cls
 
 
-class SkillStatus(RootDBO):
-    dbo_fields = 'skill_level', 'last_used'
-    last_used = 0
-    skill_level = 1
-
-
-class SkillEffect(RootDBO):
-    dbo_fields = 'attr', 'pool', 'amount', 'expiration'
-    attr = None
-    pool = None
-    amount = 0
-    expiration = 0
+def roll_calc(source, calc, skill_level=0):
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
+    roll = randint(0, 20)
+    if roll == 0:
+        roll = -5
+    if roll == 19:
+        roll = 40
+    return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
 @provides('skill_service')
 class SkillService(object):
-
     def _post_init(self):
         register('player_create', self._player_create)
         register('player_baptise', self._baptise)
-        register('imm_baptise', self._imm_baptise)
+        register('mobile_baptise', self._baptise)
         self.skills = {}
         for skill_type in SKILL_TYPES:
             self.skills.update({skill_id: load_object(skill_type, skill_id) for skill_id in fetch_set_keys(skill_type.dbo_set_key)})
@@ -50,58 +45,31 @@ class SkillService(object):
             player.skills[skill_id] = SkillStatus()
 
     def _baptise(self, entity):
-        for skill_id, skill_status in entity.skills.iteritems():
+        for skill_id in entity.skills.iterkeys():
             try:
                 skill = self.skills[skill_id]
                 if skill.auto_start:
-                    skill(entity)
+                    skill.invoke(entity)
                 else:
                     entity.enhance_soul(skill)
             except KeyError:
                 log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
 
-    def _imm_baptise(self, player):
-        for skill_id in DEFAULT_IMM:
-            if skill_id in player.skills:
-                continue
-            imm_skill = self.skills.get(skill_id)
-            if imm_skill:
-                player.skills[skill_id] = SkillStatus()
-                imm_skill.imm_level = 'creator'
-                if imm_skill.auto_start:
-                    imm_skill(player)
-                else:
-                    player.enhance_soul(imm_skill)
 
-
-class SkillCost(object):
-    def __init__(self, pool=None, cost=None):
-        self.costs = defaultdict(int)
-        if pool:
-            self.add(pool, cost)
-
-    def add(self, pool, cost):
-        self.costs[pool] += cost
-        return self
-
-    def apply(self, entity):
-        for pool, cost in self.costs.iteritems():
-            if getattr(entity, pool, 0) < cost:
-                entity.start_refresh()
-                raise ActionError("Your condition prevents you from doing that.")
-        for pool, cost in self.costs.iteritems():
-            setattr(entity, pool, getattr(entity, pool) - cost)
-        entity.start_refresh()
+class SkillStatus(RootDBO):
+    dbo_fields = 'skill_level', 'last_used'
+    last_used = 0
+    skill_level = 1
 
 
 class BaseSkill():
-    dbo_fields = 'verb', 'desc', 'costs',  'pre_reqs', 'prep_time', 'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
+    dbo_fields = 'verb', 'desc', 'costs', 'pre_reqs', 'prep_time', 'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
     verb = None
     desc = None
     prep_time = 0
     cool_down = 0
     pre_reqs = []
-    skill_cost = SkillCost()
+    costs = {}
     prep_map = {}
     success_map = {}
     fail_map = {}
@@ -113,16 +81,6 @@ class BaseSkill():
         if not self.auto_start and self.verb:
             make_action(self, self.verb)
 
-    @property
-    def costs(self):
-        return self.skill_cost.costs
-
-    @costs.setter
-    def costs(self, value):
-        self.skill_cost = SkillCost()
-        for pool, cost in value.iteritems():
-            self.skill_cost.add(pool, cost)
-
     def prepare_action(self, source, target, **kwargs):
         skill_status = source.skills[self.dbo_id]
         if self.cool_down and skill_status.last_used + self.cool_down > dispatcher.pulse_count:
@@ -130,11 +88,14 @@ class BaseSkill():
         if self.prep_map:
             source.broadcast(display=self.display, target=target, **self.prep_map)
 
-    def __call__(self, source, **kwargs):
-        self.skill_cost.apply(source)
-        skill_status = source.skills[self.dbo_id]
+    def use(self, source, **kwargs):
+        source.apply_costs(self.costs)
+        skill_status = source.skills.get(self.dbo_id)
         self.invoke(skill_status, source, **kwargs)
         skill_status.last_used = dispatcher.pulse_count
+
+    def __call__(self, source, **kwargs):
+        self.use(source, **kwargs)
 
 
 @mud_action("skills", "has_skills", self_target=True)
@@ -152,4 +113,5 @@ def skills(source, target, **ignored):
 
 @imm_action("add skill", "args", prep="to", obj_msg_class="has_skills", self_object=True)
 def add_skill(source, target, obj, **ignored):
+
     return "Adding {} to {}".format(target, obj.name)

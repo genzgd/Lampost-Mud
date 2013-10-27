@@ -1,9 +1,8 @@
-from random import randint
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
-from lampost.lpflavor.skill import base_skill, BaseSkill
+from lampost.lpflavor.skill import base_skill, BaseSkill, roll_calc
 from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
@@ -20,16 +19,6 @@ DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
                 'spirit': {'desc': 'Spiritual damage'}}
 
 DAMAGE_DELIVERY = {'melee', 'ranged', 'psychic'}
-
-
-def roll_calc(source, calc, skill_level=0):
-    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
-    roll = randint(0, 20)
-    if roll == 0:
-        roll = -5
-    if roll == 19:
-        roll = 40
-    return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
 def validate_weapon(ability, weapon_type):
@@ -114,7 +103,7 @@ class DefenseSkill(BaseSkill, RootDBO):
     success_map = {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'}
 
     def invoke(self, source, **ignored):
-        pass
+        source.defenses.append(self)
 
     def apply(self, owner, attack):
         try:

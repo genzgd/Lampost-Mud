@@ -14,7 +14,7 @@ class MobileTemplate(Template):
     dbo_key_type = "mobile"
 
     def config_instance(self, instance):
-        instance.baptise(set())
+        instance.baptise()
         instance.equip(set())
 
 
