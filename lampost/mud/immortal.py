@@ -118,7 +118,7 @@ def patch_db(verb, args, command, **ignored):
     return "Object " + key + " patched"
 
 
-@imm_action('set_home')
+@imm_action('set home')
 def set_home(source, **ignored):
     source.home_room = source.env.dbo_id
     source.display_line("{0} is now your home room".format(source.env.title))
@@ -190,7 +190,7 @@ def describe(source, target, **ignored):
         source.display_line(line)
 
 
-@imm_action('build_mode')
+@imm_action('build mode')
 def build_mode(source, **ignored):
     current = getattr(source, "build_mode", False)
     source.build_mode = not current
@@ -203,7 +203,7 @@ def reset(source, **ignored):
     return "Room reset"
 
 
-@imm_action("log_level", imm_level='supreme')
+@imm_action("log level", imm_level='supreme')
 def log_level(args, **ignored):
     log = get_resource("log")
     if args:
@@ -227,7 +227,7 @@ def promote(source, target, obj, **ignored):
     source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
 
 
-@imm_action('run_update', imm_level='supreme')
+@imm_action('run update', imm_level='supreme')
 def run_update(args, **ignored):
     try:
         return lampost.setup.update.__dict__[args[0]]()
@@ -247,7 +247,7 @@ def email(verb, args, command, **ignored):
     return email_sender.send_targeted_email('Lampost Message', message, [user])
 
 
-@imm_action('combat_log', 'attack', self_target=True)
+@imm_action('combat log', 'attack', self_target=True)
 def combat_log(source, target, **ignored):
     if getattr(target, 'combat_log', None):
         del target.combat_log

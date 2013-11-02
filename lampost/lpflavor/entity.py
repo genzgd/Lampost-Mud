@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler
-from lampost.lpflavor.attributes import need_refresh
+from lampost.lpflavor.attributes import need_refresh, POOL_LIST
 from lampost.model.entity import Entity
 from lampost.util.lmutil import args_print
 
@@ -93,6 +93,7 @@ class EntityLP(Entity):
         current_pool = getattr(self, attack.damage_pool)
         setattr(self, attack.damage_pool, current_pool - attack.adj_damage)
         combat_log(source, self.rec_status, self)
+        combat_log(self, self.rec_status, self)
         self.check_status()
 
     def apply_costs(self, costs):
@@ -107,6 +108,9 @@ class EntityLP(Entity):
     def check_status(self):
         if self.health <= 0:
             self.die()
+        else:
+            self.start_refresh()
 
     def rec_status(self):
-        return ''.join(['{N} STATUS--', args_print(health=self.health, followers=self.followers)])
+        return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_name, getattr(self, pool_name))
+            for pool_name in POOL_LIST])])

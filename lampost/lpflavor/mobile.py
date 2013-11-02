@@ -14,7 +14,7 @@ class MobileLP(Mobile, EntityLP):
 
     archetype = None
     level = 1
-    skills = {'dodge': {level:1}}
+    skills = {}
 
 
 def config_instance_cls(self):

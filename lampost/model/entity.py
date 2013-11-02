@@ -63,9 +63,13 @@ class Entity(BaseItem):
 
     def diminish_soul(self, action):
         for verb in action.verbs:
-            self.soul.get(verb).remove(action)
-            if not self._verbs.get(verb):
-                del self._verbs[verb]
+            verb_set = self.soul.get(verb)
+            if verb_set:
+                verb_set.remove(action)
+                if not verb_set:
+                    del self.soul[verb]
+            else:
+                warn("Trying to remove non-existent {} from {} soul".format(verb, self.name))
 
     def rec_entity_enter_env(self, entity):
         self.add_target(entity)

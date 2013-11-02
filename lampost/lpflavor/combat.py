@@ -18,7 +18,7 @@ DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
                 'psych': {'desc': 'Mental/psychic damage'},
                 'spirit': {'desc': 'Spiritual damage'}}
 
-DAMAGE_DELIVERY = {'melee', 'ranged', 'psychic'}
+DAMAGE_DELIVERY = {'melee', 'ranged', 'psych'}
 
 
 def validate_weapon(ability, weapon_type):
@@ -34,9 +34,14 @@ def validate_weapon(ability, weapon_type):
         raise ActionError("You need a different weapon for that.")
 
 
-def validate_delivery(ability, attack):
-    if attack.delivery not in ability.delivery:
+def validate_delivery(ability, delivery):
+    if delivery not in ability.delivery:
         raise ActionError("This doesn't work against that.")
+
+
+def validate_dam_type(ability, damage_type):
+    if ability.damage_type != 'any' and damage_type not in ability.damage_type:
+        raise ActionError("That has no effect.")
 
 
 class Attack(object):
@@ -96,7 +101,7 @@ class DefenseSkill(BaseSkill, RootDBO):
     dbo_set_key = 'skill_defense'
 
     damage_type = 'any'
-    delivery = {'melee'}
+    delivery = {'melee', 'ranged'}
     weapon_type = 'unused'
     accuracy_calc = {}
     absorb_calc = {}
@@ -105,10 +110,14 @@ class DefenseSkill(BaseSkill, RootDBO):
     def invoke(self, source, **ignored):
         source.defenses.append(self)
 
+    def revoke(self, source):
+        source.defenses.remove(self)
+
     def apply(self, owner, attack):
         try:
             validate_weapon(self, owner)
-            validate_delivery(self, attack)
+            validate_delivery(self, attack.delivery)
+            validate_dam_type(self, attack.damage_type)
         except ActionError:
             return
         adj_accuracy = roll_calc(owner, self.accuracy_calc)

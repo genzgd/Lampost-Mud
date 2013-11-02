@@ -7,7 +7,7 @@ from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import make_action, ActionError
 from lampost.mud.action import imm_actions, mud_action, imm_action
 
-m_requires('log', 'datastore', 'dispatcher', __name__)
+m_requires('log', 'datastore', 'dispatcher', 'skill_service', __name__)
 
 SKILL_TYPES = []
 DEFAULT_SKILLS = ['punch']
@@ -30,6 +30,7 @@ def roll_calc(source, calc, skill_level=0):
 
 @provides('skill_service')
 class SkillService(object):
+
     def _post_init(self):
         register('player_create', self._player_create)
         register('player_baptise', self._baptise)
@@ -37,7 +38,26 @@ class SkillService(object):
         self.skills = {}
         for skill_type in SKILL_TYPES:
             self.skills.update({skill_id: load_object(skill_type, skill_id) for skill_id in fetch_set_keys(skill_type.dbo_set_key)})
-        setattr(sys.modules[__name__], 'skill_service', self)
+
+    def add_skill(self, skill_id, entity):
+        try:
+            skill = self.skills[skill_id]
+            if skill.auto_start:
+                skill.invoke(entity)
+            else:
+                entity.enhance_soul(skill)
+        except KeyError:
+            log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
+
+    def remove_skill(self, skill_id, entity):
+        try:
+            skill = self.skills[skill_id]
+            if skill.auto_start:
+                skill.revoke(entity)
+            else:
+                entity.diminish_soul(skill)
+        except KeyError:
+            log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
 
     def _player_create(self, player):
         player.skills = {}
@@ -46,14 +66,7 @@ class SkillService(object):
 
     def _baptise(self, entity):
         for skill_id in entity.skills.iterkeys():
-            try:
-                skill = self.skills[skill_id]
-                if skill.auto_start:
-                    skill.invoke(entity)
-                else:
-                    entity.enhance_soul(skill)
-            except KeyError:
-                log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
+            self.add_skill(skill_id, entity)
 
 
 class SkillStatus(RootDBO):
@@ -112,6 +125,22 @@ def skills(source, target, **ignored):
 
 
 @imm_action("add skill", "args", prep="to", obj_msg_class="has_skills", self_object=True)
-def add_skill(source, target, obj, **ignored):
+def add_skill(target, obj, **ignored):
+    skill_id = target[0]
+    try:
+        skill_level = int(target[1])
+    except IndexError:
+        skill_level = 1
+    skill_service.add_skill(skill_id, obj)
+    skill_status = SkillStatus()
+    skill_status.level = skill_level
+    obj.skills[skill_id] = skill_status
+    return "Added {} to {}".format(target, obj.name)
 
-    return "Adding {} to {}".format(target, obj.name)
+
+@imm_action("remove skill", "args", prep="from", obj_msg_class="has_skills", self_object=True)
+def remove_skill(target, obj, **ignored):
+    skill_service.remove_skill(target[0], obj)
+    return "Removed {} from {}".format(target, obj.name)
+
+
