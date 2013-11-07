@@ -3,7 +3,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.model.entity import Entity
 
-m_requires('log', __name__)
+m_requires('log', 'dispatcher', __name__)
 
 
 class Player(RootDBO):
@@ -34,7 +34,7 @@ class Player(RootDBO):
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
 
     def start(self):
-        self.register_p(self.autosave, seconds=20)
+        register_p(self.autosave, seconds=20)
 
     def rec_glance(self, source, **ignored):
         source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))

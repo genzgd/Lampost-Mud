@@ -311,5 +311,9 @@ class Entity(BaseItem):
         pass
 
     @property
+    def display_status(self):
+        return {'status': self.status}
+
+    @property
     def dead(self):
         return self.status == 'dead'

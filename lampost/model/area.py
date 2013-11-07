@@ -7,10 +7,17 @@ from lampost.model.mobile import MobileTemplate
 from lampost.model.article import ArticleTemplate
 
 
-m_requires('log', __name__)
+m_requires('log', 'dispatcher', __name__)
 
 
-@requires('dispatcher')
+def _post_init():
+    register('game_settings', _update_settings)
+
+
+def _update_settings(game_settings):
+    Area.reset_time = game_settings.get('area_reset', 180)
+
+
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
@@ -24,15 +31,11 @@ class Area(RootDBO):
     mobiles = {}
     articles = {}
 
-    reset_time = 180  # reset every 3 minutes
-    reset_pulse = 20  # we get the reset pulse every 20 seconds
-
-    def on_loaded(self):
-        self.reset_wait = randint(-180, 0)  # Start resets at staggered intervals
+    reset_time = 180
 
     def start(self):
         self.reset()
-        self.reset_reg = self.register_p(self.check_reset, seconds=self.reset_pulse, randomize=10)
+        register_p(self.reset, seconds=self.reset_time, randomize=self.reset_time)
 
     @property
     def first_room(self):
@@ -60,14 +63,8 @@ class Area(RootDBO):
             article_id = ":".join([self.dbo_id, article_id])
         return self.articles.get(article_id)
 
-    def check_reset(self):
-        self.reset_wait += self.reset_pulse
-        if self.reset_wait >= self.reset_time:
-            self.reset()
-
     def reset(self):
         debug("{0} Area resetting".format(self.dbo_id))
-        self.reset_wait = 0
         for room in self.rooms.itervalues():
             room.reset()
 

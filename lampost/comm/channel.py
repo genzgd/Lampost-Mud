@@ -6,8 +6,6 @@ from lampost.util.lmutil import timestamp
 
 m_requires('dispatcher', 'datastore', 'channel_service', __name__)
 
-MAX_CHANNEL_HISTORY = 1000
-
 
 class Channel(object):
     def __init__(self, verb):
@@ -36,6 +34,10 @@ class ChannelService(ClientService):
         register('maintenance', self._prune_channels)
         register('session_connect', self._session_connect)
         register('player_connect', self._player_connect)
+        register('server_settings', self._update_settings)
+
+    def _update_settings(self, server_settings):
+        self.max_channel_history = server_settings.get('max_channel_history', 1000)
 
     def dispatch_message(self, channel_id, text):
         message = {'id': channel_id, 'text': text}
@@ -62,7 +64,7 @@ class ChannelService(ClientService):
 
     def _prune_channels(self):
         for channel_id in self.known_channels:
-            trim_db_list(channel_key(channel_id), 0, MAX_CHANNEL_HISTORY)
+            trim_db_list(channel_key(channel_id), 0, self.max_channel_history)
 
 
 def channel_key(channel_id):

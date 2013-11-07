@@ -25,22 +25,20 @@ POOL_MAP = {'health': {'name': 'Health', 'desc': 'Physical well being resource',
             'action': {'name': 'Action', 'desc': 'Action points pool',
                        'calc': [['con', 5],['bal', 5], ['wis', 3], ['agi', 2]]}}
 
-POOL_LIST = tuple(POOL_MAP.iterkeys())
-
-BASE_POOL_LIST = tuple(["base_{}".format(pool_id) for pool_id in POOL_LIST])
+POOL_LIST = tuple([(key, 'base_{}'.format(key)) for key in POOL_MAP.iterkeys()])
 
 
 def base_pools(entity):
-    for ix, pool_id in enumerate(POOL_LIST):
+    for pool_id, base_pool_id in POOL_LIST:
         calc = POOL_MAP[pool_id]['calc']
         total = sum(getattr(entity, calc[0]) * calc[1] for calc in calc)
-        setattr(entity, BASE_POOL_LIST[ix], total)
+        setattr(entity, base_pool_id, total)
 
 
 def fill_pools(entity):
     base_pools(entity)
-    for ix, pool_id in enumerate(POOL_LIST):
-        setattr(entity, pool_id, getattr(entity, BASE_POOL_LIST[ix]))
+    for pool_id, base_pool_id in POOL_LIST:
+        setattr(entity, pool_id, getattr(entity, base_pool_id))
 
 
 def restore_attrs(entity):
@@ -49,7 +47,7 @@ def restore_attrs(entity):
 
 
 def need_refresh(entity):
-    for ix, pool_id in enumerate(POOL_LIST):
-        if getattr(entity, pool_id) < getattr(entity, BASE_POOL_LIST[ix]):
+    for pool_id, base_pool_id in POOL_LIST:
+        if getattr(entity, pool_id) < getattr(entity, base_pool_id):
             return True
 

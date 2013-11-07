@@ -8,9 +8,10 @@ from lampost.model.area import Area
 from lampost.model.player import Player
 from lampost.mud.mud import MudNature
 from lampost.setup.dbcontext import DbContext
-from lampost.setup.scripts import build_default_displays
+from lampost.setup.scripts import build_default_displays, build_config_settings
 
 m_requires('datastore', 'cls_registry', 'dispatcher', 'perm', __name__)
+
 
 
 def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
@@ -28,8 +29,9 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     room_id = "{0}:0".format(start_area)
     config.start_room = room_id
     config.default_displays = build_default_displays()
+    build_config_settings(config)
     save_object(config)
-    ConfigManager(config_id)._post_init()
+    ConfigManager(config_id).start_service()
 
     MudNature(flavor)
     user_manager = UserManager()

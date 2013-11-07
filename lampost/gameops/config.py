@@ -10,21 +10,26 @@ class ConfigManager():
     def __init__(self, config_id):
         self.config_id = config_id
 
-    def _post_init(self):
+    def start_service(self):
         register('session_connect', self._session_connect)
         register('player_create', self._player_create)
         self.config = load_object(Config, self.config_id)
         if self.config:
-            dispatch("config_updated", self.config_js)
+            self._dispatch_update()
         else:
             error("No configuration found", self)
+
+    def _dispatch_update(self):
+        dispatch('server_settings', self.config.server_settings)
+        dispatch('game_settings', self.config.game_settings)
+        dispatch('config_js', self.config_js)
 
     def save_config(self):
         save_object(self.config)
 
     def update_config(self, config_update):
         update_object(self.config, config_update)
-        dispatch("config_updated", self.config_js)
+        self._dispatch_update()
 
     def _player_create(self, player):
         if not player.imm_level:
@@ -55,7 +60,8 @@ class ConfigManager():
 
 class Config(RootDBO):
     dbo_key_type = "config"
-    dbo_fields = 'title', 'description', 'start_room', 'auto_imm_level', 'default_displays'
+    dbo_fields = 'title', 'description', 'start_room', 'auto_imm_level', 'server_settings',\
+                 'default_displays', 'game_settings'
     title = "Lampost (New Install)"
     description = "A fresh install of Lampost Mud"
     auto_imm_level = 0
@@ -63,4 +69,6 @@ class Config(RootDBO):
     def __init__(self, dbo_id):
         self.dbo_id = dbo_id
         self.default_displays = {}
+        self.server_settings = {}
+        self.game_settings = {}
 

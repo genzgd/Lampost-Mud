@@ -97,7 +97,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         self.playerName = data.name;
         self.userDisplays = data.displays;
         self.playerId = self.playerName.toLocaleLowerCase();
-        self.validTabs = ['channel', 'messages', 'playerList'];
+        self.validTabs = ['status', 'channel', 'messages', 'playerList'];
         self.messages = data.messages;
 
         lmUtil.intSort(self.messages, 'msg_id');
@@ -109,6 +109,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
     lmBus.register("channel", updateChannel, null, -100);
     lmBus.register("gen_channels", rebuildChannels, null, -100);
     lmBus.register("logout", clear, null, -100);
+
     lmBus.register("new_message", function(message) {
         self.messages.push(message);
     }, null, -100);
@@ -117,8 +118,6 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         self.playerList = playerList;
         lmBus.dispatch('player_list_update');
     });
-
-
 
 }]);
 

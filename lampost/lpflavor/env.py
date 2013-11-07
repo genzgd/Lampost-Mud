@@ -8,7 +8,7 @@ def find_cost(room):
         return exit_cost_map[room.size]
     except KeyError:
         exit_cost_map[room.size] = {'action': room.size, 'stamina' : room.size / 2}
-        return skill_cost
+        return exit_cost_map[room.size]
 
 
 class ExitLP(Exit):
@@ -18,5 +18,5 @@ class ExitLP(Exit):
         source.display_line("You head {}.".format(self.direction.desc))
 
     def __call__(self, source, **ignored):
-        find_cost(self.room).apply(source)
+        source.apply_costs(find_cost(self.room))
         super(ExitLP, self).__call__(source)

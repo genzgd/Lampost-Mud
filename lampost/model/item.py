@@ -1,10 +1,9 @@
-from lampost.context.resource import requires
+from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, dbo_describe
 
+m_requires('dispatcher', __name__)
 
 
-
-@requires('dispatcher')
 class BaseItem(object):
     template_fields = "desc", "title", "aliases"
 
@@ -53,7 +52,7 @@ class BaseItem(object):
         self.env = None
 
     def detach(self):
-        self.detach_events(self)
+        detach_events(self)
         self.env = None
 
 

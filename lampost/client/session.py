@@ -7,11 +7,6 @@ from base64 import b64encode
 from lampost.context.resource import m_requires, requires, provides
 from lampost.gameops.display import SYSTEM_DISPLAY
 
-
-LINK_DEAD_INTERVAL = timedelta(seconds=15)
-LINK_DEAD_PRUNE = timedelta(minutes=2)
-LINK_IDLE_REFRESH = timedelta(seconds=45)
-
 m_requires('log', 'dispatcher', __name__)
 
 
@@ -24,8 +19,14 @@ class SessionManager(object):
         self.player_session_map = {}
 
     def _post_init(self):
-        register_p(self._refresh_link_status, seconds=5)
-        register_p(self._broadcast_player_list, seconds=30)
+        register('server_settings', self._update_settings)
+
+    def _update_settings(self, server_settings):
+        register_p(self._refresh_link_status, seconds=server_settings.get('refresh_link_interval', 5))
+        register_p(self._broadcast_status, seconds=server_settings.get('broadcast_interval', 30))
+        self.link_dead_prune = timedelta(seconds=server_settings.get('link_dead_prune', 120))
+        self.link_dead_interval = timedelta(seconds=server_settings.get('link_dead_interval', 15))
+        self.link_idle_refresh = timedelta(seconds=server_settings.get('link_idle_refresh', 45))
 
     def get_session(self, session_id):
         return self.session_map.get(session_id, None)
@@ -94,7 +95,7 @@ class SessionManager(object):
         session.append({'login': client_data})
         if not old_session:
             dispatch('player_login', player)
-        self._broadcast_player_list()
+        self._broadcast_status()
 
     def logout(self, session):
         session.append({'logout': 'logout'})
@@ -106,7 +107,7 @@ class SessionManager(object):
             del self.player_info_map[player.dbo_id]
             del self.player_session_map[player.dbo_id]
         session.user = None
-        self._broadcast_player_list()
+        self._broadcast_status()
 
     def _get_next_id(self):
         u_session_id = b64encode(str(urandom(16)))
@@ -118,19 +119,19 @@ class SessionManager(object):
         now = datetime.now()
         for session_id, session in self.session_map.items():
             if session.ld_time:
-                if now - session.ld_time > LINK_DEAD_PRUNE:
+                if now - session.ld_time > self.link_dead_prune:
                     if session.player:
                         self.logout(session)
                     del self.session_map[session_id]
                     dispatch('session_disconnect', session)
                     session.disconnect()
             elif session.request:
-                if now - session.attach_time >= LINK_IDLE_REFRESH:
+                if now - session.attach_time >= self.link_idle_refresh:
                     session.append({"keep_alive": True})
-            elif now - session.attach_time > LINK_DEAD_INTERVAL:
+            elif now - session.attach_time > self.link_dead_interval:
                 session.link_failed("Timeout")
 
-    def _broadcast_player_list(self):
+    def _broadcast_status(self):
         now = datetime.now()
         for session in self.player_session_map.itervalues():
             if session.player:
@@ -142,15 +143,13 @@ class SessionManager(object):
 class UserSession(object):
 
     def __init__(self):
-        self._lines = []
-        self._output = []
         self._pulse_reg = None
-
         self.attach_time = datetime.now()
         self.request = None
         self.player = None
         self.ld_time = None
         self.user = None
+        self._reset()
 
     def attach(self, request):
         if self.request:
@@ -176,8 +175,7 @@ class UserSession(object):
         if self._pulse_reg:
             unregister(self._pulse_reg)
             self._pulse_reg = None
-        self._output = []
-        self._lines = []
+        self._reset()
         return output
 
     def connect_user(self, user):
@@ -206,6 +204,13 @@ class UserSession(object):
             self.append({'display': {'lines': self._lines}})
         self._lines.append(display_line)
 
+    def update_status(self, status):
+        try:
+            self._status.update(status)
+        except AttributeError:
+            self._status = status
+            self.append({'status': status})
+
     def link_failed(self, error):
         if self.player:
             warn("Link failed for {} ".format(self.player.name, repr(error)), self)
@@ -219,10 +224,14 @@ class UserSession(object):
         if self.request:
             self._output.append({'link_status': "good"})
             self._push(self._output)
-            self._output = []
-            self._lines = []
             unregister(self._pulse_reg)
             self._pulse_reg = None
+            self._reset()
+
+    def _reset(self):
+        self._lines = []
+        self._output = []
+        self._status = None
 
     def _push(self, output):
         self.request.write(self.json_encode(output))

@@ -43,6 +43,7 @@ def _post_init():
     register('first_time_setup', setup.first_time_setup)
     register('player_create', _player_create)
     register('player_baptise', _player_baptise)
+    register('player_connect', _player_connect)
 
 
 def _player_create(player):
@@ -57,6 +58,9 @@ def _player_baptise(player):
     base_pools(player)
     player.start_refresh()
 
+
+def _player_connect(player, *ignored):
+    player.status_change()
 
 
 

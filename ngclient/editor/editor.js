@@ -533,7 +533,7 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$rootScope', '$sc
       $scope.areaList.push(value.id);
       $scope.areaList.sort();
     });
-    if (lmEditor.currentEditor == $scope.editor) {
+    if (lmEditor.currentEditor === $scope.editor) {
       loadConfig();
     }
 

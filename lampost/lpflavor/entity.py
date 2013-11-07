@@ -1,10 +1,22 @@
 from lampost.context.resource import m_requires
-from lampost.gameops.action import action_handler
+from lampost.gameops.action import action_handler, ActionError
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
 from lampost.model.entity import Entity
 from lampost.util.lmutil import args_print
 
-m_requires('log', 'tools', __name__)
+m_requires('log', 'tools', 'dispatcher', __name__)
+
+
+def _post_init():
+    register('game_settings', update_settings)
+
+
+def update_settings(game_settings):
+    EntityLP._refresh_interval = game_settings.get('refresh_interval', 4)
+    EntityLP._refresher['stamina'] = game_settings.get('stamina_refresh', 1)
+    EntityLP._refresher['health'] = game_settings.get('health_refresh', 1)
+    EntityLP._refresher['mental'] = game_settings.get('mental_refresh', 1)
+    EntityLP._refresher['action'] = game_settings.get('action_refresh', 40)
 
 
 class EntityLP(Entity):
@@ -20,6 +32,7 @@ class EntityLP(Entity):
     _current_action = None
     _next_command = None
     _action_pulse = None
+    _refresher = {}
     effects = []
     skills = {}
 
@@ -40,7 +53,7 @@ class EntityLP(Entity):
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
         if prep_time:
-            self._current_action = action, act_args, self.register_p(self._finish_action, pulses=prep_time, priority=priority)
+            self._current_action = action, act_args, register_p(self._finish_action, pulses=prep_time, priority=priority)
         else:
             super(EntityLP, self).process_action(action, act_args)
         self.check_follow(action, act_args)
@@ -58,7 +71,7 @@ class EntityLP(Entity):
     def _finish_action(self):
         action, action_args, action_pulse = self._current_action
         del self._current_action
-        self.unregister(action_pulse)
+        unregister(action_pulse)
         target = action_args.get('target', None)
         if target and not target in self.target_map:
             raise ActionError("{} is no longer here.", target.name)
@@ -69,15 +82,16 @@ class EntityLP(Entity):
 
     def start_refresh(self):
         if not self._refresh_pulse and need_refresh(self):
-            self._refresh_pulse = self.register_p(self._refresh, pulses=4)
+            self._refresh_pulse = register_p(self._refresh, pulses=self._refresh_interval)
 
     def _refresh(self):
         if need_refresh(self):
-            self.action += min(40, self.base_action - self.action)
-            self.stamina += min(1, self.base_stamina - self.stamina)
-            self.health += min(1, self.base_health - self.health)
+            for pool_id, base_pool_id in POOL_LIST:
+                new_value = getattr(self, pool_id) + self._refresher[pool_id]
+                setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
+            self.status_change()
         else:
-            self.unregister(self._refresh_pulse)
+            unregister(self._refresh_pulse)
             del self._refresh_pulse
 
     def rec_attack(self, source, attack):
@@ -92,25 +106,34 @@ class EntityLP(Entity):
         source.broadcast(target=self, **attack.success_map)
         current_pool = getattr(self, attack.damage_pool)
         setattr(self, attack.damage_pool, current_pool - attack.adj_damage)
-        combat_log(source, self.rec_status, self)
-        combat_log(self, self.rec_status, self)
         self.check_status()
 
     def apply_costs(self, costs):
         for pool, cost in costs.iteritems():
             if getattr(self, pool, 0) < cost:
-                entity.start_refresh()
                 raise ActionError("Your condition prevents you from doing that.")
         for pool, cost in costs.iteritems():
             setattr(self, pool, getattr(self, pool) - cost)
-        self.start_refresh()
+        self.check_status()
 
     def check_status(self):
         if self.health <= 0:
             self.die()
         else:
             self.start_refresh()
+        self.status_change()
+
+    def status_change(self):
+        pass
+
+    @property
+    def display_status(self):
+        display_status = super(EntityLP, self).display_status
+        for pool_id, base_pool_id in POOL_LIST:
+            display_status[pool_id] = getattr(self, pool_id)
+            display_status[base_pool_id] = getattr(self, base_pool_id)
+        return display_status
 
     def rec_status(self):
-        return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_name, getattr(self, pool_name))
-            for pool_name in POOL_LIST])])
+        return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_name))
+            for pool_id, ignored in POOL_LIST])])

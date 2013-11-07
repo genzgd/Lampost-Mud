@@ -10,14 +10,10 @@ m_requires("log", "datastore", __name__)
 
 @provides('dispatcher', True)
 class Dispatcher:
-    def __init__(self, max_pulse_queue=1000, pulse_interval=.1, maintenance_interval=60):
+    def __init__(self):
         self._registrations = defaultdict(set)
         self._pulse_map = defaultdict(set)
         self._owner_map = defaultdict(set)
-        self.max_pulse_queue = max_pulse_queue
-        self.pulse_interval = pulse_interval
-        self.pulses_per_second = 1 / pulse_interval
-        self.maintenance_interval = maintenance_interval
 
     def register(self, event_type, callback, owner=None, priority=0):
         return self._add_registration(Registration(event_type, callback, owner, priority))
@@ -42,8 +38,6 @@ class Dispatcher:
         if seconds:
             pulses = int(seconds * self.pulses_per_second)
             randomize = int(randomize * self.pulses_per_second)
-        if pulses >= self.max_pulse_queue:
-            raise ValueError("Pulse Frequency Greater Than Pulse Queue Size")
         if randomize:
             randomize = randint(0, randomize)
         registration = PulseRegistration(pulses, callback, priority=priority)
@@ -61,15 +55,14 @@ class Dispatcher:
 
     def _pulse(self):
         self.dispatch('pulse')
-        map_loc = self.pulse_count % self.max_pulse_queue
-        for reg in sorted(self._pulse_map[map_loc], key=lambda reg: reg.priority):
+        for reg in sorted(self._pulse_map[self.pulse_count], key=lambda reg: reg.priority):
             if reg.freq:
                 try:
                     reg.callback()
                 except Exception as pulse_error:
                     error('Pulse Error', 'Dispatcher', pulse_error)
                 self._add_pulse(self.pulse_count, reg)
-        del self._pulse_map[map_loc]
+        del self._pulse_map[self.pulse_count]
         self.pulse_count += 1
 
     def _add_registration(self, registration):
@@ -78,8 +71,7 @@ class Dispatcher:
         return registration
 
     def _add_pulse(self, start, event):
-        next_loc = (start + event.freq) % self.max_pulse_queue
-        self._pulse_map[next_loc].add(event)
+        self._pulse_map[start + event.freq].add(event)
 
     def _post_init(self):
         try:
@@ -88,12 +80,29 @@ class Dispatcher:
             self.pulse_count = 0
             save_raw('event_pulse', self.pulse_count)
         self.register_p(lambda: save_raw('event_pulse', self.pulse_count), 100)
-        pulse_lc = task.LoopingCall(self._pulse).start(self.pulse_interval)
-        pulse_lc.addErrback(heartbeat_failed)
-        info("Pulse Event heartbeat started at {} seconds".format(self.pulse_interval), self)
-        maintenance_lc = task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * self.maintenance_interval)
-        maintenance_lc.addErrback(heartbeat_failed)
-        info("Maintenance Event heartbeat started at {} minutes".format(self.maintenance_interval), self)
+        self.register("server_settings", self._update_settings, priority=-1000)
+
+    def _update_settings(self, server_settings):
+        try:
+            pulse_interval = server_settings['pulse_interval']
+            self.pulses_per_second = 1 / pulse_interval
+            if hasattr(self, 'pulse_lc'):
+                self.pulse_lc.stop()
+            self.pulse_lc = task.LoopingCall(self._pulse).start(pulse_interval, False)
+            self.pulse_lc.addErrback(heartbeat_failed)
+            info("Pulse Event heartbeat started at {} seconds".format(pulse_interval), self)
+        except KeyError:
+            pass
+
+        try:
+            maintenance_interval = server_settings['maintenance_interval']
+            if hasattr(self, 'maintenance_lc'):
+                self.maintenance_lc.stop()
+            self.maintenance_lc = task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * maintenance_interval, False)
+            self.maintenance_lc.addErrback(heartbeat_failed)
+            info("Maintenance Event heartbeat started at {} minutes".format(maintenance_interval), self)
+        except KeyError:
+            pass
 
 
 class Registration(object):
