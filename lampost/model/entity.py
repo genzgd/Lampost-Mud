@@ -290,6 +290,9 @@ class Entity(BaseItem):
     def can_see(self, target):
         return True
 
+    def check_inven(self, article):
+        pass
+
     def die(self):
         self.exit_msg = Broadcast(s="{n} expires, permanently.")
         for article in self.inven.copy():

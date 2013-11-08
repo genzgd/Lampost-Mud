@@ -106,22 +106,22 @@ class RoomUpdate(Resource):
         contents = save_contents(room)
         room.title = content.title
         room.desc = content.desc
-        room.extras = []
+        room.del_coll('extras')
         for extra_json in content.extras:
             if extra_json.get('title', None):
                 extra = BaseItem()
                 hydrate_dbo(extra, extra_json)
                 room.append_list('extras', extra)
-        room.mobile_resets = []
+        room.del_coll('mobile_resets')
         for mobile_json in content.mobiles:
             mobile_reset = MobileReset()
             hydrate_dbo(mobile_reset, mobile_json)
             room.append_list('mobile_resets', mobile_reset)
-        room.article_resets = []
+        room.del_coll('article_resets')
         for article_json in content.articles:
             article_reset = ArticleReset()
             hydrate_dbo(article_reset, article_json)
-            room.append_list('article_reset', article_reset)
+            room.append_list('article_resets', article_reset)
         save_object(room, True)
         restore_contents(room, contents)
         return room_dto(room)

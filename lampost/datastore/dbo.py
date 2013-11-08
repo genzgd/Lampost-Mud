@@ -64,6 +64,9 @@ class RootDBO(object):
         if not my_map:
             self.__dict__.pop(attr_name, None)
 
+    def del_coll(self, attr_name):
+        self.__dict__.pop(attr_name, None)
+
     def on_loaded(self):
         pass
 
@@ -209,6 +212,8 @@ class DBOList(DBORef):
         self._add_raw_coll(dbo_dict, dbo_list, use_defaults)
 
     def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
+        if not dbo_list:
+            return
         if self.key_type:
             dbo_dict[self.field_name] = [child.dbo_id for child in dbo_list]
         else:
@@ -219,6 +224,8 @@ class DBOMap(DBOList):
     coll_class = dict
 
     def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
+        if not dbo_list:
+            return
         if self.key_type:
             dbo_dict[self.field_name] = [dbo_key for dbo_key in dbo_list]
         else:

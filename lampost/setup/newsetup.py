@@ -13,7 +13,6 @@ from lampost.setup.scripts import build_default_displays, build_config_settings
 m_requires('datastore', 'cls_registry', 'dispatcher', 'perm', __name__)
 
 
-
 def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
               imm_password="password", start_area="immortal"):
     DbContext(db_host=db_host, db_num=db_num, db_port=db_port, db_pw=db_pw)

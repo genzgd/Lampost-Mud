@@ -169,7 +169,7 @@ class Room(RootDBO):
             if not template:
                 error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
                 continue
-            curr_count = len([entity for entity in self.contents if getattr(entity, template, None) == template])
+            curr_count = len([entity for entity in self.contents if getattr(entity, 'template', None) == template])
             for unused in range(a_reset.article_count - curr_count):
                 self.add_template(template)
             if a_reset.article_count <= curr_count < a_reset.article_max:
