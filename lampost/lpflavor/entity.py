@@ -12,8 +12,8 @@ def _post_init():
 
 
 def update_settings(game_settings):
-    EntityLP._refresh_interval = game_settings.get('refresh_interval', 4)
-    EntityLP._refresher['stamina'] = game_settings.get('stamina_refresh', 1)
+    EntityLP._refresh_interval = game_settings.get('refresh_interval', 12)
+    EntityLP._refresher['stamina'] = game_settings.get('stamina_refresh',8)
     EntityLP._refresher['health'] = game_settings.get('health_refresh', 1)
     EntityLP._refresher['mental'] = game_settings.get('mental_refresh', 1)
     EntityLP._refresher['action'] = game_settings.get('action_refresh', 40)
@@ -135,5 +135,5 @@ class EntityLP(Entity):
         return display_status
 
     def rec_status(self):
-        return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_name))
+        return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
             for pool_id, ignored in POOL_LIST])])

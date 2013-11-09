@@ -18,7 +18,6 @@ def edit(source, **ignored):
 
 @imm_action(('cmds', 'commands'))
 def cmds(source, **ignored):
-
     verb_lists = [" ".join(["/".join(list(verb)) for verb in source.soul])]
     return ", ".join(sorted(verb_lists))
 
@@ -67,7 +66,7 @@ def patch(source, verb, args, command, **ignored):
         split_ix = args.index(":")
         target_id = args[:split_ix]
         prop = args[split_ix + 1]
-        new_value =  find_extra(verb, split_ix + 2, command)
+        new_value = find_extra(verb, split_ix + 2, command)
     except (ValueError, IndexError):
         return "Syntax -- 'patch [target] [:] [prop_name] [new_value]'"
     target_list = list(source.matching_targets(target_id, "__dict__"))

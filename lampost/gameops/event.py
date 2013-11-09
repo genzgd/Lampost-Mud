@@ -74,11 +74,7 @@ class Dispatcher:
         self._pulse_map[start + event.freq].add(event)
 
     def _post_init(self):
-        try:
-            self.pulse_count = load_raw('event_pulse')
-        except TypeError:
-            self.pulse_count = 0
-            save_raw('event_pulse', self.pulse_count)
+        self.pulse_count = load_raw('event_pulse', 0)
         self.register_p(lambda: save_raw('event_pulse', self.pulse_count), 100)
         self.register("server_settings", self._update_settings, priority=-1000)
 

@@ -37,8 +37,11 @@ class RedisStore():
     def save_raw(self, key, raw):
         self.redis.set(key, json_encode(raw))
 
-    def load_raw(self, key):
-        return json_decode(self.redis.get(key))
+    def load_raw(self, key, default=None):
+        json = self.redis.get(key)
+        if json:
+            return json_decode(json)
+        return default
 
     def load_cached(self, key):
         return self._object_map.get(key)

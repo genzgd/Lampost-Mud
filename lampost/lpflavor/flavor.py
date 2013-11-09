@@ -1,3 +1,4 @@
+import sys
 from lampost.env.room import Exit
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
@@ -44,6 +45,7 @@ def _post_init():
     register('player_create', _player_create)
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
+    register('game_settings', _game_settings)
 
 
 def _player_create(player):
@@ -58,6 +60,11 @@ def _player_baptise(player):
     base_pools(player)
     player.start_refresh()
 
+
+def _game_settings(game_settings):
+    env_module = sys.modules['lampost.lpflavor.env']
+    env_module.stamina_calc = game_settings['room_stamina']
+    env_module.action_calc = game_settings['room_action']
 
 def _player_connect(player, *ignored):
     player.status_change()

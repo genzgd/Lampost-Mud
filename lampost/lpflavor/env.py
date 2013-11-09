@@ -1,4 +1,4 @@
-from lampost.env.room import Exit
+from lampost.env.room import Exit, Room
 
 exit_cost_map = {}
 
@@ -7,7 +7,8 @@ def find_cost(room):
     try:
         return exit_cost_map[room.size]
     except KeyError:
-        exit_cost_map[room.size] = {'action': room.size, 'stamina' : room.size / 2}
+        exit_cost_map[room.size] = {'action': action_calc * room.size / Room.size,
+                                    'stamina': stamina_calc * room.size / Room.size}
         return exit_cost_map[room.size]
 
 

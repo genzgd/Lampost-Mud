@@ -31,6 +31,11 @@ class ConfigManager():
         update_object(self.config, config_update)
         self._dispatch_update()
 
+    def update_setting(self, setting_id, setting_value, setting_type='game'):
+        setting_type = ''.join([setting_type, '_settings'])
+        config_settings = getattr(self.config, setting_type)
+        config_settings[setting_id] = setting_value
+
     def _player_create(self, player):
         if not player.imm_level:
             player.imm_level = self.config.auto_imm_level

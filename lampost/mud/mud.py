@@ -38,10 +38,10 @@ class MudNature():
         template_class(ArticleTemplate, Article)
         template_class(MobileTemplate, Mobile)
 
+        register('game_settings', self._game_settings)
         register('player_connect', self._player_connect)
         register('player_baptise', self._baptise, priority=-100)
         register('imm_baptise', self._imm_baptise, priority=-100)
-
 
     def start_service(self):
         info("Loading mud", self)
@@ -57,6 +57,10 @@ class MudNature():
                 player.enhance_soul(cmd)
             else:
                 player.diminish_soul(cmd)
+
+    def _game_settings(self, game_settings):
+        Area.reset_time = game_settings.get('area_reset', 180)
+        Room.size = game_settings.get('room_size', 10)
 
     def _player_connect(self, player, client_data):
         editors = []

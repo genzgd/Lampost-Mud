@@ -10,14 +10,6 @@ from lampost.model.article import ArticleTemplate
 m_requires('log', 'dispatcher', __name__)
 
 
-def _post_init():
-    register('game_settings', _update_settings)
-
-
-def _update_settings(game_settings):
-    Area.reset_time = game_settings.get('area_reset', 180)
-
-
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"

@@ -2,8 +2,20 @@ from lampost.context.resource import m_requires
 from lampost.lpflavor.combat import AttackSkill, DefenseSkill
 from lampost.lpflavor.skill import DEFAULT_SKILLS
 from lampost.model.race import PlayerRace
+from lampost.setup.scripts import build_default_settings
 
 m_requires('datastore', __name__)
+
+GAME_SETTINGS = {'refresh_interval': {'desc': 'Time between player and monster refreshes (in pulses).',
+                                      'default': 12},
+                 'room_stamina': {'desc': 'Stamina cost for default room size', 'default': 2},
+                 'room_action': {'desc': 'Action cost for default room size', 'default': 10},
+                 'stamina_refresh' : {'desc': 'Stamina refresh amount per refresh interval',
+                                      'default': 8},
+                 'health_refresh': {'desc': 'Health refresh amount per refresh interval', 'default': 1},
+                 'mental_refresh': {'desc': 'Mental refresh amount per refresh interval', 'default': 1},
+                 'action_refresh': {'desc': 'Action refresh amount per refresh interval', 'default': 40}
+                 }
 
 
 def first_time_setup():
@@ -11,6 +23,7 @@ def first_time_setup():
     unknown_race.name = "Unknown"
     save_object(unknown_race)
     default_skills()
+    game_settings()
 
 
 def default_skills():
@@ -42,5 +55,9 @@ def default_skills():
     dodge_skill.accuracy_calc = {'agi': 50, 'bal': 1}
     dodge_skill.auto_start = True
     save_object(dodge_skill)
+
+
+def game_settings():
+    build_default_settings(GAME_SETTINGS, 'game')
 
 

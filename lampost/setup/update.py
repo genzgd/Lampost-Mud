@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.lpflavor.setup import default_skills
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace
-from lampost.setup.scripts import build_default_displays, build_config_settings
+from lampost.setup.scripts import build_default_displays, build_default_settings
 
 m_requires('log', 'config_manager', 'perm', 'datastore', 'skill_service', 'dispatcher', __name__)
 
