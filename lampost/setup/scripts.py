@@ -26,7 +26,7 @@ def build_default_displays():
     config_manager.save_config()
 
 
-def build_default_settings(settings, setting_type="game"):
+def build_default_settings(settings, setting_type):
     for setting_id, setting in settings.iteritems():
         config_manager.update_setting(setting_id, setting['default'], setting_type)
     config_manager.save_config()

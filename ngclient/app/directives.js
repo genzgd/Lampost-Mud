@@ -136,6 +136,16 @@ angular.module('lampost_dir').directive("altText", [function () {
 
 }]);
 
+angular.module('lampost_dir').directive("lmStep", [function() {
+  return {
+    restrict: "A",
+    link: function(scope, element, attrs) {
+      element.attr("step", scope.$eval(attrs.lmStep));
+    }
+  }
+}]);
+
+
 angular.module('lampost_dir').directive("colorPicker", [function () {
     return {
         restrict: "A",

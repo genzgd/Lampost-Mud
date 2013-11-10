@@ -1,4 +1,4 @@
-angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, lmUtil) {
+angular.module('lampost').service('lmData', ['$sce', 'lmBus', 'lmUtil', function($sce, lmBus, lmUtil) {
 
     var maxLines = 1000;
     var self = this;
@@ -72,6 +72,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         display = display || line.display;
         var lineDisplay = self.userDisplays[display] || self.defaultDisplays[display];
         if (!lineDisplay) {
+            line.safe = $sce.trustAsHtml(line.text);
             return;
         }
         if (line.text == 'HRT') {
@@ -83,6 +84,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function(lmBus, 
         } else {
             line.style = {color: lineDisplay.color};
         }
+        line.safe = $sce.trustAsHtml(line.text);
     };
 
     lmBus.register('client_config', function(data) {

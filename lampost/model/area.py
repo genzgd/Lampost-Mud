@@ -26,6 +26,9 @@ class Area(RootDBO):
     reset_time = 180
 
     def start(self):
+        for room_id in [room_id for room_id, room in self.rooms.iteritems() if not room]:
+            warn("Invalid room: {} -- removing from Area Object".format(room_id))
+            del self.rooms[room_id]
         self.reset()
         register_p(self.reset, seconds=self.reset_time, randomize=self.reset_time)
 

@@ -7,8 +7,8 @@ def find_cost(room):
     try:
         return exit_cost_map[room.size]
     except KeyError:
-        exit_cost_map[room.size] = {'action': action_calc * room.size / Room.size,
-                                    'stamina': stamina_calc * room.size / Room.size}
+        exit_cost_map[room.size] = {'action': int(action_calc * room.size / Room.size),
+                                    'stamina': int(stamina_calc * room.size / Room.size)}
         return exit_cost_map[room.size]
 
 

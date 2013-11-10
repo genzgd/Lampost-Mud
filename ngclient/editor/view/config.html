@@ -1,11 +1,21 @@
-<div class="container_fluid" ng-controller="MudConfigCtrl" ng-show="ready">
+<div class="container_fluid wrapper" ng-controller="MudConfigCtrl" ng-show="ready">
   <div class="row-fluid">
+    <div class="span12">
+      <div class="pull-right">
+        <button ng-click="updateConfig()" class="btn btn-primary">Update</button>
+        <button ng-click="revertConfig()" class="btn">Revert</button>
+      </div>
+    </div>
+  </div>
+  <div class="row-fluid">
+
     <div class="span4">
       <label>Mud Title</label>
       <input class="span10" type="text" ng-model="config.title" required="true"/>
       <label>Mud Description</label>
       <textarea class="span10" rows="10" ng-model="config.description" required></textarea>
     </div>
+
     <div class="span3">
       <label>Start Area</label>
       <select class="span10" ng-change="changeArea()" ng-model="startAreaId" ng-options="areaId for areaId in areaList" required>
@@ -16,12 +26,40 @@
       <label>Auto Imm Level</label>
       <input class="span4 pagination-right" type="number" ng-model="config.auto_imm_level" required="true"/>
     </div>
-    <div class="span4">
-      <h5>Combat Settings</h5>
+
+    <div class="span5 wrapper">
+      <div class="tabbable scrollable">
+        <ul class="nav nav-tabs">
+          <li class="unselectable active"><a href="#serverSettings" data-toggle="tab">Server Settings</a></li>
+          <li class="unselectable"><a href="#gameSettings" data-toggle="tab">Game Settings</a></li>
+        </ul>
+        <div class="tab-content wrapper">
+          <div class="tab-pane active" id="serverSettings">
+            <table class="table table-condensed" style="width: 100%">
+              <tbody>
+              <tr class="table-bordered" ng-repeat="(name, value) in config.server_settings" ng-init="default = defaults.server[name]">
+                <td title="{{default.desc}}" style="width: 65%;">{{name}}</td>
+                <td class="edit-cell" title="{{'Default: ' + default.default}}" style="width: 35%;"><input class="span12 edit-cell alias-row"
+                    type="number" ng-model="config.server_settings[name]" min="{{default.min}}" lm-step="default.step"/>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane" id="gameSettings">
+            <table class="table table-condensed" style="width: 100%">
+              <tbody>
+              <tr class="table-bordered" ng-repeat="(name, value) in config.game_settings" ng-init="default = defaults.game[name]">
+                <td title="{{default.desc}}" style="width: 65%;">{{name}}</td>
+                <td class="edit-cell" title="{{'Default: ' + default.default}}" style="width: 35%;"><input class="span12 edit-cell alias-row"
+                    type="number" ng-model="config.game_settings[name]" min="{{default.min}}" lm-step="default.step"/>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="row-fluid">
-    <button ng-click="updateConfig()" class="btn btn-primary">Update</button>
-    <button ng-click="revertConfig()" class="btn">Revert</button>
   </div>
 </div>

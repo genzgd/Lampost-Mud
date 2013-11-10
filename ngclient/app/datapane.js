@@ -1,5 +1,5 @@
-angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', 'lmUtil',
-  function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
+angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout',
+  'lmBus', 'lmData', 'lmRemote', 'lmUtil', function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
 
     var tabInfo = [{id: 'status', label: 'Status', include: 'view/status_tab.html'},
       {id: 'playerList', label: 'Player List', include: 'view/player_list_tab.html'},

@@ -33,11 +33,11 @@ def config_instance_cls(self):
 
 
 def config_instance(self, mobile):
-    mobile_skills = {}
+    mobile.skills = {}
     for skill_id, skill_specs in self.instance_cls.skills.iteritems():
         skill_status = SkillStatus()
         skill_status.level = skill_specs.get('level')
-        mobile_skills[skill_id] = skill_status
+        mobile.skills[skill_id] = skill_status
     fill_pools(mobile)
     mobile.baptise()
     mobile.equip(set())

@@ -1,8 +1,9 @@
 from lampost.context.resource import m_requires
-from lampost.lpflavor.setup import default_skills
+from lampost.lpflavor.setup import default_skills, GAME_SETTINGS
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_displays, build_default_settings
+from lampost.setup.settings import GAME_SETTINGS_DEFAULT, SERVER_SETTINGS_DEFAULT
 
 m_requires('log', 'config_manager', 'perm', 'datastore', 'skill_service', 'dispatcher', __name__)
 
@@ -21,8 +22,10 @@ def update_skills():
 
 
 def update_config():
-    build_config_settings(config_manager.config)
-    config_manager.save_config()
+    build_default_settings(SERVER_SETTINGS_DEFAULT, 'server')
+    build_default_settings(GAME_SETTINGS_DEFAULT, 'game')
+    build_default_settings(GAME_SETTINGS, 'game')
+    config_manager._dispatch_update()
     return "Configuration updated"
 
 

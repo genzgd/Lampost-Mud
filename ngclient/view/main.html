@@ -13,7 +13,7 @@
         </div>
         <div class="row-fluid">
           <div class="span6">
-            <p ng-bind-html-unsafe="siteDescription"></p>
+            <p ng-bind-html="siteDescription"></p>
           </div>
           <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
             <label>Player or Account Name:</label>
@@ -32,7 +32,7 @@
       </div>
       <div ng-switch-default ng-controller="ActionCtrl" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12" >
-          <div ng-repeat="line in display" ng-style="line.style" ng-bind-html-unsafe="line.text"></div>
+          <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.safe"></div>
         </div>
         <div class="telnet-input">
           <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus></textarea>

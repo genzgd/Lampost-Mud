@@ -2,7 +2,7 @@ from lampost.context.resource import requires, m_requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBOList
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset
-from lampost.model.item import BaseItem
+from lampost.model.item import BaseDBO
 from lampost.model.article import ArticleReset
 from lampost.gameops.display import *
 
@@ -61,7 +61,7 @@ class Room(RootDBO):
 
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev", "size"
-    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseItem), DBOList("mobile_resets", MobileReset), \
+    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseDBO), DBOList("mobile_resets", MobileReset), \
         DBOList("article_resets", ArticleReset)
     dbo_rev = 0
 

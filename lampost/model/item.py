@@ -56,3 +56,7 @@ class BaseItem(object):
         self.env = None
 
 
+class BaseDBO(BaseItem, RootDBO):
+    pass
+
+

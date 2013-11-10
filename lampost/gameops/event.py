@@ -80,12 +80,12 @@ class Dispatcher:
 
     def _update_settings(self, server_settings):
         try:
-            pulse_interval = server_settings['pulse_interval']
+            pulse_interval = server_settings.get('pulse_interval', .1)
             self.pulses_per_second = 1 / pulse_interval
             if hasattr(self, 'pulse_lc'):
                 self.pulse_lc.stop()
-            self.pulse_lc = task.LoopingCall(self._pulse).start(pulse_interval, False)
-            self.pulse_lc.addErrback(heartbeat_failed)
+            self.pulse_lc = task.LoopingCall(self._pulse)
+            self.pulse_lc.start(pulse_interval, False).addErrback(heartbeat_failed)
             info("Pulse Event heartbeat started at {} seconds".format(pulse_interval), self)
         except KeyError:
             pass
@@ -94,8 +94,8 @@ class Dispatcher:
             maintenance_interval = server_settings['maintenance_interval']
             if hasattr(self, 'maintenance_lc'):
                 self.maintenance_lc.stop()
-            self.maintenance_lc = task.LoopingCall(lambda: self.dispatch('maintenance')).start(60 * maintenance_interval, False)
-            self.maintenance_lc.addErrback(heartbeat_failed)
+            self.maintenance_lc = task.LoopingCall(lambda: self.dispatch('maintenance'))
+            self.maintenance_lc.start(60 * maintenance_interval, False).addErrback(heartbeat_failed)
             info("Maintenance Event heartbeat started at {} minutes".format(maintenance_interval), self)
         except KeyError:
             pass

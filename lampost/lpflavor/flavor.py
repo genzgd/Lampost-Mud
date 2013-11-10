@@ -63,8 +63,9 @@ def _player_baptise(player):
 
 def _game_settings(game_settings):
     env_module = sys.modules['lampost.lpflavor.env']
-    env_module.stamina_calc = game_settings['room_stamina']
-    env_module.action_calc = game_settings['room_action']
+    env_module.stamina_calc = game_settings.get('room_stamina', 2)
+    env_module.action_calc = game_settings.get('room_action', 10)
+
 
 def _player_connect(player, *ignored):
     player.status_change()

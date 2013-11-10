@@ -441,8 +441,8 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
   }]);
 
 
-angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
-  function ($rootScope, $compile, $controller, $templateCache, $timeout, $http) {
+angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compile', '$controller', '$templateCache', '$timeout', '$http',
+  function ($rootScope, $sce, $compile, $controller, $templateCache, $timeout, $http) {
 
     var dialogMap = {};
     var nextId = 0;
@@ -582,7 +582,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
         {label: 'OK', default: true, dismiss: true, class: "btn-primary"}
       ];
       scope.title = title;
-      scope.body = msg;
+      scope.body = $sce.trustAsHtml(msg);
       showDialog({templateUrl: 'dialogs/alert.html', scope: scope,
         controller: AlertCtrl});
     };
@@ -593,7 +593,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
       var noButton = {label: "No", dismiss: true, class: "btn-primary", default: true};
       scope.buttons = [yesButton, noButton];
       scope.title = title;
-      scope.body = msg;
+      scope.body = $scel.trustAsHtml(msg);
 
       showDialog({templateUrl: 'dialogs/alert.html', scope: scope,
         controller: AlertCtrl, noEscape: true});

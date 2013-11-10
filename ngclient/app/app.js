@@ -1,4 +1,4 @@
-angular.module('lampost', ['lampost_dir', 'lampost_svc']);
+angular.module('lampost', ['lampost_dir', 'lampost_svc', 'ngRoute']);
 
 angular.module('lampost').config(['$routeProvider', '$locationProvider', function (
     $routeProvider, $locationProvider) {
@@ -186,11 +186,11 @@ angular.module('lampost').controller('GameCtrl', ['$scope', 'lmBus', 'lmData', '
     }]);
 
 
-angular.module('lampost').controller('LoginCtrl', ['$scope',  'lmDialog', 'lmBus',
-    function ($scope, lmDialog, lmBus) {
+angular.module('lampost').controller('LoginCtrl', ['$scope',  '$sce', 'lmDialog', 'lmBus',
+    function ($scope, $sce, lmDialog, lmBus) {
 
     $scope.loginError = false;
-    $scope.siteDescription = lampost_config.description;
+    $scope.siteDescription = $sce.trustAsHtml(lampost_config.description);
     $scope.login = function () {
         lmBus.dispatch("server_request", "login", {user_id:this.userId,
             password:this.password})

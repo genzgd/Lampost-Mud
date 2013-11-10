@@ -1,5 +1,5 @@
 <div>
   <button class="btn" ng-repeat="channel in availChannels" ng-class="buttonChannelClass(channel)"></button>
   <h5 ng-show="channelMessages.length == 0">No recent messages.</h5>
-  <div ng-repeat="msg in channelMessages"><span style="font-size: 9px">{{msgTime(msg)}}&nbsp;&nbsp;</span><span ng-style="msg.style" ng-bind-html-unsafe="msg.text"></span></div>
+  <div ng-repeat="msg in channelMessages"><span style="font-size: 9px">{{msgTime(msg)}}&nbsp;&nbsp;</span><span ng-style="msg.style" ng-bind-html="msg.safe"></span></div>
 </div>

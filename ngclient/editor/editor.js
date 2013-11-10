@@ -580,7 +580,22 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$rootScope', '$sc
     };
 
     function loadConfig() {
-      lmRemote.request($scope.editor.url + "/get").then(prepare);
+      lmRemote.request($scope.editor.url + "/get_defaults").then(function (defaults) {
+        angular.forEach(defaults, function (subDefaults) {
+          angular.forEach(subDefaults, function (value) {
+            value.type = value.type || 'number';
+            if (value.type === 'number') {
+              if (value.min === undefined) {
+                value.min = 1;
+              }
+              value.step = value.step || 1;
+            }
+          });
+        });
+        $scope.defaults = defaults;
+        lmRemote.request($scope.editor.url + "/get").then(prepare);
+      })
+
     }
 
     function prepare(config) {
