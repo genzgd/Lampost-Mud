@@ -5,7 +5,8 @@ from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_displays, build_default_settings
 from lampost.setup.settings import GAME_SETTINGS_DEFAULT, SERVER_SETTINGS_DEFAULT
 
-m_requires('log', 'config_manager', 'perm', 'datastore', 'skill_service', 'dispatcher', __name__)
+m_requires('log', 'config_manager', 'perm', 'social_registry',
+           'datastore', 'skill_service', 'dispatcher', __name__)
 
 
 def displays():
@@ -27,6 +28,17 @@ def update_config():
     build_default_settings(GAME_SETTINGS, 'game')
     config_manager._dispatch_update()
     return "Configuration updated"
+
+
+def fix_socials():
+    for db_key in fetch_set_keys('socials'):
+        social_key = ''.join(['social:', db_key])
+        old_social = load_raw(social_key)
+        current_social = social_registry._socials.get(db_key)
+        current_social.__init__(**old_social.get('map'))
+        db_social = {'b_map': old_social.get('map')}
+        save_raw(social_key, db_social)
+
 
 
 
