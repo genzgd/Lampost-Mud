@@ -22,7 +22,7 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
         if (interceptor) {
           return $q.when(interceptor(args));
         }
-        return $q.deferred().resolve();
+        return $q.when();
       }
 
       function loadObjects() {
@@ -56,12 +56,13 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
       };
 
       $scope.revertObject = function () {
-        $scope.activeObject = jQuery.extend(true, originalObject, {});
+        $scope.activeObject = angular.copy(originalObject);
         $scope.isDirty = false;
+        $scope.$broadcast('updateActive');
       };
 
       $scope.updateObject = function () {
-        intercept(controller.preUpdate).then(function() {
+        intercept(controller.preUpdate).then(function () {
           lmRemote.request(baseUrl + 'update', {dbo: $scope.activeObject}).then(
             function (updatedObject) {
               $scope.isDirty = false;
@@ -99,8 +100,9 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
 
       $scope.editObject = function (object) {
         originalObject = object;
-        $scope.activeObject = jQuery.extend(true, {}, object);
+        $scope.activeObject = angular.copy(originalObject);
         controller.startEdit && controller.startEdit();
+        $scope.$broadcast('updateActive');
       };
 
       $scope.deleteObject = function (event, object) {
@@ -116,7 +118,7 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
         event.preventDefault();
         event.stopPropagation();
         $scope.copyFromId = object.dbo_id;
-        $scope.newObject = {dbo_id: '', dbo: jQuery.extend(true, {}, object)};
+        $scope.newObject = {dbo_id: '', dbo: angular.copy(object)};
         delete $scope.newObject.dbo['dbo_id'];
         dialogScope = $scope.$new();
         var dialogName = $scope.editor.copyDialog ? $scope.editor.id : 'generic';
@@ -138,14 +140,14 @@ angular.module('lampost_editor').controller('GenEditorCtrl', ['$scope', 'EditorH
 
   EditorHelper.prepareScope(this, $scope);
 
-   function removeNulls() {
-     angular.forEach($scope.activeObject.accuracy_calc, function(value, key) {
+  function removeNulls() {
+    angular.forEach($scope.activeObject.accuracy_calc, function (value, key) {
       if (!value) {
         delete $scope.activeObject[key]
       }
     });
 
-     angular.forEach($scope.activeObject.damage_calc, function(value, key) {
+    angular.forEach($scope.activeObject.damage_calc, function (value, key) {
       if (!value) {
         delete $scope.activeObject[key]
       }
@@ -153,12 +155,68 @@ angular.module('lampost_editor').controller('GenEditorCtrl', ['$scope', 'EditorH
 
   }
 
-  this.preUpdate = function() {
+  this.preUpdate = function () {
     removeNulls();
   };
 
-  this.preCreate = function() {
+  this.preCreate = function () {
     removeNulls();
   };
 
+}]);
+
+angular.module('lampost_editor').controller('effectListController', ['$scope', function ($scope) {
+
+  $scope.$on('updateActive', updateActive);
+
+  function updateActive() {
+    if ($scope.$parent.activeObject) {
+      $scope.calcValues = $scope.$parent.activeObject[$scope.calcWatch];
+      updateUnused();
+    }
+  }
+
+  function updateUnused() {
+    $scope.unusedValues = [];
+    angular.forEach($scope.calcDefs, function (value, key) {
+      if (!$scope.calcValues.hasOwnProperty(key)) {
+        if ($scope.unusedValues.length === 0) {
+          $scope.newId = key;
+        }
+        $scope.unusedValues.push(key);
+      }
+    });
+    $scope.newValue = 1;
+  }
+
+  $scope.deleteRow = function (rowId) {
+    $scope.$parent.dirty();
+    delete $scope.calcValues[rowId];
+    updateUnused();
+  };
+
+  $scope.addRow = function () {
+    if ($scope.newValue) {
+      $scope.calcValues[$scope.newId] = $scope.newValue;
+      $scope.dirty();
+      updateUnused();
+    }
+  };
+
+  $scope.dirty = function () {
+    $scope.$parent.dirty();
+  };
+
+}]);
+
+angular.module('lampost_editor').directive('lmEffectList', [function () {
+  return {
+    restrict: 'A',
+    scope: {},
+    templateUrl: 'editor/view/effect_list.html',
+    controller: 'effectListController',
+    link: function (scope, element, attrs) {
+      angular.extend(scope, element.scope().$eval(attrs.lmEffectList));
+    }
+  }
 }]);

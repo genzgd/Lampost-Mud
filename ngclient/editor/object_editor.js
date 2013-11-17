@@ -114,7 +114,7 @@ angular.module('lampost_editor').controller('ObjectEditorCtrl', ['$scope', 'lmBu
                     $scope.editor.copyFromModel($scope);
                 }
                 appendAliases();
-                copy = jQuery.extend(true, {}, $scope.model);
+                copy = angular.copy($scope.model);
                 $scope.ready = true;
             });
         }

@@ -3,9 +3,9 @@ import time
 
 from datetime import datetime
 
-pronouns = {'none': ['it', 'it', 'its', 'itself'],
-            'male': ['he', 'him', 'his', 'himself'],
-            'female': ['she', 'her', 'hers', 'herself']}
+pronouns = {'none': ['it', 'it', 'its', 'itself', 'its'],
+            'male': ['he', 'him', 'his', 'himself', 'his'],
+            'female': ['she', 'her', 'her', 'herself', 'hers']}
 
 
 def l_just(value, size):

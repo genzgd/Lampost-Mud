@@ -143,7 +143,7 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
         }
 
         function editSocial(social) {
-            oldMap = jQuery.extend(true, {}, social.b_map);
+            oldMap = angular.copy(social.b_map);
             $scope.social = social;
             $scope.social_valid = true;
             if ($scope.displayMode == 'view') {

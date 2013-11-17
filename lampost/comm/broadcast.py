@@ -23,7 +23,9 @@ broadcast_tokens = [{'id': 'n', 'token': 'Subject name'},
                     {'id': 'm', 'token': 'Subject objective pronoun'},
                     {'id': 'M', 'token': 'Target objective pronoun'},
                     {'id': 'f', 'token': 'Subject self pronoun'},
-                    {'id': 'F', 'token': 'Target self pronoun'}]
+                    {'id': 'F', 'token': 'Target self pronoun'},
+                    {'id': 'a', 'token': 'Absolute possessive subj'},
+                    {'id': 'A', 'token': 'Absolute possessive targ'}]
 
 token_pattern = re.compile('\$([nNeEsSmMfF])')
 
@@ -31,17 +33,17 @@ token_pattern = re.compile('\$([nNeEsSmMfF])')
 def substitute(message, source=None, target=None):
     if source:
         s_name = getattr(source, 'name', source)
-        s_sub, s_obj, s_poss, s_self = pronouns[getattr(source, 'sex', 'none')]
+        s_sub, s_obj, s_poss, s_self, s_abs = pronouns[getattr(source, 'sex', 'none')]
     else:
-        s_name = s_sub = s_obj = s_poss = s_self = None
+        s_name = s_sub = s_obj = s_poss = s_self = s_abs = None
     if target:
         t_name = getattr(target, 'name', target)
-        t_sub, t_obj, t_poss, t_self = pronouns[getattr(target, 'sex', 'none')]
+        t_sub, t_obj, t_poss, t_self, t_abs = pronouns[getattr(target, 'sex', 'none')]
     else:
-        t_name = t_sub = t_obj = t_poss = t_self = None
+        t_name = t_sub = t_obj = t_poss = t_self = t_abs = None
 
-    result = message.format(n=s_name, N=t_name, e=s_sub, E=t_sub,
-                            s=s_poss, S=t_poss, m=s_obj, M=t_obj, f=s_self, F=t_self)
+    result = message.format(n=s_name, N=t_name, e=s_sub, E=t_sub, s=s_poss, S=t_poss,
+                            m=s_obj, M=t_obj, f=s_self, F=t_self, a=s_abs, A=t_abs)
     if result:
         result = "{0}{1}".format(result[0], result[1:])
     return result

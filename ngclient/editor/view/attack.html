@@ -16,8 +16,8 @@
       <tr class="edit-row" ng-class="objectRowClass(race)" ng-click="editObject(race)" ng-repeat="race in objectList">
         <td class="span8">{{race.dbo_id}}</td>
         <td class="span4">
-          <a ng-click="deleteObject($event, race)" title="Delete Skill" class="icon-link"><i class="icon-remove"></i></a>
-          <a ng-click="copyObject($event, race)" title="Copy Skill" class="icon-link"><i class="icon-share"></i></a>
+          <a ng-click="deleteObject($event, race)" title="Delete Attack" class="icon-link"><i class="icon-remove"></i></a>
+          <a ng-click="copyObject($event, race)" title="Copy Attack" class="icon-link"><i class="icon-share"></i></a>
         </td>
       </tr>
       </tbody>
@@ -39,25 +39,7 @@
         <textarea class="span12" rows="5" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
         <label></label>
       </div>
-      <div class="span6">
-        <table class="table table-condensed" style="width: 100%">
-          <thead>
-            <th title="Player Attribute">Attr</th>
-            <th>Accuracy</th>
-            <th>Damage</th>
-          </thead>
-          <tbody>
-            <tr class="table-bordered" ng-repeat="(calc, desc) in constants.calc_map">
-              <td title="{{desc}}" style="width: 18%;">{{calc}}</td>
-              <td class="edit-cell" style="width: 28%;"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="number"
-                  ng-model="activeObject.accuracy_calc[calc]"/>
-              </td>
-              <td class="edit-cell" style="width: 28%;"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="number" ng-model="activeObject.damage_calc[calc]"/>
-              </td>
-
-          </tr>
-          </tbody>
-        </table>
+      <div class="span3" lm-effect-list="damageList" />
       </div>
     </div>
   </div>

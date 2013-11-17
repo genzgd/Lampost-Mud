@@ -1,0 +1,21 @@
+
+<table class="table table-condensed span12">
+  <thead>
+  <th class="span3" title="{{inputDesc}}">{{inputName}}</th>
+  <th class="span5" title="{{effectDesc}}">{{effectName}}</th>
+  <th class="span3"></th>
+  </thead>
+  <tbody>
+  <tr class="table-bordered edit-row" ng-repeat="(calcId, value) in calcValues | orderBy: 'calcId'">
+    <td class="span5 edit-cell" title="{{calcDefs[calcId]}}">{{calcId}}</td>
+    <td class="span5 edit-cell"><input class="span12 edit-cell" type="number" ng-model="calcValues[calcId]" ng-change="dirty()"/></td>
+    <td class="span2 edit-cell"><a title="Delete Item" tabIndex="-1" ng-click="deleteRow(calcId)" class="icon-link"><i class="icon-remove"></i></a></td>
+  </tr>
+  <tr class="table-bordered edit-row">
+    <td class="edit-cell" title="{{calcDefs[newId]}}"><select class="edit-cell span12" ng-model="newId" ng-options="valueId for valueId in unusedValues"></select></td>
+    <td class="edit-cell"><input class="edit-cell span12" type="number" ng-model="newValue" /></td>
+    <td class="edit-cell"><a title="Add Item" tabIndex="-1" ng-click="addRow()" class="icon-link"><i class="icon-plus"></i></a></td>
+  </tr>
+  </tbody>
+</table>
+

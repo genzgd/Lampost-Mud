@@ -90,7 +90,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
             lmRemote.request($scope.editor.url + "/get", {room_id:$scope.roomId}).then(function (room) {
                 if (room.dbo_rev > $scope.editor.model_rev) {
                     $scope.room = room;
-                    roomCopy = jQuery.extend(true, {}, room);
+                    roomCopy = angular.copy(room);
                     $scope.editor.copyToModel($scope);
                     $scope.editor.model_rev = room.dbo_rev;
                     lmEditor.updateRoom(room);
@@ -119,7 +119,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
             $scope.room.desc = lmEditor.sanitize($scope.room.desc);
             updateExtras();
             lmRemote.request($scope.editor.url + "/update", $scope.room).then(function (room) {
-                roomCopy = jQuery.extend(true, {}, room);
+                roomCopy = angular.copy(room);
                 $scope.room = room;
                 $scope.editor.copyToModel($scope);
                 lmEditor.updateRoom(room);
@@ -503,7 +503,7 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lmEdi
         $scope.reset = reset;
         $scope.areaList.sort();
         $scope.areaId = areaId;
-        $scope.article_loads = jQuery.extend(true, [], reset.article_loads);
+        $scope.article_loads = angular.copy(reset.article_loads);
 
 
         $scope.changeArea = function() {

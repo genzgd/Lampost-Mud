@@ -369,7 +369,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     };
 
     this.newObject = function (type) {
-      return jQuery.extend(true, {}, types[type].newObject);
+      return angular.copy(types[type].newObject);
     };
 
     this.updateObject = function (type, object) {
@@ -460,7 +460,7 @@ angular.module('lampost_editor').controller('AreasEditorCtrl', ['$scope', 'lmRem
     var originals = {};
 
     function updateOriginal(area) {
-      originals[area.id] = jQuery.extend(true, {}, area);
+      originals[area.id] = angular.copy(area);
     }
 
     $scope.areas = lmEditor.areaList;
@@ -477,7 +477,7 @@ angular.module('lampost_editor').controller('AreasEditorCtrl', ['$scope', 'lmRem
     };
 
     $scope.areasRevert = function (rowIx) {
-      $scope.areas[rowIx] = jQuery.extend(true, {}, originals[$scope.areas[rowIx].id]);
+      $scope.areas[rowIx] = angular.copy(originals[$scope.areas[rowIx].id]);
     };
 
     $scope.areasDelete = function (rowIx) {
@@ -599,7 +599,7 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$rootScope', '$sc
     }
 
     function prepare(config) {
-      configCopy = jQuery.extend(true, {}, config);
+      configCopy = angular.copy(config);
       $scope.config = config;
       $scope.startAreaId = config.start_room.split(':')[0];
       $scope.changeArea();

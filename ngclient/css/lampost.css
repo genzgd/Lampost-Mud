@@ -32,6 +32,10 @@ div.v-full {
     height: 100%;
 }
 
+.w-full {
+  width: 100%;
+}
+
 div.telnet {
     height: 78%;
     overflow-y: scroll;
@@ -86,6 +90,16 @@ td.edit-cell, input.edit-cell[ng-model] {
   padding-top: 1px;
   padding-bottom: 1px;
   min-height: 26px;
+  line-height: 20px;
+}
+
+select.edit-cell[ng-model] {
+  margin: 0;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  min-height: 20px;
+  height: 26px;
+  line-height: 20px;
 }
 
 .no-border {
