@@ -1,8 +1,9 @@
 import sys
 from lampost.env.room import Exit
 from lampost.lpflavor import setup
-from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, fill_pools, base_pools
-from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY
+from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP,\
+    fill_pools, base_pools, POOL_MAP
+from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
 from lampost.lpflavor.skill import SkillService
@@ -35,6 +36,8 @@ def _post_init():
     context.set('attr_map', ATTR_MAP)
     context.set('damage_types', DAMAGE_TYPES)
     context.set('damage_delivery', list(DAMAGE_DELIVERY))
+    context.set('resource_pools', POOL_MAP)
+    context.set('weapon_options', WEAPON_OPTIONS)
 
     calc_map = {key: value['name'] for key, value in ATTR_MAP.iteritems()}
     calc_map.update({'roll': "Dice roll adjust (20 sided)",

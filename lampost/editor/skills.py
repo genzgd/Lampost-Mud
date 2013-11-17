@@ -13,6 +13,6 @@ class AttackResource(EditResource):
     def on_delete(self, del_obj):
         skill_service.skills.pop(del_obj.dbo_id, None)
 
-    def on_add(self, new_obj):
+    def on_create(self, new_obj):
         skill_service.skills[new_obj.dbo_id] = new_obj
 

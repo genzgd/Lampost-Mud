@@ -64,10 +64,6 @@ class Player(RootDBO):
     def rec_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)
 
-    def rec_follow(self, source, **ignored):
-        self.followers.add(source)
-        source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
-
     def get_score(self):
         score = {}
         return score

@@ -31,7 +31,7 @@ class Entity(BaseItem):
         self.target_key_map = {}
         self.actions = {}
         self.target_map[self] = {}
-        self.add_target_keys([self.target_id], self, self.target_map[self])
+        self.add_target_keys([self.target_id, ('self',)], self, self.target_map[self])
 
 
     def equip(self, inven):
@@ -233,6 +233,10 @@ class Entity(BaseItem):
 
     def rec_social(self, **ignored):
         pass
+
+    def rec_follow(self, source, **ignored):
+        self.followers.add(source)
+        source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
 
     def rec_examine(self, source, **ignored):
         super(Entity, self).rec_examine(source, **ignored)

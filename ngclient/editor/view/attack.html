@@ -32,14 +32,39 @@
       </div>
     </div>
     <div class="row-fluid scrollable">
-      <div class="span6">
-        <label>Attack Command</label>
-        <input type="text" ng-model="activeObject.verb" ng-change="dirty()" required="true"/>
-        <label>Description</label>
-        <textarea class="span12" rows="5" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
-        <label></label>
+      <div class="span5">
+        <div class="row-fluid">
+          <label>Attack Command</label>
+          <input type="text" ng-model="activeObject.verb" ng-change="dirty()" required="true"/>
+          <label>Description</label>
+          <textarea class="span12" rows="5" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
+
+        </div>
+        <div class="row-fluid">
+          <div class="span6">
+            <label>Damage Delivery</label>
+            <select class="input-medium" ng-model="activeObject.delivery" ng-change="dirty()"
+                ng-options="delivery for delivery in constants.damage_delivery"></select>
+            <label>Damage Type</label>
+            <select class="input-medium" ng-model="activeObject.damage_type" ng-change="dirty()"
+                ng-options="damageType.id as damageType.id for damageType in constants.damage_types"></select>
+            <label>Prep Time</label>
+            <input class="input-small" type="number" ng-model="activeObject.prep_time" min="0" />
+          </div>
+          <div class="span6">
+            <label>Damage Pool</label>
+            <select class="input-medium" ng-model="activeObject.damage_pool" ng-change="dirty()"
+                ng-options="pool_id as pool_id for (pool_id, pool_data) in constants.resource_pools"></select>
+            <label>Weapon Type</label>
+            <select class="input-medium" ng-model="activeObject.weapon_type" ng-change="dirty()"
+                ng-options="weapon_type for weapon_type in constants.weapon_options"></select>
+          </div>
+        </div>
       </div>
-      <div class="span3" lm-effect-list="damageList" />
+      <div class="offset1 span4">
+        <div lm-effect-list="costList"></div>
+        <div class="spacer" lm-effect-list="damageList"></div>
+        <div class="spacer" lm-effect-list="accuracyList"></div>
       </div>
     </div>
   </div>

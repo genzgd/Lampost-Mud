@@ -196,11 +196,9 @@ angular.module('lampost_editor').controller('effectListController', ['$scope', f
   };
 
   $scope.addRow = function () {
-    if ($scope.newValue) {
-      $scope.calcValues[$scope.newId] = $scope.newValue;
+      $scope.calcValues[$scope.newId] = 1
       $scope.dirty();
       updateUnused();
-    }
   };
 
   $scope.dirty = function () {

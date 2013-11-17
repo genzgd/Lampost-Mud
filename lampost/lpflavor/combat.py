@@ -7,16 +7,20 @@ from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
 
-DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
-                'pierce': {'desc': 'Piercing damage (spears, arrows)'},
-                'slash': {'desc': 'Slash damage (swords, knives)'},
-                'cold': {'desc': 'Cold'},
-                'fire': {'desc': 'Fire'},
-                'shock': {'desc': 'Electric'},
-                'acid': {'desc': 'Acid'},
-                'poison': {'desc': 'Poison'},
-                'psych': {'desc': 'Mental/psychic damage'},
-                'spirit': {'desc': 'Spiritual damage'}}
+WEAPON_TYPES = ['sword', 'axe', 'mace', 'bow', 'spear', 'polearm']
+
+WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + WEAPON_TYPES
+
+DAMAGE_TYPES = [{'id':'blunt', 'desc': 'Blunt trauma (clubs, maces)'},
+                {'id': 'pierce', 'desc': 'Piercing damage (spears, arrows)'},
+                {'id': 'slash', 'desc': 'Slash damage (swords, knives)'},
+                {'id': 'cold', 'desc': 'Cold'},
+                {'id': 'fire', 'desc': 'Fire'},
+                {'id': 'shock', 'desc': 'Electric'},
+                {'id': 'acid', 'desc': 'Acid'},
+                {'id': 'poison', 'desc': 'Poison'},
+                {'id': 'psych', 'desc': 'Mental/psychic damage'},
+                {'id': 'spirit', 'desc': 'Spiritual damage'}]
 
 DAMAGE_DELIVERY = {'melee', 'ranged', 'psych'}
 
@@ -66,7 +70,8 @@ class Attack(object):
 
 @base_skill
 class AttackSkill(BaseSkill, RootDBO):
-    dbo_fields = BaseSkill.dbo_fields + ('damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type')
+    dbo_fields = BaseSkill.dbo_fields + ('damage_pool', 'delivery', 'damage_type',
+                                         'damage_calc', 'accuracy_calc', 'weapon_type')
     dbo_key_type = 'skill'
     dbo_set_key = 'skill_attack'
 
@@ -76,7 +81,7 @@ class AttackSkill(BaseSkill, RootDBO):
     damage_calc = {}
     damage_pool = 'health'
     accuracy_calc = {}
-    weapon_type = None
+    weapon_type = 'unarmed'
     success_map = {'s': 'You hit {N}.', 't': '{n} hits you.', 'e': '{n} hits {N}.', 'display': COMBAT_DISPLAY}
     fail_map = {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY}
 

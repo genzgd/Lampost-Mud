@@ -94,9 +94,10 @@ td.edit-cell, input.edit-cell[ng-model] {
 }
 
 select.edit-cell[ng-model] {
-  margin: 0;
-  padding-top: 0px;
-  padding-bottom: 0px;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
   min-height: 20px;
   height: 26px;
   line-height: 20px;
@@ -191,6 +192,10 @@ div.player-msg {
   border-style: double;
   background: antiquewhite;
   display: inline-block;
+}
+
+.spacer {
+  margin-top: 20px;
 }
 
 .gen-close {
