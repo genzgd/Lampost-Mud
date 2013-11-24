@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.lpflavor.setup import default_skills, GAME_SETTINGS
+from lampost.lpflavor.setup import GAME_SETTINGS
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_displays, build_default_settings

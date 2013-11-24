@@ -47,11 +47,10 @@ class EditCreateResource(EditBaseResource):
     @request
     def render_POST(self, content, session):
         check_perm(session, self.imm_level)
-        if object_exists(self.obj_class.dbo_key_type, content.dbo_id):
-            raise ObjectExistsError(content.dbo_id)
         new_obj = self.obj_class(content.dbo_id)
-        update_object(new_obj, content.dbo)
         self.editor.on_create(new_obj)
+        update_object(new_obj, content.dbo)
+        new_obj.on_loaded()
         return new_obj.dto_value
 
 

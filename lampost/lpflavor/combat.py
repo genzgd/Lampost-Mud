@@ -11,18 +11,27 @@ WEAPON_TYPES = ['sword', 'axe', 'mace', 'bow', 'spear', 'polearm']
 
 WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + WEAPON_TYPES
 
-DAMAGE_TYPES = [{'id':'blunt', 'desc': 'Blunt trauma (clubs, maces)'},
-                {'id': 'pierce', 'desc': 'Piercing damage (spears, arrows)'},
-                {'id': 'slash', 'desc': 'Slash damage (swords, knives)'},
-                {'id': 'cold', 'desc': 'Cold'},
-                {'id': 'fire', 'desc': 'Fire'},
-                {'id': 'shock', 'desc': 'Electric'},
-                {'id': 'acid', 'desc': 'Acid'},
-                {'id': 'poison', 'desc': 'Poison'},
-                {'id': 'psych', 'desc': 'Mental/psychic damage'},
-                {'id': 'spirit', 'desc': 'Spiritual damage'}]
+DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
+                'pierce': {'desc': 'Piercing damage (spears, arrows)'},
+                'slash': {'desc': 'Slash damage (swords, knives)'},
+                'cold': {'desc': 'Cold'},
+                'fire': {'desc': 'Fire'},
+                'shock': {'desc': 'Electric'},
+                'acid': {'desc': 'Acid'},
+                'poison': {'desc': 'Poison'},
+                'psych': {'desc': 'Mental/psychic damage'},
+                'spirit': {'desc': 'Spiritual damage'}}
 
-DAMAGE_DELIVERY = {'melee', 'ranged', 'psych'}
+DAMAGE_CATEGORIES = {'any': {'desc': 'All possible damage types', 'types': [damage_type for damage_type in DAMAGE_TYPES.iterkeys()]},
+                     'physical': {'desc': 'All physical damage types', 'types': ['blunt', 'piece', 'slash']},
+                     'elemental': {'desc': 'All elemental damage types', 'types': ['fire', 'shock', 'cold', 'acid', 'poison']}}
+
+DEFENSE_DAMAGE_TYPES = DAMAGE_TYPES.copy()
+DEFENSE_DAMAGE_TYPES.update(DAMAGE_CATEGORIES)
+
+DAMAGE_DELIVERY = {'melee': {'desc': 'Delivered in hand to combat'},
+                   'ranged': {'desc': 'Delivered via bow, spell, or equivalent'},
+                   'psych': {'desc': 'Delivered via psychic or other non-physical means'}}
 
 
 def validate_weapon(ability, weapon_type):
@@ -44,7 +53,7 @@ def validate_delivery(ability, delivery):
 
 
 def validate_dam_type(ability, damage_type):
-    if ability.damage_type != 'any' and damage_type not in ability.damage_type:
+    if damage_type not in ability.calc_damage_types:
         raise ActionError("That has no effect.")
 
 
@@ -101,15 +110,15 @@ class AttackSkill(BaseSkill, RootDBO):
 
 @base_skill
 class DefenseSkill(BaseSkill, RootDBO):
-    dbo_fields = BaseSkill.dbo_fields + ('damage_type', 'absorb_calc', 'accuracy_calc', 'weapon_type')
+    dbo_fields = BaseSkill.dbo_fields + ('damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type')
     dbo_key_type = 'skill'
     dbo_set_key = 'skill_defense'
 
-    damage_type = 'any'
-    delivery = {'melee', 'ranged'}
+    damage_type = ['physical']
+    delivery = ['melee', 'ranged']
     weapon_type = 'unused'
-    accuracy_calc = {}
     absorb_calc = {}
+    avoid_calc = {}
     success_map = {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'}
 
     def invoke(self, source, **ignored):
@@ -125,10 +134,19 @@ class DefenseSkill(BaseSkill, RootDBO):
             validate_dam_type(self, attack.damage_type)
         except ActionError:
             return
-        adj_accuracy = roll_calc(owner, self.accuracy_calc)
+        adj_accuracy = roll_calc(owner, self.avoid_calc)
         combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' adj_accuracy: ', str(adj_accuracy)]), self)
-        attack.adj_accuracy -= roll_calc(owner, self.accuracy_calc)
+        attack.adj_accuracy -= adj_accuracy
         if attack.adj_accuracy < 0:
             return
-        attack.adj_damage -= roll_calc(owner, self.absorb_calc)
+        absorb = roll_calc(owner, self.absorb_calc)
+        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' absorb: ', str(absorb)]), self)
+        attack.adj_damage -= absorb
 
+    def on_loaded(self):
+        self.calc_damage_types = set()
+        for damage_type in self.damage_type:
+            try:
+                self.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
+            except KeyError:
+                self.calc_damage_types.add(damage_type)

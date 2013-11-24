@@ -593,7 +593,7 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compi
       var noButton = {label: "No", dismiss: true, class: "btn-primary", default: true};
       scope.buttons = [yesButton, noButton];
       scope.title = title;
-      scope.body = $scel.trustAsHtml(msg);
+      scope.body = $sce.trustAsHtml(msg);
 
       showDialog({templateUrl: 'dialogs/alert.html', scope: scope,
         controller: AlertCtrl, noEscape: true});

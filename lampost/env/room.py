@@ -15,6 +15,7 @@ class Exit(RootDBO):
     desc = None
     can_follow = True
     aliases = []
+    msg_class = 'no_args'
 
     def __init__(self, direction=None, destination=None, room=None):
         super(Exit, self).__init__()
@@ -147,6 +148,7 @@ class Room(RootDBO):
             if my_exit.direction == exit_dir:
                 return my_exit
 
+    # noinspection PyCallingNonCallable
     def tell_contents(self, msg_type,  *args):
         for receiver in self.contents:
             rec_method = getattr(receiver, msg_type, None)

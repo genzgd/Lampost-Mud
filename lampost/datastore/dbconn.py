@@ -83,7 +83,7 @@ class RedisStore():
         self.redis.delete(key)
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)
-        for dbo_col in dbo.dbo_lists + dbo.dbo_maps:
+        for dbo_col in dbo.dbo_lists | dbo.dbo_maps:
             if dbo_col.key_type:
                 coll = getattr(dbo, dbo_col.field_name, set())
                 for child_dbo in coll:

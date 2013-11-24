@@ -13,8 +13,8 @@
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row" ng-class="objectRowClass(race)" ng-click="editObject(race)" ng-repeat="race in objectList">
-        <td class="span8">{{race.dbo_id}}</td>
+      <tr class="edit-row" ng-class="objectRowClass(obj)" ng-click="editObject(obj)" ng-repeat="obj in objectList">
+        <td class="span8">{{obj.dbo_id}}</td>
         <td class="span4">
           <a ng-click="deleteObject($event, race)" title="Delete Attack" class="icon-link"><i class="icon-remove"></i></a>
           <a ng-click="copyObject($event, race)" title="Copy Attack" class="icon-link"><i class="icon-share"></i></a>
@@ -25,8 +25,7 @@
   </div>
   <div class="span8 v-full" ng-hide="!activeObject">
     <div class="row-fluid">
-      <div class="span6"></div>
-      <div class="offset3 span3">
+      <div class="offset9 span3">
         <button type="button" class="btn" ng-click="revertObject()" ng-disabled="!isDirty">Revert</button>
         <button type="button" class="btn btn-primary" ng-click="updateObject()" ng-disabled="!isDirty">Update</button>
       </div>
@@ -35,28 +34,28 @@
       <div class="span5">
         <div class="row-fluid">
           <label>Attack Command</label>
-          <input type="text" ng-model="activeObject.verb" ng-change="dirty()" required="true"/>
+          <input type="text" ng-model="activeObject.verb" required="true"/>
           <label>Description</label>
-          <textarea class="span12" rows="5" ng-model="activeObject.desc" ng-change="dirty()"></textarea>
+          <textarea class="span12" rows="5" ng-model="activeObject.desc"></textarea>
 
         </div>
         <div class="row-fluid">
           <div class="span6">
             <label>Damage Delivery</label>
-            <select class="input-medium" ng-model="activeObject.delivery" ng-change="dirty()"
-                ng-options="delivery for delivery in constants.damage_delivery"></select>
+            <select class="input-medium" ng-model="activeObject.delivery"
+                ng-options="deliveryId as deliveryId for (deliveryId, value) in constants.damage_delivery"></select>
             <label>Damage Type</label>
-            <select class="input-medium" ng-model="activeObject.damage_type" ng-change="dirty()"
-                ng-options="damageType.id as damageType.id for damageType in constants.damage_types"></select>
-            <label>Prep Time</label>
+            <select class="input-medium" ng-model="activeObject.damage_type"
+                ng-options="typeId as typeId for (typeId, value) in constants.damage_types"></select>
+            <label title="'Wind Up' time in pulses">Prep Time</label>
             <input class="input-small" type="number" ng-model="activeObject.prep_time" min="0" />
           </div>
           <div class="span6">
             <label>Damage Pool</label>
-            <select class="input-medium" ng-model="activeObject.damage_pool" ng-change="dirty()"
+            <select class="input-medium" ng-model="activeObject.damage_pool"
                 ng-options="pool_id as pool_id for (pool_id, pool_data) in constants.resource_pools"></select>
             <label>Weapon Type</label>
-            <select class="input-medium" ng-model="activeObject.weapon_type" ng-change="dirty()"
+            <select class="input-medium" ng-model="activeObject.weapon_type"
                 ng-options="weapon_type for weapon_type in constants.weapon_options"></select>
           </div>
         </div>

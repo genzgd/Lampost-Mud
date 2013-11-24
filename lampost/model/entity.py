@@ -4,7 +4,8 @@ from lampost.gameops.action import ActionError, action_handler
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
 from lampost.context.resource import m_requires
-from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, MISSING_VERB
+from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action,\
+    MISSING_VERB, MISSING_TARGET
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import PermError
 
@@ -226,7 +227,7 @@ class Entity(BaseItem):
                     follower.start_action(action, follow_args)
 
     def handle_parse_error(self, error, command):
-        if error.error_code == MISSING_VERB:
+        if error.error_code in (MISSING_VERB, MISSING_TARGET):
             self.parse('say {}'.format(command))
         else:
             self.display_line(error.message)
