@@ -11,10 +11,10 @@ class EditResource(Resource):
     def __init__(self, obj_class, imm_level='admin'):
         Resource.__init__(self)
         self.obj_class = cls_registry(obj_class)
-        self.putChild('list', EditListResource(self, obj_class, imm_level))
-        self.putChild('create', EditCreateResource(self, obj_class, imm_level))
-        self.putChild('delete', EditDeleteResource(self, obj_class, imm_level))
-        self.putChild('update', EditUpdateResource(self, obj_class, imm_level))
+        self.putChild('list', EditListResource(self, self.obj_class, imm_level))
+        self.putChild('create', EditCreateResource(self, self.obj_class, imm_level))
+        self.putChild('delete', EditDeleteResource(self, self.obj_class, imm_level))
+        self.putChild('update', EditUpdateResource(self, self.obj_class, imm_level))
 
     def on_delete(self, del_obj):
         pass

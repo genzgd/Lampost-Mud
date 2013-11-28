@@ -40,6 +40,15 @@ class WebServer(Resource):
     def __init__(self, port):
         Resource.__init__(self)
         self.port = port
+        self._lsp_server = LspServerResource()
+        self.dispatcher.register("config_js", self._update_config)
+
+    def _update_config(self, config_js):
+        self._lsp_server.add_js("config.js", config_js)
+
+    #noinspection PyUnresolvedReferences
+    @logged
+    def start_service(self, interface):
         self.putChild("", Redirect(URL_START))
         self.putChild(URL_WEB_CLIENT, File(FILE_WEB_CLIENT))
         self.putChild(URL_LOGIN, LoginResource())
@@ -55,16 +64,8 @@ class WebServer(Resource):
         self.putChild(URL_CLIENT_DATA, ClientDataResource())
         self.putChild(URL_REMOTE_LOG, RemoteLogResource())
 
-        self._lsp_server = LspServerResource()
         self.putChild(URL_LSP, self._lsp_server)
-        self.dispatcher.register("config_js", self._update_config)
 
-    def _update_config(self, config_js):
-        self._lsp_server.add_js("config.js", config_js)
-
-    #noinspection PyUnresolvedReferences
-    @logged
-    def start_service(self, interface):
         info("Starting web server on port {}".format(self.port), self)
         reactor.listenTCP(self.port, Site(self), interface=interface)
         reactor.run()

@@ -113,7 +113,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     };
 
     this.invalidate = function (key) {
-      delete cache[key];
+      delete cache[key].promise;
     };
 
     this.startEditors = function (editorList) {

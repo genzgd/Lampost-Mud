@@ -64,10 +64,11 @@ def _player_create(player):
 
 def _player_baptise(player):
     race = load_object(PlayerRace, player.race)
-    for skill_name, skill_level in race.default_skills.iteritems():
-        if not skill_name in player.skills.iterkeys():
-            player.skills[skill_name] = SkillStatus()
-            player.skills[skill_name].skill_level = skill_level
+    if race:
+        for skill_name, skill_level in race.default_skills.iteritems():
+            if not skill_name in player.skills.iterkeys():
+                player.skills[skill_name] = SkillStatus()
+                player.skills[skill_name].skill_level = skill_level
 
     base_pools(player)
     player.start_refresh()
