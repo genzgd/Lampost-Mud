@@ -27,7 +27,7 @@ broadcast_tokens = [{'id': 'n', 'token': 'Subject name'},
                     {'id': 'a', 'token': 'Absolute possessive subj'},
                     {'id': 'A', 'token': 'Absolute possessive targ'}]
 
-token_pattern = re.compile('\$([nNeEsSmMfF])')
+token_pattern = re.compile('\$([nNeEsSmMfFaA])')
 
 
 def substitute(message, source=None, target=None):

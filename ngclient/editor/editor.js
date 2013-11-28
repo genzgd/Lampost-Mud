@@ -91,6 +91,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     var currentMap = {};
     var master = {};
     var areaMaster = {};
+    var cache = {allSkills: {url: "skills/all"}};
 
     this.areaList = [];
     this.roomsMaster = {};
@@ -102,6 +103,18 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         return aid - bid;
       })
     }
+
+    this.cache = function (key) {
+      var entry = cache[key];
+      if (!entry.promise) {
+        entry.promise = lmRemote.request('editor/' + entry.url);
+      }
+      return entry.promise;
+    };
+
+    this.invalidate = function (key) {
+      delete cache[key];
+    };
 
     this.startEditors = function (editorList) {
       self.editors = [];

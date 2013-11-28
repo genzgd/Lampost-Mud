@@ -1,12 +1,13 @@
 import sys
 from lampost.env.room import Exit
 from lampost.lpflavor import setup
+from lampost.lpflavor.archetype import PLayerRaceLP
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP,\
     fill_pools, base_pools, POOL_MAP
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
-from lampost.lpflavor.skill import SkillService
+from lampost.lpflavor.skill import SkillService, SkillStatus
 from lampost.model.mobile import Mobile
 from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
@@ -30,6 +31,7 @@ def _post_init():
     cls_registry.set_class(Player, PlayerLP)
     cls_registry.set_class(Mobile, MobileLP)
     cls_registry.set_class(Exit, ExitLP)
+    cls_registry.set_class(PlayerRace, PLayerRaceLP)
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
@@ -61,6 +63,12 @@ def _player_create(player):
 
 
 def _player_baptise(player):
+    race = load_object(PlayerRace, player.race)
+    for skill_name, skill_level in race.default_skills.iteritems():
+        if not skill_name in player.skills.iterkeys():
+            player.skills[skill_name] = SkillStatus()
+            player.skills[skill_name].skill_level = skill_level
+
     base_pools(player)
     player.start_refresh()
 

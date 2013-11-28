@@ -9,7 +9,7 @@ from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.rooms import RoomResource
-from lampost.editor.skills import AttackResource, DefenseResource
+from lampost.editor.skills import AttackResource, DefenseResource, AllSkillsResource
 from lampost.editor.socials import SocialsResource
 from lampost.lpflavor.combat import DefenseSkill
 from lampost.model.race import PlayerRace
@@ -30,6 +30,7 @@ class EditorResource(Resource):
         self.putChild('race', EditResource(PlayerRace))
         self.putChild('attack', AttackResource())
         self.putChild('defense', DefenseResource())
+        self.putChild('skills', AllSkillsResource())
 
 
 @requires('context')

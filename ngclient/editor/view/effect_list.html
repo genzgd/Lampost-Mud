@@ -6,7 +6,7 @@
   <tbody class="span12">
   <tr class="table-bordered" ng-repeat="(calcId, value) in calcValues | orderBy: 'calcId'">
     <td class="span5 edit-cell" title="{{calcDefs[calcId]}}">{{calcId}}</td>
-    <td class="span5 edit-cell"><input class="span12 edit-cell" type="number" ng-model="calcValues[calcId]" ng-change="dirty()"/></td>
+    <td class="span5 edit-cell"><input class="span12 edit-cell" type="number" ng-model="calcValues[calcId]"/></td>
     <td class="span2 edit-cell"><a title="Delete Item" tabIndex="-1" ng-click="deleteRow(calcId)" class="icon-link"><i class="icon-remove"></i></a></td>
   </tr>
 

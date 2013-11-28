@@ -1,5 +1,5 @@
-angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmEditor', 'lmDialog', 'lmUtil',
-  function ($q, lmRemote, lmEditor, lmDialog, lmUtil) {
+angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemote', 'lmEditor', 'lmDialog', 'lmUtil',
+  function ($q, lmBus, lmRemote, lmEditor, lmDialog, lmUtil) {
 
     this.prepareScope = function (controller, $scope) {
 
@@ -16,43 +16,53 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
       $scope.newObject = null;
       $scope.copyFromId = null;
       $scope.objLabel = editor.id.charAt(0).toUpperCase() + editor.id.slice(1);
-      loadObjects();
 
-      $scope.$watch('activeObject', function() {
+      var reg = lmBus.register("editor_activated", function (editor) {
+        if (editor === $scope.editor) {
+          initEditor();
+          lmBus.unregister(reg);
+        }
+      });
+
+      $scope.$watch('activeObject', function () {
         $scope.isDirty = !angular.equals(originalObject, $scope.activeObject);
       }, true);
 
       function intercept(interceptor, args) {
-        if (interceptor) {
-          return interceptor(args);
+        if (controller[interceptor]) {
+          return $q.when(controller[interceptor](args));
         }
         return $q.when();
       }
 
-      function loadObjects() {
-        lmRemote.request(baseUrl + 'list').then(function (objects) {
-          $scope.objectList = objects;
-          $scope.ready = true;
-          controller.onLoaded && controller.onLoaded();
-        })
+      function initEditor() {
+        $q.all([
+            intercept('preLoad'),
+            lmRemote.request(baseUrl + 'list').then(function (objects) {
+              $scope.objectList = objects;
+            })
+          ])
+          .then(function () {
+            $scope.ready = true;
+            intercept('onLoaded');
+          });
       }
 
       function mainDelete(object) {
-        if (controller.preDelete && !controller.preDelete(object)) {
-          return;
-        }
-        lmRemote.request(baseUrl + 'delete', {dbo_id: object.dbo_id}).then(function () {
-          if ($scope.activeObject = object) {
-            $scope.activeObject = null;
-          }
-          for (var i = 0; i < $scope.objectList.length; i++) {
-            if ($scope.objectList[i] == object) {
-              $scope.objectList.splice(i, 1);
-              break;
+        intercept('preDelete').then(function () {
+          lmRemote.request(baseUrl + 'delete', {dbo_id: object.dbo_id}).then(function () {
+            if ($scope.activeObject = object) {
+              $scope.activeObject = null;
             }
-          }
-          controller.postDelete && controller.postDelete(object);
-        });
+            for (var i = 0; i < $scope.objectList.length; i++) {
+              if ($scope.objectList[i] == object) {
+                $scope.objectList.splice(i, 1);
+                break;
+              }
+            }
+            intercept('postDelete', object);
+          });
+        })
       }
 
       $scope.revertObject = function () {
@@ -61,7 +71,7 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
       };
 
       $scope.updateObject = function () {
-        intercept(controller.preUpdate).then(function () {
+        intercept('preUpdate').then(function () {
           lmRemote.request(baseUrl + 'update', {dbo: $scope.activeObject}).then(
             function (updatedObject) {
               $scope.isDirty = false;
@@ -71,24 +81,27 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
                   break;
                 }
               }
-              controller.postUpdate && controller.postUpdate(updatedObject);
+              intercept('postUpdate', updatedObject).then(function () {
+                $scope.editObject(updatedObject);
+              })
             }
           )
         })
       };
 
       $scope.submitNewObject = function () {
-        controller.preCreate && controller.preCreate($scope.newObject);
-        lmRemote.request(baseUrl + 'create', {dbo_id: $scope.newObject.dbo_id, dbo: $scope.newObject.dbo}).then(
-          function (createdObject) {
-            $scope.objectList.push(createdObject);
-            lmUtil.stringSort($scope.objectList, 'dbo_id');
-            lmDialog.close(newDialogId);
-            $scope.editObject(createdObject);
-            controller.postCreate && controller.postCreate(createdObject);
-          }, function () {
-            dialogScope.objectExists = true;
-          });
+        intercept('preCreate', $scope.newObject).then(function () {
+          lmRemote.request(baseUrl + 'create', {dbo_id: $scope.newObject.dbo_id, dbo: $scope.newObject.dbo}).then(
+            function (createdObject) {
+              $scope.objectList.push(createdObject);
+              lmUtil.stringSort($scope.objectList, 'dbo_id');
+              lmDialog.close(newDialogId);
+              $scope.editObject(createdObject);
+              intercept('postCreate', createdObject);
+            }, function () {
+              dialogScope.objectExists = true;
+            });
+        })
       };
 
       $scope.newObjectDialog = function () {
@@ -101,8 +114,9 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
       $scope.editObject = function (object) {
         originalObject = object;
         $scope.activeObject = angular.copy(originalObject);
-        controller.startEdit && controller.startEdit();
-        $scope.$broadcast('updateActive');
+        intercept('startEdit', $scope.activeObject).then( function() {
+          $scope.$broadcast('updateActive');
+        });
       };
 
       $scope.deleteObject = function (event, object) {
@@ -135,13 +149,6 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmRemote', 'lmE
   }
 ]);
 
-
-angular.module('lampost_editor').controller('GenEditorCtrl', ['$scope', 'EditorHelper', function ($scope, EditorHelper) {
-
-  EditorHelper.prepareScope(this, $scope);
-
-}]);
-
 angular.module('lampost_editor').controller('EffectListController', ['$scope', function ($scope) {
 
   $scope.$on('updateActive', updateActive);
@@ -171,8 +178,8 @@ angular.module('lampost_editor').controller('EffectListController', ['$scope', f
   };
 
   $scope.addRow = function () {
-      $scope.calcValues[$scope.newId] = 1;
-      updateUnused();
+    $scope.calcValues[$scope.newId] = 1;
+    updateUnused();
   };
 
 }]);
@@ -184,21 +191,21 @@ angular.module('lampost_editor').directive('lmEffectList', [function () {
     templateUrl: 'editor/view/effect_list.html',
     controller: 'EffectListController',
     link: function (scope, element, attrs) {
-      angular.extend(scope, element.scope().$eval(attrs.lmEffectList));
+       element.scope().$watch(attrs.lmEffectList, function() {
+         angular.extend(scope, element.scope().$eval(attrs.lmEffectList));
+      })
     }
   }
 }]);
 
 angular.module('lampost_editor').controller('SimpleListController', ['$scope', function ($scope) {
 
-  $scope.$on('updateActive', updateActive);
-
-  function updateActive() {
+  $scope.$on('updateActive', function () {
     if ($scope.$parent.activeObject) {
-      $scope.selectValues= $scope.$parent.activeObject[$scope.selectWatch];
+      $scope.selectValues = $scope.$parent.activeObject[$scope.selectWatch];
       updateUnused();
     }
-  }
+  });
 
   function updateUnused() {
     $scope.unusedValues = [];
@@ -219,8 +226,8 @@ angular.module('lampost_editor').controller('SimpleListController', ['$scope', f
   };
 
   $scope.addRow = function () {
-      $scope.selectValues.push($scope.newSelection);
-      updateUnused();
+    $scope.selectValues.push($scope.newSelection);
+    updateUnused();
   };
 
 }]);
@@ -232,7 +239,34 @@ angular.module('lampost_editor').directive('lmSimpleList', [function () {
     templateUrl: 'editor/view/simple_list.html',
     controller: 'SimpleListController',
     link: function (scope, element, attrs) {
-      angular.extend(scope, element.scope().$eval(attrs.lmSimpleList));
+       element.scope().$watch(attrs.lmSimpleList, function() {
+          angular.extend(scope, element.scope().$eval(attrs.lmSimpleList));
+      })
+    }
+  }
+}]);
+
+
+angular.module('lampost_editor').controller('AttrListController', ['$scope', function ($scope) {
+
+  $scope.$on('updateActive', function () {
+    if ($scope.$parent.activeObject) {
+      $scope.attrValues = $scope.$parent.activeObject[$scope.attrWatch];
+    }
+  });
+}]);
+
+
+angular.module('lampost_editor').directive('lmAttrList', [function () {
+  return {
+    restrict: 'A',
+    scope: {},
+    templateUrl: 'editor/view/attr_list.html',
+    controller: 'AttrListController',
+    link: function (scope, element, attrs) {
+      element.scope().$watch(attrs.lmAttrList, function() {
+        angular.extend(scope, element.scope().$eval(attrs.lmAttrList));
+      });
     }
   }
 }]);

@@ -1,0 +1,14 @@
+<table class="table table-condensed span12">
+  <thead class="span12">
+  <th class="span10" colspan="2" title="{{listDesc}}">{{listName}}</th>
+  <th class="span2"></th>
+  </thead>
+  <tbody class="span12">
+  <tr class="table-bordered" ng-repeat="(attrId, value) in attrValues | orderBy: 'attrId'">
+    <td class="span6 edit-cell" title="{{attrDefs[attrId].name}}">{{attrId}}</td>
+    <td class="span6 edit-cell"><input class="span12 edit-cell" type="number" ng-model="attrValues[attrId]"/></td>
+   </tr>
+  </tbody>
+</table>
+
+

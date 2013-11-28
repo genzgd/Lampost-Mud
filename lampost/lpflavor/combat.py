@@ -79,8 +79,7 @@ class Attack(object):
 
 @base_skill
 class AttackSkill(BaseSkill, RootDBO):
-    dbo_fields = BaseSkill.dbo_fields + ('damage_pool', 'delivery', 'damage_type',
-                                         'damage_calc', 'accuracy_calc', 'weapon_type')
+    dbo_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
     dbo_key_type = 'skill'
     dbo_set_key = 'skill_attack'
 
@@ -110,7 +109,7 @@ class AttackSkill(BaseSkill, RootDBO):
 
 @base_skill
 class DefenseSkill(BaseSkill, RootDBO):
-    dbo_fields = BaseSkill.dbo_fields + ('damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type')
+    dbo_fields = 'damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type'
     dbo_key_type = 'skill'
     dbo_set_key = 'skill_defense'
 

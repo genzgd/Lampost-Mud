@@ -33,7 +33,7 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialo
     $scope.deliveryTypeList = {selectDesc: 'List of delivery methods this defense is effective against',
       selectName: 'Delivery Methods', selectWatch: 'delivery', selectDefs: $scope.constants.damage_delivery};
 
-    $scope.onAutoStart = function() {
+    $scope.onAutoStart = function () {
       if ($scope.activeObject.auto_start) {
         $scope.activeObject.verb = undefined;
       }
@@ -51,4 +51,23 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialo
       return $q.when();
     }
   }]);
+
+
+angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lmEditor', 'EditorHelper',
+  function ($scope, lmEditor, EditorHelper) {
+
+    $scope.defaultAttrsList = {listDesc: "Starting attributes for this race", listName: "Starting Attributes",
+      attrWatch: 'base_attrs', attrDefs: $scope.constants.attr_map};
+
+    this.preLoad = function () {
+      return lmEditor.cache('allSkills').then(function (allSkills) {
+        $scope.skillsList = {effectDesc: "Default skills and levels assigned to this race", effectName: "Default Skills",
+          calcWatch: "default_skills", calcDefs: allSkills};
+      })
+    };
+
+    EditorHelper.prepareScope(this, $scope);
+
+  }]);
+
 

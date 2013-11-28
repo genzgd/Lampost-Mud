@@ -15,13 +15,6 @@ def displays():
     return 'Displays Updated'
 
 
-def update_skills():
-    default_skills()
-    detach_events(skill_service)
-    skill_service._post_init()
-    return 'Default Skills Updated'
-
-
 def update_config():
     build_default_settings(SERVER_SETTINGS_DEFAULT, 'server')
     build_default_settings(GAME_SETTINGS_DEFAULT, 'game')

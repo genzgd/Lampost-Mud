@@ -60,15 +60,11 @@ def get_resource(name):
 
 def context_post_init():
     for module in _registered_modules:
-        try:
+        if hasattr(module, '_post_init'):
             module._post_init()
-        except AttributeError:
-            pass
     for service in _registered_services:
-        try:
+        if hasattr(service, '_post_init'):
             service._post_init()
-        except AttributeError:
-            pass
 
 
 def _inject(cls, name, service):

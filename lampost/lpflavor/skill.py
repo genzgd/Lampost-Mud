@@ -10,7 +10,6 @@ from lampost.mud.action import imm_actions, mud_action, imm_action
 m_requires('log', 'datastore', 'dispatcher', 'skill_service', __name__)
 
 SKILL_TYPES = []
-DEFAULT_SKILLS = ['punch']
 
 
 def base_skill(cls):
@@ -32,9 +31,8 @@ def roll_calc(source, calc, skill_level=0):
 class SkillService(object):
 
     def _post_init(self):
-        register('player_create', self._player_create)
-        register('player_baptise', self._baptise)
-        register('mobile_baptise', self._baptise)
+        register('player_baptise', self._baptise, priority=200)
+        register('mobile_baptise', self._baptise, priority=200)
         self.skills = {}
         for skill_type in SKILL_TYPES:
             self.skills.update({skill_id: load_object(skill_type, skill_id) for skill_id in fetch_set_keys(skill_type.dbo_set_key)})
@@ -58,11 +56,6 @@ class SkillService(object):
                 entity.diminish_soul(skill)
         except KeyError:
             log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
-
-    def _player_create(self, player):
-        player.skills = {}
-        for skill_id in DEFAULT_SKILLS:
-            player.skills[skill_id] = SkillStatus()
 
     def _baptise(self, entity):
         for skill_id in entity.skills.iterkeys():
@@ -118,7 +111,7 @@ def skills(source, target, **ignored):
     for skill_id, skill_status in target.skills.iteritems():
         skill = skill_service.skills.get(skill_id)
         if skill:
-            source.display_line("{}:   Level: {}".format(skill.verb, str(skill_status.skill_level)))
+            source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.dbo_id, str(skill_status.skill_level)))
             source.display_line("--{}".format(skill.desc))
         else:
             warn("{} has missing skill {} ".format(target.name, skill_id))
