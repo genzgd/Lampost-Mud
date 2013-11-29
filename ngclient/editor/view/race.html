@@ -1,6 +1,6 @@
 <div class="v-full" ng-controller="RaceEditorCtrl" ng-show="ready">
   <div class="span2">
-    <h4>Player Races ({{objectList.length}})</h4>
+    <h4>Player Races ({{modelList.length}})</h4>
     <button ng-click="newObjectDialog()" class="btn btn-small btn-success">New Race</button>
     <div style="padding-bottom: 15px;"></div>
 
@@ -13,7 +13,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row" ng-class="objectRowClass(race)" ng-click="editObject(race)" ng-repeat="race in objectList">
+      <tr class="edit-row" ng-class="objectRowClass(race)" ng-click="editObject(race)" ng-repeat="race in modelList">
         <td class="span8">{{race.dbo_id}}</td>
         <td class="span4">
           <a ng-click="deleteObject($event, race)" title="Delete Race" class="icon-link"><i class="icon-remove"></i></a>
@@ -23,7 +23,7 @@
       </tbody>
     </table>
   </div>
-  <div class="span8 v-full" ng-hide="!activeObject">
+  <div class="span8 v-full" ng-hide="!model">
     <div class="row-fluid">
       <div class="offset9 span3">
         <button type="button" class="btn" ng-click="revertObject()" ng-disabled="!isDirty">Revert</button>
@@ -33,13 +33,15 @@
     <div class="row-fluid scrollable">
       <div class="span6">
         <label>Race Name</label>
-        <input type="text" ng-model="activeObject.name" required="true"/>
+        <input type="text" ng-model="model.name" required="true"/>
         <label>Description</label>
-        <textarea class="span12" rows="8" ng-model="activeObject.desc"></textarea>
+        <textarea class="span12" rows="8" ng-model="model.desc"></textarea>
+
         <div lm-effect-list="skillsList"></div>
       </div>
-       <div class="offset1 span4">
+      <div class="offset1 span4">
         <div lm-attr-list="defaultAttrsList"></div>
+      </div>
     </div>
   </div>
 </div>

@@ -48,6 +48,8 @@ class EditCreateResource(EditBaseResource):
     def render_POST(self, content, session):
         check_perm(session, self.imm_level)
         new_obj = self.obj_class(content.dbo_id)
+        if hasattr(new_obj, 'owner_id'):
+            new_obj.owner_id = session.player.dbo_id
         self.editor.on_create(new_obj)
         update_object(new_obj, content.dbo)
         new_obj.on_loaded()
@@ -60,6 +62,7 @@ class EditDeleteResource(EditBaseResource):
     def render_POST(self, content, session):
         check_perm(session, self.imm_level)
         del_obj = load_object(self.obj_class, content.dbo_id)
+        check_perm(session, del_obj)
         delete_object(del_obj)
         self.editor.on_delete(del_obj)
 
@@ -70,6 +73,7 @@ class EditUpdateResource(EditBaseResource):
     def render_POST(self, content, session):
         check_perm(session, self.imm_level)
         existing_obj = load_object(self.obj_class, content.dbo['dbo_id'])
+        check_perm(session, existing_obj)
         if not existing_obj:
             raise DataError("Object with key {} no longer exists.".format(content.dbo['dbo.id']))
         update_object(existing_obj, content.dbo)

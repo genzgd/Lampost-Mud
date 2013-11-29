@@ -69,9 +69,11 @@ class SkillStatus(RootDBO):
 
 
 class BaseSkill():
-    dbo_fields = 'verb', 'desc', 'costs', 'pre_reqs', 'prep_time', 'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
+    dbo_fields = 'dbo_rev', 'verb', 'desc', 'costs', 'pre_reqs', 'prep_time',\
+                 'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
     verb = None
     desc = None
+    dbo_rev = 0
     prep_time = 0
     cool_down = 0
     pre_reqs = []

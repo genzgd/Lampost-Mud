@@ -213,9 +213,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     this.loadRooms = function (areaId) {
       var rooms = self.roomsMaster[areaId];
       if (rooms) {
-        var deferred = $q.defer();
-        deferred.resolve(rooms);
-        return deferred.promise;
+        return $q.when(rooms);
       }
       return lmRemote.request('editor/room/list', {area_id: areaId}).then(function (rooms) {
         idSort(rooms, 'id');
@@ -227,9 +225,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     this.loadObjects = function (type, areaId) {
       var objects = master[type][areaId];
       if (objects) {
-        var deferred = $q.defer();
-        deferred.resolve(objects);
-        return deferred.promise;
+        return $q.when(objects);
       }
       return lmRemote.request('editor/' + type + '/list', {area_id: areaId}).then(function (objects) {
         master[type][areaId] = objects;
@@ -409,6 +405,8 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
 
   lmBus.register('editor_change', editorChange);
   lmBus.register('editor_ready', editorReady);
+
+
 
   $scope.editors = lmEditor.editors;
   editorChange();
