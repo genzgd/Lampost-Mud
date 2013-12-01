@@ -1,14 +1,13 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import requires
-from lampost.editor.areas import AreaResource
+from lampost.editor.areas import AreaResource, RoomResource
 from lampost.editor.articles import ArticleResource
 from lampost.editor.base import EditResource
 from lampost.editor.config import ConfigResource
 from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
-from lampost.editor.rooms import RoomResource
 from lampost.editor.skills import AttackResource, DefenseResource, AllSkillsResource
 from lampost.editor.socials import SocialsResource
 from lampost.lpflavor.combat import DefenseSkill
@@ -36,7 +35,7 @@ class EditorResource(Resource):
 @requires('context')
 class PropertiesResource(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self):
         return self.context.properties
 
 

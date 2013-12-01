@@ -6,18 +6,18 @@
 
   </div>
   <div class="span2 scrollable wrapper">
-    <table class="table table-condensed table-bordered" ng-controller="TableCtrl">
+    <table class="table table-condensed table-bordered">
       <thead>
       <tr>
         <th>Attack</th>
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row" ng-class="objectRowClass(obj)" ng-click="editObject(obj)" ng-repeat="obj in modelList">
-        <td class="span8">{{obj.dbo_id}}</td>
+      <tr class="edit-row" ng-class="objectRowClass(model)" ng-click="editObject(model)" ng-repeat="model in modelList">
+        <td class="span8">{{model.dbo_id}}</td>
         <td class="span4">
-          <a ng-click="deleteObject($event, race)" title="Delete Attack" class="icon-link"><i class="icon-remove"></i></a>
-          <a ng-click="copyObject($event, race)" title="Copy Attack" class="icon-link"><i class="icon-share"></i></a>
+          <a ng-click="deleteObject($event, model)" title="Delete Attack" class="icon-link"><i class="icon-remove"></i></a>
+          <a ng-click="copyObject($event, model)" title="Copy Attack" class="icon-link"><i class="icon-share"></i></a>
         </td>
       </tr>
       </tbody>

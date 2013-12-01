@@ -1,4 +1,6 @@
 import cgi
+import inspect
+
 from datetime import datetime
 
 from twisted.web.resource import Resource, NoResource
@@ -9,7 +11,7 @@ from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, get_resource
 from lampost.util.lmutil import PermError, StateError, Blank
 
-m_requires('log', 'session_manager', 'json_decode', 'json_encode',  __name__)
+m_requires('log', 'perm', 'session_manager', 'json_decode', 'json_encode',  __name__)
 
 
 def find_session_id(request):
@@ -19,14 +21,22 @@ def find_session_id(request):
 
 
 def request(func):
+    args = set(inspect.getargspec(func).args)
+
     @logged
     def wrapper(self, request):
-        content = Blank(**json_decode(request.content.getvalue()))
         session = session_manager.get_session(find_session_id(request))
         if not session:
             return json_encode({'link_status': 'session_not_found'})
+        check_perm(session, self)
+
+        raw = json_decode(request.content.getvalue())
+        content = Blank(**raw)
+        param_vars = vars()
+        params = {arg_name: param_vars[arg_name] for arg_name in args}
+
         try:
-            result = func(self, content, session)
+            result = func(**params)
             if result is None:
                 request.setResponseCode(204)
                 return ''

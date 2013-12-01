@@ -13,7 +13,7 @@ m_requires('log', 'dispatcher', __name__)
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
-    dbo_fields = "name", "next_room_id", "owner_id", "dbo_rev"
+    dbo_fields = "name", "desc", "next_room_id", "owner_id", "dbo_rev"
     dbo_maps = DBOMap("rooms", Room, "room"),  DBOMap("mobiles", MobileTemplate, "mobile"), \
         DBOMap("articles", ArticleTemplate, "article")
 
@@ -22,6 +22,7 @@ class Area(RootDBO):
     rooms = {}
     mobiles = {}
     articles = {}
+    desc = ""
 
     reset_time = 180
 

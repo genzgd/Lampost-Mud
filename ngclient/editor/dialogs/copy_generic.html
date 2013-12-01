@@ -6,10 +6,10 @@
   <form ng-submit="submitNewObject()" >
     <div class="modal-body">
       <label>{{objLabel}} Id</label>
-      <input type="text" ng-model="newObject.dbo_id" ng-change="objectExists = false" required="true"/>
+      <input type="text" ng-model="newModel.dbo_id" ng-change="objectExists = false" required="true"/>
       <div class="alert alert-error" ng-show="objectExists">
         <button type="button" class="close" ng-click="objectExists = false">×</button>
-        {{objLabel}} with id {{newObject.dbo_id}} already exists.
+        {{objLabel}} with id {{newModel.dbo_id}} already exists.
       </div>
       <div ng-include="copyObjectInclude"></div>
     </div>

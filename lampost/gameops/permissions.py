@@ -4,6 +4,7 @@ from lampost.util.lmutil import PermError
 
 m_requires('datastore', __name__)
 
+
 @provides('perm', True)
 class Permissions(object):
     levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0}
@@ -16,6 +17,8 @@ class Permissions(object):
 
     def _post_init(self):
         self.immortals = get_all_index('immortals')
+        for key, value in self.immortals.iteritems():
+            self.immortals[key] = int(value)
 
     def perm_name(self, num_level):
         return self.rev_levels.get(num_level, 'none')
@@ -39,6 +42,17 @@ class Permissions(object):
             return False
 
     def check_perm(self, player, action):
+        perm_required = 0
+        if isinstance(action, int):
+            perm_required = action
+        elif action in self.levels:
+            perm_required = self.levels[action]
+        perm_required = max(getattr(action, 'imm_level', 0), perm_required)
+        owner_id = getattr(action, 'owner_id', None)
+        if owner_id:
+            perm_required = max(self.immortals.get(owner_id, self.levels['admin']) + 1, perm_required)
+        if not perm_required:
+            return
         try:
             player_level = player.imm_level
         except AttributeError:
@@ -47,20 +61,11 @@ class Permissions(object):
                 player_level = player.imm_level
             except AttributeError:
                 raise PermError
-        if player_level >= self.perm_level('supreme'):
+        if player_level >= self.levels['supreme']:
             return
-        if isinstance(action, int) and player_level < action:
-            raise PermError
-        named_level = self.levels.get(action, None)
-        if named_level and player_level < named_level:
-            raise PermError
-        imm_level = getattr(action, 'imm_level', None)
-        if imm_level and player_level < imm_level:
-            raise PermError
-        owner_id = getattr(action, 'owner_id', None)
-        if not owner_id or player.dbo_id == owner_id:
+        if player_level >= perm_required:
             return
-        if player_level > self.immortals.get(owner_id, 0):
+        if player.dbo_id == owner_id:
             return
         raise PermError
 

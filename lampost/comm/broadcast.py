@@ -69,6 +69,7 @@ class BroadcastMap(object):
 
 
 class Broadcast(object):
+
     def __init__(self, broadcast_map=None, source=None, target=None, display='default', silent=False, **kwargs):
         if broadcast_map:
             self.broadcast_map = broadcast_map
@@ -107,9 +108,11 @@ class Broadcast(object):
 
 
 class SingleBroadcast():
-    def __init__(self, all_msg, display='default'):
+    def __init__(self, all_msg, display='default', silent=False):
         self.all_msg = all_msg
         self.display = display
+        self.silent = silent
 
-    def translate(self, ignored):
-        return self.all_msg
+    def translate(self, observer):
+        if not self.silent or self.source != observer:
+            return self.all_msg

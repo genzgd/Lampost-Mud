@@ -59,11 +59,10 @@ class Exit(RootDBO):
 
 @requires('mud')
 class Room(RootDBO):
-
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev", "size"
-    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseDBO), DBOList("mobile_resets", MobileReset), \
-        DBOList("article_resets", ArticleReset)
+    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseDBO), DBOList("mobile_resets", MobileReset),\
+                DBOList("article_resets", ArticleReset)
     dbo_rev = 0
 
     size = 10
@@ -132,7 +131,7 @@ class Room(RootDBO):
                 for my_exit in self.exits:
                     source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), EXIT_DISPLAY)
             else:
-                source.display_line("Obvious exits are: " + self.short_exits(),  EXIT_DISPLAY)
+                source.display_line("Obvious exits are: " + self.short_exits(), EXIT_DISPLAY)
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
 
@@ -149,7 +148,7 @@ class Room(RootDBO):
                 return my_exit
 
     # noinspection PyCallingNonCallable
-    def tell_contents(self, msg_type,  *args):
+    def tell_contents(self, msg_type, *args):
         for receiver in self.contents:
             rec_method = getattr(receiver, msg_type, None)
             if rec_method:
@@ -197,7 +196,6 @@ class Room(RootDBO):
     def on_loaded(self):
         for room_exit in self.exits:
             room_exit.room = self
-
 
 
 Exit.dbo_refs = DBORef("destination", Room, "room"),

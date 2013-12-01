@@ -26,15 +26,9 @@ class RoomResource(Resource):
         self.putChild('delete_exit', DeleteExit())
 
 
-class DirList(Resource):
-    @request
-    def render_POST(self, content, session):
-        return [{'key':direction.key, 'name':direction.desc} for direction in Direction.ordered]
-
-
 class RoomList(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         area = mud.get_area(content.area_id)
         if not area:
             raise DataError("Missing Area")

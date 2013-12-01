@@ -23,14 +23,14 @@ class SocialsResource(Resource):
 
 class SocialList(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, session):
         check_perm(session, 'admin')
         return list(fetch_set_keys('socials'))
 
 
 class SocialGet(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         return load_object(Social, content.social_id).dbo_dict
 
 
@@ -58,14 +58,14 @@ class SocialDelete(Resource):
 @requires('mud_actions')
 class SocialValid(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         if self.mud_actions.verb_list((content.social_id,)):
             raise DataError("Verb already in use")
 
 
 class SocialPreview(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         preview = {}
         broadcast_map = BroadcastMap()
         broadcast_map.populate(content.b_map)

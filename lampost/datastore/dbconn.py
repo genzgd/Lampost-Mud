@@ -15,11 +15,16 @@ class RedisStore():
         self.redis = StrictRedis(connection_pool=pool)
         self._object_map = {}
 
-    def create_object(self, dbo):
-        if self.object_exists(dbo.dbo_key_type, dbo.dbo_id):
-            raise ObjectExistsError(dbo.dbo_key)
-        self.save_object(dbo)
+    def create_object(self, base_class, dbo_dict):
+        dbo_class = cls_registry(dbo_dict.get('class_name', base_class))
+        dbo_id = dbo_dict['dbo_id']
+        if self.object_exists(dbo_class.dbo_key_type, dbo_id):
+            raise ObjectExistsError(dbo_id)
+        dbo = dbo_class(dbo_id)
+        self.hydrate_dbo(dbo, dbo_dict)
+        self.save_object(dbo, True)
         dbo.on_loaded()
+        return dbo
 
     def save_object(self, dbo, update_rev=False, autosave=False):
         if update_rev:

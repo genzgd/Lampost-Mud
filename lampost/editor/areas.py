@@ -1,71 +1,63 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
+from lampost.editor.base import EditResource
+from lampost.env.movement import Direction
+from lampost.env.room import Room
 from lampost.model.area import Area
 
-m_requires('datastore', 'mud', 'perm', 'dispatcher',__name__)
+m_requires('datastore', 'mud', 'perm', 'dispatcher', __name__)
 
 
-class AreaResource(Resource):
+class AreaResource(EditResource):
     def __init__(self):
+        EditResource.__init__(self, Area)
+
+    def on_create(self, new_area):
+        mud.add_area(new_area)
+
+    def on_delete(self, del_area):
+        del mud.area_map[del_area.dbo_id]
+
+
+class AreaListResource(Resource):
+    def __init__(self, list_class):
+        self.list_class = list_class
+
+    def getChild(self, area_id, request):
+        return list_class(area)
+
+
+class RoomResource(EditResource):
+    def __init__(self):
+        EditResource.__init__(self, Room)
+        self.putChild('list', AreaListResource(RoomListResource))
+        self.putChild('dir_list', DirList())
+
+
+class DirList(Resource):
+    @request
+    def render_POST(self):
+        return [{'key':direction.key, 'name':direction.desc} for direction in Direction.ordered]
+
+
+class RoomListResource(Resource):
+    def __init__(self, area_id):
         Resource.__init__(self)
-        self.putChild('list', AreaList())
-        self.putChild('new', AreaNew())
-        self.putChild('delete', AreaDelete())
-        self.putChild('update', AreaUpdate())
+        self.area_id = area_id
+        self.imm_level = 'admin'
 
-
-class AreaList(Resource):
     @request
-    def render_POST(self, content, session):
-        return [area_dto(area, has_perm(session.player, area)) for area in mud.area_map.itervalues()]
-
-
-@requires('mud', 'cls_registry')
-class AreaNew(Resource):
-    @request
-    def render_POST(self, content, session):
-        area_id = content.id.lower()
-        area = self.cls_registry(Area)(area_id)
-        area.name = content.name
-        area.owner_id = session.player.dbo_id
-        create_object(area)
-        self.mud.add_area(area)
-        return area_dto(area)
-
-
-@requires('mud')
-class AreaDelete(Resource):
-    @request
-    def render_POST(self, content, session):
-        area_id = content.areaId.lower()
-        area = datastore.load_object(Area, area_id)
-        if area:
-            check_perm(session, area)
-            detach_events(area)
-            delete_object(area)
-            del self.mud.area_map[area_id]
-            return "OK"
-
-
-class AreaUpdate(Resource):
-    @request
-    def render_POST(self, content, session):
-        area_info = content.area
-        area = datastore.load_object(Area, area_info['id'])
+    def render_POST(self):
+        area = mud.get_area(self.area_id)
         if not area:
-            return "ERROR_NOT_FOUND"
-        check_perm(session, area)
-        area.name = area_info['name']
-        area.next_room_id = area_info['next_room_id']
-        save_object(area, True)
-        return area_dto(area)
+            raise DataError("Missing Area")
+        return [room_stub_dto(room) for room in area.rooms.values()]
 
 
-def area_dto(area, can_write=True):
-    return {'id': area.dbo_id, 'dbo_rev': area.dbo_rev, 'name': area.name, 'owner_id': area.owner_id, 'room': len(area.rooms),
-            'article':len(area.articles), 'mobile': len(area.mobiles), 'next_room_id': area.next_room_id, 'can_write': can_write}
-
+def room_stub_dto(room):
+    return {'dbo_id': room.dbo_id, 'title': room.title, 'exit_count': len(room.exits), 'item_count': len(room.article_resets),
+            'mobile_count': len(room.mobile_resets), 'extra_count': len(room.extras)}
 
 
 

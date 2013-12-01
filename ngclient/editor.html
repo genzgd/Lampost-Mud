@@ -12,9 +12,8 @@
 </head>
 
 <body ng-cloak class="container-fluid v-full" style="padding-top: 6px;">
-  <div class="v-full" ng-controller="EditorCtrl" ng-switch="loadStatus">
-    <div ng-switch-when="loading">Loading Data From Server</div>
-    <div ng-switch-when="loaded" class="row-fluid wrapper">
+  <div class="v-full" ng-controller="EditorCtrl" ng-switch="loaded">
+    <div ng-switch-when="true" class="row-fluid wrapper">
       <div class="tabbable tabs-left span12 wrapper">
         <ul class="nav nav-tabs">
           <li alt-text="editor.parent" ng-repeat="editor in editors" ng-class="tabClass(editor)">
@@ -23,15 +22,17 @@
 
         <div class="tab-content wrapper">
           <div ng-class="editor.parentClass" style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor"
-              class="tab-pane active" ng-include="editor.include">
+              class="tab-pane active" ng-include="editorInclude(editor)">
           </div>
         </div>
       </div>
     </div>
+     <div ng-switch-default>Loading Data From Server</div>
   </div>
   <script src="app/directives.js"></script>
   <script src="app/services.js"></script>
   <script src="editor/editor.js"></script>
+  <script src="editor/area_editor.js"></script>
   <script src="editor/rooms_editor.js"></script>
   <script src="editor/object_editor.js"></script>
   <script src="editor/player_editor.js"></script>

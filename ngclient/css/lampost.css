@@ -213,3 +213,12 @@ div.player-msg {
   -webkit-appearance: none;
 }
 
+div.row-fluid [class*="span"] .center-in-span {
+  float: none;
+  margin: 0 auto;
+  text-align: center;
+  display: block;
+  width:auto;
+  height:auto;
+}
+

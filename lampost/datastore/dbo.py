@@ -26,11 +26,11 @@ class RootDBOMeta(type):
 class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
-    dbo_set_type = None
-    dbo_set_id = None
+    dbo_set_key = None
+    dbo_path = None
+    dbo_id = None
 
     dbo_indexes = ()
-    dbo_id = None
 
     def __init__(self, dbo_id=None):
         if dbo_id:
@@ -73,11 +73,6 @@ class RootDBO(object):
     @property
     def dbo_key(self):
         return unicode(":".join([self.dbo_key_type, self.dbo_id]))
-
-    @property
-    def dbo_set_key(self):
-        if self.dbo_set_type:
-            return unicode(self.dbo_set_type + ":" + self.dbo_set_id if self.dbo_set_id else "")
 
     @property
     def dbo_debug_key(self):
@@ -194,9 +189,6 @@ class DBOList(DBORef):
     coll_class = list
 
     def instance(self, dbo):
-        if self.field_name in dbo.__dict__:
-            warn("dbo {} already has instance of {}".format(dbo.dbo_debug_key, self.field_name))
-            return dbo.__dict__[self.field_name]
         instance = self.coll_class()
         setattr(dbo, self.field_name, instance)
         return instance

@@ -9,7 +9,7 @@ m_requires('skill_service', __name__)
 
 class AttackResource(EditResource):
     def __init__(self):
-        EditResource.__init__(self, AttackSkill, 'admin')
+        EditResource.__init__(self, AttackSkill)
 
     def on_delete(self, del_obj):
         skill_service.skills.pop(del_obj.dbo_id, None)
@@ -20,7 +20,7 @@ class AttackResource(EditResource):
 
 class DefenseResource(EditResource):
     def __init__(self):
-        EditResource.__init__(self, DefenseSkill, 'admin')
+        EditResource.__init__(self, DefenseSkill)
 
     def on_delete(self, del_obj):
         skill_service.skills.pop(del_obj.dbo_id, None)
@@ -37,7 +37,7 @@ class AllSkillsResource(Resource):
 
 class AllList(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self):
         return {dbo_id: skill.desc for dbo_id, skill in skill_service.skills.iteritems()}
 
 

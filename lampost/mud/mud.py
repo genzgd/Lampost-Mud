@@ -65,8 +65,12 @@ class MudNature():
     def _player_connect(self, player, client_data):
         editors = []
         channels = ['shout_channel']
-        if has_perm(player, 'supreme'):
-            editors.append('config')
+        if has_perm(player, 'creator'):
+            editors.append('area')
+            editors.append('room')
+            editors.append('mobile')
+            editors.append('article')
+            channels.append('imm_channel')
         if has_perm(player, 'admin'):
             editors.append('players')
             editors.append('socials')
@@ -74,9 +78,9 @@ class MudNature():
             editors.append('race')
             editors.append('attack')
             editors.append('defense')
-        if has_perm(player, 'creator'):
-            editors.append('areas')
-            channels.append('imm_channel')
+        if has_perm(player, 'supreme'):
+            editors.append('config')
+
         client_data['editors'] = editors
         client_data['avail_channels'] = channels
         client_data['active_channels'] = player.active_channels
