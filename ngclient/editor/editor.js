@@ -31,18 +31,17 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       })
     }
 
-    this.cache = function (entry) {
-      if (!entry) {
+    this.cache = function (request) {
+      if (!request) {
         return $q.when();
       }
-      if (typeof entry === 'string') {
-        entry = remoteCache[entry];
-      } else {
-        if (!remoteCache[entry.key]) {
-          remoteCache[entry.key] = entry;
-          if (!entry.url) {
-            entry.url = entry.key + '/list';
-          }
+      var key = typeof request === 'string' ? request : request.key;
+      var entry = remoteCache[key];
+      if (!entry) {
+        entry = request;
+        remoteCache[key] = entry;
+        if (!entry.url) {
+          entry.url = entry.key + '/list';
         }
       }
       if (entry.data) {
@@ -55,7 +54,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     };
 
     this.invalidate = function (key) {
-      delete remoteCache[key];
+      delete remoteCache[key].data;
     };
 
     this.visitRoom = function (roomId) {
@@ -73,11 +72,19 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmBus', 'lmRemote',
   function ($scope, lmEditor, lmBus, lmRemote) {
 
-    var editors = {
+
+    var playerId = name.split('_')[1];
+    var editorList = jQuery.parseJSON(localStorage.getItem('lm_editors_' + playerId));
+    if (!editorList) {
+      alert("No Editor List Found");
+      window.close();
+    }
+
+    $scope.editorMap = {
       config: {label: "Mud Config", url: "config"},
       players: {label: "Players", url: "player"},
       area: {label: "Areas", url: "area"},
-      room: {label: "Room", url: "room"},
+      room: {label: "Room", url: "room", newDialog: true},
       mobile: {label: "Mobile", url: "mobile"},
       article: {label: "Article", url: "article"},
       socials: {label: "Socials", url: "socials"},
@@ -87,15 +94,12 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       defense: {label: "Defenses", url: "defense"}
     };
 
-    var playerId = name.split('_')[1];
-    var editorList = jQuery.parseJSON(localStorage.getItem('lm_editors_' + playerId));
-    if (!editorList) {
-      alert("No Editor List Found");
-      window.close();
-    }
-
     $scope.editorInclude = function (editor) {
       return editor.activated ? 'editor/view/' + editor.id + '.html' : undefined;
+    };
+
+    $scope.idOnly = function(dboId) {
+      return dboId.split(':')[1];
     };
 
     $scope.click = function (editor) {
@@ -106,7 +110,7 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
 
     $scope.editors = [];
     angular.forEach(editorList, function (key) {
-      var editor = editors[key];
+      var editor = $scope.editorMap[key];
       if (editor) {
         editor.id = key;
         $scope.editors.push(editor);

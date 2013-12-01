@@ -1,45 +1,33 @@
-<div ng-controller="RoomsEditorCtrl" ng-show="ready" class="wrapper">
-    <div class="span2">
-        <h4>Rooms - {{areaId}}</h4>
-        <button ng-click="showNewDialog()" class="btn btn-small btn-success">New Room</button>
-    </div>
-    <div class="span8 scrollable">
-        <table class="table table-condensed" >
-            <thead>
-            <tr>
-                <th class="span1"></th>
-                <th class="span1">Id</th>
-                <th class="span2">Title</th>
-                <th class="span1 cell-right">Exits</th>
-                <th class="span1 cell-right">Items</th>
-                <th class="span1 cell-right">Mobiles</th>
-                <th class="span1 cell-right">Extras</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="edit-row table-bordered" ng-click="editRoom(room)" ng-repeat="room in rooms" ng-form="rowForm" ng-class="rowClass(rowForm)">
-                <td class="span1">{{$index + 1}}<div class="pull-right">
-                  <a ng-click="deleteRoom($event, room)" title="Delete Room" class="icon-link"><i class="icon-remove"></i></a>
-                  <a ng-click="visitRoom($event, room)" title="Visit Room" class="icon-link"><i class="icon-road"></i></a>
-                  <a title="Edit Room" class="icon-link"><i class="icon-wrench"></i></a>
-                </div></td>
-                <td class="span1 unselectable">{{room.id}}</td>
-                <td class="span2 unselectable edit-cell">{{room.title}}</td>
-                <td class="span1 unselectable cell-right">{{room.exit_count}}</td>
-                <td class="span1 unselectable cell-right">{{room.item_count}}</td>
-                <td class="span1 unselectable cell-right">{{room.mobile_count}}</td>
-                <td class="span1 unselectable cell-right">{{room.extra_count}}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="span2 pagination-right">
-      <button ng-click="closeEditor(editor)" class="btn btn-info">Close</button>
-      <div class="column-button">
-        <button ng-click="addEditor('mobiles', areaId)" class="btn">Mobiles</button>
-      </div>
-      <div class="column-button">
-        <button ng-click="addEditor('articles', areaId)" class="btn">Articles</button>
-      </div>
-    </div>
+<div class="row-fluid" ng-controller="RoomListCtrl" ng-show="ready" class="wrapper">
+  <div class="span2">
+    <button ng-click="newObjectDialog()" class="btn btn-small btn-success">New Room</button>
+  </div>
+  <div class="span9 scrollable">
+    <table class="table table-condensed span12">
+      <thead>
+      <tr>
+        <th class="span1">Id</th>
+        <th class="span4">Title</th>
+        <th class="span1 cell-right">Exits</th>
+        <th class="span1 cell-right">Items</th>
+        <th class="span1 cell-right">Mobiles</th>
+        <th class="span1 cell-right">Extras</th>
+        <th class="span2"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="edit-row table-bordered" ng-click="editRoom(room)" ng-repeat="room in modelList">
+        <td class="span1 unselectable">{{idOnly(room.dbo_id)}}</td>
+        <td class="span4 unselectable edit-cell">{{room.title}}</td>
+        <td class="span1 unselectable cell-right">{{room.exits.length}}</td>
+        <td class="span1 unselectable cell-right">{{room.article_resets.length}}</td>
+        <td class="span1 unselectable cell-right">{{room.mobile_resets.length}}</td>
+        <td class="span1 unselectable cell-right">{{room.extras.length}}</td>
+        <td class="span2">
+          <a ng-click="deleteObject($event, room)" title="Delete Room" class="icon-link"><i class="icon-remove"></i></a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

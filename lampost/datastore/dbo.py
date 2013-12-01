@@ -27,8 +27,6 @@ class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
     dbo_set_key = None
-    dbo_path = None
-    dbo_id = None
 
     dbo_indexes = ()
 
@@ -204,7 +202,7 @@ class DBOList(DBORef):
         self._add_raw_coll(dbo_dict, dbo_list, use_defaults)
 
     def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
-        if not dbo_list:
+        if use_defaults and not dbo_list:
             return
         if self.key_type:
             dbo_dict[self.field_name] = [child.dbo_id for child in dbo_list]
@@ -216,7 +214,7 @@ class DBOMap(DBOList):
     coll_class = dict
 
     def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
-        if not dbo_list:
+        if use_defaults and not dbo_list:
             return
         if self.key_type:
             dbo_dict[self.field_name] = [dbo_key for dbo_key in dbo_list]

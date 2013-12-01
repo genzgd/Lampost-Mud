@@ -1,7 +1,7 @@
 angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemote', 'lmEditor', 'lmDialog', 'lmUtil',
   function ($q, lmBus, lmRemote, lmEditor, lmDialog, lmUtil) {
 
-    this.prepareScope = function (controller, $scope) {
+    this.prepare = function (controller, $scope) {
 
       var newDialogId = null;
       var originalObject = null;
@@ -124,10 +124,14 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemo
         intercept('preLoad').then(function () {
           $q.all([
               lmEditor.cache(controller.modelList).then(function (modelList) {
-                $scope.modelList = modelList;
+                if (modelList) {
+                  $scope.modelList = modelList;
+                }
               }),
               lmEditor.cache(controller.model).then(function (model) {
-                $scope.editObject(model);
+                if (model) {
+                  $scope.editObject(model);
+                }
               })
             ])
             .then(function () {

@@ -48,7 +48,7 @@
         <textarea class="span12" rows="6" ng-model="model.desc"></textarea>
       </div>
     </div>
-    <div class="span12 tabbable v-full">
+    <div class="row-fluid tabbable v-full">
       <ul class="nav nav-tabs" >
         <li class="unselectable active"><a href="#roomTab" data-toggle="tab">Rooms</a></li>
         <li class="unselectable"><a href="#mobileTab" data-toggle="tab">Mobiles</a></li>
@@ -56,7 +56,7 @@
       </ul>
 
       <div class="tab-content scrollable">
-        <div id="roomTab" class="tab-pane active">Rooms</div>
+        <div id="roomTab" class="tab-pane active" ng-include="'editor/view/rooms.html'"></div>
         <div id="mobileTab" class="tab-pane">Mobiles</div>
         <div id="articleTab" class="tab-pane">Articles</div>
       </div>

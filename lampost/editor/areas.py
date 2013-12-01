@@ -1,6 +1,7 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
+from lampost.datastore.exceptions import DataError
 from lampost.editor.base import EditResource
 from lampost.env.movement import Direction
 from lampost.env.room import Room
@@ -22,10 +23,11 @@ class AreaResource(EditResource):
 
 class AreaListResource(Resource):
     def __init__(self, list_class):
+        Resource.__init__(self)
         self.list_class = list_class
 
     def getChild(self, area_id, request):
-        return list_class(area)
+        return self.list_class(area_id)
 
 
 class RoomResource(EditResource):
@@ -52,7 +54,7 @@ class RoomListResource(Resource):
         area = mud.get_area(self.area_id)
         if not area:
             raise DataError("Missing Area")
-        return [room_stub_dto(room) for room in area.rooms.values()]
+        return [room.dto_value for room in area.rooms.values()]
 
 
 def room_stub_dto(room):
