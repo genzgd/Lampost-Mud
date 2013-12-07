@@ -14,8 +14,6 @@ class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
     dbo_fields = "name", "desc", "next_room_id", "owner_id", "dbo_rev"
-    dbo_maps = DBOMap("rooms", Room, "room"),  DBOMap("mobiles", MobileTemplate, "mobile"), \
-        DBOMap("articles", ArticleTemplate, "article")
 
     next_room_id = 0
     dbo_rev = 0

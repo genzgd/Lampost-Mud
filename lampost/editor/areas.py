@@ -57,9 +57,5 @@ class RoomListResource(Resource):
         return [room.dto_value for room in area.rooms.values()]
 
 
-def room_stub_dto(room):
-    return {'dbo_id': room.dbo_id, 'title': room.title, 'exit_count': len(room.exits), 'item_count': len(room.article_resets),
-            'mobile_count': len(room.mobile_resets), 'extra_count': len(room.extras)}
-
 
 

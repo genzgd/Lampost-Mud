@@ -5,7 +5,6 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemo
 
       var newDialogId = null;
       var originalObject = null;
-      var dialogScope = null;
       var editor = $scope.editor;
       var baseUrl = 'editor/' + editor.url + '/';
 
@@ -73,19 +72,25 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemo
               $scope.modelList.push(createdObject);
               lmUtil.stringSort($scope.modelList, 'dbo_id');
               lmDialog.close(newDialogId);
-              intercept('postCreate', createdObject);
-              $scope.editObject(createdObject);
+              intercept('postCreate', createdObject).then(function() {
+                 $scope.editObject(createdObject);
+              });
             }, function () {
-              dialogScope.objectExists = true;
+              $scope.newExists = true;
             });
         })
       };
 
       $scope.newObjectDialog = function () {
         $scope.newModel = {};
-        var dialogName = $scope.editor.newDialog ? $scope.editor.id : 'generic';
-        dialogScope = $scope.$new();
-        newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/new_' + dialogName + '.html', scope: dialogScope});
+        intercept('newDialog').then(function() {
+           var dialogName = editor.create === 'dialog' ? editor.id : 'generic';
+           newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/new_' + dialogName + '.html', scope: $scope.$new()});
+        });
+      };
+
+      $scope.newModelInclude = function() {
+        return editor.create === 'fragment' ? 'editor/fragments/new_' + editor.id + '.html' : null;
       };
 
       $scope.editObject = function (object) {
@@ -111,9 +116,8 @@ angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemo
         $scope.copyFromId = object.dbo_id;
         $scope.newModel = angular.copy(object);
         delete $scope.newModel.dbo_id;
-        dialogScope = $scope.$new();
-        var dialogName = $scope.editor.copyDialog ? $scope.editor.id : 'generic';
-        newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/copy_' + dialogName + '.html', scope: dialogScope});
+        var dialogName = editor.copyDialog ? editor.id : 'generic';
+        newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/copy_' + dialogName + '.html', scope: $scope.$new()});
       };
 
       $scope.objectRowClass = function (object) {

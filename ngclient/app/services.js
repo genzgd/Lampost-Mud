@@ -450,6 +450,9 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compi
     var enabledElements;
     var enabledLinks;
 
+    // Hack to avoid bootstrap multiple modal bug.  Allegedly fixed in Bootstrap 3
+    jQuery().modal.Constructor.prototype.enforceFocus = angular.noop;
+
     function showDialog(args) {
       var dialogId = "lmDialog_" + nextId++;
       if (args.templateUrl) {
