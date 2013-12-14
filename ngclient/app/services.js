@@ -13,8 +13,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function (lmLog) {
   var registry = {};
 
   function applyCallback(callback, args, scope) {
-    var phase = scope && scope.$root.$$phase;
-    if (!phase || phase === '$apply' || phase === '$digest') {
+    if (!scope || (scope.$root.$$phase === '$apply' || scope.$root.$$phase === '$digest')) {
       callback.apply(this, args);
     } else {
       scope.$apply(function () {
@@ -331,7 +330,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
       }
       var service = services[serviceId];
       if (service.refCount < 0) {
-        lmLog.log("Error: Service " + serviceId + " has refCount " + refCount);
+        lmLog.log("Error: Service " + serviceId + " has refCount " + service.refCount);
         service.refCount = 0;
       }
       if (service.refCount == 0 && service.registered && !service.inFlight) {

@@ -227,9 +227,9 @@ def promote(source, target, obj, **ignored):
 
 
 @imm_action('run update', imm_level='supreme')
-def run_update(args, **ignored):
+def run_update(source, args, **ignored):
     try:
-        return lampost.setup.update.__dict__[args[0]]()
+        return lampost.setup.update.__dict__[args[0]](source)
     except KeyError:
         return "No such update."
 

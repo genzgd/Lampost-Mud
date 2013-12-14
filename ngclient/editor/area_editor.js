@@ -1,43 +1,48 @@
-angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'EditorHelper',
-  function($scope, EditorHelper) {
+angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEditor',
+  function($scope, lmEditor) {
 
-    this.modelList = 'area';
-
-    EditorHelper.prepare(this, $scope)();
-
+    lmEditor.cacheEntry('area');
+    lmEditor.prepare(this, $scope).prepareList('area');
 
   }]);
 
-angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'EditorHelper',
-  function($q, $scope, EditorHelper) {
+angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor',
+  function($q, $scope, lmEditor) {
 
-    var self = this;
+    var areaId;
+    var listKey;
 
     $scope.editor = $scope.editorMap.room;
 
-    var refresh = EditorHelper.prepare(this, $scope);
+    var refresh = lmEditor.prepare(this, $scope).prepareList;
 
     $scope.$on('updateModel', updateModel);
 
     function updateModel() {
       if ($scope.model) {
-        var areaId = $scope.model.dbo_id;
+        lmEditor.deref(listKey);
+        areaId = $scope.model.dbo_id;
+        listKey = "room:" + areaId;
         $scope.areaId = areaId;
-        self.modelList = {key: 'rooms:' + areaId, url: 'room/list/' + areaId};
-        refresh();
+        lmEditor.cacheEntry({key: listKey, url: 'room/list/' + areaId, idSort: true});
+        refresh(listKey);
       } else {
         $scope.modelList = null;
       }
     }
 
-    this.newDialog = function() {
-      $scope.newModel.id = $scope.model.next_room_id;
+    this.newDialog = function(newModel) {
+      newModel.id = $scope.model.next_room_id;
+    };
+
+    this.preCreate = function(newModel) {
+      newModel.dbo_id = areaId + ":" + newModel.id;
     };
 
     this.postCreate = function() {
       // This is a child list editor, so we open the room editor instead of
       // editing in place
-      $q.reject();
+      return $q.reject();
     }
 
   }]);

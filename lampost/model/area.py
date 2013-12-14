@@ -1,13 +1,13 @@
 from random import randint
 
 from lampost.context.resource import requires, m_requires
-from lampost.datastore.dbo import RootDBO, DBOMap
+from lampost.datastore.dbo import RootDBO
 from lampost.env.room import Room
 from lampost.model.mobile import MobileTemplate
 from lampost.model.article import ArticleTemplate
 
 
-m_requires('log', 'dispatcher', __name__)
+m_requires('log', 'dispatcher', 'datastore',  __name__)
 
 
 class Area(RootDBO):
@@ -24,10 +24,27 @@ class Area(RootDBO):
 
     reset_time = 180
 
+    def coll_key(self, coll):
+        return 'area_{}:{}'.format(coll, self.dbo_id)
+
+    def on_loaded(self):
+        for coll_type, coll_class in [('rooms', Room), ('mobiles', MobileTemplate), ('articles', ArticleTemplate)]:
+            coll = {}
+            setattr(self, coll_type, coll)
+            for coll_id in fetch_set_keys(self.coll_key(coll_type)):
+                coll[coll_id] = load_object(coll_class, coll_id)
+
+    def add_coll_item(self, coll_type, item):
+        coll = getattr(self, coll_type)
+        coll[item.dbo_id] = item
+        add_set_key(self.coll_key(coll_type), item.dbo_id)
+
+    def del_coll_item(self, coll_type, item):
+        coll = getattr(self, coll_type)
+        del coll[item.dbo_id]
+        delete_set_key(self.coll_key(coll_type), item.dbo_id)
+
     def start(self):
-        for room_id in [room_id for room_id, room in self.rooms.iteritems() if not room]:
-            warn("Invalid room: {} -- removing from Area Object".format(room_id))
-            del self.rooms[room_id]
         self.reset()
         register_p(self.reset, seconds=self.reset_time, randomize=self.reset_time)
 
@@ -42,10 +59,10 @@ class Area(RootDBO):
     def get_room(self, room_id):
         return self.rooms.get(room_id)
 
-    def inc_next_room(self, room_id):
-        if self.next_room_id == room_id:
-            while self.get_room(self.dbo_id + ':' + str(self.next_room_id)):
-                self.next_room_id += 1
+    def inc_next_room(self, room):
+        while self.get_room(self.dbo_id + ':' + str(self.next_room_id)):
+            self.next_room_id += 1
+        save_object(self)
 
     def get_mobile(self, mobile_id):
         if not ":" in mobile_id:
@@ -73,4 +90,3 @@ class Area(RootDBO):
             for article_reset in room.article_resets:
                 if article_reset.article_id == article_id:
                     yield room, article_reset
-

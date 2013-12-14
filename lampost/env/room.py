@@ -83,7 +83,7 @@ class Room(RootDBO):
 
     @property
     def area_id(self):
-        return self.room_id.split(":")[0]
+        return self.dbo_id.split(":")[0]
 
     def rec_glance(self, source, **ignored):
         return source.display_line(self.title, ROOM_DISPLAY)

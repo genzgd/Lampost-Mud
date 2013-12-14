@@ -129,7 +129,10 @@ def add_skill(target, obj, **ignored):
     skill_service.add_skill(skill_id, obj)
     skill_status = SkillStatus()
     skill_status.level = skill_level
-    obj.skills[skill_id] = skill_status
+    try:
+        obj.append_map('skills', skill_status, skill_id)
+    except AttributeError:
+        obj.skills[skill_id] = skill_status
     return "Added {} to {}".format(target, obj.name)
 
 

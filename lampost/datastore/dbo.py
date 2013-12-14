@@ -48,13 +48,15 @@ class RootDBO(object):
         if not my_list:
             self.__dict__.pop(attr_name, None)
 
-    def append_map(self, attr_name, value):
+    def append_map(self, attr_name, value, map_key=None):
+        if not map_key:
+            map_key = value.dbo_id
         try:
-            self.__dict__[attr_name][value.dbo_id] = value
+            self.__dict__[attr_name][map_key] = value
         except KeyError:
             new_map = dict()
             setattr(self, attr_name, new_map)
-            new_map[value.dbo_id] = value
+            new_map[map_key] = value
 
     def remove_map(self, attr_name, value):
         my_map = getattr(self, attr_name)
@@ -90,6 +92,7 @@ class RootDBO(object):
     def dto_value(self):
         dbo_dict = to_dbo_dict(self)
         dbo_dict['dbo_id'] = self.dbo_id
+        dbo_dict['dbo_key_type'] = self.dbo_key_type
         return dbo_dict
 
     @property
@@ -135,10 +138,7 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
         if child_coll:
             append(col.field_name, "")
             for child_dbo in child_coll:
-                if follow_refs or not child_dbo.dbo_key_type:
-                    display.extend(dbo_describe(child_dbo, level + 1, False))
-                else:
-                    append(col.field_name, child_dbo.dbo_debug_key)
+                display.extend(dbo_describe(child_dbo, level + 1, False))
         else:
             append(col.field_name, "None")
     for col in getattr(dbo, 'dbo_maps', ()):
@@ -146,10 +146,8 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
         if child_coll:
             append(col.field_name, "")
             for child_dbo_id, child_dbo in child_coll.iteritems():
-                if follow_refs or not child_dbo.dbo_key_type:
-                    display.extend(dbo_describe(child_dbo, level + 1, False, child_dbo_id))
-                else:
-                    append(child_dbo_id, "")
+                display.extend(dbo_describe(child_dbo, level + 1, False, child_dbo_id))
+
     return display
 
 
@@ -167,7 +165,7 @@ def to_dbo_dict(dbo, use_defaults=False):
             dbo_dict[field_name] = getattr(dbo, field_name, None)
     for coll_type in dbo.dbo_lists, dbo.dbo_maps:
         for dbo_col in coll_type:
-            dbo_col.build_dbo(dbo, dbo_dict, use_defaults)
+            dbo_col.build_dict(dbo, dbo_dict, use_defaults)
     for dbo_ref in dbo.dbo_refs:
         try:
             dbo_dict[dbo_ref.field_name] = getattr(dbo, dbo_ref.field_name).dbo_id
@@ -191,7 +189,7 @@ class DBOList(DBORef):
         setattr(dbo, self.field_name, instance)
         return instance
 
-    def build_dbo(self, dbo, dbo_dict, use_defaults):
+    def build_dict(self, dbo, dbo_dict, use_defaults):
         if use_defaults:
             try:
                 dbo_list = dbo.__dict__[self.field_name]
@@ -202,11 +200,7 @@ class DBOList(DBORef):
         self._add_raw_coll(dbo_dict, dbo_list, use_defaults)
 
     def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
-        if use_defaults and not dbo_list:
-            return
-        if self.key_type:
-            dbo_dict[self.field_name] = [child.dbo_id for child in dbo_list]
-        else:
+        if not use_defaults or dbo_list:
             dbo_dict[self.field_name] = [to_dbo_dict(child_dbo, use_defaults) for child_dbo in dbo_list]
 
 
@@ -214,9 +208,5 @@ class DBOMap(DBOList):
     coll_class = dict
 
     def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
-        if use_defaults and not dbo_list:
-            return
-        if self.key_type:
-            dbo_dict[self.field_name] = [dbo_key for dbo_key in dbo_list]
-        else:
+        if not use_defaults or dbo_list:
             dbo_dict[self.field_name] = {dbo_id: to_dbo_dict(child_dbo, use_defaults) for dbo_id, child_dbo in dbo_list.iteritems()}

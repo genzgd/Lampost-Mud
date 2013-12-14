@@ -42,12 +42,13 @@ class Permissions(object):
             return False
 
     def check_perm(self, player, action):
-        perm_required = 0
         if isinstance(action, int):
             perm_required = action
         elif action in self.levels:
             perm_required = self.levels[action]
-        perm_required = max(getattr(action, 'imm_level', 0), perm_required)
+        else:
+            imm_level = getattr(action, 'imm_level', 0)
+            perm_required = self.levels.get(imm_level, imm_level)
         owner_id = getattr(action, 'owner_id', None)
         if owner_id:
             perm_required = max(self.immortals.get(owner_id, self.levels['admin']) + 1, perm_required)

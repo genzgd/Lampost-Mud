@@ -1,4 +1,4 @@
-from lampost.client.services import PlayerListService, AnyLoginService
+from lampost.client.services import PlayerListService, AnyLoginService, EditUpdateService
 from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
 from lampost.comm.channel import ChannelService
@@ -42,6 +42,7 @@ class Context(object):
         FriendService()
         MessageService()
         PlayerListService()
+        EditUpdateService()
         AnyLoginService()
         mud_nature = MudNature(flavor)
         web_server = WebServer(int(port))

@@ -21,9 +21,10 @@ class ClientService(object):
         except KeyError:
             pass
 
-    def _session_dispatch(self, event):
+    def _session_dispatch(self, event, source_session=None):
         for session in self.sessions:
-            session.append(event)
+            if session != source_session:
+                session.append(event)
 
 
 @provides('player_list_service')
@@ -50,5 +51,17 @@ class AnyLoginService(ClientService):
 
     def _process_login(self, player):
         self._session_dispatch({'any_login': {'name': player.name}})
+
+
+@provides('edit_update_service')
+class EditUpdateService(ClientService):
+
+    def _post_init(self):
+        super(EditUpdateService, self)._post_init()
+        register('edit_update', self._edit_update)
+
+    def _edit_update(self, edit_type, model, source_session=None):
+        update = {'edit_type': edit_type, 'model': model}
+        self._session_dispatch({'edit_update': update}, source_session)
 
 

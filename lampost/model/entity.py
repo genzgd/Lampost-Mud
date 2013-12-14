@@ -70,7 +70,7 @@ class Entity(BaseItem):
                 if not verb_set:
                     del self.soul[verb]
             else:
-                warn("Trying to remove non-existent {} from {} soul".format(verb, self.name))
+                debug("Trying to remove non-existent {} from {} soul".format(verb, self.name))
 
     def rec_entity_enter_env(self, entity):
         self.add_target(entity)
