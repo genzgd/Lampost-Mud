@@ -61,7 +61,7 @@ class EditUpdateService(ClientService):
         register('edit_update', self._edit_update)
 
     def _edit_update(self, edit_type, model, source_session=None):
-        update = {'edit_type': edit_type, 'model': model}
+        update = {'edit_type': edit_type, 'model': model, 'local': not source_session}
         self._session_dispatch({'edit_update': update}, source_session)
 
 

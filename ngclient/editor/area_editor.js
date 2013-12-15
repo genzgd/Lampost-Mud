@@ -6,13 +6,13 @@ angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEdit
 
   }]);
 
-angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor',
-  function($q, $scope, lmEditor) {
+angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor', 'lmBus',
+  function($q, $scope, lmEditor, lmBus) {
 
     var areaId;
     var listKey;
 
-    $scope.editor = $scope.editorMap.room;
+    $scope.editor = {label: "Room", url: "room", create: 'dialog'};
 
     var refresh = lmEditor.prepare(this, $scope).prepareList;
 
@@ -39,11 +39,10 @@ angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lm
       newModel.dbo_id = areaId + ":" + newModel.id;
     };
 
-    this.postCreate = function() {
-      // This is a child list editor, so we open the room editor instead of
-      // editing in place
+    this.postCreate = function(newModel) {
+      lmBus.dispatch('start_editor', 'room', newModel);
       return $q.reject();
-    }
+    };
 
   }]);
 

@@ -578,27 +578,23 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compi
       }
     };
 
-    this.showOk = function (title, msg) {
-      var scope = $rootScope.$new();
-      scope.buttons = [
-        {label: 'OK', default: true, dismiss: true, class: "btn-primary"}
-      ];
-      scope.title = title;
-      scope.body = $sce.trustAsHtml(msg);
-      showDialog({templateUrl: 'dialogs/alert.html', scope: scope,
-        controller: AlertCtrl});
+    this.showAlert = function(options, noEscape) {
+      options.body = $sce.trustAsHtml(options.body);
+      showDialog({templateUrl: 'dialogs/alert.html',
+        scope: angular.extend($rootScope.$new(), options),
+        controller: AlertCtrl, noEscape: noEscape});
     };
 
-    this.showConfirm = function (title, msg, confirm) {
-      var scope = $rootScope.$new();
-      var yesButton = {label: "Yes", dismiss: true, class: "btn-danger", click: confirm};
-      var noButton = {label: "No", dismiss: true, class: "btn-primary", default: true};
-      scope.buttons = [yesButton, noButton];
-      scope.title = title;
-      scope.body = $sce.trustAsHtml(msg);
+    this.showOk = function (title, body) {
+      this.showAlert({title: title, body: body,
+          buttons: [{label: 'OK', default: true, dismiss: true, class: "btn-primary"}]});
+    };
 
-      showDialog({templateUrl: 'dialogs/alert.html', scope: scope,
-        controller: AlertCtrl, noEscape: true});
+    this.showConfirm = function (title, body, confirm, onCancel) {
+      this.showAlert({title: title, body: body, onCancel: onCancel,
+        buttons: [{label: 'Yes', dismiss: true, class: 'btn-danger', click: confirm},
+        {label: "No", class: 'btn-primary', default: true, cancel: true}]
+      }, true);
     };
 
     this.showPrompt = function (args) {
@@ -608,19 +604,25 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compi
       scope.title = args.title;
       scope.prompt = args.prompt;
       scope.inputType = args.password ? "password" : "text";
+      scope.onCancel = args.onCancel;
       scope.doSubmit = function () {
         scope.submit.call(scope, scope.promptValue);
         scope.dismiss();
       };
       showDialog({templateUrl: 'dialogs/prompt.html', scope: scope,
         noEscape: true});
-
     };
 
     function AlertCtrl($scope, dialog) {
       $scope.click = function (button) {
         button.click && button.click();
+        button.cancel && $scope.cancel();
         button.dismiss && $scope.dismiss();
+      };
+
+      $scope.cancel = function() {
+        $scope.onCancel && $scope.onCancel();
+        $scope.dismiss();
       };
 
       for (var i = 0; i < $scope.buttons.length; i++) {

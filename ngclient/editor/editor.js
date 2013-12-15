@@ -31,8 +31,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     var remoteCache = {};
 
     function cacheKey(model) {
-       var cacheKey = (model.dbo_key_type + ':' + model.dbo_id).split(":");
-       return cacheKey.slice(0, cacheKey.length - 1).join(':');
+      var cacheKey = (model.dbo_key_type + ':' + model.dbo_id).split(":");
+      return cacheKey.slice(0, cacheKey.length - 1).join(':');
     }
 
     function cacheSort(entry) {
@@ -88,6 +88,25 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       }
     }
 
+    function display(model) {
+      var display;
+      if (model.name) {
+        display = model.name;
+      } else if (model.title) {
+        display = model.title;
+      }
+      if (display) {
+        display += ' (' + model.dbo_id + ')';
+      } else {
+        display = model.dbo_id;
+      }
+      return display;
+    }
+
+    this.cacheValue = function(key, dbo_id) {
+      return remoteCache[key].map[dbo_id];
+    };
+
     this.deref = function (key) {
       if (!key) {
         return;
@@ -140,34 +159,29 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           entry.map[data[i].dbo_id] = data[i];
         }
         cacheSort(entry);
-        return $q.when(data);
+        return $q.when(entry.data);
       });
       return entry.promise;
     };
 
     this.editUpdate = function (event) {
+      var outside = !event.local;
       switch (event.edit_type) {
         case 'update':
-          updateModel(event.model, true);
+          updateModel(event.model, outside);
           break;
         case 'create':
-          insertModel(event.model, true);
+          insertModel(event.model, outside);
           break;
         case 'delete':
-          deleteModel(event.model, true);
+          deleteModel(event.model, outside);
           break;
       }
     };
 
-
     this.visitRoom = function (roomId) {
       lmRemote.request('editor/room/visit', {room_id: roomId});
       window.open("", window.opener.name);
-    };
-
-    this.sanitize = function (text) {
-      text = text.replace(/(\r\n|\n|\r)/gm, " ");
-      return text.replace(/\s+/g, " ");
     };
 
     this.prepare = function (controller, $scope) {
@@ -175,40 +189,46 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       var newDialogId = null;
       var originalObject = null;
       var editor = $scope.editor;
+      var nextModel = null;
       var baseUrl = 'editor/' + editor.url + '/';
+
+      editor.newEdit = newEdit;
 
       $scope.objectExists = false;
       $scope.newModel = null;
       $scope.copyFromId = null;
-      $scope.objLabel = editor.id.charAt(0).toUpperCase() + editor.id.slice(1);
 
-      $scope.$watch('model', function () {
-        $scope.isDirty = !angular.equals(originalObject, $scope.model);
+      $scope.$watch('model', function (model) {
+        if (model) {
+          $scope.isDirty = !angular.equals(originalObject, model);
+        } else {
+          $scope.isDirty = false;
+        }
       }, true);
 
-      lmBus.register('modelUpdate', function(updatedModel, outside) {
+      lmBus.register('modelUpdate', function (updatedModel, outside) {
         if (updatedModel !== originalObject) {
           return;
         }
         if ($scope.isDirty && outside) {
           lmDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
-            "Do you want to load the new object and lose your changes?", function() {
-              $scope.model = angular.copy(originalObject);
-            });
+            "Do you want to load the new object and lose your changes?", function () {
+            $scope.model = angular.copy(originalObject);
+          });
         } else {
           $scope.outsideEdit = outside;
           $scope.model = angular.copy(originalObject);
         }
       }, $scope);
 
-      lmBus.register('modelCreate', function(modelList, model, outside) {
+      lmBus.register('modelCreate', function (modelList, model, outside) {
         if (modelList !== $scope.modelList) {
           return;
         }
         $scope.outsideAdd = outside;
       }, $scope);
 
-      lmBus.register('modelDelete', function(modelList, model, outside) {
+      lmBus.register('modelDelete', function (modelList, model, outside) {
         if (modelDeleted(model, outside)) {
           return;
         }
@@ -231,7 +251,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           }
           $scope.outsideEdit = false;
           $scope.model = null;
-          intercept('postDelete', object);
+          intercept('postDelete', delModel);
           return true;
         }
         return false;
@@ -259,18 +279,49 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         });
       }
 
-      $scope.revertObject = function () {
+      function newEdit(newModel) {
+        if (!newModel) {
+          return;
+        }
+        if ($scope.model && $scope.model.dbo_id !== newModel.dbo_id && $scope.isDirty) {
+          nextModel = newModel;
+          lmDialog.showAlert({title: "Unsaved Changes ",
+            body: "You are about to edit <b>" + display(newModel) + "</b>.  You have unsaved changes to <b>" +
+              display($scope.model) +"</b>.  Save your changes, discard your changes, or continue editing <b>" +
+              display($scope.model) + "</b>?",
+            buttons: [
+              {label: "Save Changes", class: "btn-default", dismiss: true, click: $scope.updateModel},
+              {label: "Discard Changes", class: "btn-danger", dismiss: true, click: nextEdit},
+              {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
+            ],
+            onCancel: function () {
+              nextModel = null;
+            }}, true);
+        } else {
+          $scope.editModel(newModel);
+        }
+      }
+
+      function nextEdit() {
+        if (nextModel) {
+          $scope.model = null;
+          newEdit(nextModel);
+          nextModel = null;
+        }
+      }
+
+      $scope.revertModel = function () {
         $scope.model = angular.copy(originalObject);
         $scope.$broadcast('updateModel');
       };
 
-      $scope.updateObject = function () {
+      $scope.updateModel = function () {
         intercept('preUpdate').then(function () {
           lmRemote.request(baseUrl + 'update', $scope.model).then(
             function (updatedObject) {
               $scope.isDirty = false;
               updateModel(updatedObject);
-              intercept('postUpdate', $scope.model);
+              intercept('postUpdate', $scope.model).then(nextEdit);
             }
           )
         })
@@ -283,7 +334,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
               insertModel(createdObject);
               lmDialog.close(newDialogId);
               intercept('postCreate', createdObject).then(function () {
-                $scope.editObject(createdObject);
+                $scope.editModel(createdObject);
               });
             }, function () {
               $scope.newExists = true;
@@ -303,11 +354,12 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         return editor.create === 'fragment' ? 'editor/fragments/new_' + editor.id + '.html' : null;
       };
 
-      $scope.editObject = function (object) {
+      $scope.editModel = function (object) {
         originalObject = object;
         $scope.outsideEdit = false;
         $scope.model = angular.copy(originalObject);
         intercept('startEdit', $scope.model).then(function () {
+          $scope.ready = true;
           $scope.$broadcast('updateModel');
         });
       };
@@ -341,8 +393,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 ]);
 
 
-angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmBus', 'lmRemote',
-  function ($scope, lmEditor, lmBus, lmRemote) {
+angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmRemote',
+  function ($scope, lmEditor, lmRemote) {
 
     var playerId = name.split('_')[1];
     var editorList = jQuery.parseJSON(localStorage.getItem('lm_editors_' + playerId));
@@ -369,8 +421,8 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       return editor.activated ? 'editor/view/' + editor.id + '.html' : undefined;
     };
 
-    $scope.idOnly = function (dboId) {
-      return dboId.split(':')[1];
+    $scope.idOnly = function (model) {
+      return model.dbo_id.split(':')[1];
     };
 
     $scope.click = function (editor) {
@@ -394,12 +446,20 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       return (editor == $scope.currentEditor ? "active " : " ") + editor.label_class;
     };
 
+    $scope.startEditor = function (editType, editModel) {
+      var editor = $scope.editorMap[editType];
+      editor.editModel = editModel;
+      $scope.click(editor);
+      editor.newEdit && editor.newEdit(editModel);
+    };
+
     lmEditor.cacheEntry({key: 'constants', url: 'constants'});
     lmEditor.cache('constants').then(function (constants) {
       $scope.constants = constants;
       $scope.loaded = true;
       $scope.click($scope.editors[0]);
     });
+
 
   }]);
 

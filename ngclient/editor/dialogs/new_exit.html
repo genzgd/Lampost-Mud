@@ -8,16 +8,16 @@
       <div class="row-fluid">
         <div class="span6">
           <h6 style="padding-top: 0; margin-top: 0">Direction</h6>
-          <select class="span8" ng-model="direction" ng-options="direction.name for direction in directions" required="true" autofocus>
+          <select class="span8" ng-model="direction" ng-options="direction.name for direction in directions" required autofocus>
           </select>
         </div>
         <div class="span6">
           <label class="radio">
-            <input type="radio" ng-model="useNew" ng-change="changeType()" value="new">
+            <input type="radio" ng-model="useNew" ng-change="changeType()" ng-value="true">
             To New Room
           </label>
           <label class="radio">
-            <input type="radio" ng-model="useNew" ng-change="changeType()" value="existing">
+            <input type="radio" ng-model="useNew" ng-change="changeType()" ng-value="false">
             To Existing Room
           </label>
           <label class="checkbox">
@@ -33,15 +33,18 @@
       <div class="row-fluid">
         <div class="span6">
           <label>Area</label>
-          <select class="span10" ng-change="changeArea()" ng-model="destAreaId" ng-disabled="useNew == 'new'" ng-options="area for area in areaList" required="true">
+          <select class="span10" ng-change="changeArea()" ng-model="destAreaId" ng-disabled="useNew"
+              ng-options="area.dbo_id as area.dbo_id for area in areaList" required>
           </select>
           <label>Room</label>
-          <input type="number" class="span6" min="0" ng-model="destId" ng-change="changeId()">
+          <input ng-if="useNew" type="number" class="input input-medium" min="0" ng-model="destRoom.destId" ng-change="changeId()" required>
+          <select ng-disabled="roomsInvalid" class="span10" ng-show="!useNew" ng-model="destRoom" ng-options="room as room.dbo_id for room in roomList">
+          </select>
         </div>
         <div class="span6">
           <div class="span12 control-group">
             <label>Title</label>
-            <input class="span12" ng-model="destTitle" ng-change="titleEdited = true" ng-disabled="useNew == 'existing'">
+            <input class="input input-large" ng-model="destRoom.title" ng-disabled="!useNew">
           </div>
           <div class="span12 alert alert-error" ng-show="lastError != null" style="margin-left: 0; margin-top: 6px;">
             <button type="button" class="close" ng-click="lastError = null">×</button>

@@ -16,8 +16,8 @@
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row table-bordered" ng-click="editRoom(room)" ng-repeat="room in modelList">
-        <td class="span1 unselectable">{{idOnly(room.dbo_id)}}</td>
+      <tr class="edit-row table-bordered" ng-click="startEditor('room', room)" ng-repeat="room in modelList">
+        <td class="span1 unselectable">{{idOnly(room)}}</td>
         <td class="span4 unselectable edit-cell">{{room.title}}</td>
         <td class="span1 unselectable cell-right">{{room.exits.length}}</td>
         <td class="span1 unselectable cell-right">{{room.article_resets.length}}</td>

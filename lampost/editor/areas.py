@@ -36,7 +36,6 @@ class RoomResource(EditResource):
     def __init__(self):
         EditResource.__init__(self, Room)
         self.putChild('list', AreaListResource(RoomListResource))
-        self.putChild('dir_list', DirList())
 
     def pre_create(self, room_dto, session):
         area = room_area(room_dto)
@@ -46,6 +45,7 @@ class RoomResource(EditResource):
         area = room_area(room)
         area.add_coll_item('rooms', room)
         area.inc_next_room(room)
+        dispatch('edit_update', 'update', area.dto_value)
 
     def pre_delete(self, room, session):
         check_perm(session, room_area(room))
@@ -54,12 +54,6 @@ class RoomResource(EditResource):
         save_contents(room)
         delete_room(room)
         room_area(room).del_coll_item('rooms', room)
-
-
-class DirList(Resource):
-    @request
-    def render_POST(self):
-        return [{'key':direction.key, 'name':direction.desc} for direction in Direction.ordered]
 
 
 class RoomListResource(Resource):
@@ -105,5 +99,3 @@ def save_contents(start_room):
             entity.change_env(safe_room)
             contents.append(entity)
     return contents
-
-
