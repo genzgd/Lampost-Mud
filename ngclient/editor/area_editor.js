@@ -12,7 +12,7 @@ angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lm
     var areaId;
     var listKey;
 
-    $scope.editor = {label: "Room", url: "room", create: 'dialog'};
+    $scope.editor = {id: 'room', url: "room", create: 'dialog'};
 
     var refresh = lmEditor.prepare(this, $scope).prepareList;
 

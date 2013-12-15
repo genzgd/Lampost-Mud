@@ -83,14 +83,7 @@ class RoomDelete(Resource):
         return deleted_exits
 
 
-class RoomVisit(Resource):
-    @request
-    def render_POST(self, content, session):
-        room = mud.find_room(content.room_id)
-        if not Room:
-            raise DataError("ROOM_MISSING")
-        session.player.change_env(room)
-        session.player.parse('look')
+
 
 
 class RoomUpdate(Resource):
@@ -225,9 +218,7 @@ def save_contents(start_room):
     return contents
 
 
-def restore_contents(room, contents):
-    for entity in contents:
-        entity.change_env(room)
+
 
 
 def room_stub_dto(room):

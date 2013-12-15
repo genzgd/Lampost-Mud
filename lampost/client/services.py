@@ -21,10 +21,9 @@ class ClientService(object):
         except KeyError:
             pass
 
-    def _session_dispatch(self, event, source_session=None):
+    def _session_dispatch(self, event):
         for session in self.sessions:
-            if session != source_session:
-                session.append(event)
+            session.append(event)
 
 
 @provides('player_list_service')
@@ -53,15 +52,23 @@ class AnyLoginService(ClientService):
         self._session_dispatch({'any_login': {'name': player.name}})
 
 
-@provides('edit_update_service')
+@provides('edit_update_service', True)
 class EditUpdateService(ClientService):
 
-    def _post_init(self):
-        super(EditUpdateService, self)._post_init()
-        register('edit_update', self._edit_update)
-
-    def _edit_update(self, edit_type, model, source_session=None):
-        update = {'edit_type': edit_type, 'model': model, 'local': not source_session}
-        self._session_dispatch({'edit_update': update}, source_session)
+    def publish_edit(self, edit_type, model, source_session, local=False):
+        try:
+            event_model = model.dto_value
+        except AttributeError:
+            event_model = model
+        event = {'edit_update': {'edit_type': edit_type, 'model': event_model}}
+        for session in self.sessions:
+            if session == source_session:
+                if local:
+                    local_event = event.copy()
+                    local_event['edit_update']['local'] = True
+                    session.append(local_event)
+            else:
+                session.append(event)
+        return event_model
 
 

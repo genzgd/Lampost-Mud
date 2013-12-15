@@ -27,7 +27,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 
     var self = this;
     var cacheHeap = [];
-    var cacheHeapSize = 24;
+    var cacheHeapSize = 32;
     var remoteCache = {};
 
     function cacheKey(model) {
@@ -60,6 +60,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           lmBus.dispatch('modelUpdate', cacheModel, outside);
         }
       }
+
     }
 
     function insertModel(model, outside) {
@@ -86,6 +87,20 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           lmBus.dispatch('modelDelete', entry.data, model, outside);
         }
       }
+      var deleted = [];
+      angular.forEach(remoteCache, function(entry, key) {
+        var keyParts = key.split(':');
+        if (keyParts[1] === model.dbo_id) {
+          deleted.push(key);
+        }
+      });
+      angular.forEach(deleted, function(cacheKey) {
+        var heapIx = cacheHeap.indexOf(cacheKey);
+        if (heapIx > -1) {
+          cacheHeap.splice(headIx, 1);
+        }
+        delete remoteCache[cacheKey];
+      });
     }
 
     function display(model) {
@@ -112,6 +127,9 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         return;
       }
       var entry = remoteCache[key];
+      if (!entry) {
+        return;
+      }
       entry.ref--;
       if (entry.ref === 0) {
         cacheHeap.unshift(key);
@@ -187,37 +205,37 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     this.prepare = function (controller, $scope) {
 
       var newDialogId = null;
-      var originalObject = null;
+      var originalModel = null;
       var editor = $scope.editor;
       var nextModel = null;
       var baseUrl = 'editor/' + editor.url + '/';
 
       editor.newEdit = newEdit;
 
-      $scope.objectExists = false;
       $scope.newModel = null;
       $scope.copyFromId = null;
+      $scope.objLabel = editor.objLabel || editor.label;
 
       $scope.$watch('model', function (model) {
         if (model) {
-          $scope.isDirty = !angular.equals(originalObject, model);
+          $scope.isDirty = !angular.equals(originalModel, model);
         } else {
           $scope.isDirty = false;
         }
       }, true);
 
       lmBus.register('modelUpdate', function (updatedModel, outside) {
-        if (updatedModel !== originalObject) {
+        if (updatedModel !== originalModel) {
           return;
         }
         if ($scope.isDirty && outside) {
           lmDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
             "Do you want to load the new object and lose your changes?", function () {
-            $scope.model = angular.copy(originalObject);
+            $scope.model = angular.copy(originalModel);
           });
         } else {
           $scope.outsideEdit = outside;
-          $scope.model = angular.copy(originalObject);
+          $scope.model = angular.copy(originalModel);
         }
       }, $scope);
 
@@ -311,7 +329,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       }
 
       $scope.revertModel = function () {
-        $scope.model = angular.copy(originalObject);
+        $scope.model = angular.copy(originalModel);
         $scope.$broadcast('updateModel');
       };
 
@@ -337,13 +355,14 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
                 $scope.editModel(createdObject);
               });
             }, function () {
-              $scope.newExists = true;
+              $scope.dialog.newExists = true;
             });
         })
       };
 
       $scope.newObjectDialog = function () {
         $scope.newModel = {};
+        $scope.dialog = {};
         intercept('newDialog', $scope.newModel).then(function () {
           var dialogName = editor.create === 'dialog' ? editor.id : 'generic';
           newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/new_' + dialogName + '.html', scope: $scope.$new()});
@@ -355,9 +374,9 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       };
 
       $scope.editModel = function (object) {
-        originalObject = object;
+        originalModel = object;
         $scope.outsideEdit = false;
-        $scope.model = angular.copy(originalObject);
+        $scope.model = angular.copy(originalModel);
         intercept('startEdit', $scope.model).then(function () {
           $scope.ready = true;
           $scope.$broadcast('updateModel');
@@ -379,6 +398,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         $scope.copyFromId = object.dbo_id;
         $scope.newModel = angular.copy(object);
         delete $scope.newModel.dbo_id;
+        $scope.dialog = {};
         var dialogName = editor.copyDialog ? editor.id : 'generic';
         newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/copy_' + dialogName + '.html', scope: $scope.$new()});
       };
@@ -387,7 +407,9 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         return ($scope.model && $scope.model.dbo_id == object.dbo_id) ? 'highlight' : '';
       };
 
-      return {prepareList: prepareList};
+      return {prepareList: prepareList, originalModel: function() {
+        return originalModel;
+      }};
     }
   }
 ]);
@@ -405,16 +427,16 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
 
     $scope.editorMap = {
       config: {label: "Mud Config", url: "config"},
-      players: {label: "Players", url: "player"},
-      area: {label: "Areas", url: "area", create: 'fragment'},
+      players: {label: "Players", objLabel: 'Player',  url: "player"},
+      area: {label: "Areas", objLabel: "Area", url: "area", create: 'fragment'},
       room: {label: "Room", url: "room", create: 'dialog'},
       mobile: {label: "Mobile", url: "mobile"},
       article: {label: "Article", url: "article"},
-      socials: {label: "Socials", url: "socials"},
+      socials: {label: "Socials", objLabel: "Social", url: "socials"},
       display: {label: "Display", url: "display"},
-      race: {label: "Races", url: "race"},
-      attack: {label: "Attacks", url: "attack"},
-      defense: {label: "Defenses", url: "defense"}
+      race: {label: "Races", objLabel: "Race", url: "race"},
+      attack: {label: "Attacks", objLabel: "Attack", url: "attack"},
+      defense: {label: "Defenses", objLabel: "Defense", url: "defense"}
     };
 
     $scope.editorInclude = function (editor) {

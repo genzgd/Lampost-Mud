@@ -1,6 +1,7 @@
 angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
   function ($scope, lmBus, lmRemote, lmEditor, $timeout, lmDialog) {
 
+    var self = this;
     var areaId = null;
 
     this.startEdit = function (model) {
@@ -8,14 +9,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
     };
 
     lmEditor.cacheEntry('area');
-    lmEditor.prepare(this, $scope);
+    var originalModel = lmEditor.prepare(this, $scope).originalModel;
     $scope.editor.newEdit($scope.editor.editModel);
-
-    function showResult(type, message) {
-      $scope.showResult = true;
-      $scope.resultMessage = message;
-      $scope.resultType = 'alert-' + type;
-    }
 
     $scope.visitRoom = function () {
       lmEditor.visitRoom($scope.model.dbo_id);
@@ -23,7 +18,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
 
     $scope.addNewExit = function () {
       lmDialog.show({templateUrl: "editor/dialogs/new_exit.html", controller: "NewExitCtrl",
-        locals: {parentScope: $scope, room: $scope.model}});
+        locals: {roomController: self, room: $scope.model}});
     };
 
     $scope.deleteExit = function (exit, bothSides) {
@@ -227,8 +222,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
 
   }]);
 
-angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmEditor', 'lmRemote', 'room',
-  function ($q, $scope, lmEditor, lmRemote, room) {
+angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmEditor', 'lmRemote', 'roomController', 'room',
+  function ($q, $scope, lmEditor, lmRemote, roomController, room) {
 
     var area;
     var listKey;
@@ -237,7 +232,6 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
     var roomAreaId = room.dbo_id.split(':')[0];
     var newRoom = {};
 
-    $scope.titleEdited = false;
     $scope.hasError = false;
     $scope.lastError = null;
     $scope.oneWay = false;
@@ -259,6 +253,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
     $scope.useNew = true;
 
     $scope.changeType = function () {
+      $scope.hasError = false;
       if ($scope.useNew) {
         $scope.destRoom = newRoom;
         if ($scope.destAreaId !== roomAreaId) {
@@ -276,9 +271,9 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
         $scope.lastError = "Room already exists";
         newRoom.destId = prevDestId;
       } else {
+        $scope.hasError = false;
         prevDestId = newRoom.destId;
         $scope.lastError = null;
-        $scope.hasError = false;
       }
     };
 
@@ -291,30 +286,25 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
       listKey = 'room:' + $scope.destAreaId;
       lmEditor.cacheEntry({key: listKey, url: 'room/list/' + $scope.destAreaId, idSort: true});
       lmEditor.cache(listKey).then(function (rooms) {
-         $scope.roomsInvalid = rooms.length === 0;
-         $scope.hasError = $scope.roomsInvalid;
+        $scope.roomsInvalid = rooms.length === 0;
+        $scope.hasError = $scope.roomsInvalid;
         if (rooms.length) {
           $scope.roomList = rooms;
         } else {
-          $scope.roomList = [{title: "NO VALID ROOMS", dbo_id:"NO VALID ROOMS"}];
+          $scope.roomList = [
+            {title: "NO VALID ROOMS", dbo_id: "NO VALID ROOMS"}
+          ];
         }
         $scope.changeType();
       })
     }
 
     $scope.digExit = function () {
-      var newExit = {start_room: roomId, direction: $scope.direction.key, is_new: $scope.useNew == 'new',
-        dest_area: $scope.destAreaId, dest_id: $scope.destId, one_way: $scope.oneWay,
-        dest_title: $scope.destTitle};
-      lmRemote.request('editor/room/create_exit', newExit).then(function (result) {
-        lmEditor.exitAdded(result.exit);
-        if (result.other_exit) {
-          lmEditor.exitAdded(result.other_exit);
-        }
-        if ($scope.useNew == 'new') {
-          area.next_room_id = result.next_room_id;
-          lmEditor.roomAdded(result.new_room)
-        }
+      var destId = $scope.useNew ? $scope.destAreaId + ':' + $scope.destRoom.destId : $scope.destRoom.dbo_id;
+      var newExit = {start_room: room.dbo_id, direction: $scope.direction.key, is_new: $scope.useNew,
+        dest_id: destId, one_way: $scope.oneWay, dest_title: $scope.destRoom.title};
+      lmRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
+        room.exits.push(newExit);
         $scope.dismiss();
       }, function (error) {
         $scope.lastError = error.text;

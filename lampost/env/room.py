@@ -1,13 +1,13 @@
 from lampost.context.resource import requires, m_requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBOList
 from lampost.env.movement import Direction
-from lampost.model.mobile import MobileReset
+from lampost.model.mobile import MobileReset, MobileTemplate
 from lampost.model.item import BaseDBO
 from lampost.model.article import ArticleReset
 from lampost.gameops.display import *
 
 
-m_requires('log', __name__)
+m_requires('log', 'datastore', __name__)
 
 
 class Exit(RootDBO):
@@ -57,7 +57,6 @@ class Exit(RootDBO):
             return self.destination.rec_examine(source)
 
 
-@requires('mud')
 class Room(RootDBO):
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev", "size"
@@ -76,6 +75,10 @@ class Room(RootDBO):
         self.title = title
         self.desc = desc
         self.contents = []
+
+    @property
+    def dbo_set_key(self):
+        return "area_rooms:{}".format(self.area_id)
 
     @property
     def room_id(self):
@@ -156,7 +159,7 @@ class Room(RootDBO):
 
     def reset(self):
         for m_reset in self.mobile_resets:
-            template = self.mud.get_mobile(m_reset.mobile_id)
+            template = load_object(MobileTemplate, m_reset.mobile_id)
             if not template:
                 error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
                 continue
@@ -166,7 +169,7 @@ class Room(RootDBO):
             if m_reset.mob_count <= curr_count < m_reset.mob_max:
                 self.add_mobile(template, m_reset)
         for a_reset in self.article_resets:
-            template = self.mud.get_article(a_reset.article_id)
+            template = load_object(ArticleTemplate, a_reset.article_id)
             if not template:
                 error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
                 continue
@@ -179,7 +182,7 @@ class Room(RootDBO):
     def add_mobile(self, template, reset):
         instance = self.add_template(template)
         for article_load in reset.article_loads:
-            article_template = self.mud.get_article(article_load.article_id)
+            article_template = load_object(ArticleTemplate, article_load.article_id)
             if not template:
                 error("Invalid article load for roomId: {0}, mobileId: {1}, articleId: {2}".format(self.dbo_id, template.mobile_id, article_template.article_id))
                 continue

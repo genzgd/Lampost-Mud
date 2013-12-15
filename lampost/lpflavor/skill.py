@@ -35,7 +35,7 @@ class SkillService(object):
         register('mobile_baptise', self._baptise, priority=200)
         self.skills = {}
         for skill_type in SKILL_TYPES:
-            self.skills.update({skill_id: load_object(skill_type, skill_id) for skill_id in fetch_set_keys(skill_type.dbo_set_key)})
+            self.skills.update({skill.dbo_id: skill for skill in load_object_set(skill_type)})
 
     def add_skill(self, skill_id, entity):
         try:

@@ -52,8 +52,8 @@ angular.module('lampost').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'l
 
   }]);
 
-angular.module('lampost').service('lmApp', ['lmBus', 'lmData', 'lmRemote',
-  function (lmBus, lmData, lmRemote) {
+angular.module('lampost').service('lmApp', ['lmBus', 'lmData', 'lmDialog',
+  function (lmBus, lmData, lmDialog) {
 
     lmBus.register("user_login", function () {
       if (lmData.playerIds.length == 0) {
@@ -102,7 +102,6 @@ angular.module('lampost').service('lmApp', ['lmBus', 'lmData', 'lmRemote',
         }
         lmData.editorWindow = open('editor.html', 'editor_' + lmData.playerId,
           'width=' + editorWidth + ',height=' + editorHeight);
-
       }
     }
   }]);

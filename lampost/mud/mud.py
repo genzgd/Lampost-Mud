@@ -18,13 +18,12 @@ __import__('lampost.mud.inventory')
 m_requires('log', 'datastore', 'dispatcher', 'perm', __name__)
 
 
-@requires('context')
+@requires('context', 'config_manager')
 @provides('nature')
 class MudNature():
 
     def __init__(self, flavor):
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals())
-        self.mud = Mud()
         self.mud_actions = MudActions()
         self.social_registry = SocialRegistry()
 
@@ -47,7 +46,7 @@ class MudNature():
 
     def start_service(self):
         info("Loading mud", self)
-        self.mud.load_areas()
+        load_object_set(Area)
         self.social_registry.load_socials()
         info("Mud loaded", self)
 
@@ -98,61 +97,13 @@ class MudNature():
             register("log", player.display_line)
 
         player.equip(set())
-        self.mud.start_player(player)
-        if not getattr(player, "room_id", None):
-            player.room_id = player.env.dbo_id
-            save_object(player)
-
-
-@provides('mud')
-@requires('config_manager')
-class Mud():
-    def __init__(self):
-        self.area_map = {}
-
-    def load_areas(self):
-        for area_id in fetch_set_keys("areas"):
-            area = load_object(Area, area_id)
-            self.add_area(area)
-        for area in self.area_map.itervalues():
-            area.start()
-
-    def add_area(self, area):
-        self.area_map[area.dbo_id] = area
-
-    def get_area(self, area_id):
-        return self.area_map.get(area_id)
-
-    def get_mobile(self, mobile_id):
-        area = self.get_area(mobile_id.split(':')[0])
-        if area:
-            return area.get_mobile(mobile_id)
-        error('Requested invalid mobileId: {0}'.format(mobile_id))
-
-    def get_article(self, article_id):
-        area = self.get_area(article_id.split(':')[0])
-        if area:
-            return area.get_article(article_id)
-        error('Requested invalid articleId: {0}'.format(article_id))
-
-    def find_room(self, room_id):
-        area_id = room_id.split(":")[0]
-        area = self.get_area(area_id)
-        if not area:
-            error("Unable to find area for " + area_id)
-            return None
-        room = area.get_room(room_id)
-        if not room:
-            error("Unable to find room for " + room_id)
-            return None
-        return room
-
-    def start_player(self, player):
-        room = None
-        if getattr(player, "room_id", None):
-            room = self.find_room(player.room_id)
-        if not room:
-            room = self.find_room(self.config_manager.start_room)
+        if hasattr(player, "room_id"):
+            room = load_object(Room, player.room_id)
+        else:
+            room = load_object(Room, self.config_manager.start_room)
+            if room:
+                player.room_id = player.env.dbo_id
+                save_object(player)
         if not room:
             room = Room("temp_start_room", "A Temporary Room when Start Room is Missing")
         player.change_env(room)

@@ -15,7 +15,7 @@ class ClientDataResource(Resource):
 class NewCharacterData(Resource):
     @request
     def render_POST(self, content, session):
-        char_data = {'races': {race_id: _race_dto(load_object(PlayerRace, race_id)) for race_id in fetch_set_keys(PlayerRace.dbo_set_key)}}
+        char_data = {'races': {race.dbo_id: race.dto_value for race in load_object_set(PlayerRace)}}
         return char_data
 
 

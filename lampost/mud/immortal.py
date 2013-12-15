@@ -12,7 +12,7 @@ m_requires('session_manager', 'mud', 'datastore', 'dispatcher', 'perm', 'email_s
 
 @imm_action('edit')
 def edit(source, **ignored):
-    check_perm(source, mud.get_area(source.env.area_id))
+    check_perm(source, load_object(Area, source.env.area_id))
     return {'start_room_edit': source.env.dbo_id}
 
 
@@ -28,7 +28,7 @@ def goto(source, args, **ignored):
         raise ActionError("Go to whom? or to where?")
     dest = args[0].lower()
     if dest == 'area' and len(args) > 1:
-        area = mud.get_area(args[1])
+        area = load_object(Area, args[1])
         if not area:
             raise ActionError("Area does not exist")
         if not area.rooms:
@@ -41,7 +41,7 @@ def goto(source, args, **ignored):
         else:
             if not ":" in dest:
                 dest = ":".join([source.env.area_id, dest])
-            new_env = mud.find_room(dest)
+            new_env = load_object(Room, dest)
     if new_env:
         source.change_env(new_env)
         return source.parse("look")
@@ -101,11 +101,10 @@ def patch_db(verb, args, command, **ignored):
         return "Value required."
     if new_value == "None":
         new_value = None
-    key = ":".join([obj_type, obj_id])
     if obj_type == "player":
         obj = load_object(Player, obj_id)
     else:
-        obj = load_cached(key)
+        obj = load_cached(obj_type, obj_id)
     if not obj:
         return "Object not found"
     try:

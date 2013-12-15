@@ -3,12 +3,7 @@ from lampost.client.resources import request
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import ObjectExistsError, DataError
 
-m_requires('log', 'datastore', 'cls_registry', 'perm', 'dispatcher',  __name__)
-
-
-def publish(edit_type, model, session=None):
-    dispatch('edit_update', edit_type, model, session)
-
+m_requires('log', 'datastore', 'cls_registry', 'perm', 'dispatcher', 'edit_update_service',  __name__)
 
 class EditResource(Resource):
 
@@ -22,19 +17,19 @@ class EditResource(Resource):
     def pre_delete(self, del_obj, session):
         pass
 
-    def on_delete(self, del_obj):
+    def on_delete(self, del_obj, session):
         pass
 
     def pre_create(self, obj_dict, session):
         pass
 
-    def on_create(self, new_obj):
+    def on_create(self, new_obj, session):
         pass
 
     def pre_update(self, obj_dict, session):
         pass
 
-    def on_update(self, existing_obj):
+    def on_update(self, existing_obj, session):
         pass
 
 
@@ -52,8 +47,8 @@ class EditBaseResource(Resource):
 
 class EditListResource(EditBaseResource):
     @request
-    def render_POST(self, session):
-        return [load_object(self.obj_class, obj_id).dto_value for obj_id in fetch_set_keys(self.obj_class.dbo_set_key)]
+    def render_POST(self):
+        return [obj.dto_value for obj in load_object_set(self.obj_class)]
 
 
 class EditCreateResource(EditBaseResource):
@@ -62,10 +57,8 @@ class EditCreateResource(EditBaseResource):
         raw['owner_id'] = session.player.dbo_id
         self.editor.pre_create(raw, session)
         new_obj = create_object(self.obj_class, raw)
-        self.editor.on_create(new_obj)
-        dto_value = new_obj.dto_value
-        publish('create', dto_value, session)
-        return dto_value
+        self.editor.on_create(new_obj, session)
+        return publish_edit('create', new_obj, session)
 
 
 class EditDeleteResource(EditBaseResource):
@@ -77,8 +70,8 @@ class EditDeleteResource(EditBaseResource):
         check_perm(session, del_obj)
         self.editor.pre_delete(del_obj, session)
         delete_object(del_obj)
-        self.editor.on_delete(del_obj)
-        publish('delete', del_obj.dto_value, session)
+        self.editor.on_delete(del_obj, session)
+        publish_edit('delete', del_obj, session)
 
 
 class EditUpdateResource(EditBaseResource):
@@ -90,7 +83,5 @@ class EditUpdateResource(EditBaseResource):
             raise DataError("Gone: Object with key {} no longer exists.".format(raw['dbo.id']))
         check_perm(session, existing_obj)
         update_object(existing_obj, raw)
-        self.editor.on_update(existing_obj)
-        dto_value = existing_obj.dto_value
-        publish('update', dto_value, session)
-        return dto_value
+        self.editor.on_update(existing_obj, session)
+        return publish_edit('update', existing_obj, session)

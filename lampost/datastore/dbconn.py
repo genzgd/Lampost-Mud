@@ -23,6 +23,8 @@ class RedisStore():
         dbo = dbo_class(dbo_id)
         self.hydrate_dbo(dbo, dbo_dict)
         self.save_object(dbo, True)
+        if dbo.dbo_set_key:
+            self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
         dbo.on_loaded()
         return dbo
 
@@ -33,8 +35,6 @@ class RedisStore():
         if dbo.dbo_indexes:
             self.update_indexes(dbo)
         self.redis.set(dbo.dbo_key, json_encode(dbo.save_dbo_dict))
-        if dbo.dbo_set_key:
-            self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
         if __debug__:
             debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo
@@ -48,13 +48,11 @@ class RedisStore():
             return json_decode(json)
         return default
 
-    def load_cached(self, key):
-        return self._object_map.get(key)
+    def load_cached(self, key_type, key):
+        return self._object_map.get(unicode('{0}:{1}'.format(key_type, key)))
 
     def evict_object(self, dbo):
-        try:
-            del self._object_map[dbo.dbo_key]
-        except KeyError:
+        if not self._object_map.pop(dbo.dbo_key):
             warn("Failed to evict " + dbo.dbo_key + " from db cache", self)
 
     @logged
@@ -79,6 +77,18 @@ class RedisStore():
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
 
+    def load_object_set(self, dbo_class, set_key=None):
+        if not set_key:
+            set_key = dbo_class.dbo_set_key
+        return [self.load_object(dbo_class, dbo_id) for dbo_id in self.fetch_set_keys(set_key)]
+
+    def delete_object_set(self, dbo_class, set_key=None):
+        if not set_key:
+            set_key = dbo_class.dbo_set_key
+        for dbo in self.load_object_set(dbo_class, set_key):
+            self.delete_object(dbo)
+        self.delete_key(set_key)
+
     def update_object(self, dbo, dbo_dict):
         self.hydrate_dbo(dbo, dbo_dict)
         self.save_object(dbo, True)
@@ -88,19 +98,16 @@ class RedisStore():
         self.redis.delete(key)
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)
-        for dbo_col in dbo.dbo_lists | dbo.dbo_maps:
-            if dbo_col.key_type:
-                coll = getattr(dbo, dbo_col.field_name, set())
-                for child_dbo in coll:
-                    self.delete_object(child_dbo)
         for ix_name in dbo.dbo_indexes:
             ix_value = getattr(dbo, ix_name, None)
             if ix_value is not None and ix_value != '':
                 self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
         if __debug__:
             debug("object deleted: {}".format(key), self)
-        if self._object_map.get(dbo.dbo_key):
-            del self._object_map[dbo.dbo_key]
+        try:
+            self._object_map.pop(dbo.dbo_key)
+        except KeyError:
+            warn("Removing object {} not previously cached".format(dbo.dbo_id))
 
     def fetch_set_keys(self, set_key):
         return self.redis.smembers(set_key)

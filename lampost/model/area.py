@@ -17,62 +17,24 @@ class Area(RootDBO):
 
     next_room_id = 0
     dbo_rev = 0
-    rooms = {}
-    mobiles = {}
-    articles = {}
     desc = ""
 
     reset_time = 180
 
-    def coll_key(self, coll):
-        return 'area_{}:{}'.format(coll, self.dbo_id)
-
     def on_loaded(self):
-        for coll_type, coll_class in [('rooms', Room), ('mobiles', MobileTemplate), ('articles', ArticleTemplate)]:
-            coll = {}
-            setattr(self, coll_type, coll)
-            for coll_id in fetch_set_keys(self.coll_key(coll_type)):
-                coll[coll_id] = load_object(coll_class, coll_id)
-
-    def add_coll_item(self, coll_type, item):
-        coll = getattr(self, coll_type)
-        coll[item.dbo_id] = item
-        add_set_key(self.coll_key(coll_type), item.dbo_id)
-
-    def del_coll_item(self, coll_type, item):
-        coll = getattr(self, coll_type)
-        del coll[item.dbo_id]
-        delete_set_key(self.coll_key(coll_type), item.dbo_id)
-
-    def start(self):
+        self.rooms = {room.dbo_id: room for room in load_object_set(Room, 'area_rooms:{}'.format(self.dbo_id))}
         self.reset()
         register_p(self.reset, seconds=self.reset_time, randomize=self.reset_time)
 
     @property
     def first_room(self):
-        return self.sorted_rooms[0]
+        return sorted(self.rooms.values(), key=lambda x: int(x.dbo_id.split(":")[1]))[0]
 
-    @property
-    def sorted_rooms(self):
-        return sorted(self.rooms.values(), key=lambda x: int(x.dbo_id.split(":")[1]))
-
-    def get_room(self, room_id):
-        return self.rooms.get(room_id)
-
-    def inc_next_room(self, room):
-        while self.get_room(self.dbo_id + ':' + str(self.next_room_id)):
+    def add_room(self, room):
+        self.rooms[room.dbo_id] = room
+        while self.rooms.get(self.dbo_id + ':' + str(self.next_room_id)):
             self.next_room_id += 1
         save_object(self)
-
-    def get_mobile(self, mobile_id):
-        if not ":" in mobile_id:
-            mobile_id = ":".join([self.dbo_id, mobile_id])
-        return self.mobiles.get(mobile_id)
-
-    def get_article(self, article_id):
-        if not ":" in article_id:
-            article_id = ":".join([self.dbo_id, article_id])
-        return self.articles.get(article_id)
 
     def reset(self):
         debug("{0} Area resetting".format(self.dbo_id))
