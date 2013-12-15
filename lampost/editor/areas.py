@@ -18,7 +18,7 @@ class AreaResource(EditResource):
 
     def on_delete(self, del_area, session):
         for room in del_area.rooms.itervalues():
-            delete_room_exits(room, session, del_area.dbo_id)
+            room_clean_up(room, session, del_area.dbo_id)
         delete_object_set(Room, 'area_rooms:{}'.format(del_area.dbo_id))
         delete_object_set(MobileTemplate, 'area_mobiles:{}'.format(del_area.dbo_id))
         delete_object_set(ArticleTemplate, 'area_articles:{}'.format(del_area.dbo_id))
@@ -39,6 +39,7 @@ class RoomResource(EditResource):
         self.putChild('list', AreaListResource(RoomListResource))
         self.putChild('visit', RoomVisit())
         self.putChild('create_exit', CreateExit())
+        self.putChild('delete_exit', DeleteExit())
 
     def pre_create(self, room_dto, session):
         area = room_area(room_dto)
@@ -51,12 +52,7 @@ class RoomResource(EditResource):
         check_perm(session, room_area(room))
 
     def on_delete(self, room, session):
-        save_contents(room)
-        delete_room_exits(room, session)
-        try:
-            room_area(room).rooms.pop(room.dbo_id)
-        except KeyError:
-            warn("Trying to remove room {} not found in area").format(room_dbo_id)
+        room_cleanup(room, session)
 
 
 class RoomListResource(Resource):
@@ -80,9 +76,9 @@ class CreateExit(Resource):
         rev_dir = new_dir.rev_dir
         other_id = content.dest_id
         if content.is_new:
-            if load_object(Room, other_id):
-                raise DataError("Room " + other_id + " already exists")
-            other_room = cls_registry(Room)(other_id, content.dest_title, content.dest_title)
+            other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
+            publish_edit('create', other_room, session, True)
+            add_room(area, other_room, session)
         else:
             other_area, other_room = find_area_room(other_id, session)
             if not content.one_way and other_room.find_exit(rev_dir):
@@ -98,14 +94,36 @@ class CreateExit(Resource):
             other_exit = cls_registry(Exit)(rev_dir, room, other_room)
             other_room.append_list('exits', other_exit)
             restore_contents(other_room, other_contents)
-            if not content.is_new:
-                save_object(other_room, True)
-                publish_edit('update', room, session, True)
-        if content.is_new:
             save_object(other_room)
-            publish_edit('create', other_room, session, True)
-            add_room(area, other_room, session)
+            publish_edit('update', other_room, session, True)
         return this_exit.dbo_dict
+
+
+class DeleteExit(Resource):
+    @request
+    def render_POST(self, content, session):
+        area, room = find_area_room(content.start_room, session)
+        direction = Direction.ref_map[content.dir]
+        local_exit = room.find_exit(direction)
+        if not local_exit:
+            raise DataError('Exit does not exist')
+        contents = save_contents(room)
+        room.remove_list('exits', local_exit)
+        save_object(room)
+        restore_contents(room, contents)
+
+        if content.both_sides:
+            other_room = local_exit.destination
+            other_exit = other_room.find_exit(direction.rev_dir)
+            if other_exit:
+                other_room.remove_list('exits', other_exit)
+                if other_room.dbo_rev or other_room.exits:
+                    save_object(other_room)
+                    publish_edit('update', other_room, session, True)
+                else:
+                    delete_object(other_room)
+                    room_clean_up(room, session)
+                    publish_edit('delete', other_room, session, True)
 
 
 class RoomVisit(Resource):
@@ -144,18 +162,23 @@ def room_area(room):
     return area
 
 
-def delete_room_exits(room, session, area_delete=None):
+def room_clean_up(room, session, area_delete=None):
+    save_contents(room)
     for my_exit in room.exits:
         other_room = my_exit.destination
-        if not other_room or other_room.area_id == area_delete:
-            continue
-        for other_exit in other_room.exits:
-            if other_exit.destination == room:
-                other_contents = save_contents(other_room)
-                other_room.exits.remove(other_exit)
-                save_object(other_room, True)
-                restore_contents(other_room, other_contents)
-                publish_edit('update', other_room, session, True)
+        if other_room and other_room.area_id != area_delete:
+            for other_exit in other_room.exits:
+                if other_exit.destination == room:
+                    other_contents = save_contents(other_room)
+                    other_room.exits.remove(other_exit)
+                    save_object(other_room, True)
+                    restore_contents(other_room, other_contents)
+                    publish_edit('update', other_room, session, True)
+    if not area_delete:
+        try:
+            room_area(room).rooms.pop(room.dbo_id)
+        except KeyError:
+            warn("Trying to remove room {} not found in area".format(room.dbo_id))
 
 
 def save_contents(start_room):

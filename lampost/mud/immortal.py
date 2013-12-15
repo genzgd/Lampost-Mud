@@ -1,7 +1,9 @@
-from lampost.client.user import User
-from lampost.comm.broadcast import substitute
 import lampost.setup.update
 
+from lampost.client.user import User
+from lampost.comm.broadcast import substitute
+from lampost.env.room import Room
+from lampost.model.area import Area
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action

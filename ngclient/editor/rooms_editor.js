@@ -8,9 +8,13 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
       areaId = model.dbo_id.split(':')[0];
     };
 
-    lmEditor.cacheEntry('area');
     var originalModel = lmEditor.prepare(this, $scope).originalModel;
+    lmEditor.cacheEntry('area');
     $scope.editor.newEdit($scope.editor.editModel);
+
+    this.addExit = function(exit) {
+      originalModel().exits.push(exit);
+    };
 
     $scope.visitRoom = function () {
       lmEditor.visitRoom($scope.model.dbo_id);
@@ -22,11 +26,19 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$scope', 'lmBus'
     };
 
     $scope.deleteExit = function (exit, bothSides) {
-      var exitData = {start_room: $scope.roomId, both_sides: bothSides, dir: exit.dir};
-      lmRemote.request($scope.editor.url + "/delete_exit", exitData).then(function (result) {
-          lmEditor.exitDeleted(result.exit);
-          result.other_exit && lmEditor.exitDeleted(result.other_exit);
-          result.room_deleted && lmEditor.roomDeleted(result.room_deleted);
+      lmRemote.request("editor/room/delete_exit",
+        {start_room: $scope.model.dbo_id, both_sides: bothSides, dir: exit.dir_name}).then(function () {
+          var exitLoc = $scope.model.exits.indexOf(exit);
+          if (exitLoc > -1) {
+            $scope.model.exits.splice(exitLoc, 1);
+          }
+          var originalExits = originalModel().exits;
+          for (var i = 0; i < originalExits.length; i++) {
+            if (originalExits[i].dir === exit.dir) {
+              originalExits.splice(i, 1);
+              break;
+            }
+          }
         }
       )
     };
@@ -305,6 +317,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
         dest_id: destId, one_way: $scope.oneWay, dest_title: $scope.destRoom.title};
       lmRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
         room.exits.push(newExit);
+        roomController.addExit(newExit);
         $scope.dismiss();
       }, function (error) {
         $scope.lastError = error.text;

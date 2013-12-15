@@ -45,7 +45,7 @@
               <a title="Edit Room" ng-click="startEditor('room', exitRoom(exit))" class="icon-link"><i class="icon-wrench"></i></a>
               <a popover-title="exitRoom(exit).title" popover="exitRoom(exit).desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
               <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
-              <a title="Delete Exit (one way)" ng-show="exit.two_way" ng-click="deleteExit(exit, false)" class="icon-link"><i
+              <a title="Delete Exit (one way)" ng-show="exitTwoWay(exit)" ng-click="deleteExit(exit, false)" class="icon-link"><i
                   class="icon-circle-arrow-left"></i></a>
             </td>
           </tr>
