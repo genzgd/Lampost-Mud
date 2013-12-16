@@ -1,7 +1,6 @@
 angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEditor',
   function($scope, lmEditor) {
 
-    lmEditor.cacheEntry('area');
     lmEditor.prepare(this, $scope).prepareList('area');
 
   }]);
@@ -9,34 +8,29 @@ angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEdit
 angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor', 'lmBus',
   function($q, $scope, lmEditor, lmBus) {
 
-    var areaId;
     var listKey;
 
     $scope.editor = {id: 'room', url: "room", create: 'dialog'};
 
     var refresh = lmEditor.prepare(this, $scope).prepareList;
 
-    $scope.$on('updateModel', updateModel);
-
-    function updateModel() {
+    $scope.$on('updateModel', function() {
       if ($scope.model) {
         lmEditor.deref(listKey);
-        areaId = $scope.model.dbo_id;
-        listKey = "room:" + areaId;
-        $scope.areaId = areaId;
-        lmEditor.cacheEntry({key: listKey, url: 'room/list/' + areaId, idSort: true});
+        $scope.areaId = $scope.model.dbo_id;
+        listKey = "room:" + $scope.areaId;
         refresh(listKey);
       } else {
         $scope.modelList = null;
       }
-    }
+    });
 
     this.newDialog = function(newModel) {
       newModel.id = $scope.model.next_room_id;
     };
 
     this.preCreate = function(newModel) {
-      newModel.dbo_id = areaId + ":" + newModel.id;
+      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
     };
 
     this.postCreate = function(newModel) {

@@ -4,12 +4,13 @@ exit_cost_map = {}
 
 
 def find_cost(room):
-    try:
-        return exit_cost_map[room.size]
-    except KeyError:
-        exit_cost_map[room.size] = {'action': int(action_calc * room.size / Room.size),
-                                    'stamina': int(stamina_calc * room.size / Room.size)}
-        return exit_cost_map[room.size]
+    if room and room.size:
+        try:
+            return exit_cost_map[room.size]
+        except KeyError:
+            exit_cost_map[room.size] = {'action': int(action_calc * room.size / Room.size),
+                                        'stamina': int(stamina_calc * room.size / Room.size)}
+            return exit_cost_map[room.size]
 
 
 class ExitLP(Exit):
@@ -19,5 +20,5 @@ class ExitLP(Exit):
         source.display_line("You head {}.".format(self.direction.desc))
 
     def __call__(self, source, **ignored):
-        source.apply_costs(find_cost(self.room))
+        source.apply_costs(find_cost(source.env))
         super(ExitLP, self).__call__(source)

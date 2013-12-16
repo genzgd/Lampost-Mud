@@ -30,23 +30,34 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
     var cacheHeapSize = 32;
     var remoteCache = {};
 
+    var cacheSorts = {
+      'room': numericIdSort
+    };
+
+    remoteCache.constants = {ref: 0, url: 'constants', sort: angular.noop};
+
+    function cacheEntry(key) {
+      var keyParts = key.split(':');
+      var keyType = keyParts[0];
+      var url = keyType + '/list' + (keyParts[1] ? '/' + keyParts[1] : '');
+      var entry = {ref: 0, sort: cacheSorts[keyType] || idSort, url: url};
+      remoteCache[key] = entry;
+      return entry;
+    }
+
     function cacheKey(model) {
       var cacheKey = (model.dbo_key_type + ':' + model.dbo_id).split(":");
       return cacheKey.slice(0, cacheKey.length - 1).join(':');
     }
 
-    function cacheSort(entry) {
-      if (entry.idSort) {
-        idSort(entry.data, 'dbo_id')
-      } else if (jQuery.isArray(entry.data)) {
-        lmUtil.stringSort(entry.data, 'dbo_id')
-      }
+    function idSort(values) {
+      lmUtil.stringSort(values, 'dbo_id')
     }
 
-    function idSort(values, field) {
+    function numericIdSort(values) {
       values.sort(function (a, b) {
-        var aid = parseInt(a[field].split(':')[1]);
-        var bid = parseInt(b[field].split(':')[1]);
+        var aid = parseInt(a.dbo_id.split(':')[1]);
+        var bid = parseInt(b.dbo_id.split(':')[1]);
         return aid - bid;
       })
     }
@@ -60,7 +71,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           lmBus.dispatch('modelUpdate', cacheModel, outside);
         }
       }
-
     }
 
     function insertModel(model, outside) {
@@ -70,7 +80,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           updateModel(model, outside);
         } else {
           entry.data.push(model);
-          cacheSort(entry);
+          entry.sort(entry.data);
           entry.map[model.dbo_id] = model;
           lmBus.dispatch('modelCreate', entry.data, model, outside);
         }
@@ -141,21 +151,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       }
     };
 
-    this.cacheEntry = function (entry) {
-      if (typeof entry === 'string') {
-        entry = {key: entry};
-      }
-      if (!remoteCache[entry.key]) {
-        entry.ref = 0;
-        remoteCache[entry.key] = entry;
-        if (!entry.url) {
-          entry.url = entry.key + '/list';
-        }
-      }
-    };
-
     this.cache = function (key) {
-      var entry = remoteCache[key];
+      var entry = remoteCache[key] || cacheEntry(key);
       if (entry.data) {
         if (entry.ref === 0) {
           cacheHeap.splice(cacheHeap.indexOf(key), 1);
@@ -176,7 +173,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         for (var i = 0; i < data.length; i++) {
           entry.map[data[i].dbo_id] = data[i];
         }
-        cacheSort(entry);
+        entry.sort(entry.data);
         return $q.when(entry.data);
       });
       return entry.promise;
@@ -475,7 +472,6 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       editor.newEdit && editor.newEdit(editModel);
     };
 
-    lmEditor.cacheEntry({key: 'constants', url: 'constants'});
     lmEditor.cache('constants').then(function (constants) {
       $scope.constants = constants;
       $scope.loaded = true;

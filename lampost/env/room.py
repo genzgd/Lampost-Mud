@@ -17,11 +17,10 @@ class Exit(RootDBO):
     aliases = []
     msg_class = 'no_args'
 
-    def __init__(self, direction=None, destination=None, room=None):
+    def __init__(self, direction=None, destination=None):
         super(Exit, self).__init__()
         self.direction = direction
         self.destination = destination
-        self.room = room
 
     @property
     def verbs(self):
@@ -195,10 +194,6 @@ class Room(RootDBO):
         instance = template.create_instance()
         instance.enter_env(self)
         return instance
-
-    def on_loaded(self):
-        for room_exit in self.exits:
-            room_exit.room = self
 
 
 Exit.dbo_refs = DBORef("destination", Room, "room"),

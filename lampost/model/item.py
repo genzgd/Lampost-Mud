@@ -57,6 +57,6 @@ class BaseItem(object):
 
 
 class BaseDBO(BaseItem, RootDBO):
-    pass
+    dbo_fields = BaseItem.template_fields
 
 
