@@ -179,12 +179,12 @@ class Entity(BaseItem):
 
     def remove_action(self, action):
         for verb in getattr(action, "verbs", []):
-            bucket = self.actions.get(verb, None)
-            if bucket:
+            try:
+                bucket = self.actions[verb]
                 bucket.remove(action)
-                if len(bucket) == 0:
+                if not bucket:
                     del self.actions[verb]
-            else:
+            except KeyError:
                 error("Removing action {} that does not exist from {}".format(verb, self.name))
         for sub_action in getattr(action, "sub_providers", []):
             self.remove_action(sub_action)

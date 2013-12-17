@@ -88,7 +88,7 @@
           </table>
         </div>
 
-        <div class="span5" ng-show="currentExtra != null" ng-switch="extraDisplay">
+        <div class="span5" ng-show="currentExtra" ng-switch="extraDisplay">
           <div class="span12" ng-switch-when="desc">
             <div class="row-fluid">
               <div class="span10">
@@ -113,9 +113,9 @@
             <div class="clearfix"></div>
             <table class="table table-condensed" style="width: 90%">
               <tbody>
-              <tr class="table-bordered" ng-repeat="alias in currentExtra.aliases">
+              <tr class="table-bordered" ng-repeat="alias in currentExtra.aliases track by $index">
                 <td class="edit-cell" style="width: 85%"><input  class="span12 edit-cell extra-alias-edit" type="text"
-                    ng-model="alias.title"/>
+                    ng-model="currentExtra.aliases[$index]"/>
                 </td>
                 <td><a title="Delete Alias" ng-click="deleteAlias($index)" class="icon-link"><i class="icon-remove"></i></a></td>
               </tr>

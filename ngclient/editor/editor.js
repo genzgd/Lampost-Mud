@@ -87,6 +87,14 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       }
     }
 
+    function deleteEntry(key) {
+       var heapIx = cacheHeap.indexOf(key);
+        if (heapIx > -1) {
+          cacheHeap.splice(headIx, 1);
+        }
+        delete remoteCache[key];
+    }
+
     function deleteModel(model, outside) {
       var entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
@@ -104,12 +112,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
           deleted.push(key);
         }
       });
-      angular.forEach(deleted, function(cacheKey) {
-        var heapIx = cacheHeap.indexOf(cacheKey);
-        if (heapIx > -1) {
-          cacheHeap.splice(headIx, 1);
-        }
-        delete remoteCache[cacheKey];
+      angular.forEach(deleted, function(key) {
+        deleteEntry(key);
       });
     }
 
@@ -272,11 +276,11 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         return false;
       }
 
-      function mainDelete(object) {
+      function mainDelete(model) {
         intercept('preDelete').then(function () {
-          lmRemote.request(baseUrl + 'delete', {dbo_id: object.dbo_id}).then(function () {
-            deleteModel(object);
-            modelDeleted(object);
+          lmRemote.request(baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
+            deleteModel(model);
+            modelDeleted(model);
           });
         })
       }
@@ -319,6 +323,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
 
       function nextEdit() {
         if (nextModel) {
+          $scope.ready = false;
           $scope.model = null;
           newEdit(nextModel);
           nextModel = null;
@@ -373,19 +378,23 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
       $scope.editModel = function (object) {
         originalModel = object;
         $scope.outsideEdit = false;
-        $scope.model = angular.copy(originalModel);
-        intercept('startEdit', $scope.model).then(function () {
+        var model = angular.copy(originalModel);
+        intercept('startEdit', model).then(function () {
+          $scope.model = model;
           $scope.ready = true;
           $scope.$broadcast('updateModel');
         });
       };
 
-      $scope.deleteObject = function (event, object) {
-        event.preventDefault();
-        event.stopPropagation();
-        lmDialog.showConfirm("Delete " + $scope.objLabel, "Are you certain you want to delete " + $scope.objLabel + " " + object.dbo_id + "?",
+      $scope.deleteModel = function (event, model) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        model = model || $scope.model;
+        lmDialog.showConfirm("Delete " + $scope.objLabel, "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?",
           function () {
-            mainDelete(object);
+            mainDelete(model);
           });
       };
 

@@ -16,7 +16,7 @@
       <tr class="edit-row" ng-class="objectRowClass(race)" ng-click="editModel(race)" ng-repeat="race in modelList">
         <td class="span8">{{race.dbo_id}}</td>
         <td class="span4">
-          <a ng-click="deleteObject($event, race)" title="Delete Race" class="icon-link"><i class="icon-remove"></i></a>
+          <a ng-click="deleteModel($event, race)" title="Delete Race" class="icon-link"><i class="icon-remove"></i></a>
           <a ng-click="copyObject($event, race)" title="Copy Race" class="icon-link"><i class="icon-share"></i></a>
         </td>
       </tr>

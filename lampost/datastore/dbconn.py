@@ -193,6 +193,7 @@ class RedisStore():
                 for child_json in raw_list:
                     child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
                     self.hydrate_dbo(child_dbo, child_json)
+                    child_dbo.on_loaded()
                     coll.append(child_dbo)
             else:
                 dbo.__dict__.pop(dbo_col.field_name, None)
@@ -204,6 +205,7 @@ class RedisStore():
                 for child_dbo_id, child_json in raw_list.iteritems():
                     child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
                     self.hydrate_dbo(child_dbo, child_json)
+                    child_dbo.on_loaded()
                     coll[child_dbo_id] = child_dbo
             else:
                 dbo.__dict__.pop(dbo_col.field_name, None)

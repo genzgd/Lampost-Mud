@@ -10,7 +10,7 @@ from lampost.mud.action import imm_action
 from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
 
-m_requires('session_manager', 'mud', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
+m_requires('session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
 
 @imm_action('edit')
 def edit(source, **ignored):

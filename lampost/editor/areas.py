@@ -48,6 +48,14 @@ class RoomResource(EditResource):
     def on_create(self, room, session):
         add_room(room_area(room), room, session)
 
+    def pre_update(self, room, session):
+        check_perm(session, room_area(room))
+        room.update_contents = save_contents(room)
+
+    def post_update(self, room, session):
+        restore_contents(room, room.update_contents)
+        del room.update_contents
+
     def pre_delete(self, room, session):
         check_perm(session, room_area(room))
 

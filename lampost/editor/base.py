@@ -26,7 +26,7 @@ class EditResource(Resource):
     def on_create(self, new_obj, session):
         pass
 
-    def pre_update(self, obj_dict, session):
+    def pre_update(self, existing_obj, session):
         pass
 
     def on_update(self, existing_obj, session):
@@ -77,11 +77,11 @@ class EditDeleteResource(EditBaseResource):
 class EditUpdateResource(EditBaseResource):
     @request
     def render_POST(self, raw, session):
-        self.editor.pre_update(raw, session)
         existing_obj = load_object(self.obj_class, raw['dbo_id'])
         if not existing_obj:
             raise DataError("Gone: Object with key {} no longer exists.".format(raw['dbo.id']))
         check_perm(session, existing_obj)
+        self.editor.pre_update(existing_obj, session)
         update_object(existing_obj, raw)
         self.editor.on_update(existing_obj, session)
         return publish_edit('update', existing_obj, session)

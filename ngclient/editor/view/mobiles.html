@@ -16,7 +16,7 @@
             <tbody>
             <tr class="edit-row table-bordered" ng-click="addEditor(type, mobile.dbo_id)" ng-repeat="mobile in objects" >
                 <td class="span1">{{$index + 1}}<div class="pull-right">
-                  <a ng-click="deleteObject($event, mobile)" title="Delete Mobile" class="icon-link"><i class="icon-remove"></i></a>
+                  <a ng-click="deleteModel($event, mobile)" title="Delete Mobile" class="icon-link"><i class="icon-remove"></i></a>
                   <a title="Edit Mobile" class="icon-link"><i class="icon-wrench"></i></a>
                 </div></td>
                 <td class="span1 unselectable">{{mobile.objectId}}</td>

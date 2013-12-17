@@ -13,7 +13,7 @@ class Direction(object):
         self.desc = desc
         self.rev_key = rev_key
         Direction.ref_map[key] = self
-        Direction.ordered.append({'key':key, 'name':desc})
+        Direction.ordered.append({'key':key, 'name':desc, 'rev_key': rev_key})
 
     @property
     def rev_dir(self):
