@@ -13,8 +13,6 @@ m_requires('datastore', 'log', 'perm', 'dispatcher', 'cls_registry', 'edit_updat
 
 
 class AreaResource(EditResource):
-    def __init__(self):
-        EditResource.__init__(self, Area)
 
     def on_delete(self, del_area, session):
         for room in del_area.rooms.itervalues():
@@ -25,18 +23,31 @@ class AreaResource(EditResource):
 
 
 class AreaListResource(Resource):
-    def __init__(self, list_class):
+    def __init__(self, obj_class):
         Resource.__init__(self)
-        self.list_class = list_class
+        self.obj_class = obj_class
 
     def getChild(self, area_id, request):
-        return self.list_class(area_id)
+        return AreaListLeaf(self.obj_class, area_id)
+
+
+class AreaListLeaf(Resource):
+    def __init__(self, obj_class, area_id):
+        Resource.__init__(self)
+        self.obj_class = obj_class
+        self.area_id = area_id
+        self.imm_level = 'admin'
+
+    @request
+    def render_POST(self):
+        set_key = 'area_{}s:{}'.format(self.obj_class.dbo_key_type, self.area_id)
+        return [obj.dto_value for obj in load_object_set(self.obj_class, set_key)]
 
 
 class RoomResource(EditResource):
     def __init__(self):
         EditResource.__init__(self, Room)
-        self.putChild('list', AreaListResource(RoomListResource))
+        self.putChild('list', AreaListResource(Room))
         self.putChild('visit', RoomVisit())
         self.putChild('create_exit', CreateExit())
         self.putChild('delete_exit', DeleteExit())
@@ -61,17 +72,6 @@ class RoomResource(EditResource):
 
     def on_delete(self, room, session):
         room_clean_up(room, session)
-
-
-class RoomListResource(Resource):
-    def __init__(self, area_id):
-        Resource.__init__(self)
-        self.area_id = area_id
-        self.imm_level = 'admin'
-
-    @request
-    def render_POST(self):
-        return [room.dto_value for room in load_object_set(Room, 'area_rooms:{}'.format(self.area_id))]
 
 
 class CreateExit(Resource):

@@ -143,6 +143,7 @@ class DefenseSkill(BaseSkill, RootDBO):
         attack.adj_damage -= absorb
 
     def on_loaded(self):
+        super(DefenseSkill, self).on_loaded()
         self.calc_damage_types = set()
         for damage_type in self.damage_type:
             try:

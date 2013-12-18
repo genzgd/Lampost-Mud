@@ -11,13 +11,15 @@ from lampost.editor.players import PlayerResource
 from lampost.editor.skills import AttackResource, DefenseResource, AllSkillsResource
 from lampost.editor.socials import SocialsResource
 from lampost.lpflavor.combat import DefenseSkill
+from lampost.model.area import Area
+from lampost.model.mobile import Mobile
 from lampost.model.race import PlayerRace
 
 
 class EditorResource(Resource):
     def __init__(self):
         Resource.__init__(self)
-        self.putChild('area', AreaResource())
+        self.putChild('area', AreaResource(Area))
         self.putChild('room', RoomResource())
         self.putChild('mobile', MobileResource())
         self.putChild('article', ArticleResource())

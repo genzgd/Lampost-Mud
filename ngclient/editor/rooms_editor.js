@@ -43,7 +43,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     this.postDelete = function(model) {
       $scope.startEditor('area');
-    }
+    };
 
     $scope.editor.newEdit($scope.editor.editModel);
 
@@ -161,7 +161,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       $scope.currentExtra = extra;
       $scope.extraDisplay = 'aliases';
     };
-
 
     function addMobileReset(reset) {
       var newReset = {mobile_id: reset.object.dbo_id, mob_count: reset.count, mob_max: reset.max,

@@ -3,7 +3,7 @@
         <button type="button" class="close" ng-click="dismiss()">×</button>
         <h4>Create New Room (Area: {{areaId}})</h4>
     </div>
-    <form ng-submit="submitNewObject()" >
+    <form ng-submit="submitNewModel()" >
         <div class="modal-body">
             <label>Room Id</label>
             <input type="number" ng-model="newModel.id" ng-change="dialog.newExists = false" required="true"/>

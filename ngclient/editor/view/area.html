@@ -1,7 +1,7 @@
 <div class="v-full" ng-controller="AreaEditorCtrl" ng-show="ready">
   <div class="span1">
     <h4>Areas ({{modelList.length}})</h4>
-    <button ng-click="newObjectDialog()" class="btn btn-small btn-success">New Area</button>
+    <button ng-click="newModelDialog()" class="btn btn-small btn-success">New Area</button>
     <div style="padding-bottom: 15px;"></div>
   </div>
   <div class="span3 scrollable wrapper">
@@ -58,9 +58,8 @@
 
       <div class="tab-content scrollable">
         <div id="roomTab" class="tab-pane active" ng-include="'editor/view/rooms.html'"></div>
-        <div id="mobileTab" class="tab-pane">Mobiles</div>
+        <div id="mobileTab" class="tab-pane" ng-include="'editor/view/mobiles.html'">Mobiles</div>
         <div id="articleTab" class="tab-pane">Articles</div>
       </div>
-
   </div>
 </div>

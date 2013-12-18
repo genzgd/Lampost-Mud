@@ -83,5 +83,6 @@ class EditUpdateResource(EditBaseResource):
         check_perm(session, existing_obj)
         self.editor.pre_update(existing_obj, session)
         update_object(existing_obj, raw)
+        existing_obj.on_loaded()
         self.editor.on_update(existing_obj, session)
         return publish_edit('update', existing_obj, session)

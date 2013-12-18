@@ -60,7 +60,7 @@ class Container(Article):
         self.contents = []
 
 
-class ArticleTemplate(Template):
+class ArticleTemplate(Template, RootDBO):
     dbo_key_type = "article"
 
 

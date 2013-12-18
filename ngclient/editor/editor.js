@@ -22,8 +22,8 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
   }]);
 
 
-angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote', 'lmDialog', 'lmUtil',
-  function ($q, lmBus, lmRemote, lmDialog, lmUtil) {
+angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus', 'lmRemote', 'lmDialog', 'lmUtil',
+  function ($q, $timeout, lmBus, lmRemote, lmDialog, lmUtil) {
 
     var self = this;
     var cacheHeap = [];
@@ -347,7 +347,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         })
       };
 
-      $scope.submitNewObject = function () {
+      $scope.submitNewModel = function () {
         intercept('preCreate', $scope.newModel).then(function () {
           lmRemote.request(baseUrl + 'create', $scope.newModel).then(
             function (createdObject) {
@@ -362,7 +362,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         })
       };
 
-      $scope.newObjectDialog = function () {
+      $scope.newModelDialog = function () {
         $scope.newModel = {};
         $scope.dialog = {};
         intercept('newDialog', $scope.newModel).then(function () {
@@ -408,6 +408,17 @@ angular.module('lampost_editor').service('lmEditor', ['$q', 'lmBus', 'lmRemote',
         var dialogName = editor.copyDialog ? editor.id : 'generic';
         newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/copy_' + dialogName + '.html', scope: $scope.$new()});
       };
+
+       $scope.addNewAlias = function() {
+            $scope.model.aliases.push('');
+            $timeout(function () {
+                jQuery('.alias-row:last').focus();
+            });
+        };
+
+        $scope.deleteAlias = function(index) {
+            $scope.model.aliases.splice(index, 1);
+        };
 
       $scope.objectRowClass = function (object) {
         return ($scope.model && $scope.model.dbo_id == object.dbo_id) ? 'highlight' : '';

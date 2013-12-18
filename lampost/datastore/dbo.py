@@ -70,6 +70,9 @@ class RootDBO(object):
     def on_loaded(self):
         pass
 
+    def set_parent_dbo(self):
+        pass
+
     @property
     def dbo_key(self):
         return unicode(":".join([self.dbo_key_type, self.dbo_id]))

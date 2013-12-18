@@ -21,7 +21,7 @@
         </ul>
 
         <div class="tab-content wrapper">
-          <div ng-class="editor.parentClass" style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor"
+          <div style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor"
               class="tab-pane active" ng-include="editorInclude(editor)">
           </div>
         </div>
@@ -35,7 +35,6 @@
   <script src="editor/editor_directives.js"></script>
   <script src="editor/area_editor.js"></script>
   <script src="editor/rooms_editor.js"></script>
-  <script src="editor/object_editor.js"></script>
   <script src="editor/player_editor.js"></script>
   <script src="editor/socials_editor.js"></script>
   <script src="editor/display_editor.js"></script>

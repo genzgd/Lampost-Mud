@@ -10,7 +10,7 @@ class Mobile():
         return self.title
 
 
-class MobileTemplate(Template):
+class MobileTemplate(Template, RootDBO):
     dbo_key_type = "mobile"
 
     def config_instance(self, instance):
