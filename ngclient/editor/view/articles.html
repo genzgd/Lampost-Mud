@@ -1,38 +1,29 @@
-<div ng-controller="ObjectListCtrl" ng-show="ready" class="wrapper">
-    <div class="span2">
-        <h4>Articles - {{areaId}}</h4>
-        <button ng-click="showNewDialog()" class="btn btn-small btn-success">New Article</button>
-    </div>
-    <div class="span8" style="height: 100%; overflow-y: auto; overflow-x: hidden">
-        <table class="table table-condensed" >
-            <thead>
-            <tr>
-                <th class="span1"></th>
-                <th class="span1">Id</th>
-                <th class="span2">Title</th>
-                <th class="span1 cell-right">Weight</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="edit-row table-bordered" ng-click="addEditor(type, article.dbo_id)" ng-repeat="article in objects" >
-                <td class="span1">{{$index + 1}}<div class="pull-right">
-                  <a ng-click="deleteObject($event, article)" title="Delete Article" class="icon-link"><i class="icon-remove"></i></a>
-                  <a title="Edit Mobile" class="icon-link"><i class="icon-wrench"></i></a>
-                </div></td>
-                <td class="span1 unselectable">{{article.objectId}}</td>
-                <td class="span2 unselectable">{{article.title}}</td>
-                <td class="span1 unselectable cell-right">{{article.weight}}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="span2 pagination-right">
-      <button ng-click="closeEditor(editor)" class="btn btn-info">Close</button>
-      <div class="column-button">
-        <button ng-click="addEditor('rooms', areaId)" class="btn">Rooms</button>
-      </div>
-      <div class="column-button">
-        <button ng-click="addEditor('mobiles', areaId)" class="btn">Mobiles</button>
-      </div>
+<div ng-controller="ArticleListCtrl" ng-show="ready" class="wrapper">
+  <div class="span2">
+    <button ng-click="newModelDialog()" class="btn btn-small btn-success">New Article</button>
+  </div>
+  <div class="span8 scrollable">
+    <table class="table table-condensed">
+      <thead>
+      <tr>
+        <th class="span1">Id</th>
+        <th class="span2">Title</th>
+        <th class="span1 cell-right">Weight</th>
+        <th class="span1"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="edit-row table-bordered" ng-click="startEditor('article', article)" ng-repeat="article in modelList">
+        <td class="span1 unselectable">{{idOnly(article)}}</td>
+        <td class="span2 unselectable">{{article.title}}</td>
+        <td class="span1 unselectable cell-right">{{article.weight}}</td>
+        <td class="span1">
+          <div class="pull-right">
+            <a ng-click="deleteModel($event, article)" title="Delete Article" class="icon-link"><i class="icon-remove"></i></a>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
 </div>

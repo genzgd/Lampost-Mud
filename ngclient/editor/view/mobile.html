@@ -1,8 +1,8 @@
 <div class="wrapper" ng-controller="MobileEditorCtrl">
-  <div ng-if="!ready">
+  <div ng-if="!model">
     No Mobile Selected
   </div>
-  <div ng-if="ready">
+  <div class="scrollable" ng-if="model">
     <div class="row-fluid">
       <h4 class="span3">Mobile Id: {{model.dbo_id}}</h4>
       <h5 class="span1">Rev: {{model.dbo_rev}}</h5>

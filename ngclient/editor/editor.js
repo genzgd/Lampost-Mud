@@ -88,11 +88,11 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
     }
 
     function deleteEntry(key) {
-       var heapIx = cacheHeap.indexOf(key);
-        if (heapIx > -1) {
-          cacheHeap.splice(headIx, 1);
-        }
-        delete remoteCache[key];
+      var heapIx = cacheHeap.indexOf(key);
+      if (heapIx > -1) {
+        cacheHeap.splice(headIx, 1);
+      }
+      delete remoteCache[key];
     }
 
     function deleteModel(model, outside) {
@@ -106,13 +106,13 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         }
       }
       var deleted = [];
-      angular.forEach(remoteCache, function(entry, key) {
+      angular.forEach(remoteCache, function (entry, key) {
         var keyParts = key.split(':');
         if (keyParts[1] === model.dbo_id) {
           deleted.push(key);
         }
       });
-      angular.forEach(deleted, function(key) {
+      angular.forEach(deleted, function (key) {
         deleteEntry(key);
       });
     }
@@ -132,7 +132,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return display;
     }
 
-    this.cacheValue = function(key, dbo_id) {
+    this.cacheValue = function (key, dbo_id) {
       return remoteCache[key].map[dbo_id];
     };
 
@@ -306,7 +306,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           nextModel = newModel;
           lmDialog.showAlert({title: "Unsaved Changes ",
             body: "You are about to edit <b>" + display(newModel) + "</b>.  You have unsaved changes to <b>" +
-              display($scope.model) +"</b>.  Save your changes, discard your changes, or continue editing <b>" +
+              display($scope.model) + "</b>.  Save your changes, discard your changes, or continue editing <b>" +
               display($scope.model) + "</b>?",
             buttons: [
               {label: "Save Changes", class: "btn-default", dismiss: true, click: $scope.updateModel},
@@ -392,10 +392,13 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           event.stopPropagation();
         }
         model = model || $scope.model;
-        lmDialog.showConfirm("Delete " + $scope.objLabel, "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?",
-          function () {
-            mainDelete(model);
-          });
+        intercept('delConfirm', model).then(function () {
+          lmDialog.showConfirm("Delete " + $scope.objLabel,
+            "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?",
+            function () {
+              mainDelete(model);
+            });
+        });
       };
 
       $scope.copyObject = function (event, object) {
@@ -409,24 +412,26 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/copy_' + dialogName + '.html', scope: $scope.$new()});
       };
 
-       $scope.addNewAlias = function() {
-            $scope.model.aliases.push('');
-            $timeout(function () {
-                jQuery('.alias-row:last').focus();
-            });
-        };
+      $scope.addNewAlias = function () {
+        $scope.model.aliases.push('');
+        $timeout(function () {
+          jQuery('.alias-row:last').focus();
+        });
+      };
 
-        $scope.deleteAlias = function(index) {
-            $scope.model.aliases.splice(index, 1);
-        };
+      $scope.deleteAlias = function (index) {
+        $scope.model.aliases.splice(index, 1);
+      };
 
       $scope.objectRowClass = function (object) {
         return ($scope.model && $scope.model.dbo_id == object.dbo_id) ? 'highlight' : '';
       };
 
-      return {prepareList: prepareList, originalModel: function() {
-        return originalModel;
-      }};
+      return {
+        prepareList: prepareList,
+        mainDelete: mainDelete, originalModel: function () {
+          return originalModel;
+        }};
     }
   }
 ]);
@@ -444,7 +449,7 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
 
     $scope.editorMap = {
       config: {label: "Mud Config", url: "config"},
-      players: {label: "Players", objLabel: 'Player',  url: "player"},
+      players: {label: "Players", objLabel: 'Player', url: "player"},
       area: {label: "Areas", objLabel: "Area", url: "area", create: 'fragment'},
       room: {label: "Room", url: "room", create: 'dialog'},
       mobile: {label: "Mobile", url: "mobile"},

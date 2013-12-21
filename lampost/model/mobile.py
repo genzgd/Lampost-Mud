@@ -13,9 +13,21 @@ class Mobile():
 class MobileTemplate(Template, RootDBO):
     dbo_key_type = "mobile"
 
+    @property
+    def dbo_set_key(self):
+        return "area_mobiles:{}".format(self.area_id)
+
+    @property
+    def area_id(self):
+        return self.dbo_id.split(":")[0]
+
     def config_instance(self, instance):
         instance.baptise()
         instance.equip(set())
+
+    @property
+    def reset_key(self):
+        return "mobile_resets:{}".format(self.dbo_id)
 
 
 class MobileReset(RootDBO):
@@ -24,3 +36,7 @@ class MobileReset(RootDBO):
     mob_count = 1
     mob_max = 1
     article_loads = []
+
+    @property
+    def reset_key(self):
+        return "mobile_resets:{}".format(self.mobile_id)

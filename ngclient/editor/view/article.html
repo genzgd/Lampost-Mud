@@ -1,79 +1,81 @@
-<div ng-controller="ObjectEditorCtrl" style="height: 100%; overflow-y: auto">
-  <div class="row-fluid">
-    <div class="span4">
-      <div class="row-fluid">
-        <h4 class="span9">Mobile Id: {{model.dbo_id}}</h4>
-        <h5 class="span3">Rev: {{model.dbo_rev}}</h5>
-      </div>
-    </div>
-    <div class="span4"></div>
-    <div class="span4">
-      <div class="row-fluid">
-        <div class="span8">
-          <button ng-disabled="!objectDirty" ng-click="updateModel()" class="btn btn-primary">Update</button>
-          <button ng-disabled="!objectDirty" ng-click="revertModel()" class="btn">Revert</button>
-          <button ng-click="deleteObject()" class="btn btn-danger" style="margin-left: 6px;">Delete</button>
-        </div>
-        <div class="span4 pagination-right">
-          <button ng-click="closeEditor(editor)" class="btn btn-info">Close</button>
-        </div>
-      </div>
-    </div>
+<div class="wrapper" ng-controller="ArticleEditorCtrl">
+  <div ng-if="!model">
+    No Article Selected
   </div>
-  <div class="row-fluid">
-    <div class="span4">
-      <div class="row-fluid">
-        <div class="span9">
-          <label>Title</label>
-          <input type="text" ng-model="model.title" ng-change="dirty()" required="true"/>
-        </div>
-        <div class="span3">
-          <label>Level</label>
-          <input class="input-small" type="number" ng-model="model.level" ng-change="dirty()" required="true" min="1"/>
+  <div class="scrollable" ng-if="model">
+    <div class="row-fluid">
+      <div class="span4">
+        <div class="row-fluid">
+          <h4 class="span9">Article Id: {{model.dbo_id}}</h4>
+          <h5 class="span3">Rev: {{model.dbo_rev}}</h5>
         </div>
       </div>
-      <div>
-        <label>Description</label>
-        <textarea class="span12" rows="8" ng-model="model.desc" ng-change="dirty()"></textarea>
-      </div>
-      <div class="row-fluid">
-        <div class="span2">
-          <h5>Aliases</h5>
-
-          <div class="column-button">
-            <button ng-click="addNewAlias()" class="btn btn-success btn-small">New</button>
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="row-fluid">
+          <div class="span8">
+            <button ng-disabled="!isDirty" ng-click="updateModel()" class="btn btn-primary">Update</button>
+            <button ng-disabled="!isDirty" ng-click="revertModel()" class="btn">Revert</button>
+            <button ng-click="deleteModel()" class="btn btn-danger" style="margin-left: 6px;">Delete</button>
           </div>
         </div>
-        <div class="span10">
-          <table class="table table-condensed" style="width: 100%">
-            <tbody>
-            <tr class="table-bordered" ng-repeat="alias in editAliases">
-              <td class="edit-cell" style="width: 85%"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="text" ng-model="alias.title"/>
-              </td>
-              <td><a title="Delete Alias" ng-click="deleteAlias($index)" class="icon-link"><i class="icon-remove"></i></a></td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
-    <div class="span4">
-      <div class="row-fluid">
-        <div class="span4">
-          <label>Weight</label>
-          <input class="input-small" type="number" ng-model="model.weight" ng-change="dirty()" required="true" min="1"/>
+    <div class="row-fluid">
+      <div class="span4">
+        <div class="row-fluid">
+          <div class="span9">
+            <label>Title</label>
+            <input type="text" ng-model="model.title" required="true"/>
+          </div>
+          <div class="span3">
+            <label>Level</label>
+            <input class="input-small" type="number" ng-model="model.level" required="true" min="1"/>
+          </div>
         </div>
-        <div class="span4">
-          <label>Equip Slot</label>
-          <select class="span10" ng-change="dirty()" ng-model="model.slot" ng-options="slot for slot in constants.equip_slots" required>
-          </select>
+        <div>
+          <label>Description</label>
+          <textarea class="span12" rows="8" ng-model="model.desc"></textarea>
+        </div>
+        <div class="row-fluid">
+          <div class="span2">
+            <h5>Aliases</h5>
+
+            <div class="column-button">
+              <button ng-click="addNewAlias()" class="btn btn-success btn-small">New</button>
+            </div>
+          </div>
+          <div class="span10">
+            <table class="table table-condensed" style="width: 100%">
+              <tbody>
+              <tr class="table-bordered" ng-repeat="alias in model.aliases track by $index">
+                <td class="edit-cell" style="width: 85%"><input ng-change="dirty()" class="span12 edit-cell alias-row" type="text" ng-model="alias.title"/>
+                </td>
+                <td><a title="Delete Alias" ng-click="deleteAlias($index)" class="icon-link"><i class="icon-remove"></i></a></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-      <div class="row-fluid">
-        <div class="span4">
-          <label>Article Type</label>
-          <select class="span10" ng-change="dirty()" ng-model="model.art_type" ng-options="type for type in constants.equip_types" required>
-          </select>
+      <div class="span4">
+        <div class="row-fluid">
+          <div class="span4">
+            <label>Weight</label>
+            <input class="input-small" type="number" ng-model="model.weight" required="true" min="1"/>
+          </div>
+          <div class="span4">
+            <label>Equip Slot</label>
+            <select class="span10" ng-change="dirty()" ng-model="model.slot" ng-options="slot for slot in constants.equip_slots" required>
+            </select>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span4">
+            <label>Article Type</label>
+            <select class="span10" ng-change="dirty()" ng-model="model.art_type" ng-options="type for type in constants.equip_types" required>
+            </select>
+          </div>
         </div>
       </div>
     </div>

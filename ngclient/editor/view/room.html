@@ -130,7 +130,7 @@
             <h5>Mobiles</h5>
 
             <div class="column-button">
-              <button ng-click="addNewMobile()" class="btn btn-success btn-small">Add</button>
+              <button ng-click="addNewReset('mobile')" class="btn btn-success btn-small">Add</button>
             </div>
           </div>
           <div class="span10">
@@ -144,14 +144,14 @@
               </tr>
               </thead>
               <tbody>
-              <tr class="table-bordered" ng-repeat="mobile in model.mobiles">
-                <td class="use-ellipses" style="width: 70%;">{{mobile.mobile_id}} {{mobile.title}}</td>
+              <tr class="table-bordered" ng-repeat="reset in model.mobile_resets" ng-init="mobile = resetMobile(reset)">
+                <td class="use-ellipses" style="width: 70%;">{{mobile.dbo_id}} {{mobile.title}}</td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="mobile.mob_count"/></td>
+                    ng-model="reset.mob_count"/></td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="mobile.mob_max"/></td>
+                    ng-model="reset.mob_max"/></td>
                 <td style="width: 20%;">
-                  <a title="Edit Mobile" ng-click="addEditor('mobile', mobile.mobile_id)" class="icon-link"><i class="icon-wrench"></i></a>
+                  <a title="Edit Mobile" ng-click="startEditor('mobile', mobile)" class="icon-link"><i class="icon-wrench"></i></a>
                   <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
                   <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
                   <a title="Mobile Articles" ng-click="mobileArticles(mobile)" class="icon-link"><i class="icon-align-justify"></i></a>
@@ -166,7 +166,7 @@
             <h5>Articles</h5>
 
             <div class="column-button">
-              <button ng-click="addNewArticle()" class="btn btn-success btn-small">Add</button>
+              <button ng-click="addNewReset('article')" class="btn btn-success btn-small">Add</button>
             </div>
           </div>
           <div class="span10">
@@ -180,14 +180,14 @@
               </tr>
               </thead>
               <tbody>
-              <tr class="table-bordered" ng-repeat="article in model.articles">
-                <td class="use-ellipses" style="width: 70%;">{{article.article_id}} {{article.title}}</td>
+              <tr class="table-bordered" ng-repeat="reset in model.article_resets" ng-init="article = resetArticle(reset)">
+                <td class="use-ellipses" style="width: 70%;">{{article.dbo_id}} {{article.title}}</td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="article.article_count"/></td>
+                    ng-model="reset.article_count"/></td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="article.article_max"/></td>
+                    ng-model="reset.article_max"/></td>
                 <td style="width: 20%;">
-                  <a title="Edit Article" ng-click="addEditor('article', article.article_id)" class="icon-link"><i class="icon-wrench"></i></a>
+                  <a title="Edit Article" ng-click="startEditor('article', article)" class="icon-link"><i class="icon-wrench"></i></a>
                   <a popover-title="article.title" popover="article.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
                   <a title="Delete Article" ng-click="deleteArticle($index)" class="icon-link"><i class="icon-remove"></i></a>
                 </td>

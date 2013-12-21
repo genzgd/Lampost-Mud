@@ -63,11 +63,27 @@ class Container(Article):
 class ArticleTemplate(Template, RootDBO):
     dbo_key_type = "article"
 
+    @property
+    def area_id(self):
+        return self.dbo_id.split(":")[0]
+
+    @property
+    def dbo_set_key(self):
+        return "area_articles:{}".format(self.area_id)
+
+    @property
+    def reset_key(self):
+        return "article_resets:{}".format(self.dbo_id)
+
 
 class ArticleReset(RootDBO):
     dbo_fields = "article_id", "article_count", "article_max"
     article_count = 1
     article_max = 1
+
+    @property
+    def reset_key(self):
+        return "article_resets:{}".format(self.article_id)
 
 
 class ArticleLoad(RootDBO):

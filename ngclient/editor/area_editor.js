@@ -6,8 +6,8 @@ angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEdit
   }]);
 
 
-angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor', 'lmBus',
-  function ($q, $scope, lmEditor, lmBus) {
+angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor',
+  function ($q, $scope, lmEditor) {
 
     var listKey;
 
@@ -35,34 +35,53 @@ angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lm
     };
 
     this.postCreate = function (newModel) {
-      lmBus.dispatch('start_editor', 'room', newModel);
+      $scope.startEditor('room', newModel);
       return $q.reject();
     };
 
   }]);
 
 
-angular.module('lampost_editor').controller('MobileListCtrl', ['$q', '$scope', 'lmEditor', 'lmBus',
-  function ($q, $scope, lmEditor, lmBus) {
+angular.module('lampost_editor').service('lmEditorMobile', ['lmRemote', 'lmDialog',
+  function (lmRemote, lmDialog) {
+
+    this.delete = function (model, mainDelete) {
+      lmRemote.request("editor/mobile/test_delete", model).then(function (resetList) {
+          lmDialog.showConfirm("Mobile In Use", "This mobile is used in " + resetList.length
+            + " rooms.  Delete it anyway?", function () {
+            mainDelete(model);
+          })
+        });
+    };
+
+  }]);
+
+angular.module('lampost_editor').controller('MobileListCtrl', ['$q', '$scope', 'lmEditor', 'lmEditorMobile',
+  function ($q, $scope, lmEditor, lmEditorMobile) {
 
     var listKey;
 
     $scope.editor = {id: 'mobile', url: "mobile", create: 'dialog', label: 'Mobile'};
-    var refresh = lmEditor.prepare(this, $scope).prepareList;
+    var helpers = lmEditor.prepare(this, $scope);
 
     $scope.$on('updateModel', function () {
       if ($scope.model) {
         lmEditor.deref(listKey);
         $scope.areaId = $scope.model.dbo_id;
         listKey = "mobile:" + $scope.areaId;
-        refresh(listKey);
+        helpers.prepareList(listKey);
       } else {
         $scope.modelList = null;
       }
     });
 
-    this.newDialog = function(newModel) {
+    this.newDialog = function (newModel) {
       newModel.level = 1;
+    };
+
+    this.delConfirm = function (delModel) {
+      lmEditorMobile.delete(delModel, helpers.mainDelete);
+      return $q.reject();
     };
 
     this.preCreate = function (newModel) {
@@ -70,17 +89,97 @@ angular.module('lampost_editor').controller('MobileListCtrl', ['$q', '$scope', '
     };
 
     this.postCreate = function (newModel) {
-      lmBus.dispatch('start_editor', 'mobile', newModel);
+      $scope.startEditor('mobile', newModel);
       return $q.reject();
     };
 
   }]);
 
-angular.module('lampost_editor').controller('MobileEditorCtrl', ['$scope', 'lmEditor', function($scope, lmEditor) {
-  lmEditor.prepare(this, $scope);
-  this.postDelete = function(model) {
+angular.module('lampost_editor').controller('MobileEditorCtrl', ['$q', '$scope', 'lmEditor', 'lmEditorMobile',
+  function ($q, $scope, lmEditor, lmEditorMobile) {
+
+    var helpers = lmEditor.prepare(this, $scope);
+
+    this.postDelete = function () {
       $scope.startEditor('area');
     };
 
-  $scope.editor.newEdit($scope.editor.editModel);
-}]);
+    this.delConfirm = function (delModel) {
+      lmEditorMobile.delete(delModel, helpers.mainDelete);
+      return $q.reject();
+    };
+
+    $scope.editor.newEdit($scope.editor.editModel);
+  }]);
+
+
+angular.module('lampost_editor').service('lmEditorArticle', ['lmRemote', 'lmDialog',
+  function (lmRemote, lmDialog) {
+
+    this.delete = function (model, mainDelete) {
+      lmRemote.request("editor/article/test_delete", model).then(function (resetList) {
+          lmDialog.showConfirm("Mobile In Use", "This article is used in " + resetList.length
+            + " rooms.  Delete it anyway?", function () {
+            mainDelete(model);
+          })
+        });
+    };
+
+  }]);
+
+angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 'lmEditor', 'lmEditorArticle',
+  function ($q, $scope, lmEditor, lmEditorArticle) {
+
+    var listKey;
+
+    $scope.editor = {id: 'article', url: "article", create: 'dialog', label: 'Article'};
+    var helpers = lmEditor.prepare(this, $scope);
+
+    $scope.$on('updateModel', function () {
+      if ($scope.model) {
+        lmEditor.deref(listKey);
+        $scope.areaId = $scope.model.dbo_id;
+        listKey = "article:" + $scope.areaId;
+        helpers.prepareList(listKey);
+      } else {
+        $scope.modelList = null;
+      }
+    });
+
+    this.newDialog = function (newModel) {
+      newModel.level = 1;
+      newModel.weight = 1;
+    };
+
+    this.delConfirm = function (delModel) {
+      lmEditorArticle.delete(delModel, helpers.mainDelete);
+      return $q.reject();
+    };
+
+    this.preCreate = function (newModel) {
+      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
+    };
+
+    this.postCreate = function (newModel) {
+      $scope.startEditor('article', newModel);
+      return $q.reject();
+    };
+
+  }]);
+
+angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope', 'lmEditor', 'lmEditorArticle',
+  function ($q, $scope, lmEditor, lmEditorArticle) {
+
+    var helpers = lmEditor.prepare(this, $scope);
+
+    this.postDelete = function () {
+      $scope.startEditor('area');
+    };
+
+    this.delConfirm = function (delModel) {
+      lmEditorArticle.delete(delModel, helpers.mainDelete);
+      return $q.reject();
+    };
+
+    $scope.editor.newEdit($scope.editor.editModel);
+  }]);

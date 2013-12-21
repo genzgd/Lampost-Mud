@@ -14,7 +14,7 @@ m_requires('datastore', 'log', 'perm', 'dispatcher', 'cls_registry', 'edit_updat
 
 class AreaResource(EditResource):
 
-    def on_delete(self, del_area, session):
+    def post_delete(self, del_area, session):
         for room in del_area.rooms.itervalues():
             room_clean_up(room, session, del_area.dbo_id)
         delete_object_set(Room, 'area_rooms:{}'.format(del_area.dbo_id))
@@ -53,25 +53,29 @@ class RoomResource(EditResource):
         self.putChild('delete_exit', DeleteExit())
 
     def pre_create(self, room_dto, session):
-        area = room_area(room_dto)
+        area = parent_area(room_dto)
         check_perm(session, area)
 
-    def on_create(self, room, session):
-        add_room(room_area(room), room, session)
+    def post_create(self, room, session):
+        add_room(parent_area(room), room, session)
+        add_resets(room)
 
     def pre_update(self, room, session):
-        check_perm(session, room_area(room))
+        check_perm(session, parent_area(room))
         room.update_contents = save_contents(room)
+        clear_resets(room)
 
     def post_update(self, room, session):
         restore_contents(room, room.update_contents)
+        add_resets(room)
         del room.update_contents
 
     def pre_delete(self, room, session):
-        check_perm(session, room_area(room))
+        check_perm(session, parent_area(room))
 
-    def on_delete(self, room, session):
+    def post_delete(self, room, session):
         room_clean_up(room, session)
+        clear_resets(room)
 
 
 class CreateExit(Resource):
@@ -153,17 +157,17 @@ def find_area_room(room_id, session=None):
     room = load_object(Room, room_id)
     if not room:
         raise DataError("ROOM_MISSING")
-    area = room_area(room)
+    area = parent_area(room)
     if session:
         check_perm(session, area)
     return area, room
 
 
-def room_area(room):
+def parent_area(child):
     try:
-        dbo_id = room.dbo_id
+        dbo_id = child.dbo_id
     except AttributeError:
-        dbo_id = room['dbo_id']
+        dbo_id = child['dbo_id']
     area = load_object(Area, dbo_id.split(':')[0])
     if not area:
         raise DataError("Area Missing")
@@ -184,9 +188,23 @@ def room_clean_up(room, session, area_delete=None):
                     publish_edit('update', other_room, session, True)
     if not area_delete:
         try:
-            room_area(room).rooms.pop(room.dbo_id)
+            parent_area(room).rooms.pop(room.dbo_id)
         except KeyError:
             warn("Trying to remove room {} not found in area".format(room.dbo_id))
+
+
+def add_resets(room):
+    for mobile_reset in room.mobile_resets:
+        add_set_key(mobile_reset.reset_key, room.dbo_id)
+    for article_reset in room.article_resets:
+        add_set_key(article_reset.reset_key, room.dbo_id)
+
+
+def clear_resets(room):
+    for mobile_reset in room.mobile_resets:
+        delete_set_key(mobile_reset.reset_key, room.dbo_id)
+    for article_reset in room.article_resets:
+        delete_set_key(article_reset.reset_key, room.dbo_id)
 
 
 def save_contents(start_room):

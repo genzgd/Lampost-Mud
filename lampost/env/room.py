@@ -1,9 +1,9 @@
-from lampost.context.resource import requires, m_requires
+from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBORef, DBOList
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset, MobileTemplate
 from lampost.model.item import BaseDBO
-from lampost.model.article import ArticleReset
+from lampost.model.article import ArticleReset, ArticleTemplate
 from lampost.gameops.display import *
 
 

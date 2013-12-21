@@ -1,9 +1,10 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires
-from lampost.datastore.exceptions import ObjectExistsError, DataError
+from lampost.datastore.exceptions import DataError
 
 m_requires('log', 'datastore', 'cls_registry', 'perm', 'dispatcher', 'edit_update_service',  __name__)
+
 
 class EditResource(Resource):
 
@@ -17,19 +18,19 @@ class EditResource(Resource):
     def pre_delete(self, del_obj, session):
         pass
 
-    def on_delete(self, del_obj, session):
+    def post_delete(self, del_obj, session):
         pass
 
     def pre_create(self, obj_dict, session):
         pass
 
-    def on_create(self, new_obj, session):
+    def post_create(self, new_obj, session):
         pass
 
     def pre_update(self, existing_obj, session):
         pass
 
-    def on_update(self, existing_obj, session):
+    def post_update(self, existing_obj, session):
         pass
 
 
@@ -57,7 +58,7 @@ class EditCreateResource(EditBaseResource):
         raw['owner_id'] = session.player.dbo_id
         self.editor.pre_create(raw, session)
         new_obj = create_object(self.obj_class, raw)
-        self.editor.on_create(new_obj, session)
+        self.editor.post_create(new_obj, session)
         return publish_edit('create', new_obj, session)
 
 
@@ -70,7 +71,7 @@ class EditDeleteResource(EditBaseResource):
         check_perm(session, del_obj)
         self.editor.pre_delete(del_obj, session)
         delete_object(del_obj)
-        self.editor.on_delete(del_obj, session)
+        self.editor.post_delete(del_obj, session)
         publish_edit('delete', del_obj, session)
 
 
@@ -84,5 +85,5 @@ class EditUpdateResource(EditBaseResource):
         self.editor.pre_update(existing_obj, session)
         update_object(existing_obj, raw)
         existing_obj.on_loaded()
-        self.editor.on_update(existing_obj, session)
+        self.editor.post_update(existing_obj, session)
         return publish_edit('update', existing_obj, session)

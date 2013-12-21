@@ -1,87 +1,45 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
-from lampost.context.resource import m_requires, requires
+from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
+from lampost.editor.areas import parent_area, AreaListResource
+from lampost.editor.base import EditResource
+from lampost.env.room import Room
 from lampost.model.article import ArticleTemplate
 
-m_requires('datastore', 'perm', 'mud', __name__)
+m_requires('datastore', 'perm', 'edit_update_service', __name__)
 
 
-class ArticleResource(Resource):
+class ArticleResource(EditResource):
     def __init__(self):
-        Resource.__init__(self)
-        self.putChild('list', ArticleList())
-        self.putChild('create', ArticleCreate())
-        self.putChild('delete', ArticleDelete())
-        self.putChild('get', ArticleGet())
-        self.putChild('update', ArticleUpdate())
+        EditResource.__init__(self, ArticleTemplate)
+        self.putChild('list', AreaListResource(ArticleTemplate))
+        self.putChild('test_delete', ArticleTestDelete())
+
+    def pre_create(self, dto, session):
+        check_perm(session, parent_area(dto))
+
+    def pre_update(self, dbo, session):
+        check_perm(session, parent_area(dbo))
+
+    def pre_delete(self, dbo, session):
+        check_perm(session, parent_area(dbo))
+
+    def post_delete(self, article, session):
+        for room_id in fetch_set_keys(article.reset_key):
+            room = load_object(Room, room_id)
+            if room:
+                for article_reset in list(room.article_resets):
+                    if article_reset.article_id == article.dbo_id:
+                        room.article_resets.remove(article_reset)
+                save_object(room)
+                publish_edit('update', room, session, True)
 
 
-class ArticleList(Resource):
+class ArticleTestDelete(Resource):
     @request
-    def render_POST(self, content, session):
-        area = mud.get_area(content.area_id)
-        return [article_template.dto_value for article_template in area.articles.itervalues()]
-
-
-class ArticleGet(Resource):
-    @request
-    def render_POST(self, content, session):
-        area, article = get_article(content.object_id)
-        if not article.desc:
-            article.desc = article.title
-        return article.dto_value
-
-
-class ArticleUpdate(Resource):
-    @request
-    def render_POST(self, content, session):
-        area, article = get_article(content.object_id, session)
-        update_object(article, content.model)
-        return article.dto_value
-
-
-@requires('cls_registry')
-class ArticleCreate(Resource):
-    @request
-    def render_POST(self, content, session):
-        area = mud.get_area(content.area_id)
-        check_perm(session, area)
-        article_id = ":".join([area.dbo_id, content.object['id']])
-        if area.get_article(article_id):
-            raise DataError(article_id + " already exists in this area")
-        template = self.cls_registry(ArticleTemplate)(article_id)
-        hydrate_dbo(template, content.object)
-        save_object(template)
-        area.append_map('articles', template)
-        save_object(area)
-        return template.dto_value
-
-
-class ArticleDelete(Resource):
-    @request
-    def render_POST(self, content, session):
-        area, article = get_article(content.object_id, session)
-        article_resets = list(area.find_article_resets(article.dbo_id))
-        if article_resets:
-            if not content.force:
-                raise DataError('InUse:')
-            for room, article_reset in article_resets:
-                room.remove_list('article_resets', article_reset)
-                save_object(room, True)
-        delete_object(article)
-        area.remove_map('articles', article)
-        save_object(area)
-
-
-def get_article(article_id, session=None):
-    area_id = article_id.split(":")[0]
-    area = mud.get_area(area_id)
-    if not area:
-        raise DataError("AREA_MISSING")
-    article = area.get_article(article_id)
-    if not article:
-        raise DataError("OBJECT_MISSING")
-    if session:
-        check_perm(session, area)
-    return area, article
+    def render_POST(self, raw):
+        article = load_object(ArticleTemplate, raw['dbo_id'])
+        if not article:
+            raise DataError("GONE:  Article is missing")
+        return list(fetch_set_keys(article.reset_key))
