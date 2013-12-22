@@ -31,10 +31,10 @@ class MobileTemplate(Template, RootDBO):
 
 
 class MobileReset(RootDBO):
-    dbo_fields = "mobile_id", "mob_count", "mob_max"
+    dbo_fields = "mobile_id", "reset_count", "reset_max"
     dbo_lists = DBOList("article_loads", ArticleLoad),
-    mob_count = 1
-    mob_max = 1
+    reset_count = 1
+    reset_max = 1
     article_loads = []
 
     @property

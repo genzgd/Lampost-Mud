@@ -147,14 +147,14 @@
               <tr class="table-bordered" ng-repeat="reset in model.mobile_resets" ng-init="mobile = resetMobile(reset)">
                 <td class="use-ellipses" style="width: 70%;">{{mobile.dbo_id}} {{mobile.title}}</td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="reset.mob_count"/></td>
+                    ng-model="reset.reset_count"/></td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="reset.mob_max"/></td>
+                    ng-model="reset.reset_max"/></td>
                 <td style="width: 20%;">
                   <a title="Edit Mobile" ng-click="startEditor('mobile', mobile)" class="icon-link"><i class="icon-wrench"></i></a>
                   <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
                   <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
-                  <a title="Mobile Articles" ng-click="mobileArticles(mobile)" class="icon-link"><i class="icon-align-justify"></i></a>
+                  <a title="Mobile Articles" ng-click="mobileArticles(reset, mobile)" class="icon-link"><i class="icon-align-justify"></i></a>
                 </td>
               </tr>
               </tbody>
@@ -183,9 +183,9 @@
               <tr class="table-bordered" ng-repeat="reset in model.article_resets" ng-init="article = resetArticle(reset)">
                 <td class="use-ellipses" style="width: 70%;">{{article.dbo_id}} {{article.title}}</td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="reset.article_count"/></td>
+                    ng-model="reset.reset_count"/></td>
                 <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-                    ng-model="reset.article_max"/></td>
+                    ng-model="reset.reset_max"/></td>
                 <td style="width: 20%;">
                   <a title="Edit Article" ng-click="startEditor('article', article)" class="icon-link"><i class="icon-wrench"></i></a>
                   <a popover-title="article.title" popover="article.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>

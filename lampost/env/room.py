@@ -163,9 +163,9 @@ class Room(RootDBO):
                 error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
                 continue
             curr_count = len([entity for entity in self.contents if getattr(entity, 'template', None) == template])
-            for unused in range(m_reset.mob_count - curr_count):
+            for unused in range(m_reset.reset_count - curr_count):
                 self.add_mobile(template, m_reset)
-            if m_reset.mob_count <= curr_count < m_reset.mob_max:
+            if m_reset.reset_count <= curr_count < m_reset.reset_max:
                 self.add_mobile(template, m_reset)
         for a_reset in self.article_resets:
             template = load_object(ArticleTemplate, a_reset.article_id)
@@ -173,9 +173,9 @@ class Room(RootDBO):
                 error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
                 continue
             curr_count = len([entity for entity in self.contents if getattr(entity, 'template', None) == template])
-            for unused in range(a_reset.article_count - curr_count):
+            for unused in range(a_reset.reset_count - curr_count):
                 self.add_template(template)
-            if a_reset.article_count <= curr_count < a_reset.article_max:
+            if a_reset.reset_count <= curr_count < a_reset.reset_max:
                 self.add_template(template)
 
     def add_mobile(self, template, reset):

@@ -77,9 +77,9 @@ class ArticleTemplate(Template, RootDBO):
 
 
 class ArticleReset(RootDBO):
-    dbo_fields = "article_id", "article_count", "article_max"
-    article_count = 1
-    article_max = 1
+    dbo_fields = "article_id", "reset_count", "reset_max"
+    reset_count = 1
+    reset_max = 1
 
     @property
     def reset_key(self):
