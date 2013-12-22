@@ -3,90 +3,38 @@ from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
+from lampost.editor.base import EditResource
 from lampost.mud.socials import Social
 from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
-m_requires('datastore', 'perm', 'mud', __name__)
+m_requires('datastore', 'perm', 'mud_actions', 'social_registry',  __name__)
 
 
-class SocialsResource(Resource):
+class SocialsResource(EditResource):
     def __init__(self):
-        Resource.__init__(self)
-        self.putChild('list', SocialList())
-        self.putChild('get', SocialGet())
-        self.putChild('delete', SocialDelete())
-        self.putChild('update', SocialUpdate())
-        self.putChild('valid', SocialValid())
+        EditResource.__init__(self, Social)
         self.putChild('preview', SocialPreview())
-        self.putChild('copy', SocialCopy())
 
-
-class SocialList(Resource):
-    @request
-    def render_POST(self, session):
-        check_perm(session, 'admin')
-        return list(fetch_set_keys('socials'))
-
-
-class SocialGet(Resource):
-    @request
-    def render_POST(self, content):
-        return load_object(Social, content.social_id).dbo_dict
-
-
-@requires('cls_registry', 'social_registry')
-class SocialUpdate(Resource):
-    @request
-    def render_POST(self, content, session):
-        check_perm(session, 'admin')
-        social = self.cls_registry(Social)(content.social_id.lower())
-        social.b_map = content.b_map
-        save_object(social)
-        self.social_registry.insert(social)
-
-
-@requires('social_registry')
-class SocialDelete(Resource):
-    @request
-    def render_POST(self, content, session):
-        check_perm(session, 'admin')
-        social = Social(content.social_id)
-        delete_object(social)
-        self.social_registry.delete(content.social_id)
-
-
-@requires('mud_actions')
-class SocialValid(Resource):
-    @request
-    def render_POST(self, content):
-        if self.mud_actions.verb_list((content.social_id,)):
+    def pre_create(self, social_dto, session):
+        if mud_actions.verb_list((social_dto['dbo_id'],)):
             raise DataError("Verb already in use")
+
+    def post_create(self, social, session):
+        social_registry.insert(social)
+
+    def post_delete(self, social, session):
+        social_registry.delete(social.dbo_id)
 
 
 class SocialPreview(Resource):
     @request
     def render_POST(self, content):
-        preview = {}
         broadcast_map = BroadcastMap()
         broadcast_map.populate(content.b_map)
         broadcast = Broadcast(broadcast_map, content.source, content.source if content.self_source else content.target)
-        for broadcast_type in broadcast_types:
-            preview[broadcast_type['id']] = broadcast.substitute(broadcast_type['id'])
-        return preview
+        return {broadcast_type['id']: broadcast.substitute(broadcast_type['id']) for broadcast_type in broadcast_types}
 
 
-@requires('social_registry', 'mud_actions')
-class SocialCopy(Resource):
-    @request
-    def render_POST(self, content, session):
-        check_perm(session, 'admin')
-        if self.mud_actions.verb_list((content.copy_id,)):
-            raise StateError("Verb already in use")
-        copy = load_object(Social, content.original_id)
-        copy.dbo_id = content.copy_id
-        save_object(copy)
-        self.social_registry.insert(copy)
-        return copy.dbo_dict
 
 
 

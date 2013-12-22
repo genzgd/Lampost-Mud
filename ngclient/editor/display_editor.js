@@ -1,20 +1,12 @@
-angular.module('lampost_editor').controller('DisplayEditorCtrl', ['$scope', 'lmRemote', 'lmBus', function ($scope, lmRemote, lmBus) {
+angular.module('lampost_editor').controller('DisplayEditorCtrl', ['$scope', 'lmRemote', 'lmBus', function ($scope, lmRemote) {
 
-    lmBus.register("editor_activated", function (editor) {
-        if (editor == $scope.editor) {
-            loadDisplays();
-        }
-    });
+  $scope.updateDisplays = function () {
+    lmRemote.request('editor/display/update', {displays: $scope.displays}, true);
+  };
 
-    $scope.updateDisplays = function() {
-        lmRemote.request($scope.editor.url + '/update', {displays: $scope.displays}, true);
-    };
+  lmRemote.request('editor/display/list').then(function (displays) {
+    $scope.displays = displays;
+    $scope.ready = true;
+  })
 
-    function loadDisplays() {
-        $scope.ready = false;
-        lmRemote.request($scope.editor.url + '/list').then(function (displays) {
-            $scope.displays = displays;
-            $scope.ready = true;
-        })
-    }
 }]);

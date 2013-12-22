@@ -74,7 +74,7 @@ class MudNature():
             channels.append('imm_channel')
         if has_perm(player, 'admin'):
             editors.append('players')
-            editors.append('socials')
+            editors.append('social')
             editors.append('display')
             editors.append('race')
             editors.append('attack')

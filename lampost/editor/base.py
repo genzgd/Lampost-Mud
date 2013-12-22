@@ -67,7 +67,7 @@ class EditDeleteResource(EditBaseResource):
     def render_POST(self, raw, session):
         del_obj = load_object(self.obj_class, raw['dbo_id'])
         if not del_obj:
-            raise DataError('Gone: Object with key {} does not exist'.format(content.dbo_id))
+            raise DataError('Gone: Object with key {} does not exist'.format(raw['dbo_id']))
         check_perm(session, del_obj)
         self.editor.pre_delete(del_obj, session)
         delete_object(del_obj)

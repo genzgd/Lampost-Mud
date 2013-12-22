@@ -38,10 +38,8 @@ class SocialRegistry(object):
 class Social(RootDBO):
     dbo_set_key = 'socials'
     dbo_key_type = 'social'
-    dbo_fields = "dbo_rev" 'b_map'
+    dbo_fields = 'dbo_rev', 'b_map'
     dbo_rev = 0
-
-    b_map = {}
 
 
 

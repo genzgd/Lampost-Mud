@@ -1,6 +1,5 @@
-angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'EditorHelper', function ($scope, EditorHelper) {
-
-  this.modelList = {key: 'attack'};
+angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'lmEditor',
+  function ($scope, lmEditor) {
 
   $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
     calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
@@ -11,15 +10,13 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'Edit
   $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
     effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
 
-  EditorHelper.prepare(this, $scope)();
+  lmEditor.prepare(this, $scope).prepareList('attack');
 
 }]);
 
 
-angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialog', '$scope', 'EditorHelper',
-  function ($q, lmDialog, $scope, EditorHelper) {
-
-    this.modelList = {key: 'defense'};
+angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialog', '$scope', 'lmEditor',
+  function ($q, lmDialog, $scope, lmEditor) {
 
     $scope.avoidList = {effectDesc: 'Chance to avoid attack based on attributes and roll', effectName: 'Avoid Calculation',
       calcWatch: 'avoid_calc', calcDefs: $scope.constants.calc_map};
@@ -54,15 +51,13 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialo
       return $q.when();
     };
 
-    EditorHelper.prepare(this, $scope)();
+    lmEditor.prepare(this, $scope).prepareList('defense');
 
   }]);
 
 
-angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lmEditor', 'EditorHelper',
-  function ($scope, lmEditor, EditorHelper) {
-
-    this.modelList = {key: 'race'};
+angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lmEditor',
+  function ($scope, lmEditor) {
 
     $scope.defaultAttrsList = {listDesc: "Starting attributes for this race", listName: "Starting Attributes",
       attrWatch: 'base_attrs', attrDefs: $scope.constants.attr_map};
@@ -74,6 +69,6 @@ angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lmEdit
       })
     };
 
-    EditorHelper.prepare(this, $scope)();
+    lmEditor.prepare(this, $scope).prepareList('race');
 
   }]);

@@ -13,7 +13,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row" ng-class="objectRowClass(model)" ng-click="editModel(model)" ng-repeat="model in modelList">
+      <tr class="edit-row" ng-class="modelRowClass(model)" ng-click="editModel(model)" ng-repeat="model in modelList">
         <td class="span8">{{model.dbo_id}}</td>
         <td class="span4">
           <a ng-click="deleteModel($event, model)" title="Delete Attack" class="icon-link"><i class="icon-remove"></i></a>

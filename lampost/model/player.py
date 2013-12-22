@@ -29,6 +29,12 @@ class Player(RootDBO):
         self.soul = defaultdict(set)
         self.active_channels = []
 
+    @property
+    def dto_value(self):
+        dto_value = super(Player, self).dto_value
+        dto_value['logged_in'] = "Yes" if hasattr(self, 'session') else "No"
+        return dto_value
+
     def on_loaded(self):
         if not self.desc:
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."

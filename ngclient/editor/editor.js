@@ -263,6 +263,10 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         return $q.when();
       }
 
+      function dataError(error) {
+        $scope.dataError = error.text;
+      }
+
       function modelDeleted(delModel, outside) {
         if ($scope.model && $scope.model.dbo_id == delModel.dbo_id) {
           if (outside) {
@@ -281,7 +285,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           lmRemote.request(baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
             deleteModel(model);
             modelDeleted(model);
-          });
+          }, dataError);
         })
       }
 
@@ -342,8 +346,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
               $scope.isDirty = false;
               updateModel(updatedObject);
               intercept('postUpdate', $scope.model).then(nextEdit);
-            }
-          )
+            }, dataError)
         })
       };
 
@@ -423,7 +426,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         $scope.model.aliases.splice(index, 1);
       };
 
-      $scope.objectRowClass = function (object) {
+      $scope.modelRowClass = function (object) {
         return ($scope.model && $scope.model.dbo_id == object.dbo_id) ? 'highlight' : '';
       };
 
@@ -454,7 +457,7 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       room: {label: "Room", url: "room", create: 'dialog'},
       mobile: {label: "Mobile", url: "mobile"},
       article: {label: "Article", url: "article"},
-      socials: {label: "Socials", objLabel: "Social", url: "socials"},
+      social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
       display: {label: "Display", url: "display"},
       race: {label: "Races", objLabel: "Race", url: "race"},
       attack: {label: "Attacks", objLabel: "Attack", url: "attack"},
@@ -467,6 +470,10 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
 
     $scope.idOnly = function (model) {
       return model.dbo_id.split(':')[1];
+    };
+
+    $scope.cap = function(name) {
+      return name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
     };
 
     $scope.click = function (editor) {

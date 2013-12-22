@@ -13,7 +13,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row" ng-class="objectRowClass(model)" ng-click="editModel(model)" ng-repeat="model in modelList">
+      <tr class="edit-row" ng-class="modelRowClass(model)" ng-click="editModel(model)" ng-repeat="model in modelList">
         <td class="span4">{{model.dbo_id}}</td>
         <td class="span6">{{model.name}}</td>
         <td class="span2">
