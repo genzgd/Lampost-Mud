@@ -34,6 +34,7 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     build_default_displays()
     build_default_settings(SERVER_SETTINGS_DEFAULT, 'server')
     build_default_settings(GAME_SETTINGS_DEFAULT, 'game')
+    config_manager._dispatch_update()
 
     MudNature(flavor)
     user_manager = UserManager()
@@ -41,28 +42,26 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     context_post_init()
     dispatch('first_time_setup')
 
-    player = cls_registry(Player)(imm_name)
+    imm_name = imm_name.lower()
+    imm_level = perm_level('supreme')
 
-    area = cls_registry(Area)(start_area)
-    area.name = start_area
-    area.owner_id = player.dbo_id
-    area.next_room_id = 1
-    save_object(area)
+    area = create_object(Area, {'dbo_id': start_area, 'name': start_area, 'owner_id': imm_name})
 
-    room = cls_registry(Room)(room_id)
-    room.title = "Immortal Start Room"
-    room.desc = "A brand new start room for immortals."
-    save_object(room)
-    area.append_map('rooms', room)
-    save_object(area)
+    room = create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room",
+                                'desc': "A brand new start room for immortals."})
 
-    player.room_id = room_id
-    player.home_room = room_id
-    player.imm_level = perm_level('supreme')
-    set_index('immortals', player.dbo_id, player.imm_level)
+    area.add_room(room)
 
     user = user_manager.create_user(imm_account, imm_password)
+    player = {'dbo_id': imm_name, 'room_id': room_id,
+              'home_room': room_id, 'imm_level': imm_level}
+
     user_manager.attach_player(user, player)
+
+    set_index('immortals', imm_name, imm_level)
+
+
+
 
 
 

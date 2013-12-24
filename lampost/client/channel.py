@@ -13,6 +13,6 @@ class ChannelResource(Resource):
 
 class GeneralChannels(Resource):
     @request
-    def render_POST(self, session, content):
+    def render_POST(self):
         return channel_service.gen_channels()
 

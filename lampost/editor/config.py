@@ -15,21 +15,21 @@ class ConfigResource(Resource):
 
 class ConfigGet(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, session):
         check_perm(session, 'supreme')
         return config_manager.config_json
 
 
 class ConfigUpdate(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, raw, session):
         check_perm(session, 'supreme')
-        config_manager.update_config(content.config)
+        config_manager.update_config(raw)
         return config_manager.config_json
 
 
 class ConfigDefaults(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, session):
         check_perm(session, 'supreme')
         return {'server': load_raw('server_settings_default'), 'game': load_raw('game_settings_default')}

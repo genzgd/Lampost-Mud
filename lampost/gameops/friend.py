@@ -68,9 +68,9 @@ class FriendService(object):
                                              "Your friend {} just logged into {}.".
                                              format(player.name, config_manager.config.title), users)
 
-    def _delete_player(self, player):
-        for friend_id in fetch_set_keys(friend_key(player.dbo_id)):
-            self.del_friend(player.dbo_id, friend_id)
+    def _delete_player(self, player_id):
+        for friend_id in fetch_set_keys(friend_key(player_id)):
+            self.del_friend(player_id, friend_id)
 
 
 def friend_key(player_id):

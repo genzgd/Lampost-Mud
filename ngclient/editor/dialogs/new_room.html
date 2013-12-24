@@ -6,7 +6,7 @@
     <form ng-submit="submitNewModel()" >
         <div class="modal-body">
             <label>Room Id</label>
-            <input type="number" ng-model="newModel.id" ng-change="dialog.newExists = false" required="true"/>
+            <input type="number" ng-model="newModel.id" ng-change="dialog.newExists = false" min="0" required="true"/>
             <div class="alert alert-error" ng-show="dialog.newExists">
                 <button type="button" class="close" ng-click="dialog.newExists = false">×</button>
                 Room id already in use.

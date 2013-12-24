@@ -1,6 +1,8 @@
 <div ng-controller="PlayersEditorCtrl" ng-show="ready" class="wrapper">
   <div class="span2" style="height: 6%">
     <h4>Players {{modelList.length}}</h4>
+    <div class="spacer"></div>
+    <button type="button" class="btn btn-small btn-info" ng-click="refresh()">Refresh</button>
   </div>
   <div class="span8 scrollable">
     <div class="alert alert-error" ng-show="dataError">

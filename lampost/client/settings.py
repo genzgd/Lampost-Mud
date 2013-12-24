@@ -88,10 +88,9 @@ class AccountDelete(Resource):
         return response
 
 
-@requires('cls_registry')
 class PlayerCreate(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         user = load_object(User, content.user_id)
         if not user:
             raise DataError("User {0} does not exist".format([content.user_id]))
@@ -100,9 +99,8 @@ class PlayerCreate(Resource):
             raise DataError(content.player_name + " is in use.")
         if object_exists('player', player_name):
             raise DataError(content.player_name + " is in use.")
-        player = self.cls_registry(Player)(player_name)
-        hydrate_dbo(player, content.player_data)
-        user_manager.attach_player(user, player)
+        content.player_data['dbo_id'] = player_name
+        user_manager.attach_player(user,content.player_data)
 
 
 class GetPlayers(Resource):
@@ -150,7 +148,7 @@ class SendAccountName(Resource):
 
 class TempPassword(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         user_id = get_index("ix:user:user_name", content.info.lower())
         if user_id:
             user_id = user_id.split(':')[1]

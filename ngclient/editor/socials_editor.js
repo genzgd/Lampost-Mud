@@ -19,7 +19,7 @@ angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lmR
     };
 
     $scope.previewSocial = function () {
-      lmRemote.request('editor/socials/preview', {target: $scope.target, self_source: $scope.sourceSelf,
+      lmRemote.request('editor/social/preview', {target: $scope.target, self_source: $scope.sourceSelf,
         source: $scope.source, b_map: $scope.model.b_map})
         .then(function (preview) {
           $scope.preview = preview;

@@ -18,9 +18,7 @@ GAME_SETTINGS = {'refresh_interval': {'desc': 'Time between entity refreshes (in
 
 
 def first_time_setup():
-    unknown_race = PlayerRace('unknown')
-    unknown_race.name = "Unknown"
-    save_object(unknown_race)
+    create_object(PlayerRace, {'dbo_id': 'unknown', 'name': 'Unknown'})
     game_settings()
 
 

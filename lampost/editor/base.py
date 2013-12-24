@@ -3,7 +3,7 @@ from lampost.client.resources import request
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 
-m_requires('log', 'datastore', 'cls_registry', 'perm', 'dispatcher', 'edit_update_service',  __name__)
+m_requires('log', 'datastore', 'perm', 'edit_update_service',  __name__)
 
 
 class EditResource(Resource):

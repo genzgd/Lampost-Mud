@@ -2,8 +2,8 @@
   <div class="row-fluid">
     <div class="span12">
       <div class="pull-right">
-        <button ng-click="updateConfig()" class="btn btn-primary">Update</button>
-        <button ng-click="revertConfig()" class="btn">Revert</button>
+        <button ng-click="updateModel()" ng-disabled="!isDirty" class="btn btn-primary">Update</button>
+        <button ng-click="revertModel()" ng-disabled="!isDirty" class="btn">Revert</button>
       </div>
     </div>
   </div>
@@ -11,20 +11,20 @@
 
     <div class="span4">
       <label>Mud Title</label>
-      <input class="span10" type="text" ng-model="config.title" required="true"/>
+      <input class="span10" type="text" ng-model="model.title" required="true"/>
       <label>Mud Description</label>
-      <textarea class="span10" rows="10" ng-model="config.description" required></textarea>
+      <textarea class="span10" rows="10" ng-model="model.description" required></textarea>
     </div>
 
     <div class="span3">
       <label>Start Area</label>
-      <select class="span10" ng-change="changeArea()" ng-model="startAreaId" ng-options="areaId for areaId in areaList" required>
+      <select class="span10" ng-change="changeArea()" ng-model="startAreaId" ng-options="area.dbo_id as area.dbo_id for area in areaList" required>
       </select>
       <label>Start Room</label>
-      <select class="span10" ng-change="changeRoom()" ng-model="startRoom" ng-options="room.label for room in rooms" required>
+      <select class="span10" ng-model="model.start_room" ng-options="room.dbo_id as (idOnly(room) + ':' + room.title) for room in rooms" required>
       </select>
       <label>Auto Imm Level</label>
-      <input class="span4 pagination-right" type="number" ng-model="config.auto_imm_level" required="true"/>
+      <input class="span4 pagination-right" type="number" ng-model="model.auto_imm_level" required="true"/>
     </div>
 
     <div class="span5 wrapper">
@@ -37,10 +37,10 @@
           <div class="tab-pane active" id="serverSettings">
             <table class="table table-condensed" style="width: 100%">
               <tbody>
-              <tr class="table-bordered" ng-repeat="(name, value) in config.server_settings" ng-init="default = defaults.server[name]">
+              <tr class="table-bordered" ng-repeat="(name, value) in model.server_settings" ng-init="default = defaults.server[name]">
                 <td title="{{default.desc}}" style="width: 65%;">{{name}}</td>
                 <td class="edit-cell" title="{{'Default: ' + default.default}}" style="width: 35%;"><input class="span12 edit-cell alias-row"
-                    type="number" ng-model="config.server_settings[name]" min="{{default.min}}" lm-step="default.step"/>
+                    type="number" ng-model="model.server_settings[name]" min="{{default.min}}" lm-step="default.step"/>
                 </td>
               </tr>
               </tbody>
@@ -49,10 +49,10 @@
           <div class="tab-pane" id="gameSettings">
             <table class="table table-condensed" style="width: 100%">
               <tbody>
-              <tr class="table-bordered" ng-repeat="(name, value) in config.game_settings" ng-init="default = defaults.game[name]">
+              <tr class="table-bordered" ng-repeat="(name, value) in model.game_settings" ng-init="default = defaults.game[name]">
                 <td title="{{default.desc}}" style="width: 65%;">{{name}}</td>
                 <td class="edit-cell" title="{{'Default: ' + default.default}}" style="width: 35%;"><input class="span12 edit-cell alias-row"
-                    type="number" ng-model="config.game_settings[name]" min="{{default.min}}" lm-step="default.step"/>
+                    type="number" ng-model="model.game_settings[name]" min="{{default.min}}" lm-step="default.step"/>
                 </td>
               </tr>
               </tbody>

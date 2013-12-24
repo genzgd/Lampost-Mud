@@ -33,7 +33,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       });
       angular.forEach(room.mobile_resets, function (reset) {
         editPromises.push(addRef('mobile', reset.mobile_id));
-        angular.forEach(reset.article_loads, function(article_load) {
+        angular.forEach(reset.article_loads, function (article_load) {
           editPromises.push(addRef('article', article_load.article_id));
         })
       });
@@ -185,18 +185,6 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
     $scope.oneWay = false;
     $scope.destAreaId = roomAreaId;
 
-    $q.all([
-      lmEditor.cache('constants').then(function (constants) {
-        $scope.directions = constants.directions;
-        $scope.direction = $scope.directions[0];
-      }),
-      lmEditor.cache('area').then(function (areas) {
-        $scope.areaList = areas;
-        area = lmEditor.cacheValue('area', roomAreaId);
-        newRoom.title = area.name + " Room " + area.next_room_id;
-        newRoom.destId = area.next_room_id;
-        prevDestId = newRoom.destId;
-      })]).then($scope.changeArea);
 
     $scope.useNew = true;
 
@@ -254,9 +242,22 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
       }, function (error) {
         $scope.lastError = error.text;
       })
-    }
-  }
-]);
+    };
+
+    $q.all([
+      lmEditor.cache('constants').then(function (constants) {
+        $scope.directions = constants.directions;
+        $scope.direction = $scope.directions[0];
+      }),
+      lmEditor.cache('area').then(function (areas) {
+        $scope.areaList = areas;
+        area = lmEditor.cacheValue('area', roomAreaId);
+        newRoom.title = area.name + " Room " + area.next_room_id;
+        newRoom.destId = area.next_room_id;
+        prevDestId = newRoom.destId;
+      })]).then($scope.changeArea);
+
+  }]);
 
 angular.module('lampost_editor').controller('NewResetCtrl', ['$scope', 'lmEditor', 'room', 'resetType',
   function ($scope, lmEditor, room, resetType) {
@@ -307,7 +308,7 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lmEdi
     $scope.article_loads = angular.copy(reset.article_loads);
     $scope.areaId = areaId;
 
-    lmEditor.cache("constants").then(function(constants) {
+    lmEditor.cache("constants").then(function (constants) {
       $scope.article_load_types = constants.article_load_types;
       lmEditor.cache('area').then(function (areas) {
         $scope.areaList = areas;

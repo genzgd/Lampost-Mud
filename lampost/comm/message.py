@@ -45,9 +45,9 @@ class MessageService(object):
             return False
         return set_key_exists(_block_key(player_id), source_id)
 
-    def _remove_player_messages(self, player):
-        delete_key(_message_key(player.dbo_id))
-        delete_key(_block_key(player.dbo_id))
+    def _remove_player_messages(self, player_id):
+        delete_key(_message_key(player_id))
+        delete_key(_block_key(player_id))
 
     def _player_connect(self, player, connect):
         connect['messages'] = self.get_messages(player.dbo_id)

@@ -29,7 +29,6 @@ class User(RootDBO):
 
 @provides('user_manager')
 class UserManager(object):
-
     def _post_init(self):
         register("user_connect", self._user_connect)
         register("player_connect", self._player_connect)
@@ -64,11 +63,12 @@ class UserManager(object):
         user.player_ids.remove(player_id)
         save_object(user)
 
-    def attach_player(self, user, player):
+    def attach_player(self, user, player_dto):
+        player = create_object(Player, player_dto)
         user.player_ids.append(player.dbo_id)
+        set_index('ix:player:user', player.dbo_id, user.dbo_id)
         dispatch('player_create', player)
         player.user_id = user.dbo_id
-        set_index('ix:player:user', player.dbo_id, user.dbo_id)
         save_object(player)
         save_object(user)
         return user
@@ -79,15 +79,10 @@ class UserManager(object):
         return player
 
     def create_user(self, user_name, password, email=""):
-        user_id = db_counter('user_id')
-        user = User(user_id)
-        user.user_name = unicode(user_name) if user_name else player.name
-        user.password = make_hash(unicode(password))
-        user.email = email
-        user.player_ids = []
-        user.notifies = ['friendSound', 'friendDesktop']
-        save_object(user)
-        return user
+        user = {'dbo_id': db_counter('user_id'), 'user_name': user_name,
+                'email': email, 'password': make_hash(unicode(password)),
+                'notifies': ['friendSound', 'friendDesktop']}
+        return create_object(User, user)
 
     def check_name(self, account_name, old_user):
         account_name = unicode(account_name).lower()
@@ -148,10 +143,8 @@ class UserManager(object):
         return unicode(player_name.lower())
 
     def _player_delete(self, player_id):
-        player = load_object(Player, player_id)
-        delete_object(player)
         delete_index('ix:player:user', player_id)
-        dispatch('player_deleted', player)
+        dispatch('player_deleted', player_id)
 
 
 def unload_player(player):

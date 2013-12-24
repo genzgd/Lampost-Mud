@@ -1,7 +1,7 @@
 angular.module('lampost_editor', ['lampost_svc', 'lampost_dir']);
 
-angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemote',
-  function ($timeout, lmUtil, lmEditor, lmRemote) {
+angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemote', 'lmBus',
+  function ($timeout, lmUtil, lmEditor, lmRemote, lmBus) {
 
     var playerId = name.split('_')[1];
     var sessionId = localStorage.getItem('lm_session_' + playerId);
@@ -12,6 +12,15 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
 
     lmRemote.childSession(sessionId);
     window.opener.jQuery('body').trigger('editor_opened');
+
+    window.onbeforeunload = function () {
+      var handlers = [];
+      lmBus.dispatch('editorClosing', handlers);
+      if (handlers.length) {
+        return "You have changes to " + handlers.length + " item(s).  Changes will be lost if you leave this page.";
+      }
+      return undefined;
+    };
 
     window.onunload = function () {
       window.opener.jQuery('body').trigger('editor_closing');
@@ -132,6 +141,10 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return display;
     }
 
+    this.invalidate = function(key) {
+      deleteEntry(key)
+    };
+
     this.cacheValue = function (key, dbo_id) {
       return remoteCache[key].map[dbo_id];
     };
@@ -219,7 +232,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
 
       $scope.$watch('model', function (model) {
         if (model) {
-          $scope.isDirty = !angular.equals(originalModel, model);
+          $scope.isDirty = originalModel && !angular.equals(originalModel, model);
         } else {
           $scope.isDirty = false;
         }
@@ -240,6 +253,19 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         }
       }, $scope);
 
+      lmBus.register('editorChange', function (previousEditor) {
+        if (previousEditor === $scope.editor && $scope.isDirty) {
+          unsavedChanges();
+        }
+      }, $scope);
+
+      lmBus.register('editorClosing', function (handlers) {
+        if ($scope.isDirty) {
+          handlers.push(this);
+          unsavedChanges();
+        }
+      }, $scope);
+
       lmBus.register('modelCreate', function (modelList, model, outside) {
         if (modelList !== $scope.modelList) {
           return;
@@ -255,6 +281,14 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           $scope.outsideDelete = outside;
         }
       }, $scope);
+
+      function unsavedChanges() {
+        lmDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
+          ": " + $scope.model.dbo_id + ".  Save changes now?", function () {
+          $scope.nextEdit = null;
+          $scope.updateModel();
+        })
+      }
 
       function intercept(interceptor, args) {
         if (controller[interceptor]) {
@@ -440,8 +474,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
 ]);
 
 
-angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmRemote',
-  function ($scope, lmEditor, lmRemote) {
+angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmRemote', 'lmBus',
+  function ($scope, lmEditor, lmRemote, lmBus) {
 
     var playerId = name.split('_')[1];
     var editorList = jQuery.parseJSON(localStorage.getItem('lm_editors_' + playerId));
@@ -472,14 +506,18 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       return model.dbo_id.split(':')[1];
     };
 
-    $scope.cap = function(name) {
+    $scope.cap = function (name) {
       return name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
     };
 
     $scope.click = function (editor) {
+      if (editor === $scope.currentEditor) {
+        return;
+      }
+      lmBus.dispatch('editorChange', $scope.currentEditor);
       editor.activated = true;
-      $scope.lastEditor = $scope.currentEditor;
       $scope.currentEditor = editor;
+
     };
 
     $scope.editors = [];
@@ -510,68 +548,21 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       $scope.click($scope.editors[0]);
     });
 
-
   }]);
 
 
-angular.module('lampost_editor').controller('MudConfigCtrl', ['$rootScope', '$scope', 'lmBus', 'lmRemote', 'lmEditor', '$timeout',
-  function ($rootScope, $scope, lmBus, lmRemote, lmEditor, $timeout) {
+angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope', '$scope', 'lmRemote',
+  'lmEditor', '$timeout', function ($q, $rootScope, $scope, lmRemote, lmEditor, $timeout) {
 
-    var configCopy;
-    $scope.ready = false;
-    $scope.areaList = [];
-    angular.forEach(lmEditor.areaList, function (value) {
-      $scope.areaList.push(value.id);
-      $scope.areaList.sort();
-    });
-    if (lmEditor.currentEditor === $scope.editor) {
-      loadConfig();
-    }
+    var roomKey;
+    var startConfig = null;
+    lmEditor.prepare(this, $scope);
 
-    $scope.changeArea = function () {
-      lmEditor.loadRooms($scope.startAreaId).then(function (rooms) {
-        $scope.rooms = [];
-        $scope.startRoom = null;
-        angular.forEach(rooms, function (room) {
-          var roomStub = {id: room.dbo_id, label: room.dbo_id.split(':')[1] + ': ' + room.title};
-          $scope.rooms.push(roomStub);
-          if (roomStub.dbo_id == $scope.config.start_room) {
-            $scope.startRoom = roomStub;
-          }
-        });
-        if (!$scope.startRoom) {
-          $scope.startRoom = $scope.rooms[0];
-        }
-        $scope.ready = true;
-      });
-    };
-    lmBus.register("editor_activated", function (editor) {
-      if (editor == $scope.editor) {
-        loadConfig();
-      }
-    });
-
-    $scope.updateConfig = function () {
-      $scope.config.start_room = $scope.startRoom.id;
-      lmRemote.request($scope.editor.url + "/update", {config: $scope.config}).then(function (config) {
-        prepare(config);
-        lampost_config.title = config.title;
-        lampost_config.description = config.description;
-        $timeout(function () {
-          $rootScope.siteTitle = config.title;
-        });
-        $('title').text(lampost_config.title);
-      });
-    };
-
-    $scope.revertConfig = function () {
-      $scope.config = configCopy;
-      $scope.startAreaId = $scope.config.start_room.id.split(':')[0];
-      $scope.changeArea();
-    };
-
-    function loadConfig() {
-      lmRemote.request($scope.editor.url + "/get_defaults").then(function (defaults) {
+    $q.all([
+      lmEditor.cache('area').then(function(areas) {
+        $scope.areaList = areas;
+        }),
+      lmRemote.request('editor/config/get_defaults').then(function (defaults) {
         angular.forEach(defaults, function (subDefaults) {
           angular.forEach(subDefaults, function (value) {
             value.type = value.type || 'number';
@@ -584,15 +575,33 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$rootScope', '$sc
           });
         });
         $scope.defaults = defaults;
-        lmRemote.request($scope.editor.url + "/get").then(prepare);
+      }),
+      lmRemote.request('editor/config/get').then(function(config) {
+        startConfig = config;
+        $scope.startAreaId = config.start_room.split(':')[0];
       })
-    }
+      ]).then(function() {
+        $scope.changeArea().then(function() {
+           $scope.editor.newEdit(startConfig);
+        });
+      });
 
-    function prepare(config) {
-      configCopy = angular.copy(config);
-      $scope.config = config;
-      $scope.startAreaId = config.start_room.split(':')[0];
-      $scope.changeArea();
+    $scope.changeArea = function () {
+      lmEditor.deref(roomKey);
+      roomKey = 'room:' + $scope.startAreaId;
+      return lmEditor.cache(roomKey).then(function (rooms) {
+         $scope.rooms = rooms;
+      });
+    };
+
+    this.postUpdate = function(config) {
+      $timeout(function () {
+          $rootScope.siteTitle = config.title;
+        });
+
+      lampost_config.title = config.title;
+      lampost_config.description = config.description;
+      $('title').text(lampost_config.title);
     }
 
   }]);

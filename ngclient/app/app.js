@@ -17,13 +17,6 @@ angular.module('lampost').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'l
 
     window.name = "lampost_main_" + new Date().getTime();
 
-    window.onbeforeunload = function () {
-      if (lmData.editorWindow && !lmData.editorWindow.closed) {
-        return "Closing or reloading this window will close the editor.  Continue?";
-      }
-      return undefined;
-    };
-
     window.onunload = function () {
       window.windowClosing = true;
       if (lmData.editorWindow && !lmData.editorWindow.closed) {

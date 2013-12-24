@@ -4,7 +4,7 @@ from lampost.client.email import EmailSender
 from lampost.comm.channel import ChannelService
 from lampost.comm.message import MessageService
 from lampost.context.classes import ClassRegistry
-from lampost.context.resource import register, provides, context_post_init
+from lampost.context.resource import provides, context_post_init
 from lampost.client.server import WebServer
 from lampost.context.scripts import select_json
 from lampost.gameops.event import Dispatcher
@@ -13,7 +13,7 @@ from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.config import ConfigManager
 from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions
-from lampost.util.lmlog import Log, logged
+from lampost.util.lmlog import Log
 from lampost.mud.mud import MudNature
 from lampost.util.tools import Tools
 
