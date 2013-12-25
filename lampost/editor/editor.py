@@ -9,7 +9,7 @@ from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.socials import SocialsResource
-from lampost.lpflavor.combat import DefenseSkill, AttackSkill
+from lampost.lpflavor.combat import DefenseSkill, AttackSkill, AttackTemplate, DefenseTemplate
 from lampost.model.area import Area
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace
@@ -28,8 +28,8 @@ class EditorResource(Resource):
         self.putChild('social', SocialsResource())
         self.putChild('display', DisplayResource())
         self.putChild('race', EditResource(PlayerRace))
-        self.putChild('attack', EditResource(AttackSkill))
-        self.putChild('defense', EditResource(DefenseSkill))
+        self.putChild('attack', EditResource(AttackTemplate))
+        self.putChild('defense', EditResource(DefenseTemplate))
 
 
 @requires('context')

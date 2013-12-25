@@ -77,6 +77,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         var cacheModel = entry.map[model.dbo_id];
         if (cacheModel) {
           angular.copy(model, cacheModel);
+          $scope.$broadcast('updateModel');
           lmBus.dispatch('modelUpdate', cacheModel, outside);
         }
       }

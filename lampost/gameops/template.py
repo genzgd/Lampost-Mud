@@ -24,29 +24,19 @@ def template_class(template_cls, instance_cls):
     template_cls.instance_base = instance_cls
 
 
-class TemplateException(Exception):
-    pass
-
-
 class Template():
-    dbo_fields = "dbo_rev", "world_max"
-    instance_count = 0
-    world_max = 1000000
+    dbo_fields = "dbo_rev"
     dbo_rev = 0
 
-    def config_instance(self, instance):
+    def config_instance(self, instance, owner):
         pass
 
-    def config_instance_cls(self):
+    def config_instance_cls(self, instance_cls):
         pass
 
-    def create_instance(self):
-        if self.instance_count >= self.world_max:
-            raise TemplateException
+    def create_instance(self, owner=None):
         instance = self.instance_cls()
-        instance.on_loaded()
-        self.instance_count += 1
-        self.config_instance(instance)
+        self.config_instance(instance, owner)
         return instance
 
     def delete_instance(self, instance):
@@ -55,8 +45,13 @@ class Template():
     def on_loaded(self):
         attrs = {name: getattr(self, name) for name in self.template_fields}
         attrs['template'] = self
+        attrs['dbo_id'] = self.dbo_id
         self.instance_cls = type.__new__(type, str(self.dbo_id), (self.instance_base,), attrs)
-        self.config_instance_cls()
+        self.config_instance_cls(self.instance_cls)
+
+
+class TemplateInstance(object):
+    __metaclass__ = RootDBOMeta
 
 
 

@@ -1,13 +1,13 @@
 import sys
 from lampost.env.room import Exit
+from lampost.gameops.template import template_class
 from lampost.lpflavor import setup
 from lampost.lpflavor.archetype import PLayerRaceLP
-from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP,\
+from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
     fill_pools, base_pools, POOL_MAP
-from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES
+from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, DefenseTemplate, AttackTemplate, DefenseSkill, AttackSkill
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
-from lampost.lpflavor.skill import SkillStatus
 from lampost.model.mobile import Mobile
 from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
@@ -30,6 +30,9 @@ def _post_init():
     cls_registry.set_class(Mobile, MobileLP)
     cls_registry.set_class(Exit, ExitLP)
     cls_registry.set_class(PlayerRace, PLayerRaceLP)
+    cls_registry.set_class('attack', AttackTemplate)
+    cls_registry.set_class('defense', DefenseTemplate)
+
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
@@ -50,6 +53,9 @@ def _post_init():
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
     register('game_settings', _game_settings)
+
+    template_class(DefenseTemplate, DefenseSkill)
+    template_class(AttackTemplate, AttackSkill)
 
 
 def _player_create(player):

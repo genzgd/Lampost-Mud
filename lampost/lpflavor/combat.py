@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
-from lampost.lpflavor.skill import BaseSkill, roll_calc
+from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate
 from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
@@ -58,12 +58,12 @@ def validate_dam_type(ability, damage_type):
 
 
 class Attack(object):
-    def from_skill(self, skill, skill_level, source):
+    def from_skill(self, skill, source):
         self.success_map = skill.success_map
         self.fail_map = skill.fail_map
         self.damage_type = skill.damage_type
-        self.accuracy = roll_calc(source, skill.accuracy_calc, skill_level)
-        self.damage = roll_calc(source, skill.damage_calc, skill_level)
+        self.accuracy = roll_calc(source, skill.accuracy_calc, skill.skill_level)
+        self.damage = roll_calc(source, skill.damage_calc, skill.skill_level)
         self.damage_pool = skill.damage_pool
         self.adj_damage = self.damage
         self.adj_accuracy = self.accuracy
@@ -77,10 +77,18 @@ class Attack(object):
                                    damage=self.damage)])
 
 
-class AttackSkill(BaseSkill, RootDBO):
-    dbo_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
-    dbo_key_type = 'attack'
+class AttackTemplate(SkillTemplate, RootDBO):
     dbo_set_key = 'attacks'
+
+    def on_created(self):
+        self.class_id = 'attack'
+        self.success_map = {'s': 'You hit {N}.', 't': '{n} hits you.', 'e': '{n} hits {N}.', 'display': COMBAT_DISPLAY}
+        self.fail_map = {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY}
+
+
+
+class AttackSkill(BaseSkill):
+    template_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
 
     msg_class = 'rec_attack'
     damage_type = 'blunt'
@@ -89,8 +97,8 @@ class AttackSkill(BaseSkill, RootDBO):
     damage_pool = 'health'
     accuracy_calc = {}
     weapon_type = 'unarmed'
-    success_map = {'s': 'You hit {N}.', 't': '{n} hits you.', 'e': '{n} hits {N}.', 'display': COMBAT_DISPLAY}
-    fail_map = {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY}
+    success_map = {}
+    fail_map = {}
 
     def prepare_action(self, source, target, **kwargs):
         if source == target:
@@ -100,23 +108,40 @@ class AttackSkill(BaseSkill, RootDBO):
             validate_weapon(self, source.second_type)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)
 
-    def invoke(self, skill_status, source, target_method, **ignored):
-        attack = Attack().from_skill(self, skill_status.skill_level, source)
+    def invoke(self, source, target_method, **ignored):
+        attack = Attack().from_skill(self, source)
         combat_log(source, attack)
         target_method(source, attack)
 
 
-class DefenseSkill(BaseSkill, RootDBO):
-    dbo_fields = 'damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type'
-    dbo_key_type = 'defense'
+class DefenseTemplate(SkillTemplate, RootDBO):
     dbo_set_key = 'defenses'
 
-    damage_type = ['physical']
-    delivery = ['melee', 'ranged']
+    def on_created(self):
+        self.class_id = 'defense'
+        self.success_map = {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'}
+        self.damage_type = ['physical']
+        self.delivery = ['melee', 'ranged']
+
+    def config_instance_cls(self, instance_cls):
+        super(SkillTemplate, self).config_instance_cls(instance_cls)
+        instance_cls.instance_cls.calc_damage_types = set()
+        for damage_type in self.damage_type:
+            try:
+                instance_cls.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
+            except KeyError:
+                instance_cls.calc_damage_types.add(damage_type)
+
+
+class DefenseSkill(BaseSkill):
+    template_fields = 'damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type'
+
+    damage_type = []
+    delivery = []
     weapon_type = 'unused'
     absorb_calc = {}
     avoid_calc = {}
-    success_map = {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'}
+    success_map = {}
 
     def invoke(self, source, **ignored):
         source.defenses.append(self)
@@ -131,20 +156,15 @@ class DefenseSkill(BaseSkill, RootDBO):
             validate_dam_type(self, attack.damage_type)
         except ActionError:
             return
-        adj_accuracy = roll_calc(owner, self.avoid_calc)
+        adj_accuracy = roll_calc(owner, self.avoid_calc, self.skill_level)
         combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' adj_accuracy: ', str(adj_accuracy)]), self)
         attack.adj_accuracy -= adj_accuracy
         if attack.adj_accuracy < 0:
             return
-        absorb = roll_calc(owner, self.absorb_calc)
+        absorb = roll_calc(owner, self.absorb_calc, self.skill_level)
         combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' absorb: ', str(absorb)]), self)
         attack.adj_damage -= absorb
 
-    def on_loaded(self):
-        super(DefenseSkill, self).on_loaded()
-        self.calc_damage_types = set()
-        for damage_type in self.damage_type:
-            try:
-                self.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
-            except KeyError:
-                self.calc_damage_types.add(damage_type)
+
+
+

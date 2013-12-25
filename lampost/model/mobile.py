@@ -1,9 +1,10 @@
 from lampost.datastore.dbo import RootDBO, DBOList
-from lampost.gameops.template import Template
+from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.article import ArticleLoad
+from lampost.model.item import config_targets
 
 
-class Mobile():
+class Mobile(TemplateInstance):
 
     @property
     def name(self):
@@ -21,7 +22,10 @@ class MobileTemplate(Template, RootDBO):
     def area_id(self):
         return self.dbo_id.split(":")[0]
 
-    def config_instance(self, instance):
+    def config_instance_cls(self, instance_cls):
+        config_targets(instance_cls)
+
+    def config_instance(self, instance, owner):
         instance.baptise()
         instance.equip(set())
 

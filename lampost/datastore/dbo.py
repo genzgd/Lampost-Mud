@@ -7,9 +7,6 @@ m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
 class RootDBOMeta(type):
 
     def __init__(cls, class_name, bases, new_attrs):
-        if "RootDBO" in [base.__name__ for base in bases]:
-            cls.dbo_base_class = cls
-
         def build_coll(coll_name):
             coll = set()
             for base in bases:
@@ -48,15 +45,13 @@ class RootDBO(object):
         if not my_list:
             self.__dict__.pop(attr_name, None)
 
-    def append_map(self, attr_name, value, map_key=None):
-        if not map_key:
-            map_key = value.dbo_id
+    def append_map(self, attr_name, value):
         try:
-            self.__dict__[attr_name][map_key] = value
+            self.__dict__[attr_name][value.dbo_id] = value
         except KeyError:
             new_map = dict()
             setattr(self, attr_name, new_map)
-            new_map[map_key] = value
+            new_map[value.dbo_id] = value
 
     def remove_map(self, attr_name, value):
         my_map = getattr(self, attr_name)
@@ -67,10 +62,10 @@ class RootDBO(object):
     def del_coll(self, attr_name):
         self.__dict__.pop(attr_name, None)
 
-    def on_loaded(self):
+    def on_created(self):
         pass
 
-    def set_parent_dbo(self):
+    def on_loaded(self):
         pass
 
     @property
@@ -95,7 +90,7 @@ class RootDBO(object):
     def dto_value(self):
         dbo_dict = to_dbo_dict(self)
         dbo_dict['dbo_id'] = self.dbo_id
-        dbo_dict['dbo_key_type'] = self.dbo_key_type
+        dbo_dict['dbo_key_type'] = getattr(self, 'class_id', self.dbo_key_type)
         return dbo_dict
 
     @property
@@ -120,8 +115,6 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
     elif dict_key:
         append("key", dict_key)
 
-    if level == 0 or dbo.__class__ != getattr(dbo, 'dbo_base_class', None):
-        append("class", cls_name(dbo.__class__))
     if getattr(dbo, 'dbo_set_key', None):
         append("set_key", dbo.dbo_set_key)
     for field in getattr(dbo, 'dbo_fields', []):
@@ -156,8 +149,6 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
 
 def to_dbo_dict(dbo, exclude_defaults=False):
     dbo_dict = {}
-    if dbo.__class__ != cls_registry(dbo.dbo_base_class):
-        dbo_dict["class_name"] = cls_name(dbo.__class__)
     for field_name in dbo.dbo_fields:
         if exclude_defaults:
             default = getattr(dbo.__class__, field_name, None)

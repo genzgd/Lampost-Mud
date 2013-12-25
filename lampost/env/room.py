@@ -63,6 +63,7 @@ class Room(RootDBO):
                 DBOList("article_resets", ArticleReset)
     dbo_rev = 0
 
+    desc = ""
     size = 10
     exits = []
     extras = []

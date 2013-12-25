@@ -19,12 +19,10 @@ class User(RootDBO):
     password_reset = False
     email = ""
 
-    def __init__(self, dbo_id):
-        super(User, self).__init__(dbo_id)
-        self.player_ids = []
-        self.toolbar = []
-        self.displays = {}
-        self.notifies = []
+    player_ids = []
+    toolbar = []
+    displays = {}
+    notifies = []
 
 
 @provides('user_manager')
@@ -60,12 +58,12 @@ class UserManager(object):
 
     def delete_player(self, user, player_id):
         self._player_delete(player_id)
-        user.player_ids.remove(player_id)
+        user.remove_list('player_ids', player_id)
         save_object(user)
 
     def attach_player(self, user, player_dto):
         player = create_object(Player, player_dto)
-        user.player_ids.append(player.dbo_id)
+        user.append_list('player_ids', player.dbo_id)
         set_index('ix:player:user', player.dbo_id, user.dbo_id)
         dispatch('player_create', player)
         player.user_id = user.dbo_id

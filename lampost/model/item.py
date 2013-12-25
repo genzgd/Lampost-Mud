@@ -4,6 +4,11 @@ from lampost.datastore.dbo import RootDBO, dbo_describe
 m_requires('dispatcher', __name__)
 
 
+def config_targets(item):
+    item.target_id = tuple(unicode(item.title).lower().split(" "))
+    item.target_aliases = [tuple(unicode(alias).split(" ")) for alias in item.aliases]
+
+
 class BaseItem(object):
     template_fields = "desc", "title", "aliases"
 
@@ -35,11 +40,7 @@ class BaseItem(object):
         pass
 
     def on_loaded(self):
-        self.config_targets()
-
-    def config_targets(self):
-        self.target_id = tuple(unicode(self.title).lower().split(" "))
-        self.target_aliases = [tuple(unicode(alias).split(" ")) for alias in self.aliases]
+        config_targets(self)
 
     def enter_env(self, new_env):
         self.env = new_env

@@ -1,13 +1,14 @@
 from item import BaseItem
 from lampost.gameops.action import ActionError
 from lampost.datastore.dbo import RootDBO
-from lampost.gameops.template import Template
+from lampost.gameops.template import Template, TemplateInstance
+from lampost.model.item import config_targets
 from lampost.util.lmutil import cls_name
 
 VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
-class Article(BaseItem):
+class Article(TemplateInstance, BaseItem):
     template_fields = "weight", "slot", "equip_slot", "art_type", "level"
 
     weight = 0
@@ -74,6 +75,9 @@ class ArticleTemplate(Template, RootDBO):
     @property
     def reset_key(self):
         return "article_resets:{}".format(self.dbo_id)
+
+    def config_instance_cls(self, instance_cls):
+        config_targets(instance_cls)
 
 
 class ArticleReset(RootDBO):

@@ -1,18 +1,22 @@
 angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'lmEditor',
   function ($scope, lmEditor) {
 
-  $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
-    calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
+    $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
+      calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
 
-  $scope.accuracyList = {effectDesc: 'Calculation of Accuracy based on attributes and roll', effectName: 'Accuracy Calculation',
-    calcWatch: 'accuracy_calc', calcDefs: $scope.constants.calc_map};
+    $scope.accuracyList = {effectDesc: 'Calculation of Accuracy based on attributes and roll', effectName: 'Accuracy Calculation',
+      calcWatch: 'accuracy_calc', calcDefs: $scope.constants.calc_map};
 
-  $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
-    effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
+    $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
+      effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
 
-  lmEditor.prepare(this, $scope).prepareList('attack');
+    lmEditor.prepare(this, $scope).prepareList('attack');
 
-}]);
+    this.preCreate = function (attack) {
+      attack.verb = attack.dbo_id;
+    };
+
+  }]);
 
 
 angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialog', '$scope', 'lmEditor',
@@ -39,8 +43,8 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialo
       }
     };
 
-    this.preCreate = function (defenseObj) {
-      defenseObj.verb = defenseObj.dbo_id;
+    this.preCreate = function (defense) {
+      defense.verb = defense.dbo_id;
     };
 
     this.preUpdate = function () {

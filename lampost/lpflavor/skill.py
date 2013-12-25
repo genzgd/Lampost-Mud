@@ -5,6 +5,7 @@ from collections import defaultdict
 from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.gameops.action import make_action, ActionError
+from lampost.gameops.template import template_class, Template, TemplateInstance
 from lampost.mud.action import imm_actions, mud_action, imm_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
@@ -20,15 +21,26 @@ def roll_calc(source, calc, skill_level=0):
     return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
-class SkillStatus(RootDBO):
+class SkillTemplate(Template, RootDBO):
+    dbo_fields = 'class_id',
+    dbo_key_type = 'skill'
+
+    def on_loaded(self):
+        super(SkillTemplate, self).on_loaded()
+        if not self.instance_cls.auto_start:
+            make_action(self.instance_cls, self.instance_cls.verb)
+
+    def config_instance(self, instance, owner):
+        if instance.auto_start:
+            instance.invoke(owner)
+        else:
+            owner.enhance_soul(instance)
+
+
+class BaseSkill(TemplateInstance):
     dbo_fields = 'skill_level', 'last_used'
-    last_used = 0
-    skill_level = 1
-
-
-class BaseSkill():
-    dbo_fields = 'dbo_rev', 'verb', 'desc', 'costs', 'pre_reqs', 'prep_time',\
-                 'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
+    template_fields = 'verb', 'desc', 'costs', 'pre_reqs', 'prep_time', \
+                      'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
     verb = None
     desc = None
     dbo_rev = 0
@@ -41,23 +53,19 @@ class BaseSkill():
     fail_map = {}
     display = 'default'
     auto_start = False
-
-    def on_loaded(self):
-        if not self.auto_start and self.verb:
-            make_action(self, self.verb)
+    skill_level = 1
+    last_used = 0
 
     def prepare_action(self, source, target, **kwargs):
-        skill_status = source.skills[self.dbo_id]
-        if self.cool_down and skill_status.last_used + self.cool_down > dispatcher.pulse_count:
+        if self.cool_down and self.last_used + self.cool_down > dispatcher.pulse_count:
             raise ActionError("You cannot {} yet.".format(self.verb))
         if self.prep_map:
             source.broadcast(display=self.display, target=target, **self.prep_map)
 
     def use(self, source, **kwargs):
         source.apply_costs(self.costs)
-        skill_status = source.skills.get(self.dbo_id)
-        self.invoke(skill_status, source, **kwargs)
-        skill_status.last_used = dispatcher.pulse_count
+        self.invoke(source, **kwargs)
+        self.last_used = dispatcher.pulse_count
 
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)
@@ -83,13 +91,13 @@ def add_skill(target, obj, **ignored):
         skill_level = int(target[1])
     except IndexError:
         skill_level = 1
-    skill_service.add_skill(skill_id, obj)
-    skill_status = SkillStatus()
-    skill_status.level = skill_level
-    try:
-        obj.append_map('skills', skill_status, skill_id)
-    except AttributeError:
-        obj.skills[skill_id] = skill_status
+
+    skill_template = load_object(SkillTemplate, skill_id)
+    if not skill_template:
+        return "Skill Id {} NOT FOUND".format(skill_id)
+    skill_instance = skill_template.create_instance(obj)
+    skill_instance.skill_level = skill_level
+    obj.append_map('skills', skill_instance)
     return "Added {} to {}".format(target, obj.name)
 
 

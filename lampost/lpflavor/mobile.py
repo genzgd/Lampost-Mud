@@ -3,41 +3,34 @@ from lampost.context.resource import m_requires
 from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
-from lampost.lpflavor.skill import SkillStatus
+from lampost.model.item import config_targets
 from lampost.model.mobile import Mobile, MobileTemplate
+from lampost.model.race import base_attr_value
 
 m_requires('log', 'dispatcher', __name__)
 
 
 class MobileLP(Mobile, EntityLP):
-    template_fields = 'archetype', 'level', 'skills'
-
+    template_fields = 'archetype', 'level'
     archetype = None
     level = 1
-    skills = {}
 
 
-def config_instance_cls(self):
-
+def config_instance_cls(self, instance_cls):
+    config_targets(instance_cls)
     if self.archetype:
         arch = load_object(Archetype, self.archetype)
         for attr_name, start_value in arch.base_attrs.iteritems():
-            setattr(self.instance_cls, attr_name, start_value)
+            setattr(instance_cls, attr_name, start_value)
         self.desc = arch.desc
     else:
         for attr_name in Archetype.attr_list:
-            setattr(self.instance_cls, attr_name, Archetype.base_attr_value * self.level)
-    self.instance_cls.soul = defaultdict(set)
-    self.instance_cls.defenses = []
-    dispatch('mobile_baptise', self.instance_cls)
+            setattr(instance_cls, attr_name, base_attr_value * self.level)
+    instance_cls.soul = defaultdict(set)
+    dispatch('mobile_baptise', instance_cls)
 
 
-def config_instance(self, mobile):
-    mobile.skills = {}
-    for skill_id, skill_specs in self.instance_cls.skills.iteritems():
-        skill_status = SkillStatus()
-        skill_status.level = skill_specs.get('level')
-        mobile.skills[skill_id] = skill_status
+def config_instance(self, mobile, owner=None):
     fill_pools(mobile)
     mobile.baptise()
     mobile.equip(set())

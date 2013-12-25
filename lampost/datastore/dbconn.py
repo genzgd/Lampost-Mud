@@ -16,15 +16,16 @@ class RedisStore():
         self._object_map = {}
 
     def create_object(self, base_class, dbo_dict):
-        dbo_class = cls_registry(dbo_dict.get('class_name', base_class))
+        dbo_class = cls_registry(dbo_dict.get('class_id', base_class))
         dbo_id = dbo_dict['dbo_id']
         if self.object_exists(dbo_class.dbo_key_type, dbo_id):
             raise ObjectExistsError(dbo_id)
         dbo = dbo_class(dbo_id)
-        self.hydrate_dbo(dbo, dbo_dict)
-        self.save_object(dbo, True)
+        self._hydrate_dbo(dbo, dbo_dict)
+        dbo.on_created()
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
+        self.save_object(dbo, True)
         dbo.on_loaded()
         return dbo
 
@@ -65,9 +66,9 @@ class RedisStore():
         if not json_str:
             return None
         dbo_dict = json_decode(json_str)
-        dbo = cls_registry(dbo_dict.get('class_name', base_class))(key)
+        dbo = cls_registry(dbo_dict.get('class_id', base_class))(key)
         self._object_map[dbo.dbo_key] = dbo
-        self.hydrate_dbo(dbo, dbo_dict)
+        self._hydrate_dbo(dbo, dbo_dict)
         dbo.on_loaded()
         return dbo
 
@@ -90,7 +91,7 @@ class RedisStore():
         self.delete_key(set_key)
 
     def update_object(self, dbo, dbo_dict):
-        self.hydrate_dbo(dbo, dbo_dict)
+        self._hydrate_dbo(dbo, dbo_dict)
         self.save_object(dbo, True)
 
     def delete_object(self, dbo):
@@ -179,36 +180,35 @@ class RedisStore():
                     raise NonUniqueError(ix_key, new_val)
                 self.set_index(ix_key, new_val, dbo.dbo_id)
 
-    def hydrate_dbo(self, dbo, dbo_dict):
+    def _hydrate_dbo(self, dbo, dbo_dict):
         for field_name in dbo.dbo_fields:
             try:
                 setattr(dbo, field_name, dbo_dict[field_name])
             except KeyError:
-                pass
+                dbo.__dict__.pop(field_name, None)
 
-        for dbo_col in dbo.dbo_lists:
-            raw_list = dbo_dict.get(dbo_col.field_name, None)
+        for dbo_list in dbo.dbo_lists:
+            raw_list = dbo_dict.get(dbo_list.field_name, None)
             if raw_list:
-                coll = dbo_col.instance(dbo)
+                coll = dbo_list.instance(dbo)
                 for child_json in raw_list:
-                    child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
-                    self.hydrate_dbo(child_dbo, child_json)
+                    child_dbo = cls_registry(child_json.get('class_id', dbo_list.base_class))()
+                    self._hydrate_dbo(child_dbo, child_json)
                     child_dbo.on_loaded()
                     coll.append(child_dbo)
             else:
-                dbo.__dict__.pop(dbo_col.field_name, None)
+                dbo.__dict__.pop(dbo_list.field_name, None)
 
-        for dbo_col in dbo.dbo_maps:
-            raw_list = dbo_dict.get(dbo_col.field_name, None)
+        for dbo_map in dbo.dbo_maps:
+            raw_list = dbo_dict.get(dbo_map.field_name, None)
             if raw_list:
-                coll = dbo_col.instance(dbo)
+                coll = dbo_map.instance(dbo)
                 for child_dbo_id, child_json in raw_list.iteritems():
-                    child_dbo = cls_registry(child_json.get('class_name', dbo_col.base_class))()
-                    self.hydrate_dbo(child_dbo, child_json)
-                    child_dbo.on_loaded()
+                    child_dbo = self.load_object(dbo_map.base_class, child_dbo_id).create_instance(dbo)
+                    self._hydrate_dbo(child_dbo, child_json)
                     coll[child_dbo_id] = child_dbo
             else:
-                dbo.__dict__.pop(dbo_col.field_name, None)
+                dbo.__dict__.pop(dbo_map.field_name, None)
 
         for dbo_ref in dbo.dbo_refs:
             try:

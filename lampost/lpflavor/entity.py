@@ -1,8 +1,9 @@
 from lampost.context.resource import m_requires
+from lampost.datastore.dbo import DBOMap
 from lampost.gameops.action import action_handler, ActionError
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
+from lampost.lpflavor.skill import SkillTemplate
 from lampost.model.entity import Entity
-from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
 
@@ -20,6 +21,7 @@ def update_settings(game_settings):
 
 
 class EntityLP(Entity):
+    dbo_maps = DBOMap('skills', SkillTemplate),
     health = 0
     stamina = 0
     mental = 0
@@ -36,10 +38,12 @@ class EntityLP(Entity):
     effects = []
     skills = {}
 
+    def __init__(self):
+        self.defenses = ()
+
     @property
     def weapon_type(self):
-        if self.weapon:
-            return self.weapon_type
+        return self.weapon and self.weapon.weapon_type
 
     def filter_actions(self, matches):
         if not self._current_action:
