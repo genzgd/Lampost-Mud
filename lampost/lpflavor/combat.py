@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
-from lampost.lpflavor.skill import base_skill, BaseSkill, roll_calc
+from lampost.lpflavor.skill import BaseSkill, roll_calc
 from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
@@ -77,11 +77,10 @@ class Attack(object):
                                    damage=self.damage)])
 
 
-@base_skill
 class AttackSkill(BaseSkill, RootDBO):
     dbo_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
-    dbo_key_type = 'skill'
-    dbo_set_key = 'skill_attack'
+    dbo_key_type = 'attack'
+    dbo_set_key = 'attacks'
 
     msg_class = 'rec_attack'
     damage_type = 'blunt'
@@ -107,11 +106,10 @@ class AttackSkill(BaseSkill, RootDBO):
         target_method(source, attack)
 
 
-@base_skill
 class DefenseSkill(BaseSkill, RootDBO):
     dbo_fields = 'damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type'
-    dbo_key_type = 'skill'
-    dbo_set_key = 'skill_defense'
+    dbo_key_type = 'defense'
+    dbo_set_key = 'defenses'
 
     damage_type = ['physical']
     delivery = ['melee', 'ranged']

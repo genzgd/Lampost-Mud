@@ -3,18 +3,11 @@ import sys
 from random import randint
 from collections import defaultdict
 from lampost.context.resource import m_requires, provides
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.gameops.action import make_action, ActionError
 from lampost.mud.action import imm_actions, mud_action, imm_action
 
-m_requires('log', 'datastore', 'dispatcher', 'skill_service', __name__)
-
-SKILL_TYPES = []
-
-
-def base_skill(cls):
-    SKILL_TYPES.append(cls)
-    return cls
+m_requires('log', 'datastore', 'dispatcher', __name__)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -25,41 +18,6 @@ def roll_calc(source, calc, skill_level=0):
     if roll == 19:
         roll = 40
     return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
-
-
-@provides('skill_service')
-class SkillService(object):
-
-    def _post_init(self):
-        register('player_baptise', self._baptise, priority=200)
-        register('mobile_baptise', self._baptise, priority=200)
-        self.skills = {}
-        for skill_type in SKILL_TYPES:
-            self.skills.update({skill.dbo_id: skill for skill in load_object_set(skill_type)})
-
-    def add_skill(self, skill_id, entity):
-        try:
-            skill = self.skills[skill_id]
-            if skill.auto_start:
-                skill.invoke(entity)
-            else:
-                entity.enhance_soul(skill)
-        except KeyError:
-            log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
-
-    def remove_skill(self, skill_id, entity):
-        try:
-            skill = self.skills[skill_id]
-            if skill.auto_start:
-                skill.revoke(entity)
-            else:
-                entity.diminish_soul(skill)
-        except KeyError:
-            log.warn("No global skill {} found for entity {}".format(skill_id, entity.name))
-
-    def _baptise(self, entity):
-        for skill_id in entity.skills.iterkeys():
-            self.add_skill(skill_id, entity)
 
 
 class SkillStatus(RootDBO):
@@ -83,7 +41,6 @@ class BaseSkill():
     fail_map = {}
     display = 'default'
     auto_start = False
-    weapon_type = None
 
     def on_loaded(self):
         if not self.auto_start and self.verb:

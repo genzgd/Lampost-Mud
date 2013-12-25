@@ -213,7 +213,7 @@ class RedisStore():
         for dbo_ref in dbo.dbo_refs:
             try:
                 ref_key = dbo_dict[dbo_ref.field_name]
-                ref_obj = self.load_by_key(dbo_ref.key_type, ref_key, dbo_ref.base_class)
+                ref_obj = self.load_object(dbo_ref.base_class, ref_key)
                 setattr(dbo, dbo_ref.field_name, ref_obj)
             except KeyError:
                 if __debug__ and dbo.dbo_key_type:

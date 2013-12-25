@@ -7,7 +7,7 @@ from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP,\
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
-from lampost.lpflavor.skill import SkillService, SkillStatus
+from lampost.lpflavor.skill import SkillStatus
 from lampost.model.mobile import Mobile
 from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
@@ -21,8 +21,6 @@ equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms'
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
 
 equip_types = ['armor', 'shield', 'weapon', 'treasure']
-
-SkillService()
 
 
 def _post_init():

@@ -154,12 +154,12 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
     return display
 
 
-def to_dbo_dict(dbo, use_defaults=False):
+def to_dbo_dict(dbo, exclude_defaults=False):
     dbo_dict = {}
     if dbo.__class__ != cls_registry(dbo.dbo_base_class):
         dbo_dict["class_name"] = cls_name(dbo.__class__)
     for field_name in dbo.dbo_fields:
-        if use_defaults:
+        if exclude_defaults:
             default = getattr(dbo.__class__, field_name, None)
             instance = getattr(dbo, field_name, None)
             if instance != default:
@@ -168,7 +168,7 @@ def to_dbo_dict(dbo, use_defaults=False):
             dbo_dict[field_name] = getattr(dbo, field_name, None)
     for coll_type in dbo.dbo_lists, dbo.dbo_maps:
         for dbo_col in coll_type:
-            dbo_col.build_dict(dbo, dbo_dict, use_defaults)
+            dbo_col.build_dict(dbo, dbo_dict, exclude_defaults)
     for dbo_ref in dbo.dbo_refs:
         try:
             dbo_dict[dbo_ref.field_name] = getattr(dbo, dbo_ref.field_name).dbo_id
@@ -178,10 +178,9 @@ def to_dbo_dict(dbo, use_defaults=False):
 
 
 class DBORef():
-    def __init__(self, field_name, base_class, key_type=None):
+    def __init__(self, field_name, base_class):
         self.field_name = field_name
         self.base_class = base_class
-        self.key_type = key_type
 
 
 class DBOList(DBORef):
@@ -192,24 +191,24 @@ class DBOList(DBORef):
         setattr(dbo, self.field_name, instance)
         return instance
 
-    def build_dict(self, dbo, dbo_dict, use_defaults):
-        if use_defaults:
+    def build_dict(self, dbo, dbo_dict, exclude_defaults):
+        if exclude_defaults:
             try:
                 dbo_list = dbo.__dict__[self.field_name]
             except KeyError:
                 return
         else:
             dbo_list = getattr(dbo, self.field_name)
-        self._add_raw_coll(dbo_dict, dbo_list, use_defaults)
+        self._add_raw_coll(dbo_dict, dbo_list, exclude_defaults)
 
-    def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
-        if not use_defaults or dbo_list:
-            dbo_dict[self.field_name] = [to_dbo_dict(child_dbo, use_defaults) for child_dbo in dbo_list]
+    def _add_raw_coll(self, dbo_dict, dbo_list, exclude_defaults):
+        if not exclude_defaults or dbo_list:
+            dbo_dict[self.field_name] = [to_dbo_dict(child_dbo, exclude_defaults) for child_dbo in dbo_list]
 
 
 class DBOMap(DBOList):
     coll_class = dict
 
-    def _add_raw_coll(self, dbo_dict, dbo_list, use_defaults):
-        if not use_defaults or dbo_list:
-            dbo_dict[self.field_name] = {dbo_id: to_dbo_dict(child_dbo, use_defaults) for dbo_id, child_dbo in dbo_list.iteritems()}
+    def _add_raw_coll(self, dbo_dict, dbo_list, exclude_defaults):
+        if not exclude_defaults or dbo_list:
+            dbo_dict[self.field_name] = {dbo_id: to_dbo_dict(child_dbo, exclude_defaults) for dbo_id, child_dbo in dbo_list.iteritems()}

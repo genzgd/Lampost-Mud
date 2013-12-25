@@ -196,4 +196,4 @@ class Room(RootDBO):
         return instance
 
 
-Exit.dbo_refs = DBORef("destination", Room, "room"),
+Exit.dbo_refs = DBORef("destination", Room),
