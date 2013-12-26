@@ -8,6 +8,7 @@ from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, DefenseTemplate, AttackTemplate, DefenseSkill, AttackSkill
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
+from lampost.lpflavor.skill import add_skill
 from lampost.model.mobile import Mobile
 from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
@@ -69,10 +70,9 @@ def _player_create(player):
 def _player_baptise(player):
     race = load_object(PlayerRace, player.race)
     if race:
-        for skill_name, skill_level in race.default_skills.iteritems():
-            if not skill_name in player.skills.iterkeys():
-                player.skills[skill_name] = SkillStatus()
-                player.skills[skill_name].skill_level = skill_level
+        for skill_id, skill_status in race.default_skills.iteritems():
+            if not skill_id in player.skills.iterkeys():
+                add_skill(skill_id, player, skill_status['skill_level'])
 
     base_pools(player)
     player.start_refresh()

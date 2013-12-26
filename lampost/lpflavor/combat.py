@@ -86,7 +86,6 @@ class AttackTemplate(SkillTemplate, RootDBO):
         self.fail_map = {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY}
 
 
-
 class AttackSkill(BaseSkill):
     template_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
 
@@ -147,7 +146,9 @@ class DefenseSkill(BaseSkill):
         source.defenses.append(self)
 
     def revoke(self, source):
-        source.defenses.remove(self)
+        super(DefenseSkill, self).revoke(source)
+        if self in source.defenses:
+            source.defenses.remove(self)
 
     def apply(self, owner, attack):
         try:

@@ -4,12 +4,28 @@ from lampost.gameops.action import ActionError, action_handler
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
 from lampost.context.resource import m_requires
-from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action,\
+from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, \
     MISSING_VERB, MISSING_TARGET
 from lampost.model.item import BaseItem
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
+
+
+def enhance_soul(owner, action):
+    for verb in action.verbs:
+        owner.soul[verb].add(action)
+
+
+def diminish_soul(owner, action):
+    for verb in action.verbs:
+        verb_set = owner.soul.get(verb)
+        if verb_set:
+            verb_set.remove(action)
+            if not verb_set:
+                del owner.soul[verb]
+        else:
+            debug("Trying to remove non-existent {} from {} soul".format(verb, owner.name))
 
 
 class Entity(BaseItem):
@@ -57,20 +73,6 @@ class Entity(BaseItem):
         self.remove_target(article)
         article.enter_env(self.env)
         self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
-
-    def enhance_soul(self, action):
-        for verb in action.verbs:
-            self.soul[verb].add(action)
-
-    def diminish_soul(self, action):
-        for verb in action.verbs:
-            verb_set = self.soul.get(verb)
-            if verb_set:
-                verb_set.remove(action)
-                if not verb_set:
-                    del self.soul[verb]
-            else:
-                debug("Trying to remove non-existent {} from {} soul".format(verb, self.name))
 
     def rec_entity_enter_env(self, entity):
         self.add_target(entity)

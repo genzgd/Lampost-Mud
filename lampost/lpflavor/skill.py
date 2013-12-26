@@ -6,9 +6,21 @@ from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.gameops.action import make_action, ActionError
 from lampost.gameops.template import template_class, Template, TemplateInstance
+from lampost.model.entity import enhance_soul
 from lampost.mud.action import imm_actions, mud_action, imm_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
+
+
+def add_skill(skill_id, target, skill_level):
+    skill_template = load_object(SkillTemplate, skill_id)
+    if not skill_template:
+        return warn("Skill {} not found.".format(skill_id))
+    skill_instance = skill_template.create_instance(target)
+    skill_instance.skill_level = skill_level
+    target.append_map('skills', skill_instance)
+    if target.dbo_id:
+        save_object(target)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -34,7 +46,7 @@ class SkillTemplate(Template, RootDBO):
         if instance.auto_start:
             instance.invoke(owner)
         else:
-            owner.enhance_soul(instance)
+            enhance_soul(owner, instance)
 
 
 class BaseSkill(TemplateInstance):
@@ -67,6 +79,10 @@ class BaseSkill(TemplateInstance):
         self.invoke(source, **kwargs)
         self.last_used = dispatcher.pulse_count
 
+    def revoke(self, source):
+        if not self.auto_start:
+            source.diminish_soul(self)
+
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)
 
@@ -85,25 +101,25 @@ def skills(source, target, **ignored):
 
 
 @imm_action("add skill", "args", prep="to", obj_msg_class="has_skills", self_object=True)
-def add_skill(target, obj, **ignored):
+def add_skill_action(target, obj, **ignored):
     skill_id = target[0]
     try:
         skill_level = int(target[1])
     except IndexError:
         skill_level = 1
-
-    skill_template = load_object(SkillTemplate, skill_id)
-    if not skill_template:
-        return "Skill Id {} NOT FOUND".format(skill_id)
-    skill_instance = skill_template.create_instance(obj)
-    skill_instance.skill_level = skill_level
-    obj.append_map('skills', skill_instance)
-    return "Added {} to {}".format(target, obj.name)
+    return add_skill(obk, skill_id, skill_level) or "Added {} to {}".format(target, obj.name)
 
 
 @imm_action("remove skill", "args", prep="from", obj_msg_class="has_skills", self_object=True)
 def remove_skill(target, obj, **ignored):
-    skill_service.remove_skill(target[0], obj)
+    try:
+        existing_skill = obj.skills[target[0]]
+    except KeyError:
+        return "{} does not have that skill".format(obj.name)
+    existing_skill.revoke(obj)
+    obj.remove_map('skills', target[0])
+    if obj.dbo_id:
+        save_object(obj)
     return "Removed {} from {}".format(target, obj.name)
 
 

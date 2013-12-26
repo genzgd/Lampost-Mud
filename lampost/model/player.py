@@ -1,7 +1,7 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
-from lampost.model.entity import Entity
+from lampost.model.entity import Entity, enhance_soul
 
 m_requires('log', 'dispatcher', __name__)
 
@@ -57,7 +57,7 @@ class Player(RootDBO):
         self.session.append(output)
 
     def register_channel(self, channel):
-        self.enhance_soul(channel)
+        enhance_soul(self, channel)
         self.active_channels.append(channel.id)
 
     def unregister_channel(self, channel):

@@ -134,6 +134,74 @@ angular.module('lampost_editor').directive('lmAttrList', [function () {
   }
 }]);
 
+
+angular.module('lampost_editor').directive('lmSkillList', [function () {
+  return {
+    restrict: 'A',
+    scope: {},
+    templateUrl: 'editor/view/skill_list.html',
+    controller: 'SkillListController',
+    link: function (scope, element, attrs) {
+      element.scope().$watch(attrs.lmSkillList, function () {
+        angular.extend(scope, element.scope().$eval(attrs.lmSkillList));
+      })
+    }
+  }
+}]);
+
+
+angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor',
+  function ($q, $scope, lmEditor) {
+
+    $scope.allSkills = [];
+    $scope.ready = false;
+
+    $scope.$on('updateModel', updateModel);
+
+    $q.all([
+        lmEditor.cache('attack').then(function (attacks) {
+          $scope.allSkills = $scope.allSkills.concat(attacks);
+        }),
+        lmEditor.cache('defense').then(function (defenses) {
+          $scope.allSkills = $scope.allSkills.concat(defenses);
+        })]).then(function () {
+        $scope.ready = true;
+        updateModel();
+      });
+
+    function updateModel() {
+      if ($scope.$parent.model) {
+        $scope.skillMap = $scope.$parent.model[$scope.attrWatch];
+        updateUnused();
+      }
+    }
+
+    function updateUnused() {
+      $scope.unusedValues = [];
+      angular.forEach($scope.allSkills, function (skill) {
+        if (!$scope.skillMap.hasOwnProperty(skill.dbo_id)) {
+          if ($scope.unusedValues.length === 0) {
+            $scope.newId = skill.dbo_id;
+          }
+          $scope.unusedValues.push(skill);
+        }
+      });
+    }
+
+    $scope.deleteRow = function (rowId) {
+      delete $scope.skillMap[rowId];
+      updateUnused();
+    };
+
+    $scope.addRow = function () {
+      $scope.skillMap[$scope.newId] =  {skill_level: 1};
+      updateUnused();
+    };
+
+
+  }]);
+
+
 angular.module('lampost_editor').directive('lmOutsideEdit', [function () {
   return {
     restrict: 'E',

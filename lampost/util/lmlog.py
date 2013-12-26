@@ -54,6 +54,7 @@ class Log(object):
             dispatch("log", log_entry)
         except NameError:
             pass
+        return log_msg
 
     def fatal(self, log_msg, log_name="root", exception=None):
         self._log('fatal', log_msg, log_name, exception)

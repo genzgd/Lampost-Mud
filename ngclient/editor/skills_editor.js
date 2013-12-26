@@ -66,12 +66,8 @@ angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lmEdit
     $scope.defaultAttrsList = {listDesc: "Starting attributes for this race", listName: "Starting Attributes",
       attrWatch: 'base_attrs', attrDefs: $scope.constants.attr_map};
 
-    this.preLoad = function () {
-      return lmEditor.cache('allSkills').then(function (allSkills) {
-        $scope.skillsList = {effectDesc: "Default skills and levels assigned to this race", effectName: "Default Skills",
-          calcWatch: "default_skills", calcDefs: allSkills};
-      })
-    };
+    $scope.defaultSkills = {effectDesc: "Default skills and levels assigned to this race", effectName: "Default Skills",
+          attrWatch: "default_skills"};
 
     lmEditor.prepare(this, $scope).prepareList('race');
 

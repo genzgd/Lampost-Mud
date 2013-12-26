@@ -1,3 +1,5 @@
+from lampost.datastore.dbo import DBOMap
+from lampost.lpflavor.skill import SkillTemplate
 from lampost.model.race import PlayerRace
 
 

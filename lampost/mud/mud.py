@@ -2,6 +2,7 @@ from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops.template import template_class
 from lampost.model.article import ArticleTemplate, Article
+from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.mud.socials import SocialRegistry
@@ -55,9 +56,9 @@ class MudNature():
         player.register_channel(self.imm_channel)
         for cmd in imm_actions:
             if player.imm_level >= perm_level(cmd.imm_level):
-                player.enhance_soul(cmd)
+                enhance_soul(player, cmd)
             else:
-                player.diminish_soul(cmd)
+                diminish_soul(player, cmd)
 
     def _game_settings(self, game_settings):
         Area.reset_time = game_settings.get('area_reset', 180)

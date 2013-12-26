@@ -47,11 +47,11 @@ angular.module('lampost_editor').service('lmEditorMobile', ['lmRemote', 'lmDialo
 
     this.delete = function (model, mainDelete) {
       lmRemote.request("editor/mobile/test_delete", model).then(function (resetList) {
-          lmDialog.showConfirm("Mobile In Use", "This mobile is used in " + resetList.length
-            + " rooms.  Delete it anyway?", function () {
-            mainDelete(model);
-          })
-        });
+        lmDialog.showConfirm("Mobile In Use", "This mobile is used in " + resetList.length
+          + " rooms.  Delete it anyway?", function () {
+          mainDelete(model);
+        })
+      });
     };
 
   }]);
@@ -100,6 +100,9 @@ angular.module('lampost_editor').controller('MobileEditorCtrl', ['$q', '$scope',
 
     var helpers = lmEditor.prepare(this, $scope);
 
+    $scope.defaultSkills = {effectDesc: "Default skills and levels assigned to this mobile", effectName: "Default Skills",
+      attrWatch: "default_skills"};
+
     this.postDelete = function () {
       $scope.startEditor('area');
     };
@@ -118,11 +121,11 @@ angular.module('lampost_editor').service('lmEditorArticle', ['lmRemote', 'lmDial
 
     this.delete = function (model, mainDelete) {
       lmRemote.request("editor/article/test_delete", model).then(function (resetList) {
-          lmDialog.showConfirm("Mobile In Use", "This article is used in " + resetList.length
-            + " rooms.  Delete it anyway?", function () {
-            mainDelete(model);
-          })
-        });
+        lmDialog.showConfirm("Mobile In Use", "This article is used in " + resetList.length
+          + " rooms.  Delete it anyway?", function () {
+          mainDelete(model);
+        })
+      });
     };
 
   }]);

@@ -25,7 +25,7 @@ def template_class(template_cls, instance_cls):
 
 
 class Template():
-    dbo_fields = "dbo_rev"
+    dbo_fields = "dbo_rev",
     dbo_rev = 0
 
     def config_instance(self, instance, owner):
@@ -52,7 +52,3 @@ class Template():
 
 class TemplateInstance(object):
     __metaclass__ = RootDBOMeta
-
-
-
-

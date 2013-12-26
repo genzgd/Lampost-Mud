@@ -1,8 +1,6 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOMap
 from lampost.gameops.action import action_handler, ActionError
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
-from lampost.lpflavor.skill import SkillTemplate
 from lampost.model.entity import Entity
 
 m_requires('log', 'tools', 'dispatcher', __name__)
@@ -21,7 +19,6 @@ def update_settings(game_settings):
 
 
 class EntityLP(Entity):
-    dbo_maps = DBOMap('skills', SkillTemplate),
     health = 0
     stamina = 0
     mental = 0

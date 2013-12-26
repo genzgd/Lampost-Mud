@@ -204,9 +204,13 @@ class RedisStore():
             if raw_list:
                 coll = dbo_map.instance(dbo)
                 for child_dbo_id, child_json in raw_list.iteritems():
-                    child_dbo = self.load_object(dbo_map.base_class, child_dbo_id).create_instance(dbo)
-                    self._hydrate_dbo(child_dbo, child_json)
-                    coll[child_dbo_id] = child_dbo
+                    child_template = self.load_object(dbo_map.base_class, child_dbo_id)
+                    if child_template:
+                        child_dbo = child_template.create_instance(dbo)
+                        self._hydrate_dbo(child_dbo, child_json)
+                        coll[child_dbo_id] = child_dbo
+                    else:
+                        warn("Missing template for {}".format(child_dbo_id))
             else:
                 dbo.__dict__.pop(dbo_map.field_name, None)
 

@@ -53,9 +53,9 @@ class RootDBO(object):
             setattr(self, attr_name, new_map)
             new_map[value.dbo_id] = value
 
-    def remove_map(self, attr_name, value):
+    def remove_map(self, attr_name, dbo_id):
         my_map = getattr(self, attr_name)
-        my_map.pop(value.dbo_id, None)
+        my_map.pop(dbo_id, None)
         if not my_map:
             self.__dict__.pop(attr_name, None)
 
@@ -110,7 +110,7 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
     def append(key, value):
         display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
 
-    if getattr(dbo, 'dbo_id', None):
+    if getattr(dbo, 'dbo_key', None):
         append("key", dbo.dbo_key)
     elif dict_key:
         append("key", dict_key)
@@ -200,6 +200,6 @@ class DBOList(DBORef):
 class DBOMap(DBOList):
     coll_class = dict
 
-    def _add_raw_coll(self, dbo_dict, dbo_list, exclude_defaults):
-        if not exclude_defaults or dbo_list:
-            dbo_dict[self.field_name] = {dbo_id: to_dbo_dict(child_dbo, exclude_defaults) for dbo_id, child_dbo in dbo_list.iteritems()}
+    def _add_raw_coll(self, dbo_dict, dbo_map, exclude_defaults):
+        if dbo_map or not exclude_defaults:
+            dbo_dict[self.field_name] = {dbo_id: to_dbo_dict(child_dbo, exclude_defaults) for dbo_id, child_dbo in dbo_map.iteritems()}
