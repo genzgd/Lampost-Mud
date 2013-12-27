@@ -1,13 +1,13 @@
 import math
-import time
-from lampost.gameops.action import ActionError, action_handler
+
+from collections import defaultdict
+from lampost.gameops.action import action_handler
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
 from lampost.context.resource import m_requires
 from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, \
     MISSING_VERB, MISSING_TARGET
 from lampost.model.item import BaseItem
-from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
 
@@ -41,15 +41,17 @@ class Entity(BaseItem):
     entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
     exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
 
-    def baptise(self):
+    def __init__(self):
+        self.soul = defaultdict(set)
         self.followers = set()
         self.registrations = set()
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
         self.target_map[self] = {}
-        self.add_target_keys([self.target_id, ('self',)], self, self.target_map[self])
 
+    def baptise(self):
+        self.add_target_keys([self.target_id, ('self',)], self, self.target_map[self])
 
     def equip(self, inven):
         self.inven = inven

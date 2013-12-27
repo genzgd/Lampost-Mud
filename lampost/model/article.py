@@ -9,16 +9,14 @@ VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
 class Article(TemplateInstance, BaseItem):
-    template_fields = "weight", "slot", "equip_slot", "art_type", "level"
+    template_fields = "weight", "equip_slot", "art_type", "level", "weapon_type"
 
     weight = 0
     slot = "none"
     art_type = "treasure"
     level = 1
-
-    rec_wear = True
-    equip_slot = None
-
+    equip_slot = "none"
+    current_slot = None
 
     @property
     def name(self):
@@ -43,6 +41,12 @@ class Article(TemplateInstance, BaseItem):
         if check_result:
             return check_result
         return source.add_inven(self)
+
+    def rec_wear(self):
+        pass
+
+    def rec_remove(self):
+        pass
 
     @property
     def rec_drop(self):

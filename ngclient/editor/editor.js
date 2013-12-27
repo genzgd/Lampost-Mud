@@ -77,7 +77,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         var cacheModel = entry.map[model.dbo_id];
         if (cacheModel) {
           angular.copy(model, cacheModel);
-          $scope.$broadcast('updateModel');
           lmBus.dispatch('modelUpdate', cacheModel, outside);
         }
       }
@@ -309,6 +308,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           }
           $scope.outsideEdit = false;
           $scope.model = null;
+          $scope.$broadcast('updateModel');
           intercept('postDelete', delModel);
           return true;
         }
@@ -380,6 +380,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
             function (updatedObject) {
               $scope.isDirty = false;
               updateModel(updatedObject);
+              $scope.$broadcast('updateModel');
               intercept('postUpdate', $scope.model).then(nextEdit);
             }, dataError)
         })
@@ -390,6 +391,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           lmRemote.request(baseUrl + 'create', $scope.newModel).then(
             function (createdObject) {
               insertModel(createdObject);
+              $scope.$broadcast('updateModel');
               lmDialog.close(newDialogId);
               intercept('postCreate', createdObject).then(function () {
                 $scope.editModel(createdObject);

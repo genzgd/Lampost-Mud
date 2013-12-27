@@ -26,7 +26,6 @@ class Player(RootDBO):
         self.name = self.dbo_id.capitalize()
         self.last_tell = None
         self.equip_slots = {}
-        self.soul = defaultdict(set)
         self.active_channels = []
 
     @property

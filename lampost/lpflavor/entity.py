@@ -36,11 +36,14 @@ class EntityLP(Entity):
     skills = {}
 
     def __init__(self):
-        self.defenses = ()
+        super(EntityLP, self).__init__()
+        self.defenses = set()
+        self.equip_slots = {}
 
     @property
     def weapon_type(self):
-        return self.weapon and self.weapon.weapon_type
+        if self.weapon:
+            return self.weapon.weapon_type
 
     def filter_actions(self, matches):
         if not self._current_action:
@@ -116,6 +119,74 @@ class EntityLP(Entity):
         for pool, cost in costs.iteritems():
             setattr(self, pool, getattr(self, pool) - cost)
         self.check_status()
+
+    def equip_article(self, article):
+        if not article in self.inven:
+            raise ActionError('You must pick up the item before you can equip it.')
+        if article.current_slot:
+            raise ActionError('This article is already equipped.')
+        if article.equip_slot == 'none':
+            raise ActionError('This is not something you can equip.')
+        if article.art_type == 'weapon' and self.weapon:
+            self.remove_article(self.weapon)
+        equip_slot = self._equip_slot(article.slot)
+        if self._slot_filled(equip_slot):
+            self._remove_by_slot(equip_slot)
+            if self._slot_filled(equip_slot):
+                raise ActionError('You have no place to put that.')
+        self._do_equip(article, equip_slot)
+        if article.art_type == 'weapon':
+            self.weapon = article
+
+    def remove_article(self, article):
+        if not article.equip_slot:
+            raise ActionError("{0} is not equipped.".format(article.name))
+        if not article in self.inven:
+            raise ActionError("{0} is not yours.".format(article.name))
+        if article.equip_slot == 'two_hand':
+            del equip_slots['r_hand']
+            del equip_slots['l_hand']
+        else:
+            del equip_slots[article.equip_slot]
+        article.current_slot = None
+        if article.art_type == 'weapon':
+            self.weapon = None
+        self.broadcast(s="You remove {N}", e="{n} removes {N}", target=article)
+
+    def _do_equip(self, article, equip_slot):
+        self.equip_slots[equip_slot] = article
+        article.current_slot = equip_slot
+        self.broadcast(s="You wear {N}", e="{n} wears {N}",  target=article)
+
+    def _equip_slot(self, equip_slot):
+        if equip_slot == 'finger':
+            if self._slot_filled('r_finger'):
+                return 'r_finger'
+            return 'l_finger'
+        elif equip_slot == 'wrist':
+            if self._slot_filled('r_wrist'):
+                return 'r_wrist'
+            return 'l_wrist'
+        elif equip_slot == 'one-hand':
+            if self._equip_slot('r_hand'):
+                return 'r_hand'
+            return 'l_hand'
+        return equip_slot
+
+    def _slot_filled(self, equip_slot):
+        if equip_slot == 'two-hand':
+            if self.equip_slots.get('r_hand') or self.equip_slots.get('l_hand'):
+                return None
+        return self.equip_slots.get(equip_slot)
+
+    def _remove_by_slot(self, equip_slot):
+        if equip_slot == 'two_hand':
+            self._remove_by_slot('r_hand')
+            self._remove_by_slot('l_hand')
+            return
+        article = self.equip_slots.get(equip_slot)
+        if article:
+            self.remove_article(article)
 
     def check_status(self):
         if self.health <= 0:

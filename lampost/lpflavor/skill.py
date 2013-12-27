@@ -15,7 +15,8 @@ m_requires('log', 'datastore', 'dispatcher', __name__)
 def add_skill(skill_id, target, skill_level):
     skill_template = load_object(SkillTemplate, skill_id)
     if not skill_template:
-        return warn("Skill {} not found.".format(skill_id))
+        warn("Skill {} not found.".format(skill_id))
+        raise ActionError("Skill not found")
     skill_instance = skill_template.create_instance(target)
     skill_instance.skill_level = skill_level
     target.append_map('skills', skill_instance)
@@ -107,7 +108,8 @@ def add_skill_action(target, obj, **ignored):
         skill_level = int(target[1])
     except IndexError:
         skill_level = 1
-    return add_skill(obk, skill_id, skill_level) or "Added {} to {}".format(target, obj.name)
+    add_skill(skill_id, obj, skill_level)
+    return "Added {} to {}".format(target, obj.name)
 
 
 @imm_action("remove skill", "args", prep="from", obj_msg_class="has_skills", self_object=True)

@@ -3,12 +3,14 @@ from lampost.env.room import Exit
 from lampost.gameops.template import template_class
 from lampost.lpflavor import setup
 from lampost.lpflavor.archetype import PLayerRaceLP
+from lampost.lpflavor.article import ArticleLP
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
     fill_pools, base_pools, POOL_MAP
-from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, DefenseTemplate, AttackTemplate, DefenseSkill, AttackSkill
+from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, DefenseTemplate, AttackTemplate, DefenseSkill, AttackSkill, WEAPON_TYPES
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP
 from lampost.lpflavor.skill import add_skill
+from lampost.model.article import Article
 from lampost.model.mobile import Mobile
 from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
@@ -29,6 +31,7 @@ def _post_init():
 
     cls_registry.set_class(Player, PlayerLP)
     cls_registry.set_class(Mobile, MobileLP)
+    cls_registry.set_class(Article, ArticleLP)
     cls_registry.set_class(Exit, ExitLP)
     cls_registry.set_class(PlayerRace, PLayerRaceLP)
     cls_registry.set_class('attack', AttackTemplate)
@@ -42,6 +45,7 @@ def _post_init():
     context.set('defense_damage_types', DEFENSE_DAMAGE_TYPES)
     context.set('damage_delivery', DAMAGE_DELIVERY)
     context.set('resource_pools', POOL_MAP)
+    context.set('weapon_types', WEAPON_TYPES)
     context.set('weapon_options', WEAPON_OPTIONS)
 
     calc_map = {key: value['name'] for key, value in ATTR_MAP.iteritems()}

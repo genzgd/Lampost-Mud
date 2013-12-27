@@ -1,12 +1,15 @@
 from lampost.mud.action import mud_action
 
+
 @mud_action(('get', 'pick up'), 'get')
 def get(source, target_method, **ignored):
     return target_method(source)
 
+
 @mud_action(('drop', 'put down'), 'drop')
 def drop(source, target_method, **ignored):
     return target_method(source)
+
 
 @mud_action(('i', 'inven'))
 def inven(source, **ignored):
@@ -15,6 +18,18 @@ def inven(source, **ignored):
             source.display_line(article.short_desc(source))
     else:
         source.display_line("You aren't carrying anything.")
+
+
+@mud_action(('wear', 'equip', 'wield'), 'wear')
+def wear(source, target, target_method, **ignored):
+    target_method()
+    source.equip_article(target)
+
+
+@mud_action(('remove', 'unequip', 'unwield'), 'remove')
+def remove(source, target, target_method, **ignored):
+    target_method()
+    source.remove_article(target)
 
 
 class InvenContainer:

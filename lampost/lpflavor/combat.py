@@ -7,9 +7,15 @@ from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
 
-WEAPON_TYPES = ['sword', 'axe', 'mace', 'bow', 'spear', 'polearm']
+WEAPON_TYPES = {'sword': {'damage': 'slash', 'delivery': 'melee'},
+                'axe': {'damage': 'slash', 'delivery': 'melee'},
+                'mace': {'damage': 'blunt', 'delivery': 'melee'},
+                'bow': {'damage': 'pierce', 'delivery': 'ranged'},
+                'sling': {'damage': 'blunt', 'delivery': 'ranged'},
+                'spear': {'damage': 'pierce', 'delivery': 'ranged'},
+                'polearm': {'damage': 'pierce', 'delivery': 'melee'}}
 
-WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + WEAPON_TYPES
+WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + WEAPON_TYPES.keys()
 
 DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
                 'pierce': {'desc': 'Piercing damage (spears, arrows)'},
@@ -124,7 +130,7 @@ class DefenseTemplate(SkillTemplate, RootDBO):
 
     def config_instance_cls(self, instance_cls):
         super(SkillTemplate, self).config_instance_cls(instance_cls)
-        instance_cls.instance_cls.calc_damage_types = set()
+        instance_cls.calc_damage_types = set()
         for damage_type in self.damage_type:
             try:
                 instance_cls.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
@@ -143,7 +149,7 @@ class DefenseSkill(BaseSkill):
     success_map = {}
 
     def invoke(self, source, **ignored):
-        source.defenses.append(self)
+        source.defenses.add(self)
 
     def revoke(self, source):
         super(DefenseSkill, self).revoke(source)

@@ -175,6 +175,8 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
 
     var helpers = lmEditor.prepare(this, $scope);
 
+    this.prel
+
     this.postDelete = function () {
       $scope.startEditor('area');
     };

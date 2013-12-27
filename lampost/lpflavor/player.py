@@ -14,7 +14,7 @@ class PlayerLP(Player, EntityLP):
 
     def __init__(self, dbo_id):
         super(PlayerLP, self).__init__(dbo_id)
-        self.defenses = ()
+        EntityLP.__init__(self)
 
     def status_change(self):
         if self.session:

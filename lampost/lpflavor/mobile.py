@@ -29,20 +29,16 @@ def config_instance_cls(self, instance_cls):
         for attr_name in Archetype.attr_list:
             setattr(instance_cls, attr_name, base_attr_value * self.level)
 
-    instance_cls.soul = defaultdict(set)
+def config_instance(self, mobile, owner):
+    mobile.baptise()
     for skill_id, skill_status in self.default_skills.iteritems():
         skill_template = load_object(SkillTemplate, skill_id)
         if not skill_template:
             warn("Skill {} not found.".format(skill_id))
             continue
-        skill_instance = skill_template.create_instance(instance_cls)
+        skill_instance = skill_template.create_instance(mobile)
         skill_instance.skill_level = skill_status['skill_level']
-    dispatch('mobile_baptise', instance_cls)
-
-
-def config_instance(self, mobile, owner=None):
     fill_pools(mobile)
-    mobile.baptise()
     mobile.equip(set())
 
 MobileTemplate.config_instance_cls = config_instance_cls
