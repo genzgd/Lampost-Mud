@@ -12,7 +12,7 @@ def _post_init():
 
 def update_settings(game_settings):
     EntityLP._refresh_interval = game_settings.get('refresh_interval', 12)
-    EntityLP._refresher['stamina'] = game_settings.get('stamina_refresh',8)
+    EntityLP._refresher['stamina'] = game_settings.get('stamina_refresh', 8)
     EntityLP._refresher['health'] = game_settings.get('health_refresh', 1)
     EntityLP._refresher['mental'] = game_settings.get('mental_refresh', 1)
     EntityLP._refresher['action'] = game_settings.get('action_refresh', 40)
@@ -110,6 +110,10 @@ class EntityLP(Entity):
         source.broadcast(target=self, **attack.success_map)
         current_pool = getattr(self, attack.damage_pool)
         setattr(self, attack.damage_pool, current_pool - attack.adj_damage)
+        combat_log(source,
+                   lambda: ''.join(['{N} result -- ', attack.damage_pool, ' old: ',
+                                    str(current_pool), ' new: ', str(current_pool - attack.adj_damage)]),
+                   self)
         self.check_status()
 
     def apply_costs(self, costs):
@@ -129,7 +133,7 @@ class EntityLP(Entity):
             raise ActionError('This is not something you can equip.')
         if article.art_type == 'weapon' and self.weapon:
             self.remove_article(self.weapon)
-        equip_slot = self._equip_slot(article.slot)
+        equip_slot = self._find_slot(article.slot)
         if self._slot_filled(equip_slot):
             self._remove_by_slot(equip_slot)
             if self._slot_filled(equip_slot):
@@ -144,10 +148,10 @@ class EntityLP(Entity):
         if not article in self.inven:
             raise ActionError("{0} is not yours.".format(article.name))
         if article.equip_slot == 'two_hand':
-            del equip_slots['r_hand']
-            del equip_slots['l_hand']
+            del self.equip_slots['r_hand']
+            del self.equip_slots['l_hand']
         else:
-            del equip_slots[article.equip_slot]
+            del self.equip_slots[article.equip_slot]
         article.current_slot = None
         if article.art_type == 'weapon':
             self.weapon = None
@@ -156,9 +160,9 @@ class EntityLP(Entity):
     def _do_equip(self, article, equip_slot):
         self.equip_slots[equip_slot] = article
         article.current_slot = equip_slot
-        self.broadcast(s="You wear {N}", e="{n} wears {N}",  target=article)
+        self.broadcast(s="You wear {N}", e="{n} wears {N}", target=article)
 
-    def _equip_slot(self, equip_slot):
+    def _find_slot(self, equip_slot):
         if equip_slot == 'finger':
             if self._slot_filled('r_finger'):
                 return 'r_finger'
@@ -168,7 +172,7 @@ class EntityLP(Entity):
                 return 'r_wrist'
             return 'l_wrist'
         elif equip_slot == 'one-hand':
-            if self._equip_slot('r_hand'):
+            if self._find_slot('r_hand'):
                 return 'r_hand'
             return 'l_hand'
         return equip_slot
@@ -208,4 +212,4 @@ class EntityLP(Entity):
 
     def rec_status(self):
         return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
-            for pool_id, ignored in POOL_LIST])])
+                                                 for pool_id, ignored in POOL_LIST])])

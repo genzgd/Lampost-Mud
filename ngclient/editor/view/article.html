@@ -77,9 +77,12 @@
             </select>
             <div ng-show="model.art_type == 'weapon'">
               <label>Weapon Type</label>
-              <select ng-model="model.weapon_type" ng-options="weapon as weapon for (weapon, data) in constants.weapon_types"></select>
+              <select ng-model="model.weapon_type" ng-change="updateWeapon()" ng-options="weapon as weapon for (weapon, data) in constants.weapon_types"></select>
+              <label>Weapon Damage</label>
+              <select ng-model="model.damage_type" ng-options="damage as damage for (damage, data) in constants.damage_types"></select>
+              <label>Damage Delivery</label>
+              <select ng-model="model.delivery"  ng-options="delivery as delivery for (delivery, data) in constants.damage_delivery"></select>
             </div>
-
           </div>
         </div>
       </div>

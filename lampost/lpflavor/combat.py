@@ -17,7 +17,8 @@ WEAPON_TYPES = {'sword': {'damage': 'slash', 'delivery': 'melee'},
 
 WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + WEAPON_TYPES.keys()
 
-DAMAGE_TYPES = {'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
+DAMAGE_TYPES = {'weapon': {'desc': 'Use weapon damage type'},
+                'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
                 'pierce': {'desc': 'Piercing damage (spears, arrows)'},
                 'slash': {'desc': 'Slash damage (swords, knives)'},
                 'cold': {'desc': 'Cold'},
@@ -35,7 +36,8 @@ DAMAGE_CATEGORIES = {'any': {'desc': 'All possible damage types', 'types': [dama
 DEFENSE_DAMAGE_TYPES = DAMAGE_TYPES.copy()
 DEFENSE_DAMAGE_TYPES.update(DAMAGE_CATEGORIES)
 
-DAMAGE_DELIVERY = {'melee': {'desc': 'Delivered in hand to combat'},
+DAMAGE_DELIVERY = {'weapon': {'desc': 'Use weapon delivery type'},
+                   'melee': {'desc': 'Delivered in hand to combat'},
                    'ranged': {'desc': 'Delivered via bow, spell, or equivalent'},
                    'psych': {'desc': 'Delivered via psychic or other non-physical means'}}
 
@@ -51,6 +53,7 @@ def validate_weapon(ability, weapon_type):
         raise ActionError("That requires a weapon.")
     if ability.weapon_type != 'any' and ability.weapon_type != weapon_type:
         raise ActionError("You need a different weapon for that.")
+    return True
 
 
 def validate_delivery(ability, delivery):
@@ -67,7 +70,7 @@ class Attack(object):
     def from_skill(self, skill, source):
         self.success_map = skill.success_map
         self.fail_map = skill.fail_map
-        self.damage_type = skill.damage_type
+        self.damage_type = skill.active_damage_type
         self.accuracy = roll_calc(source, skill.accuracy_calc, skill.skill_level)
         self.damage = roll_calc(source, skill.damage_calc, skill.skill_level)
         self.damage_pool = skill.damage_pool
@@ -86,6 +89,11 @@ class Attack(object):
 class AttackTemplate(SkillTemplate, RootDBO):
     dbo_set_key = 'attacks'
 
+    def config_instance(self, instance, owner):
+        super(AttackTemplate, self).config_instance(instance, owner)
+        if instance.damage_type != 'weapon':
+            instance.active_damage_type = instance.damage_type
+
     def on_created(self):
         self.class_id = 'attack'
         self.success_map = {'s': 'You hit {N}.', 't': '{n} hits you.', 'e': '{n} hits {N}.', 'display': COMBAT_DISPLAY}
@@ -96,7 +104,7 @@ class AttackSkill(BaseSkill):
     template_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
 
     msg_class = 'rec_attack'
-    damage_type = 'blunt'
+    damage_type = 'weapon'
     delivery = 'melee'
     damage_calc = {}
     damage_pool = 'health'
@@ -108,7 +116,8 @@ class AttackSkill(BaseSkill):
     def prepare_action(self, source, target, **kwargs):
         if source == target:
             raise ActionError("You cannot harm yourself.  This is a happy place.")
-        validate_weapon(self, source.weapon_type)
+        if validate_weapon(self, source.weapon_type):
+            self.active_damage_type = source.weapon.damage_type
         if 'dual_wield' in self.pre_reqs:
             validate_weapon(self, source.second_type)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)

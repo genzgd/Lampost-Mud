@@ -20,18 +20,6 @@ def inven(source, **ignored):
         source.display_line("You aren't carrying anything.")
 
 
-@mud_action(('wear', 'equip', 'wield'), 'wear')
-def wear(source, target, target_method, **ignored):
-    target_method()
-    source.equip_article(target)
-
-
-@mud_action(('remove', 'unequip', 'unwield'), 'remove')
-def remove(source, target, target_method, **ignored):
-    target_method()
-    source.remove_article(target)
-
-
 class InvenContainer:
     def __init__(self):
         self.contents = []
