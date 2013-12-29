@@ -1,4 +1,4 @@
-angular.module('lampost', ['lampost_dir', 'lampost_svc', 'ngRoute']);
+angular.module('lampost', ['lampost_dir', 'lampost_svc', 'ngRoute', 'ngSanitize']);
 
 angular.module('lampost').config(['$routeProvider', '$locationProvider', function (
   $routeProvider, $locationProvider) {
@@ -17,12 +17,15 @@ angular.module('lampost').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'l
 
     window.name = "lampost_main_" + new Date().getTime();
 
-    window.onunload = function () {
+    window.onbeforeunload = function () {
       window.windowClosing = true;
+      lmBus.dispatch("window_closing");
+    };
+
+    window.onunload = function () {
       if (lmData.editorWindow && !lmData.editorWindow.closed) {
         lmData.editorWindow.close();
       }
-      lmBus.dispatch("window_closing");
     };
 
     jQuery('body').on('editor_closing', function () {
@@ -208,11 +211,11 @@ angular.module('lampost').controller('GameCtrl', ['$scope', 'lmApp', 'lmBus', 'l
   }]);
 
 
-angular.module('lampost').controller('LoginCtrl', ['$scope', '$sce', 'lmDialog', 'lmBus',
-  function ($scope, $sce, lmDialog, lmBus) {
+angular.module('lampost').controller('LoginCtrl', ['$scope', 'lmDialog', 'lmBus',
+  function ($scope, lmDialog, lmBus) {
 
     $scope.loginError = false;
-    $scope.siteDescription = $sce.trustAsHtml(lampost_config.description);
+    $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
       lmBus.dispatch("server_request", "login", {user_id: this.userId,
         password: this.password})

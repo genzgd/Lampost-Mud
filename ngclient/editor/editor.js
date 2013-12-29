@@ -1,4 +1,4 @@
-angular.module('lampost_editor', ['lampost_svc', 'lampost_dir']);
+angular.module('lampost_editor', ['lampost_svc', 'lampost_dir', 'ngSanitize']);
 
 angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemote', 'lmBus',
   function ($timeout, lmUtil, lmEditor, lmRemote, lmBus) {
@@ -23,6 +23,7 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
     };
 
     window.onunload = function () {
+      window.windowClosing = true;
       window.opener.jQuery('body').trigger('editor_closing');
     };
 

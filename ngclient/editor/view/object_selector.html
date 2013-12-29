@@ -17,7 +17,7 @@
       <div style="height: 93%; overflow-y: auto;">
         <table class="well table table-condensed">
           <tr style="cursor: pointer; border-top: 1px;" ng-class="selectedClass(area)" ng-click="selectArea(area)" ng-repeat="area in selectAreaList">
-            <td>{{area.dbo_id + ': ' + area.name}}</td>
+            <td>{{area.dbo_id + ': ' + area.name}}<i ng-hide="area.can_write" class="pull-right icon-gray icon-lock"></i> </td>
           </tr>
         </table>
       </div>

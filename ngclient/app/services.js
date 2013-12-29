@@ -440,8 +440,8 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
   }]);
 
 
-angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compile', '$controller', '$templateCache', '$timeout', '$http',
-  function ($rootScope, $sce, $compile, $controller, $templateCache, $timeout, $http) {
+angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
+  function ($rootScope, $compile, $controller, $templateCache, $timeout, $http) {
 
     var dialogMap = {};
     var nextId = 0;
@@ -579,7 +579,6 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$sce', '$compi
     };
 
     this.showAlert = function(options, noEscape) {
-      options.body = $sce.trustAsHtml(options.body);
       showDialog({templateUrl: 'dialogs/alert.html',
         scope: angular.extend($rootScope.$new(), options),
         controller: AlertCtrl, noEscape: noEscape});

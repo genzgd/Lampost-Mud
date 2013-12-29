@@ -28,7 +28,7 @@ def dump(dump_dict):
 def find_nth(haystack, needle, n):
     start = haystack.find(needle)
     while start >= 0 and n > 1:
-        start = haystack.find(needle, start+len(needle))
+        start = haystack.find(needle, start + len(needle))
         n -= 1
     return start
 
@@ -99,5 +99,6 @@ def patch_object(obj, prop, new_value):
     except:
         raise PatchError("Failed to set value.")
 
+
 def args_print(**kwargs):
-   return ''.join(['{0}:{1} '.format(key, str(value)) for key, value in kwargs.iteritems()])
+    return ''.join(['{0}:{1} '.format(key, str(value)) for key, value in kwargs.iteritems()])

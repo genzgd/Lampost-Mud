@@ -32,7 +32,7 @@
       </div>
       <div ng-switch-default ng-controller="ActionCtrl" class="v-full">
         <div id="displayPane" scroll-bottom="update" class="telnet span12" >
-          <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.safe"></div>
+          <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.text"></div>
         </div>
         <div class="telnet-input">
           <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus></textarea>

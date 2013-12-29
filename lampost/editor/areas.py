@@ -14,6 +14,14 @@ m_requires('datastore', 'log', 'perm', 'dispatcher', 'cls_registry', 'edit_updat
 
 class AreaResource(EditResource):
 
+    def trans_list(self, obj_list, session):
+        area_list = []
+        for obj in obj_list:
+            dto = obj.dto_value
+            dto['can_write'] = has_perm(session.player, obj)
+            area_list.append(dto)
+        return area_list
+
     def post_delete(self, del_area, session):
         for room in del_area.rooms.itervalues():
             room_clean_up(room, session, del_area.dbo_id)
