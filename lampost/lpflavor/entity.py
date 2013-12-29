@@ -101,13 +101,13 @@ class EntityLP(Entity):
     def rec_attack(self, source, attack):
         for defense in self.defenses:
             defense.apply(self, attack)
-            if attack.adj_damage < 0 or attack.adj_accuracy < 0:
+            if attack.adj_damage <= 0 or attack.adj_accuracy <= 0:
                 if defense.success_map:
                     self.broadcast(target=source, **defense.success_map)
                 else:
-                    source.broadcast(target=self, **attack.fail_map)
+                    source.broadcast(verb=attack.verb, target=self, **attack.fail_map)
                 return
-        source.broadcast(target=self, **attack.success_map)
+        source.broadcast(verb=attack.verb, target=self, **attack.success_map)
         current_pool = getattr(self, attack.damage_pool)
         setattr(self, attack.damage_pool, current_pool - attack.adj_damage)
         combat_log(source,

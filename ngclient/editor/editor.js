@@ -29,6 +29,10 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
 
     window.editUpdate = lmEditor.editUpdate;
 
+    window.editLampostRoom = function (dbo_id) {
+      lmBus.dispatch('edit_by_id', dbo_id);
+    };
+
   }]);
 
 
@@ -496,6 +500,15 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       window.close();
     }
 
+    function editById(dbo_id) {
+      var areaId = dbo_id.split(':')[0];
+      lmEditor.cache('room:' + areaId).then(function () {
+        $scope.startEditor('room', lmEditor.cacheValue('room:' + areaId, dbo_id));
+      })
+    }
+
+    lmBus.register('edit_by_id', editById, $scope)
+
     $scope.editorMap = {
       config: {label: "Mud Config", url: "config"},
       players: {label: "Players", objLabel: 'Player', url: "player"},
@@ -557,7 +570,13 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
     lmEditor.cache('constants').then(function (constants) {
       $scope.constants = constants;
       $scope.loaded = true;
-      $scope.click($scope.editors[0]);
+      var editorRoomId = localStorage.getItem('editor_room_id');
+      if (editorRoomId) {
+        editById(editorRoomId);
+        localStorage.removeItem('editor_room_id');
+      } else {
+        $scope.click($scope.editors[0]);
+      }
     });
 
   }]);

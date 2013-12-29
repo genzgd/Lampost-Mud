@@ -78,6 +78,7 @@ class Attack(object):
         self.adj_accuracy = self.accuracy
         self.delivery = skill.delivery
         self.source = source
+        self.verb = skill.verb
         return self
 
     def combat_log(self):
@@ -96,7 +97,8 @@ class AttackTemplate(SkillTemplate, RootDBO):
 
     def on_created(self):
         self.class_id = 'attack'
-        self.success_map = {'s': 'You hit {N}.', 't': '{n} hits you.', 'e': '{n} hits {N}.', 'display': COMBAT_DISPLAY}
+        self.prep_map = {'s': 'You prepare to {v} {N}.', 't' : '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'}
+        self.success_map = {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY}
         self.fail_map = {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY}
 
 

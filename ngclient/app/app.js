@@ -48,8 +48,8 @@ angular.module('lampost').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'l
 
   }]);
 
-angular.module('lampost').service('lmApp', ['lmBus', 'lmData', 'lmDialog',
-  function (lmBus, lmData, lmDialog) {
+angular.module('lampost').service('lmApp', ['$timeout', 'lmBus', 'lmData', 'lmDialog',
+  function ($timeout, lmBus, lmData, lmDialog) {
 
     lmBus.register("user_login", function () {
       if (lmData.playerIds.length == 0) {
@@ -67,8 +67,12 @@ angular.module('lampost').service('lmApp', ['lmBus', 'lmData', 'lmDialog',
       if (!lmData.editorWindow || lmData.editorWindow.closed) {
         launchEditor(roomId);
       } else {
-        lmData.editorWindow.editLampostRoom(roomId);
-        window.open("", lmData.editorWindow.name);
+        lmData.editorWindow.blur();
+        $timeout(function() {
+          window.open("", lmData.editorWindow.name);
+          lmData.editorWindow.focus();
+          lmData.editorWindow.editLampostRoom(roomId);
+        }, 20);
       }
     });
 

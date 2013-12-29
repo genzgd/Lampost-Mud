@@ -73,7 +73,7 @@ class BaseSkill(TemplateInstance):
         if self.cool_down and self.last_used + self.cool_down > dispatcher.pulse_count:
             raise ActionError("You cannot {} yet.".format(self.verb))
         if self.prep_map:
-            source.broadcast(display=self.display, target=target, **self.prep_map)
+            source.broadcast(verb=self.verb, display=self.display, target=target, **self.prep_map)
 
     def use(self, source, **kwargs):
         source.apply_costs(self.costs)
@@ -92,13 +92,9 @@ class BaseSkill(TemplateInstance):
 def skills(source, target, **ignored):
     source.display_line("{}'s Skills:".format(target.name))
 
-    for skill_id, skill_status in target.skills.iteritems():
-        skill = skill_service.skills.get(skill_id)
-        if skill:
-            source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.dbo_id, str(skill_status.skill_level)))
-            source.display_line("--{}".format(skill.desc))
-        else:
-            warn("{} has missing skill {} ".format(target.name, skill_id))
+    for skill_id, skill in target.skills.iteritems():
+        source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.dbo_id, str(skill.skill_level)))
+        source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 
 
 @imm_action("add skill", "args", prep="to", obj_msg_class="has_skills", self_object=True)

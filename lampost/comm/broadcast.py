@@ -25,12 +25,13 @@ broadcast_tokens = [{'id': 'n', 'token': 'Subject name'},
                     {'id': 'f', 'token': 'Subject self pronoun'},
                     {'id': 'F', 'token': 'Target self pronoun'},
                     {'id': 'a', 'token': 'Absolute possessive subj'},
-                    {'id': 'A', 'token': 'Absolute possessive targ'}]
+                    {'id': 'A', 'token': 'Absolute possessive targ'},
+                    {'id': 'v', 'token': 'Action/verb'}]
 
 token_pattern = re.compile('\$([nNeEsSmMfFaA])')
 
 
-def substitute(message, source=None, target=None):
+def substitute(message, source=None, target=None, verb=''):
     if source:
         s_name = getattr(source, 'name', source)
         s_sub, s_obj, s_poss, s_self, s_abs = pronouns[getattr(source, 'sex', 'none')]
@@ -43,14 +44,15 @@ def substitute(message, source=None, target=None):
         t_name = t_sub = t_obj = t_poss = t_self = t_abs = None
 
     result = message.format(n=s_name, N=t_name, e=s_sub, E=t_sub, s=s_poss, S=t_poss,
-                            m=s_obj, M=t_obj, f=s_self, F=t_self, a=s_abs, A=t_abs)
+                            m=s_obj, M=t_obj, f=s_self, F=t_self, a=s_abs, A=t_abs,
+                            v=verb)
     if result:
         result = "{0}{1}".format(result[0], result[1:])
     return result
 
 
 class BroadcastMap(object):
-    def __init__(self,  **kwargs):
+    def __init__(self, **kwargs):
         self.populate(kwargs)
 
     def populate(self, type_map):
@@ -69,8 +71,8 @@ class BroadcastMap(object):
 
 
 class Broadcast(object):
-
-    def __init__(self, broadcast_map=None, source=None, target=None, display='default', silent=False, **kwargs):
+    def __init__(self, broadcast_map=None, source=None, target=None, display='default',
+                 silent=False, verb=None, **kwargs):
         if broadcast_map:
             self.broadcast_map = broadcast_map
         else:
@@ -79,6 +81,7 @@ class Broadcast(object):
         self.target = target
         self.display = display
         self.silent = silent
+        self.verb = verb
 
     def translate(self, observer):
         if self.silent and observer == self.source:
@@ -104,7 +107,7 @@ class Broadcast(object):
         return self.substitute('ea')
 
     def substitute(self, version):
-        return substitute(self.broadcast_map[version], self.source, self.target)
+        return substitute(self.broadcast_map[version], self.source, self.target, self.verb)
 
 
 class SingleBroadcast():
