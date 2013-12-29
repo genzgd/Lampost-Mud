@@ -149,6 +149,10 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
       }
     });
 
+    this.startEdit = function(editModel) {
+      $scope.$parent.selectedAreaId = editModel.dbo_id;
+    };
+
     this.newDialog = function (newModel) {
       newModel.level = 1;
       newModel.weight = 1;
@@ -174,8 +178,6 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
   function ($q, $scope, lmEditor, lmEditorArticle) {
 
     var helpers = lmEditor.prepare(this, $scope);
-
-    this.prel
 
     this.postDelete = function () {
       $scope.startEditor('area');

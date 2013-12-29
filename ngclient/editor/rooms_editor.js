@@ -16,6 +16,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     }
 
     this.startEdit = function (room) {
+      $scope.selectedAreaId = room.dbo_id.split(':')[0];
       $scope.currentExtra = null;
       $scope.extraDisplay = 'desc';
       lmEditor.cache("constants").then(function (constants) {
@@ -52,6 +53,10 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     this.addExit = function (exit) {
       originalModel().exits.push(exit);
       addRef('room', exit.destination);
+    };
+
+    $scope.selectRoom = function(room) {
+      $scope.editor.newEdit(room);
     };
 
     $scope.visitRoom = function () {

@@ -339,6 +339,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
 
       function newEdit(newModel) {
         if (!newModel) {
+          $scope.selectionMode = true;
           return;
         }
         if ($scope.model && $scope.model.dbo_id !== newModel.dbo_id && $scope.isDirty) {
@@ -353,6 +354,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
               {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
             ],
             onCancel: function () {
+              $scope.selectionMode = false;
               nextModel = null;
             }}, true);
         } else {
@@ -420,6 +422,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         $scope.outsideEdit = false;
         var model = angular.copy(originalModel);
         intercept('startEdit', model).then(function () {
+          $scope.selectionMode = false;
           $scope.model = model;
           $scope.ready = true;
           $scope.$broadcast('updateModel');

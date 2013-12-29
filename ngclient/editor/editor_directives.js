@@ -209,3 +209,48 @@ angular.module('lampost_editor').directive('lmOutsideEdit', [function () {
     templateUrl: 'editor/view/outside_edit.html'
   }
 }]);
+
+angular.module('lampost_editor').directive('lmRoomSelector', [function () {
+  return {
+    restrict: 'AE',
+    controller: 'roomSelectorController'
+  }
+}]);
+
+
+angular.module('lampost_editor').controller('roomSelectorController', ['$scope', 'lmEditor',
+  function($scope, lmEditor) {
+
+    var listKey;
+    lmEditor.cache('area').then(function (areas) {
+      $scope.selectAreaList = areas;
+      if (!$scope.selectedArea && $scope.selectedAreaId) {
+        $scope.selectedArea = lmCacheValue('area', $scope.selectedAreaId);
+      } else {
+        $scope.selectedArea = areas[0];
+      }
+      $scope.selectArea($scope.selectedArea);
+    });
+
+    $scope.$on('$destroy', function() {
+      lmEditor.deref(listKey)
+    });
+
+    $scope.selectedClass = function(area) {
+      return $scope.selectedArea == area ? 'alert-info': '';
+    };
+
+    $scope.selectArea = function (selectedArea) {
+      if (selectedArea) {
+        $scope.selectedArea = selectedArea;
+      }
+      lmEditor.deref(listKey);
+      listKey = 'room:' + $scope.selectedArea.dbo_id;
+      lmEditor.cache(listKey).then(function (rooms) {
+        $scope.selectRoomList = rooms;
+        $scope.selectedRoom = rooms[0];
+      });
+    };
+
+
+}]);
