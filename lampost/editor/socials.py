@@ -1,13 +1,13 @@
 from twisted.web.resource import Resource
 
 from lampost.client.resources import request
-from lampost.context.resource import m_requires, requires
+from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.editor.base import EditResource
 from lampost.mud.socials import Social
 from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
-m_requires('datastore', 'perm', 'mud_actions', __name__)
+m_requires('mud_actions', __name__)
 
 
 class SocialsResource(EditResource):

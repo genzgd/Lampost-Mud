@@ -1,10 +1,6 @@
-from random import randint
-
-from lampost.context.resource import requires, m_requires
+from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.env.room import Room
-from lampost.model.mobile import MobileTemplate
-from lampost.model.article import ArticleTemplate
 
 
 m_requires('log', 'dispatcher', 'datastore',  __name__)

@@ -109,7 +109,7 @@ class AttackSkill(BaseSkill):
     damage_calc = {}
     damage_pool = 'health'
     accuracy_calc = {}
-    weapon_type = 'unarmed'
+    weapon_type = 'any'
     success_map = {}
     fail_map = {}
 

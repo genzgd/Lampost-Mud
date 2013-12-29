@@ -150,24 +150,36 @@ angular.module('lampost_editor').directive('lmSkillList', [function () {
 }]);
 
 
-angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor',
-  function ($q, $scope, lmEditor) {
+angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor', 'lmBus',
+  function ($q, $scope, lmEditor, lmBus) {
 
-    $scope.allSkills = [];
-    $scope.ready = false;
+    var skillTypes = ['attack', 'defense'];
+    var skillPromises = [];
+    var skillLists = [];
+
+    lmBus.register('modelCreate', checkLists);
+    lmBus.register('modelDelete', checkLists);
 
     $scope.$on('updateModel', updateModel);
 
-    $q.all([
-        lmEditor.cache('attack').then(function (attacks) {
-          $scope.allSkills = $scope.allSkills.concat(attacks);
-        }),
-        lmEditor.cache('defense').then(function (defenses) {
-          $scope.allSkills = $scope.allSkills.concat(defenses);
-        })]).then(function () {
-        $scope.ready = true;
-        updateModel();
-      });
+    angular.forEach(skillTypes, function (skillType) {
+      skillPromises.push(lmEditor.cache(skillType).then(function (skills) {
+        skillLists.push(skills);
+      }))
+    });
+    $q.all(skillPromises).then(refresh);
+
+    function checkLists(list) {
+      if (skillLists.indexOf(list) > -1) {
+        refresh();
+      }
+    }
+
+    function refresh() {
+      $scope.allSkills = [].concat.apply([], skillLists);
+      $scope.ready = true;
+      updateModel();
+    }
 
     function updateModel() {
       if ($scope.$parent.model) {
@@ -194,7 +206,7 @@ angular.module('lampost_editor').controller('SkillListController', ['$q', '$scop
     };
 
     $scope.addRow = function () {
-      $scope.skillMap[$scope.newId] =  {skill_level: 1};
+      $scope.skillMap[$scope.newId] = {skill_level: 1};
       updateUnused();
     };
 
@@ -220,13 +232,13 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
 
 
 angular.module('lampost_editor').controller('objectSelectorController', ['$scope', 'lmEditor',
-  function($scope, lmEditor) {
+  function ($scope, lmEditor) {
 
     var listKey;
     var obj_type = $scope.editor.id;
 
 
-    $scope.$watch('selectionMode', function(mode) {
+    $scope.$watch('selectionMode', function (mode) {
       if (mode && $scope.model) {
         $scope.selectedAreaId = $scope.model.dbo_id.split(':')[0];
         $scope.selectedArea = lmEditor.cacheValue('area', $scope.selectedAreaId);
@@ -243,12 +255,12 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
       $scope.selectArea($scope.selectedArea);
     });
 
-    $scope.$on('$destroy', function() {
+    $scope.$on('$destroy', function () {
       lmEditor.deref(listKey)
     });
 
-    $scope.selectedClass = function(area) {
-      return $scope.selectedArea == area ? 'alert-info': '';
+    $scope.selectedClass = function (area) {
+      return $scope.selectedArea == area ? 'alert-info' : '';
     };
 
     $scope.selectArea = function (selectedArea) {
@@ -264,4 +276,4 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
     };
 
 
-}]);
+  }]);

@@ -1,5 +1,5 @@
-angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'lmEditor',
-  function ($scope, lmEditor) {
+angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope', 'lmEditor', 'lmDialog',
+  function ($q, $scope, lmEditor, lmDialog) {
 
     $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
       calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
@@ -15,6 +15,15 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'lmEd
     this.preCreate = function (attack) {
       attack.verb = attack.dbo_id;
     };
+
+    this.preUpdate = function (attack) {
+      if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {
+        lmDialog.showOk("Invalid Weapon/Damage Types",
+          "Damage type of weapon with 'Unused' weapon is invalid.")
+        return $q.reject();
+      }
+      return $q.when();
+    }
 
   }]);
 
@@ -47,8 +56,8 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialo
       defense.verb = defense.dbo_id;
     };
 
-    this.preUpdate = function () {
-      if (!$scope.model.auto_start && !$scope.model.verb) {
+    this.preUpdate = function (model) {
+      if (!model.auto_start && !model.verb) {
         lmDialog.showOk("Start Method Required", "Either a command or 'autoStart' is required");
         return $q.reject();
       }

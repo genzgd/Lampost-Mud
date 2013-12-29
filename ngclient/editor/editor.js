@@ -382,7 +382,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       };
 
       $scope.updateModel = function () {
-        intercept('preUpdate').then(function () {
+        intercept('preUpdate', $scope.model).then(function () {
           lmRemote.request(baseUrl + 'update', $scope.model).then(
             function (updatedObject) {
               $scope.isDirty = false;
