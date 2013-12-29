@@ -103,13 +103,23 @@ angular.module('lampost_editor').controller('MobileEditorCtrl', ['$q', '$scope',
     $scope.defaultSkills = {effectDesc: "Default skills and levels assigned to this mobile", effectName: "Default Skills",
       attrWatch: "default_skills"};
 
-    this.postDelete = function () {
-      $scope.startEditor('area');
+    this.newDialog = function (newModel) {
+      $scope.areaId = $scope.selectedArea.dbo_id;
+      newModel.level = 1;
     };
 
     this.delConfirm = function (delModel) {
       lmEditorMobile.delete(delModel, helpers.mainDelete);
       return $q.reject();
+    };
+
+    this.delConfirm = function (delModel) {
+      lmEditorMobile.delete(delModel, helpers.mainDelete);
+      return $q.reject();
+    };
+
+    this.preCreate = function (newModel) {
+      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
     };
 
     $scope.editor.newEdit($scope.editor.editModel);
@@ -149,13 +159,17 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
       }
     });
 
-    this.startEdit = function(editModel) {
+    this.startEdit = function (editModel) {
       $scope.$parent.selectedAreaId = editModel.dbo_id;
     };
 
     this.newDialog = function (newModel) {
       newModel.level = 1;
       newModel.weight = 1;
+    };
+
+    this.preCreate = function (newModel) {
+      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
     };
 
     this.delConfirm = function (delModel) {
@@ -178,6 +192,17 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
   function ($q, $scope, lmEditor, lmEditorArticle) {
 
     var helpers = lmEditor.prepare(this, $scope);
+
+    this.newDialog = function (newModel) {
+      $scope.areaId = $scope.selectedArea.dbo_id;
+      newModel.level = 1;
+      newModel.weight = 1;
+    };
+
+    this.preCreate = function (newModel) {
+      $scope.areaId = $scope.selectedArea.dbo_id;
+      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
+    };
 
     this.postDelete = function () {
       $scope.startEditor('area');

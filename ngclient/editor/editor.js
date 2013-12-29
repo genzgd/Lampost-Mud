@@ -141,7 +141,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return display;
     }
 
-    this.invalidate = function(key) {
+    this.invalidate = function (key) {
       deleteEntry(key)
     };
 
@@ -306,6 +306,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           if (outside) {
             lmDialog.showOk("Outside Delete", "This object has been deleted by another user.");
           }
+          $scope.selectionMode = true;
           $scope.outsideEdit = false;
           $scope.model = null;
           $scope.$broadcast('updateModel');
@@ -370,6 +371,10 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           nextModel = null;
         }
       }
+
+      $scope.selectObject = function (object) {
+        newEdit(object);
+      };
 
       $scope.revertModel = function () {
         $scope.model = angular.copy(originalModel);
@@ -495,8 +500,8 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       players: {label: "Players", objLabel: 'Player', url: "player"},
       area: {label: "Areas", objLabel: "Area", url: "area", create: 'fragment'},
       room: {label: "Room", url: "room", create: 'dialog'},
-      mobile: {label: "Mobile", url: "mobile"},
-      article: {label: "Article", url: "article"},
+      mobile: {label: "Mobile", url: "mobile", create: "dialog"},
+      article: {label: "Article", url: "article", create: "dialog"},
       social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
       display: {label: "Display", url: "display"},
       race: {label: "Races", objLabel: "Race", url: "race"},
@@ -565,30 +570,30 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
     lmEditor.prepare(this, $scope);
 
     $q.all([
-      lmEditor.cache('area').then(function(areas) {
-        $scope.areaList = areas;
+        lmEditor.cache('area').then(function (areas) {
+          $scope.areaList = areas;
         }),
-      lmRemote.request('editor/config/get_defaults').then(function (defaults) {
-        angular.forEach(defaults, function (subDefaults) {
-          angular.forEach(subDefaults, function (value) {
-            value.type = value.type || 'number';
-            if (value.type === 'number') {
-              if (value.min === undefined) {
-                value.min = 1;
+        lmRemote.request('editor/config/get_defaults').then(function (defaults) {
+          angular.forEach(defaults, function (subDefaults) {
+            angular.forEach(subDefaults, function (value) {
+              value.type = value.type || 'number';
+              if (value.type === 'number') {
+                if (value.min === undefined) {
+                  value.min = 1;
+                }
+                value.step = value.step || 1;
               }
-              value.step = value.step || 1;
-            }
+            });
           });
-        });
-        $scope.defaults = defaults;
-      }),
-      lmRemote.request('editor/config/get').then(function(config) {
-        startConfig = config;
-        $scope.startAreaId = config.start_room.split(':')[0];
-      })
-      ]).then(function() {
-        $scope.changeArea().then(function() {
-           $scope.editor.newEdit(startConfig);
+          $scope.defaults = defaults;
+        }),
+        lmRemote.request('editor/config/get').then(function (config) {
+          startConfig = config;
+          $scope.startAreaId = config.start_room.split(':')[0];
+        })
+      ]).then(function () {
+        $scope.changeArea().then(function () {
+          $scope.editor.newEdit(startConfig);
         });
       });
 
@@ -596,14 +601,14 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
       lmEditor.deref(roomKey);
       roomKey = 'room:' + $scope.startAreaId;
       return lmEditor.cache(roomKey).then(function (rooms) {
-         $scope.rooms = rooms;
+        $scope.rooms = rooms;
       });
     };
 
-    this.postUpdate = function(config) {
+    this.postUpdate = function (config) {
       $timeout(function () {
-          $rootScope.siteTitle = config.title;
-        });
+        $rootScope.siteTitle = config.title;
+      });
 
       lampost_config.title = config.title;
       lampost_config.description = config.description;

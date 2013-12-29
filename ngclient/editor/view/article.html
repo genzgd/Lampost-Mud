@@ -1,12 +1,10 @@
 <div class="wrapper" ng-controller="ArticleEditorCtrl">
-  <div ng-if="!model">
-    No Article Selected
-  </div>
-  <div class="scrollable" ng-if="model">
-    <div class="row-fluid">
+ <div class="wrapper" ng-show="selectionMode" lm-object-selector></div>
+  <div class="scrollable" ng-hide="selectionMode">
+   <div class="row-fluid">
       <div class="span4">
         <div class="row-fluid">
-          <h4 class="span9">Article Id: {{model.dbo_id}}</h4>
+          <h4 class="span8"><a style="cursor: pointer;" title="Change Article" ng-click="selectionMode = true">Article: {{model.dbo_id}}</a></h4>
           <h5 class="span3">Rev: {{model.dbo_rev}}</h5>
         </div>
       </div>

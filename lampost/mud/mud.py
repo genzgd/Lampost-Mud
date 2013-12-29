@@ -5,7 +5,6 @@ from lampost.model.article import ArticleTemplate, Article
 from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
-from lampost.mud.socials import SocialRegistry
 from lampost.mud.action import imm_actions, MudActions
 from lampost.context.resource import provides, requires, m_requires
 from lampost.comm.channel import Channel
@@ -15,6 +14,7 @@ from lampost.model.area import Area
 __import__('lampost.mud.immortal')
 __import__('lampost.comm.chat')
 __import__('lampost.mud.inventory')
+__import__('lampost.mud.socials')
 
 m_requires('log', 'datastore', 'dispatcher', 'perm', __name__)
 
@@ -25,8 +25,7 @@ class MudNature():
 
     def __init__(self, flavor):
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals())
-        self.mud_actions = MudActions()
-        self.social_registry = SocialRegistry()
+        MudActions()
 
     def _post_init(self):
         self.shout_channel = Channel("shout")
@@ -48,7 +47,6 @@ class MudNature():
     def start_service(self):
         info("Loading mud", self)
         load_object_set(Area)
-        self.social_registry.load_socials()
         info("Mud loaded", self)
 
     def _imm_baptise(self, player):

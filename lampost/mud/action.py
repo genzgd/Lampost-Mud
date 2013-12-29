@@ -1,19 +1,18 @@
 from collections import defaultdict
 from lampost.context.resource import provides, m_requires
-from lampost.gameops.action import make_action, ActionError, simple_action
+from lampost.gameops.action import make_action, ActionError, simple_action, convert_verbs
 from lampost.util.lmutil import dump, StateError
 
 m_requires('user_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
-mud_actions = set()
+_mud_actions = defaultdict(set)
 imm_actions = set()
-
-mud_actions.add(simple_action(("look", "l", "exa", "examine", "look at"), "examine"))
 
 
 def mud_action(verbs, msg_class=None, **kwargs):
     def dec_wrapper(func):
-        mud_actions.add(func)
-        return make_action(func, verbs, msg_class, **kwargs)
+        action = make_action(func, msg_class=msg_class, **kwargs)
+        for verb in convert_verbs(verbs):
+            _mud_actions[verb].add(action)
     return dec_wrapper
 
 
@@ -28,25 +27,26 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
 @provides('mud_actions')
 class MudActions(object):
 
-    def _post_init(self):
-        self._verbs = defaultdict(set)
-        for action in mud_actions:
-            self.add_action(action)
-
     def add_action(self, action):
         for verb in action.verbs:
-            self._verbs[verb].add(action)
+            _mud_actions[verb].add(action)
 
-    def rem_verb(self, verb, action):
-        self._verbs.get(verb).remove(action)
-        if not self._verbs.get(verb):
-            del self._verbs[verb]
+    def rem_verb(self, verbs, action):
+        for verb in convert_verbs(verbs):
+            _mud_actions.get(verb).remove(action)
+            if not _mud_actions.get(verb):
+                del _mud_actions[verb]
 
     def add_verb(self, verb, action):
-        self._verbs[verb].add(action)
+        _mud_actions[verb].add(action)
 
     def verb_list(self, verb):
-        return self._verbs.get(verb, [])
+        return _mud_actions.get(verb, [])
+
+
+@mud_action(("look", "l", "exa", "examine", "look at"), "examine")
+def look(target_method, **kwargs):
+    return target_method(**kwargs)
 
 
 @mud_action('help')
@@ -75,7 +75,7 @@ def friends(source, **ignored):
     return "Your friends are:<br/>&nbsp&nbsp{}".format(friend_list) if friend_list else "Alas, you are friendless."
 
 
-@mud_action('friend', msg_class='player')
+@mud_action('friend', 'player')
 def friend(source, target, **ignored):
     if source == target or friend_service.is_friend(source.dbo_id, target.dbo_id):
         return "{} is already your friend.".format(target.name)
@@ -156,16 +156,3 @@ def unfollow(source, args,  **ignored):
     source.following.display_line("{} is no longer following you.".format(source.name))
     source.following.followers.remove(source)
     del source.following
-
-
-
-
-
-
-
-
-
-
-
-
-

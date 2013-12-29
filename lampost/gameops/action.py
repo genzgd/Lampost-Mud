@@ -4,14 +4,22 @@ from types import MethodType
 from lampost.util.lmutil import PermError
 
 
-def simple_action(verbs, msg_class=None):
-    def execute(self, target_method, **kw_args):
-        if target_method:
-            return target_method(**kw_args)
+def convert_verbs(verbs):
+    results = set()
 
-    action = make_action(_ActionObject(), verbs, msg_class)
-    action.execute = MethodType(execute, action)
-    return action
+    def add_verb(verb):
+        results.add(tuple([unicode(fragment) for fragment in verb.split(' ')]))
+    try:
+        add_verb(verbs)
+    except AttributeError:
+        for verb in verbs:
+            add_verb(verb)
+    return results
+
+
+def simple_action(self, target_method, **kwargs):
+    if target_method:
+        return target_method(**kw_args)
 
 
 def add_action(verbs, method, msg_class=None):
@@ -26,18 +34,13 @@ def add_action(verbs, method, msg_class=None):
     return action
 
 
-def make_action(action, verbs, msg_class=None, prep=None, obj_msg_class=None, **kw_args):
-    def add_verb(verb):
-        action.verbs.add(tuple(verb.split(' ')))
-    try:
-        getattr(action, 'verbs')
-    except AttributeError:
-        action.verbs = set()
-    try:
-        add_verb(verbs)
-    except AttributeError:
-        for verb in verbs:
-            add_verb(unicode(verb))
+def make_action(action, verbs=None, msg_class=None, prep=None, obj_msg_class=None, **kw_args):
+    if verbs:
+        try:
+            getattr(action, 'verbs')
+        except AttributeError:
+            action.verbs = set()
+        action.verbs.update(convert_verbs(verbs))
 
     if msg_class:
         if msg_class.startswith('has_'):
@@ -70,6 +73,7 @@ def action_handler(func):
             self.display_line("You do not have permission to do that.")
         except ActionError as action_error:
             self.display_line(action_error.message, action_error.display)
+
     return wrapper
 
 

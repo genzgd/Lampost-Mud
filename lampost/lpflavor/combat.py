@@ -118,6 +118,8 @@ class AttackSkill(BaseSkill):
             raise ActionError("You cannot harm yourself.  This is a happy place.")
         if validate_weapon(self, source.weapon_type):
             self.active_damage_type = source.weapon.damage_type
+        else:
+            self.active_damage_type = self.damage_type
         if 'dual_wield' in self.pre_reqs:
             validate_weapon(self, source.second_type)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)

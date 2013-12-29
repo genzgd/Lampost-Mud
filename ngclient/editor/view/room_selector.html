@@ -1,7 +1,0 @@
-<label>Area</label>
-<select ng-change="selectArea()" ng-model="selectedArea" ng-disabled="disableArea"
-    ng-options="area as (area.dbo_id + ': ' + area.name) for area in selectAreaList" required>
-</select>
-<label>Room</label>
-<select ng-change="selectRoom()" ng-disabled="!selectAreaList" ng-model="selectedRoom" ng-options="room as (idOnly(room) + ': ' + room.title) for room in selectRoomList">
-</select>

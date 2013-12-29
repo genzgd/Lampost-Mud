@@ -7,7 +7,7 @@ from lampost.editor.base import EditResource
 from lampost.mud.socials import Social
 from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
-m_requires('datastore', 'perm', 'mud_actions', 'social_registry',  __name__)
+m_requires('datastore', 'perm', 'mud_actions', __name__)
 
 
 class SocialsResource(EditResource):
@@ -19,11 +19,8 @@ class SocialsResource(EditResource):
         if mud_actions.verb_list((social_dto['dbo_id'],)):
             raise DataError("Verb already in use")
 
-    def post_create(self, social, session):
-        social_registry.insert(social)
-
     def post_delete(self, social, session):
-        social_registry.delete(social.dbo_id)
+        mud_actions.rem_verb(social.dbo_id, social)
 
 
 class SocialPreview(Resource):

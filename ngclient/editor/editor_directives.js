@@ -210,22 +210,33 @@ angular.module('lampost_editor').directive('lmOutsideEdit', [function () {
   }
 }]);
 
-angular.module('lampost_editor').directive('lmRoomSelector', [function () {
+angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   return {
     restrict: 'AE',
-    controller: 'roomSelectorController'
+    templateUrl: 'editor/view/object_selector.html',
+    controller: 'objectSelectorController'
   }
 }]);
 
 
-angular.module('lampost_editor').controller('roomSelectorController', ['$scope', 'lmEditor',
+angular.module('lampost_editor').controller('objectSelectorController', ['$scope', 'lmEditor',
   function($scope, lmEditor) {
 
     var listKey;
+    var obj_type = $scope.editor.id;
+
+
+    $scope.$watch('selectionMode', function(mode) {
+      if (mode && $scope.model) {
+        $scope.selectedAreaId = $scope.model.dbo_id.split(':')[0];
+        $scope.selectedArea = lmEditor.cacheValue('area', $scope.selectedAreaId);
+      }
+    });
+
     lmEditor.cache('area').then(function (areas) {
       $scope.selectAreaList = areas;
-      if (!$scope.selectedArea && $scope.selectedAreaId) {
-        $scope.selectedArea = lmCacheValue('area', $scope.selectedAreaId);
+      if ($scope.selectedAreaId) {
+        $scope.selectedArea = lmEditor.cacheValue('area', $scope.selectedAreaId);
       } else {
         $scope.selectedArea = areas[0];
       }
@@ -245,10 +256,10 @@ angular.module('lampost_editor').controller('roomSelectorController', ['$scope',
         $scope.selectedArea = selectedArea;
       }
       lmEditor.deref(listKey);
-      listKey = 'room:' + $scope.selectedArea.dbo_id;
-      lmEditor.cache(listKey).then(function (rooms) {
-        $scope.selectRoomList = rooms;
-        $scope.selectedRoom = rooms[0];
+      listKey = obj_type + ':' + $scope.selectedArea.dbo_id;
+      lmEditor.cache(listKey).then(function (objects) {
+        $scope.selectObjectList = objects;
+        $scope.selectedObject = objects[0];
       });
     };
 

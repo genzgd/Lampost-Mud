@@ -1,0 +1,41 @@
+<div class="row-fluid">
+  <div class="span3">
+    <h4>{{objLabel}} Editor</h4>
+    <div class="spacer"></div>
+  </div>
+  <div class="span4">
+    <div class="spacer"></div>
+    <button ng-click="newModelDialog()" class="btn btn-success btn-small">New {{objLabel}}</button>
+  </div>
+</div>
+<div class="row-fluid" style="height: 70%;">
+  <div class="span8 wrapper">
+    <div class="span5 wrapper">
+      <div style="height: 7%">
+        <h5 style="display: inline">Select Area</h5>
+      </div>
+      <div style="height: 93%; overflow-y: auto;">
+        <table class="well table table-condensed">
+          <tr style="cursor: pointer; border-top: 1px;" ng-class="selectedClass(area)" ng-click="selectArea(area)" ng-repeat="area in selectAreaList">
+            <td>{{area.dbo_id + ': ' + area.name}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="offset1 span6 wrapper">
+      <div style="height: 7%; width:100%;">
+        <h5 style="display: inline;">Select {{objLabel}}</h5>
+        <button ng-show="model" ng-click="selectionMode='false'" type="button" class="pull-right btn btn-small">Return to {{model.dbo_id}}</button>
+      </div>
+
+      <div style="height: 93%; overflow-y: auto; clear:both;">
+        <table class="well table table-condensed">
+          <tr style="cursor: pointer;" ng-click="selectObject(object)" ng-repeat="object in selectObjectList">
+            <td>{{idOnly(object) + ': ' + object.title}}</td>
+          </tr>
+
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

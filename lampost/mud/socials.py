@@ -1,38 +1,14 @@
-from lampost.comm.broadcast import BroadcastMap
-from lampost.context.resource import provides, requires
+from lampost.comm.broadcast import Broadcast
+from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
+from lampost.mud.action import mud_action
+
+m_requires('datastore',  __name__)
 
 
-@provides('social_registry')
-@requires('datastore', 'mud_actions')
-class SocialRegistry(object):
-
-    def __init__(self):
-        self._socials = {}
-
-    def emote(self, source, target, verb, **ignored):
-        source.broadcast(broadcast_map=self._socials[verb[0]], target=target)
-
-    def load_socials(self):
-        self.mud_actions.add_verb(('socials',), self.socials)
-        self.emote.__func__.msg_class = 'rec_social'
-        for social_id in self.datastore.fetch_set_keys("socials"):
-            social = self.datastore.load_object(Social, social_id)
-            self.insert(social)
-
-    def insert(self, social):
-        self._socials[social.dbo_id] = BroadcastMap(**social.b_map)
-        self.mud_actions.add_verb((social.dbo_id,), self.emote)
-
-    def delete(self, social_verb):
-        del self._socials[social_verb]
-        self.mud_actions.rem_verb((social_verb,), self.emote)
-
-    def socials(self, **ignored):
-        return " ".join(sorted(self._socials.keys()))
-
-    def get(self, social_id):
-        return self._socials.get(social_id)
+def _post_init():
+    global socials
+    socials = load_object_set(Social)
 
 
 class Social(RootDBO):
@@ -40,7 +16,17 @@ class Social(RootDBO):
     dbo_key_type = 'social'
     dbo_fields = 'dbo_rev', 'b_map'
     dbo_rev = 0
+    b_map = {}
+
+    msg_class = 'rec_social'
+
+    def on_loaded(self):
+        mud_action(self.dbo_id)(self)
+
+    def __call__(self, source, target, **ignored):
+        source.broadcast(target=target, **self.b_map)
 
 
-
-
+@mud_action('socials')
+def socials_action(**ignored):
+    return " ".join(sorted([social.dbo_id for social in socials]))

@@ -6,7 +6,7 @@ from lampost.context.resource import m_requires, provides
 from lampost.datastore.dbo import RootDBO, DBORef
 from lampost.gameops.action import make_action, ActionError
 from lampost.gameops.template import template_class, Template, TemplateInstance
-from lampost.model.entity import enhance_soul
+from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.mud.action import imm_actions, mud_action, imm_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
@@ -82,7 +82,7 @@ class BaseSkill(TemplateInstance):
 
     def revoke(self, source):
         if not self.auto_start:
-            source.diminish_soul(self)
+            diminish_soul(source, self)
 
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)
