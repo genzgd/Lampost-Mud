@@ -1,6 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
+from lampost.lpflavor.combat import calc_consider
 from lampost.model.entity import Entity
 
 m_requires('log', 'tools', 'dispatcher', __name__)
@@ -156,6 +157,9 @@ class EntityLP(Entity):
         if article.art_type == 'weapon':
             self.weapon = None
         self.broadcast(s="You remove {N}", e="{n} removes {N}", target=article)
+
+    def rec_consider(self, **ignored):
+        return calc_consider(self)
 
     def _do_equip(self, article, equip_slot):
         self.equip_slots[equip_slot] = article

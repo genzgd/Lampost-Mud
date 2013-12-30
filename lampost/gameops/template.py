@@ -7,7 +7,8 @@ m_requires('cls_registry', __name__)
 
 def template_class(template_cls, instance_cls):
     instance_cls = cls_registry(instance_cls)
-    template_fields = set()
+    template_cls = cls_registry(template_cls)
+    template_fields = getattr(template_cls, 'template_fields', set())
 
     def add_fields(child_cls):
         for field in getattr(child_cls, 'template_fields', ()):
@@ -18,13 +19,12 @@ def template_class(template_cls, instance_cls):
             add_fields(base_cls)
 
     add_fields(instance_cls)
-
     template_cls.template_fields = template_fields
     template_cls.dbo_fields.update(template_fields)
     template_cls.instance_base = instance_cls
 
 
-class Template():
+class Template(object):
     dbo_fields = "dbo_rev",
     dbo_rev = 0
 

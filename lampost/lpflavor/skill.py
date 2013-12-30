@@ -19,9 +19,7 @@ def add_skill(skill_id, target, skill_level):
         raise ActionError("Skill not found")
     skill_instance = skill_template.create_instance(target)
     skill_instance.skill_level = skill_level
-    target.append_map('skills', skill_instance)
-    if target.dbo_id:
-        save_object(target)
+    target.skills[skill_id] = skill_instance
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -32,6 +30,10 @@ def roll_calc(source, calc, skill_level=0):
     if roll == 19:
         roll = 40
     return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
+
+def avg_calc(source, calc, skill_level=0):
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
+    return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
 class SkillTemplate(Template, RootDBO):

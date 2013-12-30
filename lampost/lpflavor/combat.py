@@ -1,8 +1,11 @@
+from __future__ import division
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
-from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate
+from lampost.lpflavor.attributes import POOL_LIST
+from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
+from lampost.mud.action import mud_action
 from lampost.util.lmutil import args_print
 
 m_requires('log', 'tools', 'dispatcher', __name__)
@@ -41,6 +44,9 @@ DAMAGE_DELIVERY = {'weapon': {'desc': 'Use weapon delivery type'},
                    'ranged': {'desc': 'Delivered via bow, spell, or equivalent'},
                    'psych': {'desc': 'Delivered via psychic or other non-physical means'}}
 
+CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome', 'Evenly Matched',
+              'Threatening', 'Difficult', 'Intimidating', 'Imposing', 'Frightening', 'Terrifying', 'Unassailable', 'Impossible']
+
 
 def validate_weapon(ability, weapon_type):
     if not ability.weapon_type or ability.weapon_type == 'unused':
@@ -64,6 +70,26 @@ def validate_delivery(ability, delivery):
 def validate_dam_type(ability, damage_type):
     if damage_type not in ability.calc_damage_types:
         raise ActionError("That has no effect.")
+
+
+def calc_consider(entity):
+    try:
+        best_attack = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.skill_type == 'attack'])
+    except ValueError:
+        best_attack = 0
+    try:
+        best_defense = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.skill_type == 'defense'])
+    except ValueError:
+        best_defense = 0
+    pool_levels = sum(getattr(entity, base_pool_id, 0) for pool_id, base_pool_id in POOL_LIST)
+    return int((best_attack + best_defense + pool_levels) / 2)
+
+
+def consider_translate(source_con, target_con):
+    perc = max(target_con, 1) / max(source_con, 1) * 100
+    perc = min(perc, 199)
+    perc = int(perc / 16)
+    return CON_LEVELS[perc]
 
 
 class Attack(object):
@@ -105,6 +131,7 @@ class AttackTemplate(SkillTemplate, RootDBO):
 class AttackSkill(BaseSkill):
     template_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
 
+    skill_type = 'attack'
     msg_class = 'rec_attack'
     damage_type = 'weapon'
     delivery = 'melee'
@@ -131,6 +158,11 @@ class AttackSkill(BaseSkill):
         combat_log(source, attack)
         target_method(source, attack)
 
+    def points_per_pulse(self, owner):
+        effect = avg_calc(owner, self.accuracy_calc, self.skill_level) + avg_calc(owner, self.damage_calc, self.skill_level)
+        cost = avg_calc(owner, self.costs, self.skill_level)
+        return int((effect - cost) / max(self.prep_time, 1))
+
 
 class DefenseTemplate(SkillTemplate, RootDBO):
     dbo_set_key = 'defenses'
@@ -154,6 +186,7 @@ class DefenseTemplate(SkillTemplate, RootDBO):
 class DefenseSkill(BaseSkill):
     template_fields = 'damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type'
 
+    skill_type = 'defense'
     damage_type = []
     delivery = []
     weapon_type = 'unused'
@@ -184,6 +217,19 @@ class DefenseSkill(BaseSkill):
         absorb = roll_calc(owner, self.absorb_calc, self.skill_level)
         combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' absorb: ', str(absorb)]), self)
         attack.adj_damage -= absorb
+
+    def points_per_pulse(self, owner):
+        effect = avg_calc(owner, self.avoid_calc, self.skill_level) + avg_calc(owner, self.absorb_calc, self.skill_level)
+        cost = avg_calc(owner, self.costs, self.skill_level)
+        return int((effect - cost) / max(self.prep_time, 1))
+
+
+@mud_action(('con', 'consider'), 'consider')
+def consider(target_method, source, target, **ignored):
+    target_con = target_method()
+    source_con = source.rec_consider()
+    con_string = consider_translate(source_con, target_con)
+    return "At first glance, {} looks {}.".format(target.name, con_string)
 
 
 

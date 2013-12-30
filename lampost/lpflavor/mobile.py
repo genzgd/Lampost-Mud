@@ -18,31 +18,30 @@ class MobileLP(Mobile, EntityLP):
     level = 1
 
 
-def config_instance_cls(self, instance_cls):
-    config_targets(instance_cls)
-    if self.archetype:
-        arch = load_object(Archetype, self.archetype)
-        for attr_name, start_value in arch.base_attrs.iteritems():
-            setattr(instance_cls, attr_name, start_value)
-        self.desc = arch.desc
-    else:
-        for attr_name in Archetype.attr_list:
-            setattr(instance_cls, attr_name, base_attr_value * self.level)
+class MobileTemplateLP(MobileTemplate):
+    dbo_fields = 'default_skills',
+    default_skills = {}
 
-def config_instance(self, mobile, owner):
-    mobile.baptise()
-    for skill_id, skill_status in self.default_skills.iteritems():
-        skill_template = load_object(SkillTemplate, skill_id)
-        if not skill_template:
-            warn("Skill {} not found.".format(skill_id))
-            continue
-        skill_instance = skill_template.create_instance(mobile)
-        skill_instance.skill_level = skill_status['skill_level']
-    fill_pools(mobile)
-    mobile.equip(set())
+    def config_instance_cls(self, instance_cls):
+        config_targets(instance_cls)
+        if self.archetype:
+            arch = load_object(Archetype, self.archetype)
+            for attr_name, start_value in arch.base_attrs.iteritems():
+                setattr(instance_cls, attr_name, start_value)
+            self.desc = arch.desc
+        else:
+            for attr_name in Archetype.attr_list:
+                setattr(instance_cls, attr_name, base_attr_value * self.level)
 
-MobileTemplate.config_instance_cls = config_instance_cls
-MobileTemplate.config_instance = config_instance
-MobileTemplate.dbo_fields.add('default_skills')
-MobileTemplate.default_skills = {}
+    def config_instance(self, mobile, owner):
+        mobile.baptise()
+        for skill_id, skill_status in self.default_skills.iteritems():
+            skill_template = load_object(SkillTemplate, skill_id)
+            if not skill_template:
+                warn("Skill {} not found.".format(skill_id))
+                continue
+            skill_instance = skill_template.create_instance(mobile)
+            skill_instance.skill_level = skill_status['skill_level']
+        fill_pools(mobile)
+        mobile.equip(set())
 
