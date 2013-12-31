@@ -57,10 +57,3 @@ class Context(object):
 
     def get(self, key):
         return self.properties.get(key, None)
-
-
-
-
-
-
-

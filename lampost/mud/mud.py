@@ -6,7 +6,7 @@ from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.mud.action import imm_actions, MudActions
-from lampost.context.resource import provides, requires, m_requires
+from lampost.context.resource import requires, m_requires, register_module
 from lampost.comm.channel import Channel
 
 from lampost.model.area import Area
@@ -20,12 +20,12 @@ m_requires('log', 'datastore', 'dispatcher', 'perm', __name__)
 
 
 @requires('context', 'config_manager')
-@provides('nature')
 class MudNature():
 
     def __init__(self, flavor):
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals())
         MudActions()
+        register_module(self)
 
     def _post_init(self):
         self.shout_channel = Channel("shout")

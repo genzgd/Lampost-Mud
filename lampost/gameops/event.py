@@ -123,4 +123,3 @@ class PulseRegistration(Registration):
 
 def heartbeat_failed(failure):
     error(failure.getTraceback(), "Dispatcher")
-

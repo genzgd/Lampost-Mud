@@ -1,9 +1,14 @@
 import sys
 
+_registry = {}
+_consumer_map = {}
+_methods = {}
+_registered_modules = []
+
 
 def register(name, service, export_methods=False):
     _registry[name] = service
-    _registered_services.append(service)
+    _registered_modules.append(service)
     if export_methods:
         _methods[name] = {}
         for attr, value in service.__class__.__dict__.iteritems():
@@ -15,6 +20,10 @@ def register(name, service, export_methods=False):
         _inject(cls, name, service)
     if _consumer_map.get(name, None):
         del _consumer_map[name]
+
+
+def register_module(module):
+    _registered_modules.append(module)
 
 
 def inject(cls, name):
@@ -59,12 +68,11 @@ def get_resource(name):
 
 
 def context_post_init():
+    global _registered_modules
     for module in _registered_modules:
         if hasattr(module, '_post_init'):
             module._post_init()
-    for service in _registered_services:
-        if hasattr(service, '_post_init'):
-            service._post_init()
+    del _registered_modules
 
 
 def _inject(cls, name, service):
@@ -72,10 +80,3 @@ def _inject(cls, name, service):
     for attr, value in _methods.get(name, {}).iteritems():
         if not getattr(cls, attr, None):
             setattr(cls, attr, value)
-
-
-_registry = {}
-_consumer_map = {}
-_methods = {}
-_registered_modules = []
-_registered_services = []

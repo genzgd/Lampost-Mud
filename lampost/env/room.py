@@ -59,7 +59,7 @@ class Exit(RootDBO):
 class Room(RootDBO):
     dbo_key_type = "room"
     dbo_fields = "title", "desc", "dbo_rev", "size"
-    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseDBO), DBOList("mobile_resets", MobileReset),\
+    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseDBO), DBOList("mobile_resets", MobileReset), \
                 DBOList("article_resets", ArticleReset)
     dbo_rev = 0
 
@@ -153,9 +153,10 @@ class Room(RootDBO):
     # noinspection PyCallingNonCallable
     def tell_contents(self, msg_type, *args):
         for receiver in self.contents:
-            rec_method = getattr(receiver, msg_type, None)
-            if rec_method:
-                rec_method(*args)
+            try:
+                getattr(receiver, msg_type)(*args)
+            except AttributeError:
+                pass
 
     def reset(self):
         for m_reset in self.mobile_resets:
@@ -184,7 +185,8 @@ class Room(RootDBO):
         for article_load in reset.article_loads:
             article_template = load_object(ArticleTemplate, article_load.article_id)
             if not template:
-                error("Invalid article load for roomId: {0}, mobileId: {1}, articleId: {2}".format(self.dbo_id, template.mobile_id, article_template.article_id))
+                error(
+                    "Invalid article load for roomId: {0}, mobileId: {1}, articleId: {2}".format(self.dbo_id, template.mobile_id, article_template.article_id))
                 continue
             article = article_template.create_instance()
             instance.add_inven(article)

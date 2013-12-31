@@ -74,7 +74,7 @@ class BaseSkill(TemplateInstance):
     def prepare_action(self, source, target, **kwargs):
         if self.cool_down and self.last_used + self.cool_down > dispatcher.pulse_count:
             raise ActionError("You cannot {} yet.".format(self.verb))
-        if self.prep_map:
+        if self.prep_map and self.prep_time:
             source.broadcast(verb=self.verb, display=self.display, target=target, **self.prep_map)
 
     def use(self, source, **kwargs):

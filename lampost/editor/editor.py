@@ -9,7 +9,7 @@ from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.socials import SocialsResource
-from lampost.lpflavor.combat import DefenseSkill, AttackSkill, AttackTemplate, DefenseTemplate
+from lampost.lpflavor.combat import AttackTemplate, DefenseTemplate
 from lampost.model.area import Area
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace

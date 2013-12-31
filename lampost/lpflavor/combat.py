@@ -45,7 +45,7 @@ DAMAGE_DELIVERY = {'weapon': {'desc': 'Use weapon delivery type'},
                    'psych': {'desc': 'Delivered via psychic or other non-physical means'}}
 
 CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome', 'Evenly Matched',
-              'Threatening', 'Difficult', 'Intimidating', 'Imposing', 'Frightening', 'Terrifying', 'Unassailable', 'Impossible']
+              'Threatening', 'Difficult', 'Intimidating', 'Imposing', 'Frightening', 'Terrifying', 'Unassailable']
 
 
 def validate_weapon(ability, weapon_type):
@@ -88,7 +88,7 @@ def calc_consider(entity):
 def consider_translate(source_con, target_con):
     perc = max(target_con, 1) / max(source_con, 1) * 100
     perc = min(perc, 199)
-    perc = int(perc / 16)
+    perc = int(perc / 13.27)
     return CON_LEVELS[perc]
 
 
@@ -230,7 +230,3 @@ def consider(target_method, source, target, **ignored):
     source_con = source.rec_consider()
     con_string = consider_translate(source_con, target_con)
     return "At first glance, {} looks {}.".format(target.name, con_string)
-
-
-
-

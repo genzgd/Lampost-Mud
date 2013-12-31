@@ -36,10 +36,7 @@ def add_action(verbs, method, msg_class=None):
 
 def make_action(action, verbs=None, msg_class=None, prep=None, obj_msg_class=None, **kw_args):
     if verbs:
-        try:
-            getattr(action, 'verbs')
-        except AttributeError:
-            action.verbs = set()
+        action.verbs = getattr(action, 'verbs', set())
         action.verbs.update(convert_verbs(verbs))
 
     if msg_class:

@@ -59,5 +59,3 @@ def _message_key(player_id):
 
 def _block_key(player_id):
     return "blocks:{}".format(player_id)
-
-
