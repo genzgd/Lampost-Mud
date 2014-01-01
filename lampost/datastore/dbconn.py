@@ -181,23 +181,14 @@ class RedisStore():
                 self.set_index(ix_key, new_val, dbo.dbo_id)
 
     def _hydrate_dbo(self, dbo, dbo_dict):
+        dbo.hydrate(dbo_dict)
+        return
+
         for field_name in dbo.dbo_fields:
             try:
                 setattr(dbo, field_name, dbo_dict[field_name])
             except KeyError:
                 dbo.__dict__.pop(field_name, None)
-
-        for dbo_list in dbo.dbo_lists:
-            raw_list = dbo_dict.get(dbo_list.field_name, None)
-            if raw_list:
-                coll = dbo_list.instance(dbo)
-                for child_json in raw_list:
-                    child_dbo = cls_registry(child_json.get('class_id', dbo_list.base_class))()
-                    self._hydrate_dbo(child_dbo, child_json)
-                    child_dbo.on_loaded()
-                    coll.append(child_dbo)
-            else:
-                dbo.__dict__.pop(dbo_list.field_name, None)
 
         for dbo_map in dbo.dbo_maps:
             raw_list = dbo_dict.get(dbo_map.field_name, None)
@@ -213,12 +204,3 @@ class RedisStore():
                         warn("Missing template for {}".format(child_dbo_id))
             else:
                 dbo.__dict__.pop(dbo_map.field_name, None)
-
-        for dbo_ref in dbo.dbo_refs:
-            try:
-                ref_key = dbo_dict[dbo_ref.field_name]
-                ref_obj = self.load_object(dbo_ref.base_class, ref_key)
-                setattr(dbo, dbo_ref.field_name, ref_obj)
-            except KeyError:
-                if __debug__ and dbo.dbo_key_type:
-                    debug("db: Object " + unicode(dbo.dbo_debug_key) + " json missing ref " + dbo_ref.field_name, self)

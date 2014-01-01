@@ -1,6 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, RootDBOMeta
-from lampost.util.lmutil import cls_name
+from lampost.datastore.dbo import RootDBOMeta, DBOField
 
 m_requires('cls_registry', __name__)
 
@@ -25,8 +24,7 @@ def template_class(template_cls, instance_cls):
 
 
 class Template(object):
-    dbo_fields = "dbo_rev",
-    dbo_rev = 0
+    dbo_rev = DBOField(0)
 
     def config_instance(self, instance, owner):
         pass

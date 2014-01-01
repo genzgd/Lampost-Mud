@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import RootDBO, DBOList
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.article import ArticleLoad
 from lampost.model.item import config_targets
@@ -36,10 +36,9 @@ class MobileTemplate(Template, RootDBO):
 
 class MobileReset(RootDBO):
     dbo_fields = "mobile_id", "reset_count", "reset_max"
-    dbo_lists = DBOList("article_loads", ArticleLoad),
     reset_count = 1
     reset_max = 1
-    article_loads = []
+    article_loads = DBOField([], ArticleLoad)
 
     @property
     def reset_key(self):

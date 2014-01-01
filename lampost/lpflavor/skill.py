@@ -1,13 +1,10 @@
-import sys
-
 from random import randint
-from collections import defaultdict
-from lampost.context.resource import m_requires, provides
-from lampost.datastore.dbo import RootDBO, DBORef
+from lampost.context.resource import m_requires
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.action import make_action, ActionError
-from lampost.gameops.template import template_class, Template, TemplateInstance
+from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.entity import enhance_soul, diminish_soul
-from lampost.mud.action import imm_actions, mud_action, imm_action
+from lampost.mud.action import mud_action, imm_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
 
@@ -31,14 +28,16 @@ def roll_calc(source, calc, skill_level=0):
         roll = 40
     return base_calc + roll * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
+
 def avg_calc(source, calc, skill_level=0):
     base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
 class SkillTemplate(Template, RootDBO):
-    dbo_fields = 'class_id',
     dbo_key_type = 'skill'
+
+    class_id = DBOField()
 
     def on_loaded(self):
         super(SkillTemplate, self).on_loaded()

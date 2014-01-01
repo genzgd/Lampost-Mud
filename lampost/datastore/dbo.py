@@ -1,3 +1,4 @@
+import copy
 from lampost.context.resource import m_requires
 from lampost.util.lmutil import cls_name
 
@@ -7,6 +8,7 @@ m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
 class RootDBOMeta(type):
 
     def __init__(cls, class_name, bases, new_attrs):
+
         def build_coll(coll_name):
             coll = set()
             for base in bases:
@@ -16,8 +18,13 @@ class RootDBOMeta(type):
 
         build_coll('dbo_fields')
         build_coll('dbo_maps')
-        build_coll('dbo_lists')
-        build_coll('dbo_refs')
+
+        for name, attr in new_attrs.iteritems():
+            try:
+                attr.dbo_init(cls, name)
+                cls.dbo_fields.add(name)
+            except AttributeError:
+                pass
 
 
 class RootDBO(object):
@@ -27,40 +34,26 @@ class RootDBO(object):
 
     dbo_indexes = ()
 
+    @classmethod
+    def load_ref(cls, dbo_id):
+        return load_object(cls, dbo_id)
+
     def __init__(self, dbo_id=None):
         if dbo_id:
             self.dbo_id = unicode(str(dbo_id).lower())
 
-    def append_list(self, attr_name, value):
-        try:
-            self.__dict__[attr_name].append(value)
-        except KeyError:
-            new_list = list()
-            setattr(self, attr_name, new_list)
-            new_list.append(value)
-
-    def remove_list(self, attr_name, value):
-        my_list = getattr(self, attr_name)
-        my_list.remove(value)
-        if not my_list:
-            self.__dict__.pop(attr_name, None)
-
-    def append_map(self, attr_name, value):
-        try:
-            self.__dict__[attr_name][value.dbo_id] = value
-        except KeyError:
-            new_map = dict()
-            setattr(self, attr_name, new_map)
-            new_map[value.dbo_id] = value
-
-    def remove_map(self, attr_name, dbo_id):
-        my_map = getattr(self, attr_name)
-        my_map.pop(dbo_id, None)
-        if not my_map:
-            self.__dict__.pop(attr_name, None)
-
-    def del_coll(self, attr_name):
-        self.__dict__.pop(attr_name, None)
+    def hydrate(self, dto):
+        for field in self.dbo_fields:
+            try:
+                dto_value = dto[field]
+                try:
+                    dbo_field = getattr(self.__class__, field)
+                    dbo_field.hydrate_set(self, dto_value)
+                except AttributeError as exp:
+                    setattr(self, field, dto_value)
+            except KeyError:
+                self.__dict__.pop(field, None)
+        return self
 
     def on_created(self):
         pass
@@ -120,23 +113,6 @@ def dbo_describe(dbo, level=0, follow_refs=True, dict_key=None):
     for field in getattr(dbo, 'dbo_fields', []):
         append(field, getattr(dbo, field, "None"))
 
-    for ref in getattr(dbo, 'dbo_refs', []):
-        child_dbo = getattr(dbo, ref.field_name, None)
-        if child_dbo:
-            if follow_refs or not child_dbo.dbo_key_type:
-                display.extend(dbo_describe(child_dbo, level + 1))
-            else:
-                append(ref.field_name, child_dbo.dbo_key)
-        else:
-            append(ref.field_name, "None")
-    for col in getattr(dbo, 'dbo_lists', ()):
-        child_coll = getattr(dbo, col.field_name)
-        if child_coll:
-            append(col.field_name, "")
-            for child_dbo in child_coll:
-                display.extend(dbo_describe(child_dbo, level + 1, False))
-        else:
-            append(col.field_name, "None")
     for col in getattr(dbo, 'dbo_maps', ()):
         child_coll = getattr(dbo, col.field_name)
         if child_coll:
@@ -157,25 +133,116 @@ def to_dbo_dict(dbo, exclude_defaults=False):
                 dbo_dict[field_name] = getattr(dbo, field_name, None)
         else:
             dbo_dict[field_name] = getattr(dbo, field_name, None)
-    for coll_type in dbo.dbo_lists, dbo.dbo_maps:
-        for dbo_col in coll_type:
-            dbo_col.build_dict(dbo, dbo_dict, exclude_defaults)
-    for dbo_ref in dbo.dbo_refs:
-        try:
-            dbo_dict[dbo_ref.field_name] = getattr(dbo, dbo_ref.field_name).dbo_id
-        except AttributeError:
-            pass
+
+    for dbo_col in dbo.dbo_maps:
+        dbo_col.build_dict(dbo, dbo_dict, exclude_defaults)
+
     return dbo_dict
 
 
-class DBORef():
+def primitive_getter(self, instance):
+    return instance.__dict__.get(self.field, self.default)
+
+
+def complex_getter(self, instance):
+    try:
+        return instance.__dict__[self.field]
+    except KeyError:
+        new_value = copy.copy(self.default)
+        instance.__dict__[self.field] = new_value
+        return new_value
+
+
+def list_setter(self, instance, dto_list):
+    instance.__dict__[self.field] = [cls_registry(self.dbo_class)().hydrate(dto) for dto in dto_list]
+
+
+class DBOField(object):
+
+    def __init__(self, default=None, dbo_class=None):
+        self.default = default
+        self.dbo_class = dbo_class
+        if self.dbo_class and hasattr(default, 'append'):
+            self.hydrate_set = list_setter.__get__(self)
+        if default is None or isinstance(default, (int, basestring, bool, tuple, float)):
+            self.getter = primitive_getter.__get__(self)
+        else:
+            self.getter = complex_getter.__get__(self)
+
+    def __get__(self, instance, owner=None):
+        if not instance:
+            return self
+        return self.getter(instance)
+
+    def __set__(self, instance, value):
+        if value == self.default:
+            instance.__dict__.pop(self.field, None)
+        else:
+            instance.__dict__[self.field] = value
+
+    def hydrate_set(self, instance, dto_value):
+        return self.__set__(instance, dto_value)
+
+    def dbo_init(self, owner, field):
+        self.owner = owner
+        self.field = field
+
+    def hydrate_dto(self, instance, dto):
+        dto[self.field] = self.__get__(instance)
+
+    def hydrate_save_dto(self, instance, save_dto):
+        try:
+            save_dto[self.field] = instance.__dict__[self.field]
+        except KeyError:
+            pass
+
+
+class DBORef(object):
+
+    def __init__(self, dbo_class, lazy=False):
+        self.dbo_class = dbo_class
+        self.lazy = lazy
+
+    def __get__(self, instance, owner=None):
+        if self.lazy:
+            try:
+                return dbo_class.load_ref(instance.__dict__[self.ref_id])
+            except KeyError:
+                pass
+        else:
+            return instance.__dict__[self.field]
+
+    def __set__(self, instance, dbo_id):
+        if dbo_id:
+            if self.lazy:
+                instance.__dict__[self.ref_id] = dbo_id
+            else:
+                instance.__dict__[self.field] = self.dbo_class.load_ref(dbo_id)
+        else:
+            instance.__dict__.pop(self.field, None)
+
+    def dbo_init(self, owner, field):
+        self.owner = owner
+        self.field = field
+        if self.lazy:
+            self.ref_id = '_{}_ref'.format(field)
+
+    def hydrate_dto(self, instance, dto_dict):
+        dto_dict[self.field] = instance.__dict__.get(self.ref_id, None)
+
+    def hydrate_dbo(self, instance, dto_dict):
+        try:
+            dto_dict[self.field] = instance.__dict__[self.ref_id]
+        except KeyError:
+            pass
+
+
+class DBOMap(object):
+    coll_class = dict
+
     def __init__(self, field_name, base_class):
         self.field_name = field_name
         self.base_class = base_class
-
-
-class DBOList(DBORef):
-    coll_class = list
 
     def instance(self, dbo):
         instance = self.coll_class()
@@ -191,14 +258,6 @@ class DBOList(DBORef):
         else:
             dbo_list = getattr(dbo, self.field_name)
         self._add_raw_coll(dbo_dict, dbo_list, exclude_defaults)
-
-    def _add_raw_coll(self, dbo_dict, dbo_list, exclude_defaults):
-        if not exclude_defaults or dbo_list:
-            dbo_dict[self.field_name] = [to_dbo_dict(child_dbo, exclude_defaults) for child_dbo in dbo_list]
-
-
-class DBOMap(DBOList):
-    coll_class = dict
 
     def _add_raw_coll(self, dbo_dict, dbo_map, exclude_defaults):
         if dbo_map or not exclude_defaults:

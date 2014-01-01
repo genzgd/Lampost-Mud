@@ -47,7 +47,10 @@ class Dispatcher:
     def dispatch(self, event_type, *args, **kwargs):
         sorted_events = sorted(self._registrations.get(event_type, []), key=lambda reg: reg.priority)
         for registration in sorted_events:
-            registration.callback(*args, **kwargs)
+            try:
+                registration.callback(*args, **kwargs)
+            except Exception as dispatch_error:
+                error("Dispatch Error", 'Dispatcher', dispatch_error)
 
     def detach_events(self, owner):
         for registration in self._owner_map[owner].copy():

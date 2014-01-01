@@ -1,5 +1,5 @@
 from lampost.context.resource import provides, m_requires
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.util.lmutil import javascript_safe
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
@@ -65,15 +65,12 @@ class ConfigManager():
 
 class Config(RootDBO):
     dbo_key_type = "config"
-    dbo_fields = 'title', 'description', 'start_room', 'auto_imm_level', 'server_settings',\
-                 'default_displays', 'game_settings'
-    title = "Lampost (New Install)"
-    description = "A fresh install of Lampost Mud"
-    auto_imm_level = 0
 
-    def __init__(self, dbo_id):
-        self.dbo_id = dbo_id
-        self.default_displays = {}
-        self.server_settings = {}
-        self.game_settings = {}
+    title = DBOField('Lampost (New Install)')
+    description = DBOField('A fresh install of Lampost Mud')
+    auto_imm_level = DBOField(0)
+    start_room = DBOField()
+    default_displays = DBOField({})
+    server_settings = DBOField({})
+    game_settings = DBOField({})
 

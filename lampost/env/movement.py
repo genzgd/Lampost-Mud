@@ -3,6 +3,10 @@ class Direction(object):
     ordered = []
 
     @classmethod
+    def load_ref(cls, key):
+        return cls.ref_map[key]
+
+    @classmethod
     def find_dir(cls, name):
         for key, value in cls.ref_map.iteritems():
             if name == key or name == value.desc:

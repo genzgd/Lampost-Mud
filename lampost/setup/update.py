@@ -1,12 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.env.room import Room
-from lampost.lpflavor.setup import GAME_SETTINGS
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
-from lampost.model.player import Player
-from lampost.model.race import PlayerRace
-from lampost.setup.scripts import build_default_displays, build_default_settings
-from lampost.setup.settings import GAME_SETTINGS_DEFAULT, SERVER_SETTINGS_DEFAULT
 
 m_requires('log', 'datastore', __name__)
 
@@ -28,6 +23,20 @@ def convert_areas(source):
                 del area_dict[coll_type]
             save_raw(area_key, area_dict)
     return 'Convert Complete'
+
+
+def convert_directions(source):
+    for area_id in fetch_set_keys('areas'):
+        for room_id in fetch_set_keys('area_rooms:{}'.format(area_id)):
+            room_key = 'room:{}'.format(room_id)
+            room_raw = load_raw(room_key)
+            for exit_dto in room_raw.get('exits', []):
+                dir_key = exit_dto['dir_name']
+                exit_dto['direction'] = dir_key
+                del exit_dto['dir_name']
+            print room_raw
+            save_raw(room_key, room_raw)
+
 
 
 

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires
+from lampost.datastore.dbo import DBOField
 from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
@@ -19,8 +20,7 @@ class MobileLP(Mobile, EntityLP):
 
 
 class MobileTemplateLP(MobileTemplate):
-    dbo_fields = 'default_skills',
-    default_skills = {}
+    default_skills = DBOField({})
 
     def config_instance_cls(self, instance_cls):
         config_targets(instance_cls)

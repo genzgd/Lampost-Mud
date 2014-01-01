@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBORef, DBOList
+from lampost.datastore.dbo import RootDBO, DBORef, DBOField
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileReset, MobileTemplate
 from lampost.model.item import BaseDBO
@@ -11,10 +11,11 @@ m_requires('log', 'datastore', __name__)
 
 
 class Exit(RootDBO):
-    dbo_fields = "dir_name", "desc", "aliases"
-    desc = None
+    direction = DBORef(Direction)
+    desc = DBOField()
+    aliases = DBOField([])
+
     can_follow = True
-    aliases = []
     msg_class = 'no_args'
 
     def __init__(self, direction=None, destination=None):
@@ -27,10 +28,6 @@ class Exit(RootDBO):
         return (self.direction.key,), (self.direction.desc,)
 
     @property
-    def dir_name(self):
-        return self.direction.key
-
-    @property
     def dir_desc(self):
         return self.direction.desc
 
@@ -39,10 +36,6 @@ class Exit(RootDBO):
         from_dir = Direction.ref_map.get(self.direction.rev_key, None)
         if from_dir:
             return from_dir.desc
-
-    @dir_name.setter
-    def dir_name(self, value):
-        self.direction = Direction.ref_map[value]
 
     def rec_glance(self, source, **ignored):
         if source.build_mode:
@@ -58,17 +51,15 @@ class Exit(RootDBO):
 
 class Room(RootDBO):
     dbo_key_type = "room"
-    dbo_fields = "title", "desc", "dbo_rev", "size"
-    dbo_lists = DBOList("exits", Exit), DBOList("extras", BaseDBO), DBOList("mobile_resets", MobileReset), \
-                DBOList("article_resets", ArticleReset)
-    dbo_rev = 0
 
-    desc = ""
-    size = 10
-    exits = []
-    extras = []
-    mobile_resets = []
-    article_resets = []
+    dbo_rev = DBOField(0)
+    desc = DBOField()
+    size = DBOField(10)
+    exits = DBOField([], Exit)
+    extras = DBOField([], BaseDBO)
+    mobile_resets = DBOField([], MobileReset)
+    article_resets = DBOField([], ArticleReset)
+    title = DBOField()
 
     def __init__(self, dbo_id, title=None, desc=None):
         super(Room, self).__init__(dbo_id)
@@ -198,5 +189,7 @@ class Room(RootDBO):
         instance.enter_env(self)
         return instance
 
-
-Exit.dbo_refs = DBORef("destination", Room),
+dest_ref = DBORef(Room)
+Exit.destination = dest_ref
+dest_ref.dbo_init(Exit, 'destination')
+Exit.dbo_fields.add('destination')

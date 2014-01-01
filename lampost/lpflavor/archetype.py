@@ -1,5 +1,4 @@
-from lampost.datastore.dbo import DBOMap
-from lampost.lpflavor.skill import SkillTemplate
+from lampost.datastore.dbo import DBOField
 from lampost.model.race import PlayerRace
 
 
@@ -8,6 +7,4 @@ class Archetype(PlayerRace):
 
 
 class PLayerRaceLP(PlayerRace):
-    dbo_fields = 'default_skills',
-
-    default_skills = {}
+    default_skills = DBOField({})

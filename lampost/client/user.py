@@ -1,7 +1,7 @@
 import time
 
 from lampost.context.resource import requires, provides, m_requires
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 
@@ -10,19 +10,18 @@ m_requires('log', 'datastore', 'dispatcher', __name__)
 
 class User(RootDBO):
     dbo_key_type = "user"
-    dbo_fields = "user_name", "email", "password", "password_reset", "player_ids", "toolbar", "displays", "notifies"
     dbo_set_key = "users"
     dbo_indexes = "user_name", "email"
 
-    user_name = ""
-    password = None
-    password_reset = False
-    email = ""
+    user_name = DBOField('')
+    password = DBOField()
+    password_reset = DBOField(False)
+    email = DBOField('')
 
-    player_ids = []
-    toolbar = []
-    displays = {}
-    notifies = []
+    player_ids = DBOField([])
+    toolbar = DBOField([])
+    displays = DBOField({})
+    notifies = DBOField([])
 
 
 @provides('user_manager')
