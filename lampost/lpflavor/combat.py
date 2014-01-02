@@ -1,6 +1,6 @@
 from __future__ import division
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import DBOField
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_LIST
@@ -113,34 +113,25 @@ class Attack(object):
                                    damage=self.damage)])
 
 
-class AttackTemplate(SkillTemplate, RootDBO):
+class AttackTemplate(SkillTemplate):
     dbo_set_key = 'attacks'
 
-    def config_instance(self, instance, owner):
-        super(AttackTemplate, self).config_instance(instance, owner)
-        if instance.damage_type != 'weapon':
-            instance.active_damage_type = instance.damage_type
-
-    def on_created(self):
-        self.class_id = 'attack'
-        self.prep_map = {'s': 'You prepare to {v} {N}.', 't' : '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'}
-        self.success_map = {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY}
-        self.fail_map = {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY}
+    class_id = DBOField('attack')
 
 
 class AttackSkill(BaseSkill):
-    template_fields = 'damage_pool', 'delivery', 'damage_type', 'damage_calc', 'accuracy_calc', 'weapon_type'
-
     skill_type = 'attack'
     msg_class = 'rec_attack'
-    damage_type = 'weapon'
-    delivery = 'melee'
-    damage_calc = {}
-    damage_pool = 'health'
-    accuracy_calc = {}
-    weapon_type = 'any'
-    success_map = {}
-    fail_map = {}
+
+    damage_type = DBOField('weapon')
+    delivery = DBOField('melee')
+    damage_calc = DBOField({})
+    damage_pool = DBOField('health')
+    accuracy_calc = DBOField({})
+    weapon_type = DBOField('any')
+    prep_map = DBOField({'s': 'You prepare to {v} {N}.', 't' : '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
+    success_map = DBOField({'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
+    fail_map = DBOField({'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
 
     def prepare_action(self, source, target, **kwargs):
         if source == target:
@@ -164,35 +155,21 @@ class AttackSkill(BaseSkill):
         return int((effect - cost) / max(self.prep_time, 1))
 
 
-class DefenseTemplate(SkillTemplate, RootDBO):
+class DefenseTemplate(SkillTemplate):
     dbo_set_key = 'defenses'
 
-    def on_created(self):
-        self.class_id = 'defense'
-        self.success_map = {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'}
-        self.damage_type = ['physical']
-        self.delivery = ['melee', 'ranged']
-
-    def config_instance_cls(self, instance_cls):
-        super(SkillTemplate, self).config_instance_cls(instance_cls)
-        instance_cls.calc_damage_types = set()
-        for damage_type in self.damage_type:
-            try:
-                instance_cls.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
-            except KeyError:
-                instance_cls.calc_damage_types.add(damage_type)
+    class_id = DBOField('defense')
 
 
 class DefenseSkill(BaseSkill):
-    template_fields = 'damage_type', 'delivery', 'absorb_calc', 'avoid_calc', 'weapon_type'
-
     skill_type = 'defense'
-    damage_type = []
-    delivery = []
-    weapon_type = 'unused'
-    absorb_calc = {}
-    avoid_calc = {}
-    success_map = {}
+
+    damage_type = DBOField(['physical'])
+    delivery = DBOField(['melee', 'ranged'])
+    weapon_type = DBOField('unused')
+    absorb_calc = DBOField({})
+    avoid_calc = DBOField({})
+    success_map = DBOField({'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
 
     def invoke(self, source, **ignored):
         source.defenses.add(self)

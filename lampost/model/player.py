@@ -1,6 +1,6 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.model.entity import Entity, enhance_soul
 
 m_requires('log', 'dispatcher', __name__)
@@ -9,14 +9,15 @@ m_requires('log', 'dispatcher', __name__)
 class Player(RootDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
-    dbo_fields = "imm_level", "room_id", "home_room", "age", "user_id", "created", "last_login", "last_logout"
 
-    imm_level = 0
-    user_id = 0
-    last_login = 0
-    created = 0
-    last_logout = 0
-    age = 0
+    user_id = DBOField(0)
+    created = DBOField(0)
+    imm_level = DBOField(0)
+    last_login = DBOField(0)
+    last_logout = DBOField(0)
+    age = DBOField(0)
+    room_id = DBOField()
+    home_room = DBOField()
     build_mode = False
     rec_player = True
 

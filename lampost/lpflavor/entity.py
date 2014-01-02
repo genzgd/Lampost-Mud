@@ -20,6 +20,7 @@ def update_settings(game_settings):
 
 
 class EntityLP(Entity):
+
     health = 0
     stamina = 0
     mental = 0
@@ -34,7 +35,6 @@ class EntityLP(Entity):
     _action_pulse = None
     _refresher = {}
     effects = []
-    skills = {}
 
     def __init__(self):
         super(EntityLP, self).__init__()

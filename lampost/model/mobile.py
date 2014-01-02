@@ -1,17 +1,17 @@
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.gameops.template import Template, TemplateInstance
+from lampost.gameops.template import Template
 from lampost.model.article import ArticleLoad
-from lampost.model.item import config_targets
+from lampost.model.entity import Entity
 
 
-class Mobile(TemplateInstance):
+class Mobile(Entity):
 
     @property
     def name(self):
         return self.title
 
 
-class MobileTemplate(Template, RootDBO):
+class MobileTemplate(Template):
     dbo_key_type = "mobile"
 
     @property
@@ -21,9 +21,6 @@ class MobileTemplate(Template, RootDBO):
     @property
     def area_id(self):
         return self.dbo_id.split(":")[0]
-
-    def config_instance_cls(self, instance_cls):
-        config_targets(instance_cls)
 
     def config_instance(self, instance, owner):
         instance.baptise()
@@ -35,9 +32,9 @@ class MobileTemplate(Template, RootDBO):
 
 
 class MobileReset(RootDBO):
-    dbo_fields = "mobile_id", "reset_count", "reset_max"
-    reset_count = 1
-    reset_max = 1
+    mobile_id = DBOField()
+    reset_count = DBOField(1)
+    reset_max = DBOField(1)
     article_loads = DBOField([], ArticleLoad)
 
     @property

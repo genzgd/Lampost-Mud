@@ -1,27 +1,28 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, dbo_describe
+from lampost.datastore.dbo import dbo_describe, DBOField, RootDBOMeta, ProtoField
 
 m_requires('dispatcher', __name__)
 
 
-def config_targets(item):
-    item.target_id = tuple(unicode(item.title).lower().split(" "))
-    item.target_aliases = [tuple(unicode(alias).split(" ")) for alias in item.aliases]
-
-
 class BaseItem(object):
-    template_fields = "desc", "title", "aliases"
+    __metaclass__ = RootDBOMeta
 
-    desc = ""
-    title = ""
-    aliases = []
+    desc = DBOField('')
+    title = DBOField('')
+    aliases = DBOField([])
+    sex = DBOField('none')
+    target_id = ProtoField()
+    target_aliases = ProtoField([])
 
-    sex = "none"
     living = False
     env = None
 
-    target_aliases = []
     rec_general = True
+
+    @staticmethod
+    def config_prototype(proto):
+        proto.target_id = tuple(unicode(proto.title).lower().split(" "))
+        proto.target_aliases = [tuple(unicode(alias).split(" ")) for alias in proto.aliases]
 
     def rec_examine(self, source, **ignored):
         source.display_line(self.desc if self.desc else self.title)
@@ -39,9 +40,6 @@ class BaseItem(object):
     def rec_social(self, social):
         pass
 
-    def on_loaded(self):
-        config_targets(self)
-
     def enter_env(self, new_env):
         self.env = new_env
         if new_env:
@@ -55,9 +53,5 @@ class BaseItem(object):
     def detach(self):
         detach_events(self)
         self.env = None
-
-
-class BaseDBO(BaseItem, RootDBO):
-    dbo_fields = BaseItem.template_fields
 
 

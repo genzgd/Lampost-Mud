@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.env.room import Room
 
 
@@ -9,11 +9,12 @@ m_requires('log', 'dispatcher', 'datastore',  __name__)
 class Area(RootDBO):
     dbo_key_type = "area"
     dbo_set_key = "areas"
-    dbo_fields = "name", "desc", "next_room_id", "owner_id", "dbo_rev"
 
-    next_room_id = 0
-    dbo_rev = 0
-    desc = ""
+    name = DBOField()
+    desc = DBOField()
+    next_room_id = DBOField(0)
+    owner_id = DBOField()
+    dbo_rev = DBOField(0)
 
     reset_time = 180
 

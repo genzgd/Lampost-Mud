@@ -1,4 +1,5 @@
 import sys
+from lampost.datastore.dbo import DBOField
 from lampost.env.room import Exit
 from lampost.gameops.template import template_class
 from lampost.lpflavor import setup
@@ -28,6 +29,8 @@ equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
 def _post_init():
     PlayerRace.attr_list = ATTR_LIST
+
+    PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in ATTR_LIST})
 
     cls_registry.set_class(Player, PlayerLP)
     cls_registry.set_class(Mobile, MobileLP)

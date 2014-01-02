@@ -3,7 +3,7 @@ class Direction(object):
     ordered = []
 
     @classmethod
-    def load_ref(cls, key):
+    def load_ref(cls, key, owner=None):
         return cls.ref_map[key]
 
     @classmethod

@@ -21,7 +21,7 @@ class RedisStore():
         if self.object_exists(dbo_class.dbo_key_type, dbo_id):
             raise ObjectExistsError(dbo_id)
         dbo = dbo_class(dbo_id)
-        self._hydrate_dbo(dbo, dbo_dict)
+        dbo.hydrate(dbo_dict)
         dbo.on_created()
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
@@ -66,9 +66,10 @@ class RedisStore():
         if not json_str:
             return None
         dbo_dict = json_decode(json_str)
-        dbo = cls_registry(dbo_dict.get('class_id', base_class))(key)
+        dbo_cls = cls_registry(dbo_dict.get('class_id', base_class))
+        dbo = dbo_cls(key)
         self._object_map[dbo.dbo_key] = dbo
-        self._hydrate_dbo(dbo, dbo_dict)
+        dbo.hydrate(dbo_dict)
         dbo.on_loaded()
         return dbo
 
@@ -91,7 +92,7 @@ class RedisStore():
         self.delete_key(set_key)
 
     def update_object(self, dbo, dbo_dict):
-        self._hydrate_dbo(dbo, dbo_dict)
+        dbo.hydrate(dbo_dict)
         self.save_object(dbo, True)
 
     def delete_object(self, dbo):
@@ -179,28 +180,3 @@ class RedisStore():
                 if self.get_index(ix_key, new_val):
                     raise NonUniqueError(ix_key, new_val)
                 self.set_index(ix_key, new_val, dbo.dbo_id)
-
-    def _hydrate_dbo(self, dbo, dbo_dict):
-        dbo.hydrate(dbo_dict)
-        return
-
-        for field_name in dbo.dbo_fields:
-            try:
-                setattr(dbo, field_name, dbo_dict[field_name])
-            except KeyError:
-                dbo.__dict__.pop(field_name, None)
-
-        for dbo_map in dbo.dbo_maps:
-            raw_list = dbo_dict.get(dbo_map.field_name, None)
-            if raw_list:
-                coll = dbo_map.instance(dbo)
-                for child_dbo_id, child_json in raw_list.iteritems():
-                    child_template = self.load_object(dbo_map.base_class, child_dbo_id)
-                    if child_template:
-                        child_dbo = child_template.create_instance(dbo)
-                        self._hydrate_dbo(child_dbo, child_json)
-                        coll[child_dbo_id] = child_dbo
-                    else:
-                        warn("Missing template for {}".format(child_dbo_id))
-            else:
-                dbo.__dict__.pop(dbo_map.field_name, None)

@@ -1,21 +1,18 @@
-from item import BaseItem
+from lampost.model.item import BaseItem
 from lampost.gameops.action import ActionError
-from lampost.datastore.dbo import RootDBO
-from lampost.gameops.template import Template, TemplateInstance
-from lampost.model.item import config_targets
-from lampost.util.lmutil import cls_name
+from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.gameops.template import Template
 
 VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
-class Article(TemplateInstance, BaseItem):
-    template_fields = "weight", "equip_slot", "art_type", "level", "weapon_type"
+class Article(BaseItem):
 
-    weight = 0
-    slot = "none"
-    art_type = "treasure"
-    level = 1
-    equip_slot = "none"
+    weight = DBOField(0)
+    equip_slot = DBOField('none')
+    art_type = DBOField('treasure')
+    level = DBOField(1)
+
     current_slot = None
 
     @property
@@ -55,17 +52,12 @@ class Article(TemplateInstance, BaseItem):
         return self.do_rec_drop
 
     def do_rec_drop(self, source):
-        if self.equip_slot:
+        if self.current_slot:
             raise ActionError("You must unequip the item before dropping it.")
         return source.drop_inven(self)
 
 
-class Container(Article):
-    def __init__(self, dbo_id):
-        self.contents = []
-
-
-class ArticleTemplate(Template, RootDBO):
+class ArticleTemplate(Template):
     dbo_key_type = "article"
 
     @property
@@ -80,14 +72,11 @@ class ArticleTemplate(Template, RootDBO):
     def reset_key(self):
         return "article_resets:{}".format(self.dbo_id)
 
-    def config_instance_cls(self, instance_cls):
-        config_targets(instance_cls)
-
 
 class ArticleReset(RootDBO):
-    dbo_fields = "article_id", "reset_count", "reset_max"
-    reset_count = 1
-    reset_max = 1
+    article_id = DBOField()
+    reset_count = DBOField(1)
+    reset_max = DBOField(1)
 
     @property
     def reset_key(self):
@@ -95,6 +84,6 @@ class ArticleReset(RootDBO):
 
 
 class ArticleLoad(RootDBO):
-    dbo_fields = 'article_id', 'load_type', 'count'
-    count = 1
-    load_type = 'equip'
+    article_id = DBOField()
+    count = DBOField(1)
+    load_type = DBOField('equip')

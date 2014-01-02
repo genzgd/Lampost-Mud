@@ -1,6 +1,7 @@
 import math
 
 from collections import defaultdict
+from lampost.datastore.dbo import DBOField
 from lampost.gameops.action import action_handler
 
 from lampost.comm.broadcast import Broadcast, SingleBroadcast
@@ -29,10 +30,8 @@ def diminish_soul(owner, action):
 
 
 class Entity(BaseItem):
-    template_fields = "size", "sex"
 
-    sex = 'none'
-    size = 'medium'
+    size = DBOField('medium')
 
     status = 'awake'
     living = True

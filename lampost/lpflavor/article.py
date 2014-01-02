@@ -1,12 +1,13 @@
+from lampost.datastore.dbo import DBOField
 from lampost.model.article import Article
 from lampost.mud.action import mud_action
 
 
 class ArticleLP(Article):
-    template_fields = "weapon_type", "damage_type", "delivery"
-    weapon_type = 'mace'
-    damage_type = 'blunt'
-    delivery = 'melee'
+
+    weapon_type = DBOField('mace')
+    damage_type = DBOField('blunt')
+    delivery = DBOField('melee')
 
 
 @mud_action(('wear', 'equip', 'wield'), 'wear')

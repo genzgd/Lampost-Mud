@@ -1,8 +1,8 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBORef, DBOField
+from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.env.movement import Direction
+from lampost.model.item import BaseItem
 from lampost.model.mobile import MobileReset, MobileTemplate
-from lampost.model.item import BaseDBO
 from lampost.model.article import ArticleReset, ArticleTemplate
 from lampost.gameops.display import *
 
@@ -11,7 +11,8 @@ m_requires('log', 'datastore', __name__)
 
 
 class Exit(RootDBO):
-    direction = DBORef(Direction)
+    direction = DBOField(None, Direction)
+    destination = DBOField(None, 'room')
     desc = DBOField()
     aliases = DBOField([])
 
@@ -56,7 +57,7 @@ class Room(RootDBO):
     desc = DBOField()
     size = DBOField(10)
     exits = DBOField([], Exit)
-    extras = DBOField([], BaseDBO)
+    extras = DBOField([], BaseItem)
     mobile_resets = DBOField([], MobileReset)
     article_resets = DBOField([], ArticleReset)
     title = DBOField()
@@ -188,8 +189,3 @@ class Room(RootDBO):
         instance = template.create_instance()
         instance.enter_env(self)
         return instance
-
-dest_ref = DBORef(Room)
-Exit.destination = dest_ref
-dest_ref.dbo_init(Exit, 'destination')
-Exit.dbo_fields.add('destination')

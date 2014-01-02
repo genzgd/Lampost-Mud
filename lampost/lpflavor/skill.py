@@ -1,8 +1,8 @@
 from random import randint
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.gameops.action import make_action, ActionError
-from lampost.gameops.template import Template, TemplateInstance
+from lampost.datastore.dbo import RootDBO, DBOField, ProtoField
+from lampost.gameops.action import ActionError, convert_verbs
+from lampost.gameops.template import Template
 from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.mud.action import mud_action, imm_action
 
@@ -34,41 +34,35 @@ def avg_calc(source, calc, skill_level=0):
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
-class SkillTemplate(Template, RootDBO):
+class SkillTemplate(Template):
     dbo_key_type = 'skill'
-
-    class_id = DBOField()
 
     def on_loaded(self):
         super(SkillTemplate, self).on_loaded()
-        if not self.instance_cls.auto_start:
-            make_action(self.instance_cls, self.instance_cls.verb)
+        if not self.auto_start:
+            self.verbs = convert_verbs(self.verb)
 
     def config_instance(self, instance, owner):
-        if instance.auto_start:
+        if self.auto_start:
             instance.invoke(owner)
         else:
             enhance_soul(owner, instance)
 
 
-class BaseSkill(TemplateInstance):
-    dbo_fields = 'skill_level', 'last_used'
-    template_fields = 'verb', 'desc', 'costs', 'pre_reqs', 'prep_time', \
-                      'cool_down', 'prep_map', 'success_map', 'fail_map', 'auto_start'
-    verb = None
-    desc = None
-    dbo_rev = 0
-    prep_time = 0
-    cool_down = 0
-    pre_reqs = []
-    costs = {}
-    prep_map = {}
-    success_map = {}
-    fail_map = {}
-    display = 'default'
-    auto_start = False
-    skill_level = 1
-    last_used = 0
+class BaseSkill(RootDBO):
+
+    verb = DBOField()
+    desc = DBOField()
+    prep_time = DBOField(0)
+    cool_down = DBOField(0)
+    pre_reqs = DBOField([])
+    costs = DBOField({})
+    prep_map = DBOField({})
+    display = DBOField('default')
+    auto_start = DBOField(False)
+    skill_level = DBOField(1)
+    last_used = DBOField(0)
+    verbs = ProtoField()
 
     def prepare_action(self, source, target, **kwargs):
         if self.cool_down and self.last_used + self.cool_down > dispatcher.pulse_count:
@@ -120,5 +114,3 @@ def remove_skill(target, obj, **ignored):
     if obj.dbo_id:
         save_object(obj)
     return "Removed {} from {}".format(target, obj.name)
-
-

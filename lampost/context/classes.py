@@ -4,7 +4,7 @@ from lampost.util.lmutil import cls_name
 
 m_requires('log', __name__)
 
-_registry = {}
+_registry = {None: None}
 
 @provides('cls_registry')
 class ClassRegistry(object):
