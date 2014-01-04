@@ -60,7 +60,7 @@ class ConfigManager():
 
     @property
     def config_json(self):
-        return self.config.dbo_dict
+        return self.config.dto_value
 
 
 class Config(RootDBO):

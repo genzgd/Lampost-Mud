@@ -1,6 +1,6 @@
 import sys
 from lampost.datastore.dbo import DBOField
-from lampost.env.room import Exit
+from lampost.env.room import Exit, Room
 from lampost.gameops.template import template_class
 from lampost.lpflavor import setup
 from lampost.lpflavor.archetype import PLayerRaceLP
@@ -11,6 +11,7 @@ from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTION
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
 from lampost.lpflavor.skill import add_skill
+from lampost.model.area import Area
 from lampost.model.article import Article
 from lampost.model.mobile import Mobile, MobileTemplate
 from lampost.model.player import Player
@@ -32,6 +33,8 @@ def _post_init():
 
     PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in ATTR_LIST})
 
+    cls_registry.set_class(Area, Area)
+    cls_registry.set_class(Room, Room)
     cls_registry.set_class(Player, PlayerLP)
     cls_registry.set_class(Mobile, MobileLP)
     cls_registry.set_class(Article, ArticleLP)

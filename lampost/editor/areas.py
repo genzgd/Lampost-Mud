@@ -104,19 +104,19 @@ class CreateExit(Resource):
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
         contents = save_contents(room)
-        this_exit = cls_registry(Exit)(new_dir.key, other_room.dbo_id)
-        room.append_list('exits', this_exit)
+        this_exit = cls_registry(Exit)(new_dir, other_room)
+        room.exits.append(this_exit)
         save_object(room)
         restore_contents(room, contents)
         publish_edit('update', room, session)
         if not content.one_way:
             other_contents = save_contents(other_room)
-            other_exit = cls_registry(Exit)(rev_dir.key, room.dbo_id)
-            other_room.append_list('exits', other_exit)
+            other_exit = cls_registry(Exit)(rev_dir, room)
+            other_room.exits.append(other_exit)
             restore_contents(other_room, other_contents)
             save_object(other_room)
             publish_edit('update', other_room, session, True)
-        return this_exit.dbo_dict
+        return this_exit.dto_value
 
 
 class DeleteExit(Resource):
@@ -128,7 +128,7 @@ class DeleteExit(Resource):
         if not local_exit:
             raise DataError('Exit does not exist')
         contents = save_contents(room)
-        room.remove_list('exits', local_exit)
+        room.exits.remove(local_exit)
         save_object(room)
         restore_contents(room, contents)
 
@@ -136,7 +136,7 @@ class DeleteExit(Resource):
             other_room = local_exit.destination
             other_exit = other_room.find_exit(direction.rev_dir)
             if other_exit:
-                other_room.remove_list('exits', other_exit)
+                other_room.exits.remove(other_exit)
                 if other_room.dbo_rev or other_room.exits:
                     save_object(other_room)
                     publish_edit('update', other_room, session, True)

@@ -1,7 +1,21 @@
 import copy
+
+from collections import defaultdict
 from lampost.context.resource import m_requires
 
 m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
+
+dbo_field_classes = defaultdict(set)
+
+_init_priority = 10000
+
+
+def _post_init():
+    for class_id, dbo_fields in dbo_field_classes.iteritems():
+        dbo_class = cls_registry(class_id)
+        for dbo_field in dbo_fields:
+            dbo_field.dbo_class = dbo_class
+    dbo_field_classes.clear()
 
 
 class RootDBOMeta(type):
@@ -20,7 +34,7 @@ class RootDBOMeta(type):
                 attr.meta_init(name)
             except AttributeError:
                 pass
-        cls.dbo_fields.update({name: dbo_field for name, dbo_field in new_attrs.iteritems() if hasattr(dbo_field, 'hydrate')})
+        cls.dbo_fields.update({name: dbo_field for name, dbo_field in new_attrs.iteritems() if hasattr(dbo_field, 'hydrate_value')})
 
     def add_dbo_fields(cls, new_fields):
         cls._update_dbo_fields(new_fields)
@@ -41,6 +55,20 @@ class RootDBO(object):
             return load_object(cls, dbo_repr)
         return cls().hydrate(dbo_repr)
 
+    @classmethod
+    def to_dto_repr(cls, value):
+        try:
+            return value.dbo_id
+        except AttributeError:
+            return value.dto_value
+
+    @classmethod
+    def to_save_repr(cls, value):
+        try:
+            return value.dbo_id
+        except AttributeError:
+            return value.save_value
+
     def __init__(self, dbo_id=None):
         if dbo_id:
             self.dbo_id = unicode(str(dbo_id).lower())
@@ -48,13 +76,27 @@ class RootDBO(object):
     def hydrate(self, dto):
         for field, dbo_field in self.dbo_fields.iteritems():
             if field in dto:
-                dbo_field.hydrate(self, dto[field])
+                setattr(self, field, dbo_field.hydrate_value(dto[field], self))
             else:
                 try:
                     delattr(self, field)
                 except AttributeError:
                     pass
         return self
+
+    @property
+    def save_value(self):
+        save_value = {}
+        for field, dbo_field in self.dbo_fields.iteritems():
+            try:
+                save_value[field] = dbo_field.save_value(self)
+            except KeyError:
+                continue
+        self._metafields(save_value)
+        return save_value
+
+    def to_dto_dict(self):
+        return
 
     def on_created(self):
         pass
@@ -67,35 +109,24 @@ class RootDBO(object):
         return unicode(":".join([self.dbo_key_type, self.dbo_id]))
 
     @property
-    def dbo_debug_key(self):
-        if self.dbo_key_type:
-            return self.dbo_key
-        return '-embedded-'
-
-    @property
-    def save_dbo_dict(self):
-        return to_dbo_dict(self, True)
-
-    @property
-    def dbo_dict(self):
-        return to_dbo_dict(self)
-
-    @property
     def dto_value(self):
-        dbo_dict = to_dbo_dict(self)
-        dbo_dict['dbo_id'] = self.dbo_id
-        dbo_dict['dbo_key_type'] = getattr(self, 'class_id', self.dbo_key_type)
-        return dbo_dict
-
-    @property
-    def json(self):
-        return json_encode(to_dbo_dict(self))
+        dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.iteritems()}
+        dto_value['dbo_key_type'] = getattr(self, 'class_id', self.dbo_key_type)
+        self._metafields(dto_value)
+        return dto_value
 
     def autosave(self):
         save_object(self, autosave=True)
 
     def rec_describe(self):
         return dbo_describe(self)
+
+    def _metafields(self, dto_repr):
+        for metafield in 'dbo_id', 'class_id', 'template_id':
+            try:
+                dto_repr[metafield] = getattr(self, metafield)
+            except AttributeError:
+                pass
 
 
 def dbo_describe(dbo, level=0):
@@ -115,29 +146,11 @@ def dbo_describe(dbo, level=0):
     return display
 
 
-def to_dbo_dict(dbo, exclude_defaults=False):
-    dbo_dict = {}
-    for field_name in dbo.dbo_fields:
-        if exclude_defaults:
-            default = getattr(dbo.__class__, field_name, None)
-            instance = getattr(dbo, field_name, None)
-            if instance != default:
-                dbo_dict[field_name] = getattr(dbo, field_name, None)
-        else:
-            dbo_dict[field_name] = getattr(dbo, field_name, None)
-
-    for dbo_col in dbo.dbo_maps:
-        dbo_col.build_dict(dbo, dbo_dict, exclude_defaults)
-
-    return dbo_dict
-
-
 class ProtoField(object):
     def __init__(self, default=None):
         self.default = default
-        self.primitive = default is None or isinstance(default, (int, basestring, bool, tuple, float))
-        if self.primitive:
-            self._get_default = self._primitive_default
+        if default is None or isinstance(default, (int, basestring, bool, tuple, float)):
+            self._get_default = lambda instance: self.default
         else:
             self._get_default = self._complex_default
 
@@ -148,7 +161,7 @@ class ProtoField(object):
             return instance.__dict__[self.field]
         except KeyError:
             try:
-                return getattr(instance.prototype, self.field)
+                return getattr(instance.template, self.field)
             except AttributeError:
                 return self._get_default(instance)
 
@@ -161,8 +174,6 @@ class ProtoField(object):
     def __delete__(self, instance):
         instance.__dict__.pop(self.field, None)
 
-    def _primitive_default(self, instance):
-        return self.default
 
     def _complex_default(self, instance):
         new_value = copy.copy(self.default)
@@ -173,38 +184,58 @@ class ProtoField(object):
         self.field = field
 
 
+def list_wrapper(func):
+    def wrapper(*args):
+        return [func(single, *args[1:]) for single in args[0]]
+    return wrapper
+
+
+def dict_wrapper(func):
+    def wrapper(*args):
+        return {key: func(single, *args[1:]) for key, single in args[0].viewitems()}
+    return wrapper
+
+
 class DBOField(ProtoField):
+    dbo_field = True
+
     def __init__(self, default=None, dbo_class_id=None):
         super(DBOField, self).__init__(default)
-        self.dbo_class_id = dbo_class_id
-        if self.dbo_class_id:
-            if self.primitive:
-                self.hydrate_dto = self.dbo_from_repr
-            elif hasattr(self.default, '__iter__'):
-                self.hydrate_dto = self.dbo_list_from_repr
-            elif hasattr(self.default, '__getitem__'):
-                self.hydrate_dto = self.dbo_dict_from_repr
+        if dbo_class_id:
+            dbo_field_classes[dbo_class_id].add(self)
+            if isinstance(self.default, dict):
+                wrapper = dict_wrapper
+            elif isinstance(self.default, list):
+                wrapper = list_wrapper
+            else:
+                wrapper = lambda x: x
+            self.hydrate_value = wrapper(self.hydrate_dbo_value)
+            self.convert_save_value = wrapper(self.dbo_save_value)
+            self.dto_value = wrapper(self.dbo_dto_value)
         else:
-            self.hydrate_dto = lambda dto_repr, instance: dto_repr
+            self.hydrate_value = lambda dto_repr, instance: dto_repr
+            self.convert_save_value = lambda value: value
+            self.dto_value = lambda value: value
 
-    def hydrate(self, instance, dto_repr):
-        self.dbo_class = cls_registry(self.dbo_class_id)
-        setattr(instance, self.field, self.hydrate_dto(dto_repr, instance))
+    def dbo_dto_value(self, dbo_value):
+        return self.dbo_class.to_dto_repr(dbo_value)
 
-    def dbo_from_repr(self, dto_repr, instance):
+    def dbo_save_value(self, dbo_value):
+        return self.dbo_class.to_save_repr(dbo_value)
+
+    def hydrate_dbo_value(self, dto_repr, instance):
         return self.dbo_class.load_ref(dto_repr, instance)
 
-    def dbo_list_from_repr(self, dto_repr, instance):
-        return [self.dbo_from_repr(single_repr, instance) for single_repr in dto_repr]
-
-    def dbo_dict_from_repr(self, dto_repr, instance):
-        return {dbo.dbo_id: dbo for dbo in dbo_list_from_repr(dto_repr, instance)}
-
-    def to_dto(self, instance, dto):
-        dto[self.field] = self.dto_value(instance)
-
-    def to_save_dto(self, instance, save_dto):
+    def save_value(self, instance):
+        value = self.convert_save_value(instance.__dict__[self.field])
+        if value == self.default:
+            raise KeyError
         try:
-            save_dto[self.field] = self.save_dto_value(instance)
-        except KeyError:
+            if value == getattr(instance.template, self.field):
+                raise KeyError
+        except AttributeError:
             pass
+        return value
+
+
+

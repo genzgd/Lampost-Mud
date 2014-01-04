@@ -36,8 +36,8 @@ class EntityLP(Entity):
     _refresher = {}
     effects = []
 
-    def __init__(self):
-        super(EntityLP, self).__init__()
+    def __init__(self, dbo_id=None):
+        super(EntityLP, self).__init__(dbo_id)
         self.defenses = set()
         self.equip_slots = {}
 

@@ -23,3 +23,4 @@ class ClassRegistry(object):
             _registry[base_cls.dbo_key_type] = sub_cls
         except AttributeError:
             pass
+

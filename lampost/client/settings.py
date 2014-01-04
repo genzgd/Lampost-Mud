@@ -34,10 +34,9 @@ class SettingsGet(Resource):
     def render_POST(self, content, session):
         if session.user.dbo_id != content.user_id:
             check_perm(session, 'admin')
-        user = load_object(User, content.user_id)
-        user_json = user.dbo_dict
-        user_json['password'] = ''
-        return user_json
+        user_dto = load_object(User, content.user_id).dto_value
+        user_dto['password'] = ''
+        return user_dto
 
 
 class AccountCreate(Resource):

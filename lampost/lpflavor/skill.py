@@ -2,7 +2,7 @@ from random import randint
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField, ProtoField
 from lampost.gameops.action import ActionError, convert_verbs
-from lampost.gameops.template import Template
+from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.mud.action import mud_action, imm_action
 
@@ -49,7 +49,8 @@ class SkillTemplate(Template):
             enhance_soul(owner, instance)
 
 
-class BaseSkill(RootDBO):
+class BaseSkill(TemplateInstance):
+    dbo_key_type = 'skill'
 
     verb = DBOField()
     desc = DBOField()
@@ -110,7 +111,7 @@ def remove_skill(target, obj, **ignored):
     except KeyError:
         return "{} does not have that skill".format(obj.name)
     existing_skill.revoke(obj)
-    obj.remove_map('skills', target[0])
+    del obj.skills[target[0]]
     if obj.dbo_id:
         save_object(obj)
     return "Removed {} from {}".format(target, obj.name)

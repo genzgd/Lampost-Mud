@@ -259,3 +259,9 @@ def combat_log(source, target, **ignored):
 @imm_action('status', 'status', self_target=True)
 def status(target, **ignored):
     return substitute(target.rec_status(), target=target)
+
+
+@imm_action('save', 'has_save_value', self_target=True)
+def save(target, **ignored):
+    save_object(target)
+    return '{} saved.'.format(target.name)

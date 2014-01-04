@@ -35,7 +35,7 @@ class RedisStore():
             dbo.dbo_rev = 1 if not rev else rev + 1
         if dbo.dbo_indexes:
             self.update_indexes(dbo)
-        self.redis.set(dbo.dbo_key, json_encode(dbo.save_dbo_dict))
+        self.redis.set(dbo.dbo_key, json_encode(dbo.save_value))
         if __debug__:
             debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo

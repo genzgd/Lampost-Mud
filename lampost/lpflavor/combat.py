@@ -1,6 +1,6 @@
 from __future__ import division
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbo import DBOField, ProtoField
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_LIST
@@ -160,6 +160,15 @@ class DefenseTemplate(SkillTemplate):
 
     class_id = DBOField('defense')
 
+    def on_loaded(self):
+        super(DefenseTemplate, self).on_loaded()
+        self.calc_damage_types = set()
+        for damage_type in self.damage_type:
+            try:
+                self.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
+            except KeyError:
+                self.calc_damage_types.add(damage_type)
+
 
 class DefenseSkill(BaseSkill):
     skill_type = 'defense'
@@ -170,6 +179,7 @@ class DefenseSkill(BaseSkill):
     absorb_calc = DBOField({})
     avoid_calc = DBOField({})
     success_map = DBOField({'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
+    calc_damage_types = ProtoField([])
 
     def invoke(self, source, **ignored):
         source.defenses.add(self)

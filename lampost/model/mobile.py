@@ -1,5 +1,5 @@
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.gameops.template import Template
+from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.article import ArticleLoad
 from lampost.model.entity import Entity
 

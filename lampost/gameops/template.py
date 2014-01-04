@@ -9,20 +9,16 @@ def template_class(template_cls, instance_cls):
     instance_cls = cls_registry(instance_cls)
     template_cls.instance_cls = instance_cls
     template_cls.add_dbo_fields(instance_cls.dbo_fields)
+    instance_cls.dbo_key_type = template_cls.dbo_key_type
 
 
 class Template(RootDBO):
     dbo_rev = DBOField(0)
 
-    @classmethod
-    def load_ref(cls, dbo_id, owner=None):
-        template = load_object(cls, dbo_id)
-        return template.create_instance(owner)
-
     def create_instance(self, owner=None):
         instance = self.instance_cls()
-        instance.prototype = self
-        instance.dbo_id = self.dbo_id
+        instance.template = self
+        instance.template_id = self.dbo_id
         self.config_instance(instance, owner)
         return instance
 
@@ -31,6 +27,22 @@ class Template(RootDBO):
 
     def on_loaded(self):
         try:
-            self.instance_cls.config_prototype(self)
+            self.instance_cls.config_template(self)
         except AttributeError:
             pass
+
+
+class TemplateInstance(RootDBO):
+
+    @classmethod
+    def load_ref(cls, dto_repr, owner=None):
+        try:
+            template = load_object(cls, dto_repr['template_id'])
+            return template.create_instance(owner).hydrate(dto_repr)
+        except KeyError:
+            return cls().hydrate(dto_repr)
+
+
+
+
+

@@ -7,6 +7,14 @@ class Direction(object):
         return cls.ref_map[key]
 
     @classmethod
+    def to_dto_repr(cls, value):
+        return value.key
+
+    @classmethod
+    def to_save_repr(cls, value):
+        return value.key
+
+    @classmethod
     def find_dir(cls, name):
         for key, value in cls.ref_map.iteritems():
             if name == key or name == value.desc:

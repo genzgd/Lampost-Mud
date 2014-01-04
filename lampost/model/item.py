@@ -1,10 +1,11 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import dbo_describe, DBOField, RootDBOMeta, ProtoField
+from lampost.gameops.template import TemplateInstance
 
 m_requires('dispatcher', __name__)
 
 
-class BaseItem(object):
+class BaseItem(TemplateInstance):
     __metaclass__ = RootDBOMeta
 
     desc = DBOField('')
@@ -20,7 +21,7 @@ class BaseItem(object):
     rec_general = True
 
     @staticmethod
-    def config_prototype(proto):
+    def config_template(proto):
         proto.target_id = tuple(unicode(proto.title).lower().split(" "))
         proto.target_aliases = [tuple(unicode(alias).split(" ")) for alias in proto.aliases]
 

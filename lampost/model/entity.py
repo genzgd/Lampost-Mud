@@ -40,7 +40,8 @@ class Entity(BaseItem):
     entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
     exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
 
-    def __init__(self):
+    def __init__(self, dbo_id=None):
+        super(Entity, self).__init__(dbo_id)
         self.soul = defaultdict(set)
         self.followers = set()
         self.registrations = set()

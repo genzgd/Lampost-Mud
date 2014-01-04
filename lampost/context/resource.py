@@ -1,4 +1,5 @@
 import sys
+import inspect
 
 _registry = {}
 _consumer_map = {}
@@ -69,11 +70,18 @@ def get_resource(name):
 
 def context_post_init():
     global _registered_modules
-    for module in _registered_modules:
+    for module in sorted(_registered_modules, key=_priority_sort):
         if hasattr(module, '_post_init'):
             module._post_init()
-    del _registered_modules
 
+
+def _priority_sort(module):
+    try:
+        return getattr(module, '_init_priority')
+    except AttributeError:
+        if inspect.isclass(module):
+            return 1000
+        return 2000
 
 def _inject(cls, name, service):
     setattr(cls, name, service)
