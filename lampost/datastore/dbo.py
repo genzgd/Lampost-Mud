@@ -186,13 +186,13 @@ class ProtoField(object):
 
 def list_wrapper(func):
     def wrapper(*args):
-        return [func(single, *args[1:]) for single in args[0]]
+        return [value for value in [func(single, *args[1:]) for single in args[0]] if value]
     return wrapper
 
 
 def dict_wrapper(func):
     def wrapper(*args):
-        return {key: func(single, *args[1:]) for key, single in args[0].viewitems()}
+        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].viewitems()] if value}
     return wrapper
 
 
@@ -236,6 +236,3 @@ class DBOField(ProtoField):
         except AttributeError:
             pass
         return value
-
-
-

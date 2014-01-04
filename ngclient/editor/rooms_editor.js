@@ -80,11 +80,15 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.exitTwoWay = function (exit) {
-      var otherExits = $scope.exitRoom(exit).exits;
-      var rev_key = dirMap[exit.dir_name].rev_key;
+      var otherRoom = $scope.exitRoom(exit);
+      if (!otherRoom) {
+        return; // This can happen temporarily while creating a new exit
+      }
+      var otherExits = otherRoom.exits;
+      var rev_key = dirMap[exit.direction].rev_key;
       for (var i = 0; i < otherExits.length; i++) {
         var otherExit = otherExits[i];
-        if (otherExit.dir_name === rev_key && otherExit.destination === $scope.model.dbo_id) {
+        if (otherExit.direction === rev_key && otherExit.destination === $scope.model.dbo_id) {
           return true;
         }
       }
@@ -99,7 +103,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     $scope.deleteExit = function (exit, bothSides) {
       lmDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
         lmRemote.request("editor/room/delete_exit",
-          {start_room: $scope.model.dbo_id, both_sides: bothSides, dir: exit.dir_name}).then(function () {
+          {start_room: $scope.model.dbo_id, both_sides: bothSides, dir: exit.direction}).then(function () {
             var exitLoc = $scope.model.exits.indexOf(exit);
             if (exitLoc > -1) {
               $scope.model.exits.splice(exitLoc, 1);

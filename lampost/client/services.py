@@ -1,8 +1,10 @@
+import copy
+
 from collections import defaultdict
 from lampost.context.resource import m_requires, provides
 from lampost.util.lmutil import StateError
 
-m_requires('log', 'session_manager', 'dispatcher', __name__)
+m_requires('log', 'session_manager', 'dispatcher', 'perm', __name__)
 
 
 class ClientService(object):
@@ -55,20 +57,22 @@ class AnyLoginService(ClientService):
 @provides('edit_update_service', True)
 class EditUpdateService(ClientService):
 
+    def edit_dto(self, player, dbo):
+        dto = dbo.dto_value
+        dto['can_write'] = has_perm(player, dbo)
+        return dto
+
     def publish_edit(self, edit_type, model, source_session, local=False):
-        try:
-            event_model = model.dto_value
-        except AttributeError:
-            event_model = model
-        event = {'edit_update': {'edit_type': edit_type, 'model': event_model}}
+        event_dto = None
         for session in self.sessions:
+            event = {'edit_update': {'edit_type': edit_type, 'model': self.edit_dto(session.player, model)}}
             if session == source_session:
                 if local:
-                    local_event = event.copy()
-                    local_event['edit_update']['local'] = True
-                    session.append(local_event)
+                    event['edit_update']['local'] = True
+                    session.append(event)
+                event_dto = event['edit_update']['model']
             else:
                 session.append(event)
-        return event_model
+        return event_dto
 
 

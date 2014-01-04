@@ -1,3 +1,4 @@
+from weakref import WeakValueDictionary
 from redis import ConnectionPool
 from redis.client import StrictRedis
 from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
@@ -13,7 +14,7 @@ class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
         pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
         self.redis = StrictRedis(connection_pool=pool)
-        self._object_map = {}
+        self._object_map = WeakValueDictionary()
 
     def create_object(self, base_class, dbo_dict):
         dbo_class = cls_registry(dbo_dict.get('class_id', base_class))
@@ -52,10 +53,6 @@ class RedisStore():
     def load_cached(self, key_type, key):
         return self._object_map.get(unicode('{0}:{1}'.format(key_type, key)))
 
-    def evict_object(self, dbo):
-        if not self._object_map.pop(dbo.dbo_key):
-            warn("Failed to evict " + dbo.dbo_key + " from db cache", self)
-
     @logged
     def load_by_key(self, key_type, key, base_class=None):
         dbo_key = unicode('{0}:{1}'.format(key_type, key))
@@ -64,6 +61,7 @@ class RedisStore():
             return cached_dbo
         json_str = self.redis.get(dbo_key)
         if not json_str:
+            warn("Failed to find {} in database".format(dbo_key))
             return None
         dbo_dict = json_decode(json_str)
         dbo_cls = cls_registry(dbo_dict.get('class_id', base_class))

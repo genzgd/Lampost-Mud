@@ -15,9 +15,6 @@ class EditResource(Resource):
         self.putChild('delete', EditDeleteResource(self, obj_class, imm_level))
         self.putChild('update', EditUpdateResource(self, obj_class, imm_level))
 
-    def trans_list(self, obj_list, session):
-        return [obj.dto_value for obj in obj_list]
-
     def pre_delete(self, del_obj, session):
         pass
 
@@ -52,8 +49,7 @@ class EditBaseResource(Resource):
 class EditListResource(EditBaseResource):
     @request
     def render_POST(self, session):
-        obj_list = load_object_set(self.obj_class)
-        return self.editor.trans_list(obj_list, session)
+        return [edit_dto(session.player, obj) for obj in load_object_set(self.obj_class)]
 
 
 class EditCreateResource(EditBaseResource):
@@ -91,3 +87,4 @@ class EditUpdateResource(EditBaseResource):
         existing_obj.on_loaded()
         self.editor.post_update(existing_obj, session)
         return publish_edit('update', existing_obj, session)
+

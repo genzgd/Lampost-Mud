@@ -37,7 +37,7 @@
         </thead>
         <tbody>
         <tr class="table-bordered" ng-repeat="exit in model.exits">
-          <td style="width: 10%;">{{exit.dir_name}}</td>
+          <td style="width: 10%;">{{exit.direction}}</td>
           <td class="use-ellipses" style="width: 60%;">{{exit.destination}} {{exitRoom(exit).title}}</td>
           <td style="width: 30%;">
             <a title="Edit Room" ng-click="startEditor('room', exitRoom(exit))" class="icon-link"><i class="icon-wrench"></i></a>

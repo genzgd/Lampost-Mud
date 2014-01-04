@@ -35,7 +35,6 @@ class UserManager(object):
         if not user:
             return "not_found", None
         if not check_password(password, user.password):
-            evict_object(user)
             return "not_found", None
         return "ok", user
 
@@ -128,7 +127,6 @@ class UserManager(object):
         player.leave_env()
         player.detach()
         save_object(player)
-        evict_object(player)
 
     def id_to_name(self, player_id):
         try:
@@ -149,4 +147,3 @@ def unload_player(player):
         return
     if hasattr(player, 'session'):
         return
-    evict_object(player)

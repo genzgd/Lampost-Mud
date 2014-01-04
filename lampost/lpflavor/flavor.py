@@ -32,6 +32,7 @@ def _post_init():
     PlayerRace.attr_list = ATTR_LIST
 
     PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in ATTR_LIST})
+    PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in POOL_MAP.viewkeys()})
 
     cls_registry.set_class(Area, Area)
     cls_registry.set_class(Room, Room)

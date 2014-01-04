@@ -191,8 +191,6 @@ def player_list(player_ids):
     for player_id in player_ids:
         player = load_object(Player, player_id)
         players.append({'name': player.name, 'dbo_id': player.dbo_id})
-        if not getattr(player, 'session', None):
-            evict_object(player)
     return players
 
 
