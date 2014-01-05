@@ -26,6 +26,7 @@ class Template(RootDBO):
         pass
 
     def on_loaded(self):
+        self.template_id = self.dbo_id
         try:
             self.instance_cls.config_template(self)
         except AttributeError:
@@ -42,6 +43,9 @@ class TemplateInstance(RootDBO):
         except KeyError:
             return cls().hydrate(dto_repr)
 
+    @property
+    def save_value(self):
+        return self.metafields(super(TemplateInstance, self).save_value, ['template_id'])
 
 
 

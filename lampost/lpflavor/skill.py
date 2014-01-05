@@ -43,10 +43,15 @@ class SkillTemplate(Template):
             self.verbs = convert_verbs(self.verb)
 
     def config_instance(self, instance, owner):
-        if self.auto_start:
-            instance.invoke(owner)
-        else:
-            enhance_soul(owner, instance)
+        if getattr(owner, 'living', False):
+            if self.auto_start:
+                instance.invoke(owner)
+            else:
+                enhance_soul(owner, instance)
+
+    @property
+    def name(self):
+        return self.template_id
 
 
 class BaseSkill(TemplateInstance):
@@ -64,6 +69,7 @@ class BaseSkill(TemplateInstance):
     skill_level = DBOField(1)
     last_used = DBOField(0)
     verbs = ProtoField()
+    name = ProtoField()
 
     def prepare_action(self, source, target, **kwargs):
         if self.cool_down and self.last_used + self.cool_down > dispatcher.pulse_count:
@@ -89,7 +95,7 @@ def skills(source, target, **ignored):
     source.display_line("{}'s Skills:".format(target.name))
 
     for skill_id, skill in target.skills.iteritems():
-        source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.dbo_id, str(skill.skill_level)))
+        source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.name, str(skill.skill_level)))
         source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 
 

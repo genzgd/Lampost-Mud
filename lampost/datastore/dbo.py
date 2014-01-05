@@ -92,8 +92,7 @@ class RootDBO(object):
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
                 continue
-        self._metafields(save_value)
-        return save_value
+        return self.metafields(save_value, ['dbo_id', 'class_id'])
 
     def to_dto_dict(self):
         return
@@ -112,8 +111,7 @@ class RootDBO(object):
     def dto_value(self):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.iteritems()}
         dto_value['dbo_key_type'] = getattr(self, 'class_id', self.dbo_key_type)
-        self._metafields(dto_value)
-        return dto_value
+        return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_id'])
 
     def autosave(self):
         save_object(self, autosave=True)
@@ -121,12 +119,13 @@ class RootDBO(object):
     def rec_describe(self):
         return dbo_describe(self)
 
-    def _metafields(self, dto_repr):
-        for metafield in 'dbo_id', 'class_id', 'template_id':
+    def metafields(self, dto_repr, field_names):
+        for metafield in field_names:
             try:
                 dto_repr[metafield] = getattr(self, metafield)
             except AttributeError:
                 pass
+        return dto_repr
 
 
 def dbo_describe(dbo, level=0):
@@ -134,6 +133,7 @@ def dbo_describe(dbo, level=0):
 
     def append(key, value):
         display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
+
     if getattr(dbo, 'dbo_key', None):
         append("key", dbo.dbo_key)
     if getattr(dbo, 'dbo_set_key', None):
@@ -186,13 +186,17 @@ class ProtoField(object):
 
 def list_wrapper(func):
     def wrapper(*args):
-        return [value for value in [func(single, *args[1:]) for single in args[0]] if value]
+        return [value for value in [func(single, *args[1:]) for single in args[0]]
+                if value is not None]
+
     return wrapper
 
 
 def dict_wrapper(func):
     def wrapper(*args):
-        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].viewitems()] if value}
+        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].viewitems()]
+                if value is not None}
+
     return wrapper
 
 

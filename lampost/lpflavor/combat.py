@@ -197,12 +197,12 @@ class DefenseSkill(BaseSkill):
         except ActionError:
             return
         adj_accuracy = roll_calc(owner, self.avoid_calc, self.skill_level)
-        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' adj_accuracy: ', str(adj_accuracy)]), self)
+        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.name, ' adj_accuracy: ', str(adj_accuracy)]), self)
         attack.adj_accuracy -= adj_accuracy
         if attack.adj_accuracy < 0:
             return
         absorb = roll_calc(owner, self.absorb_calc, self.skill_level)
-        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.dbo_id, ' absorb: ', str(absorb)]), self)
+        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.name, ' absorb: ', str(absorb)]), self)
         attack.adj_damage -= absorb
 
     def points_per_pulse(self, owner):
