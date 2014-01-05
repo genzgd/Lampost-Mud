@@ -24,7 +24,7 @@ class Article(BaseItem):
             prefix = ""
         else:
             prefix = "An" if self.title[0] in VOWELS else "A"
-        equipped = ' (equipped)' if self.equip_slot else ''
+        equipped = ' (equipped)' if self.current_slot else ''
         return "{0} {1}.{2}".format(prefix, self.title, equipped)
 
     @property

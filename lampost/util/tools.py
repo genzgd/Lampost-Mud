@@ -1,10 +1,10 @@
 from lampost.context.resource import provides
-from lampost.comm.broadcast import substitute
+
 
 @provides('tools', True)
 class Tools(object):
     def combat_log(self, source, message, target=None):
-        if hasattr(source, 'combat_log'):
+        if hasattr(source.env, 'combat_log'):
             try:
                 message = message.combat_log()
             except AttributeError:
@@ -12,4 +12,4 @@ class Tools(object):
                     message = message()
                 except TypeError:
                     pass
-            source.combat_log.display_line(substitute(message, source, target))
+            source.env.broadcast(message=message, source=source, target=target)

@@ -4,7 +4,7 @@ from collections import defaultdict
 from lampost.datastore.dbo import DBOField
 from lampost.gameops.action import action_handler
 
-from lampost.comm.broadcast import Broadcast, SingleBroadcast
+from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, \
     MISSING_VERB, MISSING_TARGET
@@ -279,11 +279,8 @@ class Entity(BaseItem):
             self.entry_msg.target = None
         self.env.rec_entity_enters(self)
 
-    def broadcast(self, broadcast=None, **kwargs):
-        if isinstance(broadcast, basestring):
-            broadcast = SingleBroadcast(broadcast, display)
-        elif not broadcast:
-            broadcast = Broadcast(**kwargs)
+    def broadcast(self, **kwargs):
+        broadcast = Broadcast(**kwargs)
         broadcast.source = self
         self.env.rec_broadcast(broadcast)
 

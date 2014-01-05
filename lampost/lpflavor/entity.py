@@ -134,7 +134,7 @@ class EntityLP(Entity):
             raise ActionError('This is not something you can equip.')
         if article.art_type == 'weapon' and self.weapon:
             self.remove_article(self.weapon)
-        equip_slot = self._find_slot(article.slot)
+        equip_slot = self._find_slot(article.equip_slot)
         if self._slot_filled(equip_slot):
             self._remove_by_slot(equip_slot)
             if self._slot_filled(equip_slot):
@@ -152,11 +152,11 @@ class EntityLP(Entity):
             del self.equip_slots['r_hand']
             del self.equip_slots['l_hand']
         else:
-            del self.equip_slots[article.equip_slot]
+            del self.equip_slots[article.current_slot]
         article.current_slot = None
         if article.art_type == 'weapon':
             self.weapon = None
-        self.broadcast(s="You remove {N}", e="{n} removes {N}", target=article)
+        article.on_removed(self)
 
     def rec_consider(self, **ignored):
         return calc_consider(self)
@@ -164,7 +164,7 @@ class EntityLP(Entity):
     def _do_equip(self, article, equip_slot):
         self.equip_slots[equip_slot] = article
         article.current_slot = equip_slot
-        self.broadcast(s="You wear {N}", e="{n} wears {N}", target=article)
+        article.on_equipped(self)
 
     def _find_slot(self, equip_slot):
         if equip_slot == 'finger':

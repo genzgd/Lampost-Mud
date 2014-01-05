@@ -145,6 +145,7 @@ class RoomVisit(Resource):
         if not room:
             raise DataError("ROOM_MISSING")
         session.player.change_env(room)
+        room.reset()
         session.player.parse('look')
 
 

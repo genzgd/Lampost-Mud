@@ -26,12 +26,5 @@ class SocialsResource(EditResource):
 class SocialPreview(Resource):
     @request
     def render_POST(self, content):
-        broadcast_map = BroadcastMap()
-        broadcast_map.populate(content.b_map)
-        broadcast = Broadcast(broadcast_map, content.source, content.source if content.self_source else content.target)
+        broadcast = Broadcast(BroadcastMap(**content.b_map), content.source, content.source if content.self_source else content.target)
         return {broadcast_type['id']: broadcast.substitute(broadcast_type['id']) for broadcast_type in broadcast_types}
-
-
-
-
-

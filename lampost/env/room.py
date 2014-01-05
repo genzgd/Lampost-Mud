@@ -1,3 +1,4 @@
+from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.env.movement import Direction
@@ -77,6 +78,14 @@ class Room(RootDBO):
         return self.dbo_id
 
     @property
+    def env(self):
+        return self
+
+    @property
+    def name(self):
+        return self.title
+
+    @property
     def area_id(self):
         return self.dbo_id.split(":")[0]
 
@@ -105,6 +114,9 @@ class Room(RootDBO):
         if getattr(broadcast, 'target', None) == self:
             broadcast.target = None
         self.tell_contents("rec_broadcast", broadcast)
+
+    def broadcast(self, **kwargs):
+        self.rec_broadcast(Broadcast(**kwargs))
 
     def rec_social(self):
         pass

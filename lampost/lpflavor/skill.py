@@ -20,7 +20,7 @@ def add_skill(skill_id, target, skill_level):
 
 
 def roll_calc(source, calc, skill_level=0):
-    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.viewitems())
     roll = randint(0, 20)
     if roll == 0:
         roll = -5
@@ -30,7 +30,7 @@ def roll_calc(source, calc, skill_level=0):
 
 
 def avg_calc(source, calc, skill_level=0):
-    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.iteritems())
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.viewitems())
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 

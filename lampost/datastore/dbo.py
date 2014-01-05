@@ -2,6 +2,7 @@ import copy
 
 from collections import defaultdict
 from lampost.context.resource import m_requires
+from lampost.datastore.proto import ProtoMeta
 
 m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
 
@@ -18,8 +19,9 @@ def _post_init():
     dbo_field_classes.clear()
 
 
-class RootDBOMeta(type):
+class RootDBOMeta(ProtoMeta):
     def __init__(cls, class_name, bases, new_attrs):
+        super(RootDBOMeta, cls).__init__(class_name, bases, new_attrs)
         cls.dbo_fields = {}
         for base in bases:
             try:
@@ -29,14 +31,10 @@ class RootDBOMeta(type):
         cls._update_dbo_fields(new_attrs)
 
     def _update_dbo_fields(cls, new_attrs):
-        for name, attr in new_attrs.iteritems():
-            try:
-                attr.meta_init(name)
-            except AttributeError:
-                pass
         cls.dbo_fields.update({name: dbo_field for name, dbo_field in new_attrs.iteritems() if hasattr(dbo_field, 'hydrate_value')})
 
     def add_dbo_fields(cls, new_fields):
+        cls._meta_init_attrs(new_fields)
         cls._update_dbo_fields(new_fields)
         for name, dbo_field in new_fields.iteritems():
             setattr(cls, name, dbo_field)
@@ -174,7 +172,6 @@ class ProtoField(object):
     def __delete__(self, instance):
         instance.__dict__.pop(self.field, None)
 
-
     def _complex_default(self, instance):
         new_value = copy.copy(self.default)
         instance.__dict__[self.field] = new_value
@@ -182,22 +179,6 @@ class ProtoField(object):
 
     def meta_init(self, field):
         self.field = field
-
-
-def list_wrapper(func):
-    def wrapper(*args):
-        return [value for value in [func(single, *args[1:]) for single in args[0]]
-                if value is not None]
-
-    return wrapper
-
-
-def dict_wrapper(func):
-    def wrapper(*args):
-        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].viewitems()]
-                if value is not None}
-
-    return wrapper
 
 
 class DBOField(ProtoField):
@@ -240,3 +221,19 @@ class DBOField(ProtoField):
         except AttributeError:
             pass
         return value
+
+
+def list_wrapper(func):
+    def wrapper(*args):
+        return [value for value in [func(single, *args[1:]) for single in args[0]]
+                if value is not None]
+
+    return wrapper
+
+
+def dict_wrapper(func):
+    def wrapper(*args):
+        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].viewitems()]
+                if value is not None}
+
+    return wrapper

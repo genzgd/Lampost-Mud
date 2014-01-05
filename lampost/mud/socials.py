@@ -1,3 +1,4 @@
+from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.mud.action import mud_action
@@ -20,9 +21,10 @@ class Social(RootDBO):
 
     def on_loaded(self):
         mud_action(self.dbo_id)(self)
+        self.broadcast_map = BroadcastMap(**self.b_map)
 
     def __call__(self, source, target, **ignored):
-        source.broadcast(target=target, **self.b_map)
+        source.broadcast(target=target, broadcast_map=self.broadcast_map)
 
 
 @mud_action('socials')

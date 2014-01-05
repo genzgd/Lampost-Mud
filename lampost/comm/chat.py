@@ -1,4 +1,4 @@
-from lampost.comm.broadcast import SingleBroadcast
+from lampost.comm.broadcast import Broadcast
 from lampost.gameops.display import *
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
@@ -41,5 +41,5 @@ def say(source, command, **ignored):
         raise ActionError("Say what?")
     statement = command[space_ix + 1:]
     source.display_line("You say `{0}'".format(statement), display=SAY_DISPLAY)
-    source.broadcast(SingleBroadcast("{0} says, `{1}'".format(source.name, statement),
-                                     display=SAY_DISPLAY, silent=True))
+    source.broadcast(message="{0} says, `{1}'".format(source.name, statement),
+                     display=SAY_DISPLAY, silent=True)

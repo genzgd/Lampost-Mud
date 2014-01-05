@@ -1,6 +1,7 @@
 from __future__ import division
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, ProtoField
+from lampost.datastore.proto import RootProto
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_LIST
@@ -92,19 +93,22 @@ def consider_translate(source_con, target_con):
     return CON_LEVELS[perc]
 
 
-class Attack(object):
+class Attack(RootProto):
+
+    success_map = ProtoField()
+    fail_map = ProtoField()
+    delivery = ProtoField()
+    damage_pool = ProtoField()
+    verb = ProtoField()
+
     def from_skill(self, skill, source):
-        self.success_map = skill.success_map
-        self.fail_map = skill.fail_map
+        self.template = skill
         self.damage_type = skill.active_damage_type
         self.accuracy = roll_calc(source, skill.accuracy_calc, skill.skill_level)
         self.damage = roll_calc(source, skill.damage_calc, skill.skill_level)
-        self.damage_pool = skill.damage_pool
         self.adj_damage = self.damage
         self.adj_accuracy = self.accuracy
-        self.delivery = skill.delivery
         self.source = source
-        self.verb = skill.verb
         return self
 
     def combat_log(self):

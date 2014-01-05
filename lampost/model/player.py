@@ -80,4 +80,3 @@ class Player(RootDBO):
     def detach(self):
         super(Player, self).detach()
         self.session = None
-

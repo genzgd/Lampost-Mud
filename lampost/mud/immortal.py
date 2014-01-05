@@ -247,13 +247,14 @@ def email(verb, args, command, **ignored):
     return email_sender.send_targeted_email('Lampost Message', message, [user])
 
 
-@imm_action('combat log', 'attack', self_target=True)
-def combat_log(source, target, **ignored):
-    if getattr(target, 'combat_log', None):
-        del target.combat_log
-        return "Combat log removed from {}.".format(target.name)
-    target.combat_log = source
-    return "Combat logging added to {}.".format(target.name)
+@imm_action('combat log')
+def combat_log(source, **ignored):
+    try:
+        delattr(source.env, 'combat_log')
+        return "Combat logging removed from {}".format(source.env.name)
+    except AttributeError:
+        source.env.combat_log = True
+        return "Combat logging added to {}.".format(source.env.name)
 
 
 @imm_action('status', 'status', self_target=True)
