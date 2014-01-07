@@ -24,7 +24,7 @@
       </tbody>
     </table>
   </div>
-  <div class="span8 wrapper" ng-hide="!model">
+  <div class="span8 scrollable" ng-hide="!model">
     <div class="row-fluid">
       <div class="span8">
         <div class="center-in-span">
@@ -50,14 +50,14 @@
         <textarea class="span12" rows="6" ng-model="model.desc"></textarea>
       </div>
     </div>
-    <div class="row-fluid tabbable v-full">
+    <div class="row-fluid tabbable">
       <ul class="nav nav-tabs" >
         <li class="unselectable active"><a href="#roomTab" data-toggle="tab">Rooms</a></li>
         <li class="unselectable"><a href="#mobileTab" data-toggle="tab">Mobiles</a></li>
         <li class="unselectable"><a href="#articleTab" data-toggle="tab">Articles</a></li>
       </ul>
 
-      <div class="tab-content scrollable">
+      <div class="tab-content">
         <div id="roomTab" class="tab-pane active" ng-include="'editor/view/rooms.html'"></div>
         <div id="mobileTab" class="tab-pane" ng-include="'editor/view/mobiles.html'">Mobiles</div>
         <div id="articleTab" class="tab-pane" ng-include="'editor/view/articles.html'">Articles</div>

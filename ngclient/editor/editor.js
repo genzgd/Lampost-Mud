@@ -216,11 +216,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       }
     };
 
-    this.visitRoom = function (roomId) {
-      lmRemote.request('editor/room/visit', {room_id: roomId});
-      window.open("", window.opener.name);
-    };
-
     this.prepare = function (controller, $scope) {
 
       var newDialogId = null;
@@ -507,7 +502,7 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       })
     }
 
-    lmBus.register('edit_by_id', editById, $scope)
+    lmBus.register('edit_by_id', editById, $scope);
 
     $scope.editorMap = {
       config: {label: "Mud Config", url: "config"},
@@ -521,6 +516,18 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       race: {label: "Races", objLabel: "Race", url: "race"},
       attack: {label: "Attacks", objLabel: "Attack", url: "attack"},
       defense: {label: "Defenses", objLabel: "Defense", url: "defense"}
+    };
+
+    $scope.areaId = null;
+    $scope.activeArea = null;
+
+    $scope.activateArea = function(areaId) {
+      $scope.areaId = areaId;
+      if (areaId) {
+        $scope.activeArea = lmEditor.cacheValue('area', areaId);
+      } else {
+        $scope.activeArea = null;
+      }
     };
 
     $scope.editorInclude = function (editor) {

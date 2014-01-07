@@ -1,5 +1,6 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
+from lampost.lpflavor.ai import auto_combat
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
 from lampost.lpflavor.combat import calc_consider
 from lampost.model.entity import Entity
@@ -40,6 +41,7 @@ class EntityLP(Entity):
         super(EntityLP, self).__init__(dbo_id)
         self.defenses = set()
         self.equip_slots = {}
+        self.current_target = None
 
     @property
     def weapon_type(self):
@@ -100,6 +102,7 @@ class EntityLP(Entity):
             del self._refresh_pulse
 
     def rec_attack(self, source, attack):
+        self.start_combat(source)
         for defense in self.defenses:
             defense.apply(self, attack)
             if attack.adj_damage <= 0 or attack.adj_accuracy <= 0:
@@ -116,6 +119,14 @@ class EntityLP(Entity):
                                     str(current_pool), ' new: ', str(current_pool - attack.adj_damage)]),
                    self)
         self.check_status()
+
+    def start_combat(self, source):
+        if not self.current_target:
+            self.current_target = source
+            auto_combat(self, source)
+
+    def end_combat(self):
+        pass
 
     def apply_costs(self, costs):
         for pool, cost in costs.iteritems():

@@ -1,5 +1,6 @@
 from lampost.comm.broadcast import BroadcastMap
-from lampost.datastore.dbo import DBOField, ProtoField
+from lampost.datastore.dbo import DBOField
+from lampost.datastore.proto import ProtoField
 from lampost.model.article import Article, ArticleTemplate
 from lampost.mud.action import mud_action
 

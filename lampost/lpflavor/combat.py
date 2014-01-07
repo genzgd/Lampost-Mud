@@ -1,7 +1,7 @@
 from __future__ import division
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, ProtoField
-from lampost.datastore.proto import RootProto
+from lampost.datastore.dbo import DBOField
+from lampost.datastore.proto import RootProto, ProtoField
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_LIST

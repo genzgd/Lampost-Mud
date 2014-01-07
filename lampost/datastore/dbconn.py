@@ -27,7 +27,6 @@ class RedisStore():
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
         self.save_object(dbo, True)
-        dbo.on_loaded()
         return dbo
 
     def save_object(self, dbo, update_rev=False, autosave=False):
@@ -68,7 +67,6 @@ class RedisStore():
         dbo = dbo_cls(key)
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
-        dbo.on_loaded()
         return dbo
 
     def object_exists(self, obj_type, obj_id):

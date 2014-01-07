@@ -237,18 +237,20 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
     var listKey;
     var obj_type = $scope.editor.id;
 
+    $scope.areaList = [];
 
-    $scope.$watch('selectionMode', function (mode) {
-      if (mode && $scope.model) {
-        $scope.selectedAreaId = $scope.model.dbo_id.split(':')[0];
-        $scope.selectedArea = lmEditor.cacheValue('area', $scope.selectedAreaId);
+    $scope.$watch('activeArea', function (newArea, oldArea) {
+      if (newArea) {
+        $scope.selectedArea = newArea;
+      } else if (oldArea == $scope.selectedArea) {
+        $scope.selectedArea = areaList[0];
       }
     });
 
     lmEditor.cache('area').then(function (areas) {
       $scope.selectAreaList = areas;
-      if ($scope.selectedAreaId) {
-        $scope.selectedArea = lmEditor.cacheValue('area', $scope.selectedAreaId);
+      if ($scope.activeArea) {
+        $scope.selectedArea = $scope.activeArea;
       } else {
         $scope.selectedArea = areas[0];
       }

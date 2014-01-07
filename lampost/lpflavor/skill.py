@@ -1,6 +1,7 @@
 from random import randint
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField, ProtoField
+from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.proto import ProtoField
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.entity import enhance_soul, diminish_soul

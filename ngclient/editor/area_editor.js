@@ -3,6 +3,10 @@ angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEdit
 
     lmEditor.prepare(this, $scope).prepareList('area');
 
+    this.startEdit = function(area) {
+      $scope.activateArea(area.dbo_id);
+    }
+
   }]);
 
 
@@ -104,7 +108,6 @@ angular.module('lampost_editor').controller('MobileEditorCtrl', ['$q', '$scope',
       attrWatch: "default_skills"};
 
     this.newDialog = function (newModel) {
-      $scope.areaId = $scope.selectedArea.dbo_id;
       newModel.level = 1;
     };
 
@@ -159,10 +162,6 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
       }
     });
 
-    this.startEdit = function (editModel) {
-      $scope.$parent.selectedAreaId = editModel.dbo_id;
-    };
-
     this.newDialog = function (newModel) {
       newModel.level = 1;
       newModel.weight = 1;
@@ -194,13 +193,11 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
     var helpers = lmEditor.prepare(this, $scope);
 
     this.newDialog = function (newModel) {
-      $scope.areaId = $scope.selectedArea.dbo_id;
       newModel.level = 1;
       newModel.weight = 1;
     };
 
     this.preCreate = function (newModel) {
-      $scope.areaId = $scope.selectedArea.dbo_id;
       newModel.dbo_id = $scope.areaId + ":" + newModel.id;
     };
 
