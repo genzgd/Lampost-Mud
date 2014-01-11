@@ -230,20 +230,35 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   }
 }]);
 
+angular.module('lampost_editor').directive('lmFormSubmit', [function() {
+  return {
+        restrict:'A',
+        link:function (scope, element, attrs) {
+            element.bind('keypress', function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    this.form.submit();
+                    return false;
+                }
+                return true;
+            })
+        }
+  }
+}]);
 
-angular.module('lampost_editor').controller('objectSelectorController', ['$scope', 'lmEditor',
-  function ($scope, lmEditor) {
+angular.module('lampost_editor').controller('objectSelectorController', ['$scope', 'lmEditor', 'lmBus',
+  function ($scope, lmEditor, lmBus) {
 
     var listKey;
     var obj_type = $scope.editor.id;
 
     $scope.areaList = [];
 
-    $scope.$watch('activeArea', function (newArea, oldArea) {
+    lmBus.register('activateArea', function(newArea, oldArea) {
       if (newArea) {
-        $scope.selectedArea = newArea;
+        $scope.selectArea(newArea);
       } else if (oldArea == $scope.selectedArea) {
-        $scope.selectedArea = areaList[0];
+        $scope.selectArea(areaList[0]);
       }
     });
 
@@ -266,11 +281,10 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
     };
 
     $scope.selectArea = function (selectedArea) {
-      if (selectedArea) {
-        $scope.selectedArea = selectedArea;
-      }
       lmEditor.deref(listKey);
-      listKey = obj_type + ':' + $scope.selectedArea.dbo_id;
+      $scope.selectedArea = selectedArea;
+      $scope.selectedAreaId = selectedArea.dbo_id;
+      listKey = obj_type + ':' +  $scope.selectedAreaId;
       lmEditor.cache(listKey).then(function (objects) {
         $scope.selectObjectList = objects;
         $scope.selectedObject = objects[0];
@@ -279,3 +293,5 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
 
 
   }]);
+
+

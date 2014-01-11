@@ -518,16 +518,14 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       defense: {label: "Defenses", objLabel: "Defense", url: "defense"}
     };
 
-    $scope.areaId = null;
-    $scope.activeArea = null;
-
-    $scope.activateArea = function(areaId) {
-      $scope.areaId = areaId;
+    $scope.activateArea = function (areaId) {
+      var oldArea = $scope.activeArea;
       if (areaId) {
         $scope.activeArea = lmEditor.cacheValue('area', areaId);
       } else {
         $scope.activeArea = null;
       }
+      lmBus.dispatch('activateArea', $scope.activeArea, oldArea);
     };
 
     $scope.editorInclude = function (editor) {
@@ -549,7 +547,6 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
       lmBus.dispatch('editorChange', $scope.currentEditor);
       editor.activated = true;
       $scope.currentEditor = editor;
-
     };
 
     $scope.editors = [];

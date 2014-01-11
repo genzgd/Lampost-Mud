@@ -56,11 +56,11 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     this.newDialog = function (newModel) {
-      newModel.id = $scope.activeArea.next_room_id;
+      newModel.id = $scope.selectedArea.next_room_id;
     };
 
     this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
+      newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
     };
 
     $scope.visitRoom = function () {

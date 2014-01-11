@@ -1,11 +1,25 @@
-angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEditor',
-  function ($scope, lmEditor) {
+angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEditor', 'lmBus',
+  function ($scope, lmEditor, lmBus) {
 
     lmEditor.prepare(this, $scope).prepareList('area');
 
     this.startEdit = function(area) {
+      $scope.areaId = area.dbo_id;
+      $scope.selectedAreaId = area.dbo_id;
       $scope.activateArea(area.dbo_id);
-    }
+    };
+
+    this.postDelete = function(area) {
+      if (area == $scope.activeArea) {
+        $scope.activateArea(null);
+      }
+    };
+
+    lmBus.register('editorChange', function(currentEditor) {
+      if (currentEditor === $scope.editor && $scope.model) {
+        $scope.activateArea($scope.model.dbo_id);
+      }
+    })
 
   }]);
 
@@ -22,7 +36,6 @@ angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lm
     $scope.$on('updateModel', function () {
       if ($scope.model) {
         lmEditor.deref(listKey);
-        $scope.areaId = $scope.model.dbo_id;
         listKey = "room:" + $scope.areaId;
         refresh(listKey);
       } else {
@@ -71,7 +84,6 @@ angular.module('lampost_editor').controller('MobileListCtrl', ['$q', '$scope', '
     $scope.$on('updateModel', function () {
       if ($scope.model) {
         lmEditor.deref(listKey);
-        $scope.areaId = $scope.model.dbo_id;
         listKey = "mobile:" + $scope.areaId;
         helpers.prepareList(listKey);
       } else {
@@ -122,7 +134,7 @@ angular.module('lampost_editor').controller('MobileEditorCtrl', ['$q', '$scope',
     };
 
     this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
+      newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
     };
 
     $scope.editor.newEdit($scope.editor.editModel);
@@ -154,7 +166,6 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
     $scope.$on('updateModel', function () {
       if ($scope.model) {
         lmEditor.deref(listKey);
-        $scope.areaId = $scope.model.dbo_id;
         listKey = "article:" + $scope.areaId;
         helpers.prepareList(listKey);
       } else {
@@ -176,9 +187,6 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
       return $q.reject();
     };
 
-    this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
-    };
 
     this.postCreate = function (newModel) {
       $scope.startEditor('article', newModel);
@@ -198,11 +206,7 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
     };
 
     this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.areaId + ":" + newModel.id;
-    };
-
-    this.postDelete = function () {
-      $scope.startEditor('area');
+      newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
     };
 
     this.delConfirm = function (delModel) {
