@@ -15,7 +15,7 @@ class DisplayResource(Resource):
 class DisplayList(Resource):
 
     @request
-    def render_POST(self, content, session):
+    def render_POST(self):
         return config_manager.config.default_displays
 
 

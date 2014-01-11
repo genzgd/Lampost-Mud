@@ -20,11 +20,6 @@ class Exit(RootDBO):
     can_follow = True
     msg_class = 'no_args'
 
-    def __init__(self, direction=None, destination=None):
-        super(Exit, self).__init__()
-        self.direction = direction
-        self.destination = destination
-
     @property
     def verbs(self):
         return (self.direction.key,), (self.direction.desc,)
@@ -39,15 +34,12 @@ class Exit(RootDBO):
         if from_dir:
             return from_dir.desc
 
-    def rec_glance(self, source, **ignored):
-        if source.build_mode:
-            source.display_line("{0}   {1}".format(self.direction.desc, self.destination.dbo_id))
-        else:
-            source.display_line(self.direction.desc)
+    def rec_examine(self, source, **ignored):
+        source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.destination.title), EXIT_DISPLAY)
 
     def __call__(self, source, **ignored):
         source.change_env(self.destination, self)
-        if getattr(source, 'session', None):
+        if hasattr(source, 'session'):
             return self.destination.rec_examine(source)
 
 
@@ -126,19 +118,13 @@ class Room(RootDBO):
         return self.contents + self.exits + self.extras
 
     def rec_examine(self, source, **ignored):
-        if source.build_mode:
-            source.display_line("{0} [{1}]".format(self.title, self.dbo_id), ROOM_TITLE_DISPLAY)
-        else:
-            source.display_line(self.title, ROOM_TITLE_DISPLAY)
+        source.display_line(self.title, ROOM_TITLE_DISPLAY)
         source.display_line('HRT', ROOM_DISPLAY)
         source.display_line(self.desc, ROOM_DISPLAY)
         source.display_line('HRB', ROOM_DISPLAY)
         if self.exits:
-            if source.build_mode:
-                for my_exit in self.exits:
-                    source.display_line("Exit: {0} {1} ".format(my_exit.dir_desc, my_exit.destination.dbo_id), EXIT_DISPLAY)
-            else:
-                source.display_line("Obvious exits are: " + self.short_exits(), EXIT_DISPLAY)
+            for my_exit in self.exits:
+                my_exit.rec_examine(source)
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
 

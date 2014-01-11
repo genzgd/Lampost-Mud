@@ -18,7 +18,6 @@ class Player(RootDBO):
     age = DBOField(0)
     room_id = DBOField()
     home_room = DBOField()
-    build_mode = False
     rec_player = True
 
     def __init__(self, dbo_id):

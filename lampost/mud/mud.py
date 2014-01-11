@@ -50,7 +50,6 @@ class MudNature():
         info("Mud loaded", self)
 
     def _imm_baptise(self, player):
-        player.build_mode = True
         player.register_channel(self.imm_channel)
         for cmd in imm_actions:
             if player.imm_level >= perm_level(cmd.imm_level):

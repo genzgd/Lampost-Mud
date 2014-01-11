@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import dbo_describe, DBOField, RootDBOMeta
+from lampost.datastore.dbo import DBOField, RootDBOMeta
 from lampost.datastore.proto import ProtoField
 from lampost.gameops.template import TemplateInstance
 
@@ -32,9 +32,6 @@ class BaseItem(TemplateInstance):
     def rec_glance(self, source, **ignored):
         if source.can_see(self):
             source.display_line(self.title)
-
-    def rec_describe(self):
-        return dbo_describe(self)
 
     def rec_broadcast(self, broadcast):
         pass

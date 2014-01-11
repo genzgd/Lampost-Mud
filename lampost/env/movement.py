@@ -1,6 +1,10 @@
-class Direction(object):
+from lampost.datastore.dbo import RootDBO, DBOField
+
+
+class Direction(RootDBO):
     ref_map = {}
     ordered = []
+    key = DBOField()
 
     @classmethod
     def load_ref(cls, key, owner=None):
@@ -42,5 +46,3 @@ NE = Direction('ne', 'northeast', 'sw')
 SE = Direction('se', 'southeast', 'nw')
 NW = Direction('nw', 'northwest', 'se')
 SW = Direction('sw', 'southwest', 'ne')
-
-

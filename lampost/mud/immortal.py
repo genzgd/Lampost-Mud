@@ -1,3 +1,4 @@
+from lampost.gameops.display import TELL_TO_DISPLAY
 import lampost.setup.update
 
 from lampost.client.user import User
@@ -186,16 +187,9 @@ def unregister_display(source, args, **ignored):
 
 @imm_action('describe', 'describe')
 def describe(source, target, **ignored):
+    source.display_line('&nbsp;&nbsp;')
     for line in target.rec_describe():
-        source.display_line(line)
-
-
-@imm_action('build mode')
-def build_mode(source, **ignored):
-    current = getattr(source, "build_mode", False)
-    source.build_mode = not current
-    return "Build Mode is {0}".format("On" if source.build_mode else "Off")
-
+        source.display_line(line, TELL_TO_DISPLAY)
 
 @imm_action('reset')
 def reset(source, **ignored):

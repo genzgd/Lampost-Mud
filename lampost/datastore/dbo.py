@@ -2,7 +2,7 @@ from collections import defaultdict
 from lampost.context.resource import m_requires
 from lampost.datastore.proto import ProtoMeta, ProtoField
 
-m_requires('log', 'datastore', 'encode', 'cls_registry', __name__)
+m_requires('log', 'datastore', 'cls_registry', __name__)
 
 dbo_field_classes = defaultdict(set)
 
@@ -70,7 +70,7 @@ class RootDBO(object):
             self.dbo_id = unicode(str(dbo_id).lower())
 
     def hydrate(self, dto):
-        for field, dbo_field in self.dbo_fields.iteritems():
+        for field, dbo_field in self.dbo_fields.viewitems():
             if field in dto:
                 setattr(self, field, dbo_field.hydrate_value(dto[field], self))
             else:
@@ -81,10 +81,29 @@ class RootDBO(object):
         self.on_loaded()
         return self
 
+    def describe(self, display, level):
+
+        def append(value, key):
+            display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
+
+        if getattr(self, 'dbo_id', None):
+            append(self.dbo_id, 'dbo_id')
+            if level > 0:
+                return
+        for field, dbo_field in self.dbo_fields.viewitems():
+            value = getattr(self, field)
+            wrapper = value_wrapper(value)
+            if hasattr(dbo_field, 'dbo_class'):
+                append('', field)
+                wrapper(lambda value : value.describe(display, level + 1))(value)
+            else:
+                wrapper(append)(value, field)
+        return display
+
     @property
     def save_value(self):
         save_value = {}
-        for field, dbo_field in self.dbo_fields.iteritems():
+        for field, dbo_field in self.dbo_fields.viewitems():
             try:
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
@@ -100,6 +119,9 @@ class RootDBO(object):
     def on_loaded(self):
         pass
 
+    def rec_describe(self):
+        return self.describe([], 0)
+
     @property
     def dbo_key(self):
         return unicode(":".join([self.dbo_key_type, self.dbo_id]))
@@ -113,8 +135,6 @@ class RootDBO(object):
     def autosave(self):
         save_object(self, autosave=True)
 
-    def rec_describe(self):
-        return dbo_describe(self)
 
     def metafields(self, dto_repr, field_names):
         for metafield in field_names:
@@ -125,24 +145,6 @@ class RootDBO(object):
         return dto_repr
 
 
-def dbo_describe(dbo, level=0):
-    display = []
-
-    def append(key, value):
-        display.append(3 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
-
-    if getattr(dbo, 'dbo_key', None):
-        append("key", dbo.dbo_key)
-    if getattr(dbo, 'dbo_set_key', None):
-        append("set_key", dbo.dbo_set_key)
-    for field in getattr(dbo, 'dbo_fields', []):
-        child = getattr(dbo, field)
-        append(field, child)
-        if level == 0:
-            display.extend(dbo_describe(child, 1))
-    return display
-
-
 class DBOField(ProtoField):
     dbo_field = True
 
@@ -150,12 +152,7 @@ class DBOField(ProtoField):
         super(DBOField, self).__init__(default)
         if dbo_class_id:
             dbo_field_classes[dbo_class_id].add(self)
-            if isinstance(self.default, dict):
-                wrapper = dict_wrapper
-            elif isinstance(self.default, list):
-                wrapper = list_wrapper
-            else:
-                wrapper = lambda x: x
+            wrapper = value_wrapper(self.default)
             self.hydrate_value = wrapper(self.hydrate_dbo_value)
             self.convert_save_value = wrapper(self.dbo_save_value)
             self.dto_value = wrapper(self.dbo_dto_value)
@@ -183,6 +180,15 @@ class DBOField(ProtoField):
         except AttributeError:
             pass
         return value
+
+
+def value_wrapper(value):
+    if isinstance(value, dict):
+        return dict_wrapper
+    elif isinstance(value, list):
+        return list_wrapper
+    else:
+        return lambda x: x
 
 
 def list_wrapper(func):

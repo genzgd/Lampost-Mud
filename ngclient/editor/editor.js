@@ -485,8 +485,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
 ]);
 
 
-angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor', 'lmRemote', 'lmBus',
-  function ($scope, lmEditor, lmRemote, lmBus) {
+angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEditor', 'lmRemote', 'lmBus',
+  function ($q, $scope, lmEditor, lmRemote, lmBus) {
 
     var playerId = name.split('_')[1];
     var editorList = jQuery.parseJSON(localStorage.getItem('lm_editors_' + playerId));
@@ -497,9 +497,11 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$scope', 'lmEditor',
 
     function editById(dbo_id) {
       var areaId = dbo_id.split(':')[0];
-      lmEditor.cache('room:' + areaId).then(function () {
-        $scope.startEditor('room', lmEditor.cacheValue('room:' + areaId, dbo_id));
-      })
+      $q.all([lmEditor.cache('area'),
+          lmEditor.cache('room:' + areaId)
+        ]).then(function () {
+          $scope.startEditor('room', lmEditor.cacheValue('room:' + areaId, dbo_id));
+        })
     }
 
     lmBus.register('edit_by_id', editById, $scope);
