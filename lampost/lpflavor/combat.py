@@ -146,6 +146,7 @@ class AttackSkill(BaseSkill):
             self.active_damage_type = self.damage_type
         if 'dual_wield' in self.pre_reqs:
             validate_weapon(self, source.second_type)
+        source.start_combat(target)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)
 
     def invoke(self, source, target_method, **ignored):

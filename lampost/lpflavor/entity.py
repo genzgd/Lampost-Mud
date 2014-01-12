@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
-from lampost.lpflavor.ai import auto_combat
+from lampost.lpflavor.ai import Fight
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
 from lampost.lpflavor.combat import calc_consider
 from lampost.model.entity import Entity
@@ -21,27 +21,27 @@ def update_settings(game_settings):
 
 
 class EntityLP(Entity):
-
     health = 0
     stamina = 0
     mental = 0
     action = 0
+    auto_fight = True
+    status = 'ok'
 
     weapon = None
-    current_target = None
 
     _refresh_pulse = None
     _current_action = None
     _next_command = None
     _action_pulse = None
     _refresher = {}
-    effects = []
 
     def __init__(self, dbo_id=None):
         super(EntityLP, self).__init__(dbo_id)
+        self.effects = set()
         self.defenses = set()
         self.equip_slots = {}
-        self.current_target = None
+        self.fight = Fight(self)
 
     @property
     def weapon_type(self):
@@ -60,7 +60,7 @@ class EntityLP(Entity):
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
         if prep_time:
-            self._current_action = action, act_args, register_p(self._finish_action, pulses=prep_time, priority=priority)
+            self._current_action = action, act_args, register_p(self._finish_action, pulses=prep_time, priority=priority, repeat=False)
         else:
             super(EntityLP, self).process_action(action, act_args)
         self.check_follow(action, act_args)
@@ -78,7 +78,6 @@ class EntityLP(Entity):
     def _finish_action(self):
         action, action_args, action_pulse = self._current_action
         del self._current_action
-        unregister(action_pulse)
         target = action_args.get('target', None)
         if target and not target in self.target_map:
             raise ActionError("{} is no longer here.", target.name)
@@ -86,20 +85,23 @@ class EntityLP(Entity):
         if self._next_command:
             self.parse(self._next_command)
             del self._next_command
+        elif self.auto_fight:
+            self.check_fight()
 
     def start_refresh(self):
         if not self._refresh_pulse and need_refresh(self):
             self._refresh_pulse = register_p(self._refresh, pulses=self._refresh_interval)
 
     def _refresh(self):
-        if need_refresh(self):
-            for pool_id, base_pool_id in POOL_LIST:
-                new_value = getattr(self, pool_id) + self._refresher[pool_id]
-                setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
-            self.status_change()
-        else:
+        if self.status == 'dead' or not need_refresh(self):
             unregister(self._refresh_pulse)
             del self._refresh_pulse
+            return
+        for pool_id, base_pool_id in POOL_LIST:
+            new_value = getattr(self, pool_id) + self._refresher[pool_id]
+            setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
+        self.status_change()
+        self.check_fight()
 
     def rec_attack(self, source, attack):
         self.start_combat(source)
@@ -121,17 +123,24 @@ class EntityLP(Entity):
         self.check_status()
 
     def start_combat(self, source):
-        if not self.current_target:
-            self.current_target = source
-            auto_combat(self, source)
+        if source not in self.fight.opponents.viewkeys():
+            self.fight.add(source)
+            self.check_fight()
 
-    def end_combat(self):
-        pass
+    def check_fight(self):
+        if not self._current_action and self.auto_fight:
+            self.fight.select_action()
 
-    def apply_costs(self, costs):
+    def end_combat(self, source):
+        self.fight.remove(source)
+
+    def check_costs(self, costs):
         for pool, cost in costs.iteritems():
             if getattr(self, pool, 0) < cost:
                 raise ActionError("Your condition prevents you from doing that.")
+
+    def apply_costs(self, costs):
+        self.check_costs(costs)
         for pool, cost in costs.iteritems():
             setattr(self, pool, getattr(self, pool) - cost)
         self.check_status()
@@ -209,10 +218,25 @@ class EntityLP(Entity):
 
     def check_status(self):
         if self.health <= 0:
+            self._cancel_actions()
+            for opponent in self.fight.opponents.viewkeys():
+                opponent.end_combat(self)
+            self.fight.lose()
             self.die()
         else:
             self.start_refresh()
         self.status_change()
+
+    def _cancel_actions(self):
+        if self._current_action:
+            unregister(self._current_action[2])
+            del self._current_action
+        if self._next_command:
+            del self._next_command
+
+    def die(self):
+        self.status = 'dead'
+        super(EntityLP, self).die()
 
     def status_change(self):
         pass

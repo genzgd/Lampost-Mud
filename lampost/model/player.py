@@ -19,6 +19,7 @@ class Player(RootDBO):
     room_id = DBOField()
     home_room = DBOField()
     rec_player = True
+    can_die = True
 
     def __init__(self, dbo_id):
         super(Player, self).__init__(dbo_id)

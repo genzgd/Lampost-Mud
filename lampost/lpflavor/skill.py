@@ -73,7 +73,7 @@ class BaseSkill(TemplateInstance):
     name = ProtoField()
 
     def prepare_action(self, source, target, **kwargs):
-        if self.cool_down and self.last_used + self.cool_down > dispatcher.pulse_count:
+        if not self.available:
             raise ActionError("You cannot {} yet.".format(self.verb))
         if self.prep_map and self.prep_time:
             source.broadcast(verb=self.verb, display=self.display, target=target, **self.prep_map)
@@ -86,6 +86,10 @@ class BaseSkill(TemplateInstance):
     def revoke(self, source):
         if not self.auto_start:
             diminish_soul(source, self)
+
+    @property
+    def available(self):
+        return dispatcher.pulse_count - self.last_used >= self.cool_down
 
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)
@@ -119,6 +123,6 @@ def remove_skill(target, obj, **ignored):
         return "{} does not have that skill".format(obj.name)
     existing_skill.revoke(obj)
     del obj.skills[target[0]]
-    if obj.dbo_id:
+    if getattr(obj, 'dbo_id', None):
         save_object(obj)
     return "Removed {} from {}".format(target, obj.name)

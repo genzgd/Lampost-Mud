@@ -34,13 +34,13 @@ class Dispatcher:
             if registration.event_type == event_type:
                 self.unregister(registration)
 
-    def register_p(self, callback, pulses=0, seconds=0, randomize=0, priority=0):
+    def register_p(self, callback, pulses=0, seconds=0, randomize=0, priority=0, repeat=True):
         if seconds:
             pulses = int(seconds * self.pulses_per_second)
             randomize = int(randomize * self.pulses_per_second)
         if randomize:
             randomize = randint(0, randomize)
-        registration = PulseRegistration(pulses, callback, priority=priority)
+        registration = PulseRegistration(pulses, callback, priority=priority, repeat=repeat)
         self._add_pulse(self.pulse_count + randomize, registration)
         return self._add_registration(registration)
 
@@ -64,7 +64,8 @@ class Dispatcher:
                     reg.callback()
                 except Exception as pulse_error:
                     error('Pulse Error', 'Dispatcher', pulse_error)
-                self._add_pulse(self.pulse_count, reg)
+                if reg.repeat:
+                    self._add_pulse(self.pulse_count, reg)
         del self._pulse_map[self.pulse_count]
         self.pulse_count += 1
 
@@ -116,9 +117,10 @@ class Registration(object):
 
 
 class PulseRegistration(Registration):
-    def __init__(self, freq, callback, owner=None, priority=0):
+    def __init__(self, freq, callback, owner=None, priority=0, repeat=True):
         super(PulseRegistration, self).__init__('pulse_i', callback, owner, priority)
         self.freq = freq
+        self.repeat = repeat
 
     def cancel(self):
         self.freq = 0

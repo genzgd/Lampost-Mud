@@ -92,12 +92,13 @@ class RootDBO(object):
                 return
         for field, dbo_field in self.dbo_fields.viewitems():
             value = getattr(self, field)
-            wrapper = value_wrapper(value)
-            if hasattr(dbo_field, 'dbo_class'):
-                append('', field)
-                wrapper(lambda value : value.describe(display, level + 1))(value)
-            else:
-                wrapper(append)(value, field)
+            if value:
+                wrapper = value_wrapper(value)
+                if hasattr(dbo_field, 'dbo_class'):
+                    append('', field)
+                    wrapper(lambda value : value.describe(display, level + 1))(value)
+                else:
+                    wrapper(append)(value, field)
         return display
 
     @property
@@ -135,7 +136,6 @@ class RootDBO(object):
     def autosave(self):
         save_object(self, autosave=True)
 
-
     def metafields(self, dto_repr, field_names):
         for metafield in field_names:
             try:
@@ -146,8 +146,6 @@ class RootDBO(object):
 
 
 class DBOField(ProtoField):
-    dbo_field = True
-
     def __init__(self, default=None, dbo_class_id=None):
         super(DBOField, self).__init__(default)
         if dbo_class_id:
@@ -185,10 +183,9 @@ class DBOField(ProtoField):
 def value_wrapper(value):
     if isinstance(value, dict):
         return dict_wrapper
-    elif isinstance(value, list):
+    if isinstance(value, list):
         return list_wrapper
-    else:
-        return lambda x: x
+    return lambda x: x
 
 
 def list_wrapper(func):
