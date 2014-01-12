@@ -10,6 +10,7 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function (lmBus,
 
   self.defaultDisplays = {};
   self.channels = {};
+  self.status = {};
 
   clear();
 
@@ -114,6 +115,9 @@ angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function (lmBus,
   lmBus.register("display", updateDisplay, null, -100);
   lmBus.register("channel", updateChannel, null, -100);
   lmBus.register("gen_channels", rebuildChannels, null, -100);
+  lmBus.register("status", function(status) {
+    self.status = status;
+  });
   lmBus.register("logout", clear, null, -100);
 
   lmBus.register("new_message", function (message) {

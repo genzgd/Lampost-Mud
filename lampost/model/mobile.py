@@ -24,7 +24,6 @@ class MobileTemplate(Template):
 
     def config_instance(self, instance, owner):
         instance.baptise()
-        instance.equip(set())
 
     @property
     def reset_key(self):

@@ -30,7 +30,6 @@ class MobileTemplateLP(MobileTemplate):
         super(MobileTemplateLP, self).on_loaded()
 
     def config_instance(self, mobile, owner):
-        mobile.baptise()
         mobile.skills = {}
         for skill_id, skill_status in self.default_skills.iteritems():
             skill_template = load_object(SkillTemplate, skill_id)
@@ -41,5 +40,5 @@ class MobileTemplateLP(MobileTemplate):
             skill_instance.skill_level = skill_status['skill_level']
             mobile.skills[skill_id] = skill_instance
         fill_pools(mobile)
-        mobile.equip(set())
-
+        mobile.inven = set()
+        mobile.baptise()

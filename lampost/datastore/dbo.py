@@ -150,10 +150,9 @@ class DBOField(ProtoField):
         super(DBOField, self).__init__(default)
         if dbo_class_id:
             dbo_field_classes[dbo_class_id].add(self)
-            wrapper = value_wrapper(self.default)
-            self.hydrate_value = wrapper(self.hydrate_dbo_value)
-            self.convert_save_value = wrapper(self.dbo_save_value)
-            self.dto_value = wrapper(self.dbo_dto_value)
+            self.hydrate_value =  value_wrapper(self.default, False)(self.hydrate_dbo_value)
+            self.convert_save_value = value_wrapper(self.default)(self.dbo_save_value)
+            self.dto_value = value_wrapper(self.default)(self.dbo_dto_value)
         else:
             self.hydrate_value = lambda dto_repr, instance: dto_repr
             self.convert_save_value = lambda value: value
@@ -180,12 +179,22 @@ class DBOField(ProtoField):
         return value
 
 
-def value_wrapper(value):
+def value_wrapper(value, for_dto=True):
+    if isinstance(value, set):
+        return list_wrapper if for_dto else set_wrapper
     if isinstance(value, dict):
         return dict_wrapper
     if isinstance(value, list):
         return list_wrapper
     return lambda x: x
+
+
+def set_wrapper(func):
+    def wrapper(*args):
+        return {value for value in [func(single, *args[1:]) for single in args[0]]
+                if value is not None}
+
+    return wrapper
 
 
 def list_wrapper(func):

@@ -2,6 +2,7 @@ from lampost.context.resource import m_requires
 
 m_requires('log', __name__)
 
+
 class FightStats():
     def __init__(self):
         self.attack_results = {}
@@ -14,7 +15,7 @@ class Fight():
         self.opponents = {}
 
     def add(self, opponent):
-        if opponent not in self.opponents:
+        if opponent not in self.opponents.viewkeys():
             self.opponents[opponent] = FightStats()
 
     def remove(self, opponent):
@@ -24,6 +25,8 @@ class Fight():
             warn("Removing opponent not in fight")
 
     def lose(self):
+        for opponent in self.opponents.viewkeys():
+            opponent.end_combat(self.me)
         self.opponents.clear()
 
     def select_action(self):

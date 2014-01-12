@@ -45,7 +45,6 @@ class UserManager(object):
             return load_object(User, user_id)
         player = load_object(Player, user_name)
         if player:
-            unload_player(player)
             return load_object(User, player.user_id)
         return None
 
@@ -70,9 +69,7 @@ class UserManager(object):
         return user
 
     def find_player(self, player_id):
-        player = load_object(Player, player_id)
-        unload_player(player)
-        return player
+        return load_object(Player, player_id)
 
     def create_user(self, user_name, password, email=""):
         user = {'dbo_id': db_counter('user_id'), 'user_name': user_name,
@@ -103,7 +100,6 @@ class UserManager(object):
         for player_id in user.player_ids:
             player = load_object(Player, player_id)
             imm_levels.append(player.imm_level)
-            unload_player(player)
         return max(imm_levels)
 
     def _user_connect(self, user, client_data):
@@ -124,7 +120,6 @@ class UserManager(object):
 
     def logout_player(self, player):
         player.age += player.last_logout - player.last_login
-        player.leave_env()
         player.detach()
         save_object(player)
 
@@ -140,10 +135,3 @@ class UserManager(object):
     def _player_delete(self, player_id):
         delete_index('ix:player:user', player_id)
         dispatch('player_deleted', player_id)
-
-
-def unload_player(player):
-    if not player:
-        return
-    if hasattr(player, 'session'):
-        return

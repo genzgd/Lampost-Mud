@@ -1,7 +1,8 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.model.entity import Entity, enhance_soul
+from lampost.lpflavor.article import ArticleLP
+from lampost.model.entity import Entity, enhance_soul, diminish_soul
 
 m_requires('log', 'dispatcher', __name__)
 
@@ -18,6 +19,8 @@ class Player(RootDBO):
     age = DBOField(0)
     room_id = DBOField()
     home_room = DBOField()
+    inven = DBOField(set(), ArticleLP)
+    equip_slots = DBOField({})
     rec_player = True
     can_die = True
 
@@ -26,8 +29,7 @@ class Player(RootDBO):
         self.target_id = self.dbo_id,
         self.name = self.dbo_id.capitalize()
         self.last_tell = None
-        self.equip_slots = {}
-        self.active_channels = []
+        self.active_channels = set()
 
     @property
     def dto_value(self):
@@ -58,12 +60,12 @@ class Player(RootDBO):
 
     def register_channel(self, channel):
         enhance_soul(self, channel)
-        self.active_channels.append(channel.id)
+        self.active_channels.add(channel)
 
     def unregister_channel(self, channel):
-        self.diminish_soul(channel)
+        diminish_soul(self, channel)
         try:
-            self.active_channels.remove(channel.id)
+            self.active_channels.remove(channel)
         except ValueError:
             warn("Removing channel {} not in list".format(channel.display), self)
 
@@ -79,4 +81,6 @@ class Player(RootDBO):
 
     def detach(self):
         super(Player, self).detach()
+        for channel in self.active_channels.copy():
+            self.unregister_channel(channel)
         self.session = None

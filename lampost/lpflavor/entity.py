@@ -26,7 +26,6 @@ class EntityLP(Entity):
     mental = 0
     action = 0
     auto_fight = True
-    status = 'ok'
 
     weapon = None
 
@@ -123,6 +122,7 @@ class EntityLP(Entity):
         self.check_status()
 
     def start_combat(self, source):
+        self.last_opponent = source
         if source not in self.fight.opponents.viewkeys():
             self.fight.add(source)
             self.check_fight()
@@ -133,6 +133,8 @@ class EntityLP(Entity):
 
     def end_combat(self, source):
         self.fight.remove(source)
+        if self.last_opponent == source:
+            del self.last_opponent
 
     def check_costs(self, costs):
         for pool, cost in costs.iteritems():
@@ -219,8 +221,6 @@ class EntityLP(Entity):
     def check_status(self):
         if self.health <= 0:
             self._cancel_actions()
-            for opponent in self.fight.opponents.viewkeys():
-                opponent.end_combat(self)
             self.fight.lose()
             self.die()
         else:
@@ -240,6 +240,12 @@ class EntityLP(Entity):
 
     def status_change(self):
         pass
+
+    def detach(self):
+        self._cancel_actions()
+        if self._refresh_pulse:
+            del self._refresh_pulse
+        super(EntityLP, self).detach()
 
     @property
     def display_status(self):

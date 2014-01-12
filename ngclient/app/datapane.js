@@ -58,11 +58,7 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout',
 
     lmBus.register('login', updateTabs, $scope);
     lmBus.register('logout', updateTabs, $scope);
-    lmBus.register('status', function(status) {
-      if (status.hasOwnProperty('status')) {
-        $scope.status = status;
-      }
-    });
+
     lmBus.register('new_message', function () {
       updateMsgCount();
       if (tabMap.messages.visible) {

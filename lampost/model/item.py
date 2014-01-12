@@ -50,8 +50,8 @@ class BaseItem(TemplateInstance):
         self.env = None
 
     def detach(self):
+        self.leave_env()
         detach_events(self)
-        self.env = None
 
     def on_loaded(self):
         if not self.target_id:

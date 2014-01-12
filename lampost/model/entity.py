@@ -33,7 +33,7 @@ class Entity(BaseItem):
 
     size = DBOField('medium')
 
-    status = 'awake'
+    status = 'ok'
     living = True
     combat = False
 
@@ -48,15 +48,12 @@ class Entity(BaseItem):
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
-        self.target_map[self] = {}
 
     def baptise(self):
+        self.target_map[self] = {}
         self.add_target_keys([self.target_id, ('self',)], self, self.target_map[self])
-
-    def equip(self, inven):
-        self.inven = inven
-        self.add_actions(inven)
-        self.add_targets(inven, inven)
+        self.add_actions(self.inven)
+        self.add_targets(self.inven, self.inven)
 
     def add_inven(self, article):
         if article in self.inven:
@@ -266,6 +263,7 @@ class Entity(BaseItem):
             except AttributeError:
                 self.exit_msg.target = None
             self.env.rec_entity_leaves(self)
+            self.env = None
 
     def enter_env(self, new_env, ex=None):
         self.env = new_env
@@ -314,6 +312,9 @@ class Entity(BaseItem):
         if hasattr(self, 'following'):
             self.following.display_line("{} is no longer following you.".format(self.name))
             del self.following
+        self.target_map.clear()
+        self.target_key_map.clear()
+        self.actions.clear()
         super(Entity, self).detach()
 
     def equip_article(self, article):

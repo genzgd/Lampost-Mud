@@ -83,7 +83,7 @@ class MudNature():
 
         client_data['editors'] = editors
         client_data['avail_channels'] = channels
-        client_data['active_channels'] = player.active_channels
+        client_data['active_channels'] = [channel.id for channel in player.active_channels]
         player.parse('look')
 
     def _baptise(self, player):
@@ -95,7 +95,6 @@ class MudNature():
         if has_perm(player, 'supreme'):
             register("log", player.display_line)
 
-        player.equip(set())
         if hasattr(player, "room_id"):
             room = load_object(Room, player.room_id)
         else:

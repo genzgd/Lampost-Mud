@@ -59,8 +59,8 @@ class ChannelService(ClientService):
         return {'id': channel_id, 'messages': get_db_list(channel_key(channel_id))}
 
     def _player_connect(self, player, client_data):
-        player.session.channel_ids = set(player.active_channels)
-        client_data['channels'] = [self._channel_messages(channel_id) for channel_id in player.active_channels]
+        player.session.channel_ids = (channel.id for channel in player.active_channels)
+        client_data['channels'] = [self._channel_messages(channel.id) for channel in player.active_channels]
 
     def _prune_channels(self):
         for channel_id in self.known_channels:
