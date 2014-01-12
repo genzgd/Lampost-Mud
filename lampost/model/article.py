@@ -12,8 +12,7 @@ class Article(BaseItem):
     equip_slot = DBOField('none')
     art_type = DBOField('treasure')
     level = DBOField(1)
-
-    current_slot = None
+    current_slot = DBOField()
 
     @property
     def name(self):

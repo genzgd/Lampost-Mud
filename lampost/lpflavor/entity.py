@@ -39,8 +39,14 @@ class EntityLP(Entity):
         super(EntityLP, self).__init__(dbo_id)
         self.effects = set()
         self.defenses = set()
-        self.equip_slots = {}
         self.fight = Fight(self)
+        self.equip_slots = {}
+
+    def baptise(self):
+        super(EntityLP, self).baptise()
+        for article in self.inven:
+            if article.current_slot:
+                self._do_equip(article, article.current_slot)
 
     @property
     def weapon_type(self):
@@ -162,8 +168,6 @@ class EntityLP(Entity):
             if self._slot_filled(equip_slot):
                 raise ActionError('You have no place to put that.')
         self._do_equip(article, equip_slot)
-        if article.art_type == 'weapon':
-            self.weapon = article
 
     def remove_article(self, article):
         if not article.equip_slot:
@@ -187,6 +191,8 @@ class EntityLP(Entity):
         self.equip_slots[equip_slot] = article
         article.current_slot = equip_slot
         article.on_equipped(self)
+        if article.art_type == 'weapon':
+            self.weapon = article
 
     def _find_slot(self, equip_slot):
         if equip_slot == 'finger':

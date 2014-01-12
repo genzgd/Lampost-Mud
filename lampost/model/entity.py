@@ -280,7 +280,8 @@ class Entity(BaseItem):
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)
         broadcast.source = self
-        self.env.rec_broadcast(broadcast)
+        if self.env:
+            self.env.rec_broadcast(broadcast)
 
     def display_line(self, line, display='default'):
         pass
@@ -315,6 +316,7 @@ class Entity(BaseItem):
         self.target_map.clear()
         self.target_key_map.clear()
         self.actions.clear()
+        self.equip_slots.clear()
         super(Entity, self).detach()
 
     def equip_article(self, article):

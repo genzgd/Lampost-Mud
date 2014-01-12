@@ -20,7 +20,6 @@ class Player(RootDBO):
     room_id = DBOField()
     home_room = DBOField()
     inven = DBOField(set(), ArticleLP)
-    equip_slots = DBOField({})
     rec_player = True
     can_die = True
 
