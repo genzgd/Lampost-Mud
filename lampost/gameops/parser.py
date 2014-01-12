@@ -107,10 +107,9 @@ def validate_targets(matches):
         if getattr(action, 'msg_class', None) == 'rec_args':
             target_matches.append((action, verb, args, target, obj, None))
         elif target:
-            try:
-                target_matches.append((action, verb, args, target, obj, getattr(target, action.msg_class)))
-            except AttributeError:
-                pass
+            target_method = getattr(target, action.msg_class, None)
+            if target_method:
+                target_matches.append((action, verb, args, target, obj, target_method))
         else:
             target_matches.append((action, verb, args, None, None, None))
     return target_matches
@@ -122,10 +121,9 @@ def validate_objects(matches):
         if not obj or action.obj_msg_class == "rec_args":
             object_matches.append((action, verb, args, target, obj, target_method, None))
         else:
-            try:
-                object_matches.append((action, verb, args, target, obj, target_method, getattr(obj, action.obj_msg_class)))
-            except AttributeError:
-                pass
+            obj_method = getattr(obj, action.obj_msg_class, None)
+            if obj_method:
+                object_matches.append((action, verb, args, target, obj, target_method, obj_method))
     return object_matches
 
 
