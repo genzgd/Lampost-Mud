@@ -147,6 +147,7 @@ class AttackSkill(BaseSkill):
         if 'dual_wield' in self.pre_reqs:
             validate_weapon(self, source.second_type)
         source.start_combat(target)
+        target.start_combat(source)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)
 
     def invoke(self, source, target_method, **ignored):
@@ -221,4 +222,6 @@ def consider(target_method, source, target, **ignored):
     target_con = target_method()
     source_con = source.rec_consider()
     con_string = consider_translate(source_con, target_con)
+    source.last_opponent = target
+    source.status_change()
     return "At first glance, {} looks {}.".format(target.name, con_string)

@@ -16,13 +16,19 @@ class PlayerLP(Player, EntityLP):
         self.auto_fight = False
 
     def status_change(self):
-        if self.session:
-            self.session.update_status(self.display_status)
+        if not self.session:
+            return
+        status = self.display_status
+        if self.last_opponent:
+            status['opponent'] = self.last_opponent.display_status
+            status['opponent']['name'] = self.last_opponent.name
+        self.session.update_status(status)
 
     def die(self):
         if not self.can_die:
             self.display_line("You die.  Fortunately, you\'re immortal.")
             self.health = 1
+            self.start_refresh()
             return
 
         self.health = 0

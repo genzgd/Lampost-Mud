@@ -301,6 +301,7 @@ class Entity(BaseItem):
     def die(self):
         self.exit_msg = Broadcast(s="{n} expires, permanently.")
         for article in self.inven.copy():
+            article.current_slot = None
             self.drop_inven(article)
         self.leave_env()
         self.status = 'dead'

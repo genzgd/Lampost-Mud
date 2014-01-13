@@ -28,6 +28,7 @@ class EntityLP(Entity):
     auto_fight = True
 
     weapon = None
+    last_opponent = None
 
     _refresh_pulse = None
     _current_action = None
@@ -109,7 +110,6 @@ class EntityLP(Entity):
         self.check_fight()
 
     def rec_attack(self, source, attack):
-        self.start_combat(source)
         for defense in self.defenses:
             defense.apply(self, attack)
             if attack.adj_damage <= 0 or attack.adj_accuracy <= 0:
@@ -141,6 +141,7 @@ class EntityLP(Entity):
         self.fight.remove(source)
         if self.last_opponent == source:
             del self.last_opponent
+        self.status_change()
 
     def check_costs(self, costs):
         for pool, cost in costs.iteritems():
@@ -232,6 +233,10 @@ class EntityLP(Entity):
         else:
             self.start_refresh()
         self.status_change()
+        try:
+            self.last_opponent.status_change()
+        except AttributeError:
+            pass
 
     def _cancel_actions(self):
         if self._current_action:
