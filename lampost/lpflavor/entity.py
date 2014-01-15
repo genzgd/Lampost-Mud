@@ -40,7 +40,6 @@ class EntityLP(Entity):
         super(EntityLP, self).__init__(dbo_id)
         self.effects = set()
         self.defenses = set()
-        self.fight = Fight(self)
         self.equip_slots = {}
 
     def baptise(self):
@@ -48,6 +47,7 @@ class EntityLP(Entity):
         for article in self.inven:
             if article.current_slot:
                 self._do_equip(article, article.current_slot)
+        self.fight = Fight(self)
 
     @property
     def weapon_type(self):
@@ -91,8 +91,7 @@ class EntityLP(Entity):
         if self._next_command:
             self.parse(self._next_command)
             del self._next_command
-        elif self.auto_fight:
-            self.check_fight()
+        self.check_fight()
 
     def start_refresh(self):
         if not self._refresh_pulse and need_refresh(self):
@@ -108,6 +107,26 @@ class EntityLP(Entity):
             setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
         self.status_change()
         self.check_fight()
+
+    def add_skill(self, skill):
+        self.skills[skill.template_id] = skill
+        if skill.auto_start:
+            skill.invoke(self)
+        else:
+            self.enhance_soul(skill)
+        try:
+            self.fight.update_skills()
+        except AttributeError:
+            pass
+
+    def remove_skill(self, skill):
+        try:
+            del self.skills[skill.template_id]
+            if skill.auto_start:
+                skill.revoke(self)
+            self.fight_update_skills()
+        except KeyError:
+            raise ActionError('{} does not have that skill'.format(self.name))
 
     def rec_attack(self, source, attack):
         for defense in self.defenses:
@@ -134,11 +153,11 @@ class EntityLP(Entity):
             self.check_fight()
 
     def check_fight(self):
-        if not self._current_action and self.auto_fight:
+        if self.auto_fight and not self._current_action and not self._next_command:
             self.fight.select_action()
 
-    def end_combat(self, source):
-        self.fight.remove(source)
+    def end_combat(self, source, victory):
+        self.fight.end(source, victory)
         if self.last_opponent == source:
             del self.last_opponent
         self.status_change()

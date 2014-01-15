@@ -13,22 +13,6 @@ from lampost.model.item import BaseItem
 m_requires('log', __name__)
 
 
-def enhance_soul(owner, action):
-    for verb in action.verbs:
-        owner.soul[verb].add(action)
-
-
-def diminish_soul(owner, action):
-    for verb in action.verbs:
-        verb_set = owner.soul.get(verb)
-        if verb_set:
-            verb_set.remove(action)
-            if not verb_set:
-                del owner.soul[verb]
-        else:
-            debug("Trying to remove non-existent {} from {} soul".format(verb, owner.name))
-
-
 class Entity(BaseItem):
 
     size = DBOField('medium')
@@ -55,6 +39,20 @@ class Entity(BaseItem):
         self.add_actions(self.inven)
         self.add_targets(self.inven, self.inven)
 
+    def enhance_soul(self, action):
+        for verb in action.verbs:
+            self.soul[verb].add(action)
+
+    def diminish_soul(self, action):
+        for verb in action.verbs:
+            verb_set = self.soul.get(verb)
+            if verb_set:
+                verb_set.remove(action)
+                if not verb_set:
+                    del self.soul[verb]
+            else:
+                debug("Trying to remove non-existent {} from {} soul".format(verb, self.name))
+
     def add_inven(self, article):
         if article in self.inven:
             return "You already have that."
@@ -77,7 +75,7 @@ class Entity(BaseItem):
         self.add_target(entity)
         self.add_action(entity)
 
-    def rec_entity_leave_env(self, entity):
+    def rec_entity_leave_env(self, entity, ex):
         self.remove_target(entity)
         self.remove_action(entity)
 
@@ -262,7 +260,7 @@ class Entity(BaseItem):
                 self.exit_msg.target = ex.dir_desc
             except AttributeError:
                 self.exit_msg.target = None
-            self.env.rec_entity_leaves(self)
+            self.env.rec_entity_leaves(self, ex)
             self.env = None
 
     def enter_env(self, new_env, ex=None):

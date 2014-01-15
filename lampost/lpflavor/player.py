@@ -15,6 +15,11 @@ class PlayerLP(Player, EntityLP):
         EntityLP.__init__(self)
         self.auto_fight = False
 
+    def on_loaded(self):
+        super(PlayerLP, self).on_loaded()
+        for skill in self.skills.viewvalues():
+            self.add_skill(skill)
+
     def status_change(self):
         if not self.session:
             return
@@ -35,3 +40,5 @@ class PlayerLP(Player, EntityLP):
         self.display_line("Alas, you succumb to your injuries")
         self.status = 'dead'
         self.action = 0
+
+

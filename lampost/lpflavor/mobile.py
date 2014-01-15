@@ -36,9 +36,9 @@ class MobileTemplateLP(MobileTemplate):
             if not skill_template:
                 warn("Skill {} not found.".format(skill_id))
                 continue
-            skill_instance = skill_template.create_instance(mobile)
-            skill_instance.skill_level = skill_status['skill_level']
-            mobile.skills[skill_id] = skill_instance
+            skill = skill_template.create_instance(mobile)
+            skill.skill_level = skill_status['skill_level']
+            mobile.add_skill(skill)
         fill_pools(mobile)
         mobile.inven = set()
         mobile.baptise()

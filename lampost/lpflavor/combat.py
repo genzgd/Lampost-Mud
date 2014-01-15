@@ -137,7 +137,7 @@ class AttackSkill(BaseSkill):
     success_map = DBOField({'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
     fail_map = DBOField({'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
 
-    def prepare_action(self, source, target, **kwargs):
+    def validate(self, source, target, **kwargs):
         if source == target:
             raise ActionError("You cannot harm yourself.  This is a happy place.")
         if validate_weapon(self, source.weapon_type):
@@ -146,6 +146,9 @@ class AttackSkill(BaseSkill):
             self.active_damage_type = self.damage_type
         if 'dual_wield' in self.pre_reqs:
             validate_weapon(self, source.second_type)
+
+    def prepare_action(self, source, target, **kwargs):
+        self.validate(source, target, **kwargs)
         source.start_combat(target)
         target.start_combat(source)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)
@@ -191,7 +194,6 @@ class DefenseSkill(BaseSkill):
         source.defenses.add(self)
 
     def revoke(self, source):
-        super(DefenseSkill, self).revoke(source)
         if self in source.defenses:
             source.defenses.remove(self)
 

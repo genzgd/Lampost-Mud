@@ -2,7 +2,7 @@ from collections import defaultdict
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.lpflavor.article import ArticleLP
-from lampost.model.entity import Entity, enhance_soul, diminish_soul
+from lampost.model.entity import Entity
 
 m_requires('log', 'dispatcher', __name__)
 
@@ -58,13 +58,13 @@ class Player(RootDBO):
         self.session.append(output)
 
     def register_channel(self, channel):
-        enhance_soul(self, channel)
         self.active_channels.add(channel)
+        self.enhance_soul(channel)
 
     def unregister_channel(self, channel):
-        diminish_soul(self, channel)
         try:
             self.active_channels.remove(channel)
+            self.diminish_soul(channel)
         except ValueError:
             warn("Removing channel {} not in list".format(channel.display), self)
 

@@ -92,9 +92,9 @@ class Room(RootDBO):
             source.entry_msg.source = source
             self.rec_broadcast(entry_msg)
 
-    def rec_entity_leaves(self, source):
+    def rec_entity_leaves(self, source, ex):
         self.contents.remove(source)
-        self.tell_contents("rec_entity_leave_env", source)
+        self.tell_contents("rec_entity_leave_env", source, ex)
         exit_msg = getattr(source, "exit_msg", None)
         if exit_msg:
             source.exit_msg.source = source

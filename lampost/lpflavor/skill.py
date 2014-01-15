@@ -4,7 +4,6 @@ from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.datastore.proto import ProtoField
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template, TemplateInstance
-from lampost.model.entity import enhance_soul, diminish_soul
 from lampost.mud.action import mud_action, imm_action
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
@@ -17,7 +16,7 @@ def add_skill(skill_id, target, skill_level):
         raise ActionError("Skill not found")
     skill_instance = skill_template.create_instance(target)
     skill_instance.skill_level = skill_level
-    target.skills[skill_id] = skill_instance
+    target.add_skill(skill_instance)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -43,13 +42,6 @@ class SkillTemplate(Template):
         if not self.auto_start:
             self.verbs = convert_verbs(self.verb)
 
-    def config_instance(self, instance, owner):
-        if getattr(owner, 'living', False):
-            if self.auto_start:
-                instance.invoke(owner)
-            else:
-                enhance_soul(owner, instance)
-
     @property
     def name(self):
         return self.template_id
@@ -73,10 +65,14 @@ class BaseSkill(TemplateInstance):
     name = ProtoField()
 
     def prepare_action(self, source, target, **kwargs):
-        if not self.available:
+        if self.available > 0:
             raise ActionError("You cannot {} yet.".format(self.verb))
+        self.validate(source, target, **kwargs)
         if self.prep_map and self.prep_time:
             source.broadcast(verb=self.verb, display=self.display, target=target, **self.prep_map)
+
+    def validate(self, source, target, **kwargs):
+        pass
 
     def use(self, source, **kwargs):
         source.apply_costs(self.costs)
@@ -84,12 +80,11 @@ class BaseSkill(TemplateInstance):
         self.last_used = dispatcher.pulse_count
 
     def revoke(self, source):
-        if not self.auto_start:
-            diminish_soul(source, self)
+        pass
 
     @property
     def available(self):
-        return dispatcher.pulse_count - self.last_used >= self.cool_down
+        return self.last_used + self.cool_down - dispatcher.pulse_count
 
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)
@@ -112,17 +107,14 @@ def add_skill_action(target, obj, **ignored):
     except IndexError:
         skill_level = 1
     add_skill(skill_id, obj, skill_level)
+    if getattr(obj, 'dbo_id', None):
+        save_object(obj)
     return "Added {} to {}".format(target, obj.name)
 
 
 @imm_action("remove skill", "args", prep="from", obj_msg_class="has_skills", self_object=True)
 def remove_skill(target, obj, **ignored):
-    try:
-        existing_skill = obj.skills[target[0]]
-    except KeyError:
-        return "{} does not have that skill".format(obj.name)
-    existing_skill.revoke(obj)
-    del obj.skills[target[0]]
+    obj.remove_skill(target[0])
     if getattr(obj, 'dbo_id', None):
         save_object(obj)
     return "Removed {} from {}".format(target, obj.name)
