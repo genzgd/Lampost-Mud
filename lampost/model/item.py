@@ -46,8 +46,9 @@ class BaseItem(TemplateInstance):
 
     def leave_env(self, ex=None):
         if self.env:
+            old_env = self.env
             self.env = None
-            self.env.rec_entity_leaves(self, ex)
+            old_env.rec_entity_leaves(self, ex)
 
     def detach(self):
         self.leave_env()
