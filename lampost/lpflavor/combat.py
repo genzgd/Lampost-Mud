@@ -47,6 +47,7 @@ DAMAGE_DELIVERY = {'weapon': {'desc': 'Use weapon delivery type'},
 
 CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome', 'Evenly Matched',
               'Threatening', 'Difficult', 'Intimidating', 'Imposing', 'Frightening', 'Terrifying', 'Unassailable']
+CON_RANGE = int((len(CON_LEVELS) - 1) / 2)
 
 
 def validate_weapon(ability, weapon_type):
@@ -86,11 +87,10 @@ def calc_consider(entity):
     return int((best_attack + best_defense + pool_levels) / 2)
 
 
-def consider_translate(source_con, target_con):
+def consider_level(source_con, target_con):
     perc = max(target_con, 1) / max(source_con, 1) * 100
     perc = min(perc, 199)
-    perc = int(perc / 13.27)
-    return CON_LEVELS[perc]
+    return int(perc / 13.27) - CON_RANGE
 
 
 class Attack(RootProto):
@@ -125,6 +125,7 @@ class AttackTemplate(SkillTemplate):
 
 class AttackSkill(BaseSkill):
     skill_type = 'attack'
+    display = COMBAT_DISPLAY
     msg_class = 'rec_attack'
 
     damage_type = DBOField('weapon')
@@ -223,7 +224,7 @@ class DefenseSkill(BaseSkill):
 def consider(target_method, source, target, **ignored):
     target_con = target_method()
     source_con = source.rec_consider()
-    con_string = consider_translate(source_con, target_con)
+    con_string = CON_LEVELS[consider_level(source_con, target_con) + CON_RANGE]
     source.last_opponent = target
     source.status_change()
     return "At first glance, {} looks {}.".format(target.name, con_string)

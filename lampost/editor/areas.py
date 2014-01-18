@@ -148,9 +148,8 @@ class RoomVisit(Resource):
         room = load_object(Room, content.room_id)
         if not room:
             raise DataError("ROOM_MISSING")
-        session.player.change_env(room)
         room.reset()
-        session.player.parse('look')
+        session.player.change_env(room)
 
 
 def add_room(area, room, session):

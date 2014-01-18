@@ -23,7 +23,9 @@
       </div>
       <div class="span2">
         <label>Level</label>
-        <input class="input-small" type="number" ng-model="model.level" required="true" min="1"/>
+        <input class="input input-small" type="number" ng-model="model.level" required="true" min="1"/>
+        <label>Affinity</label>
+        <select class="input input-medium" ng-model="model.affinity" ng-options="affinity as affinity for (affinity, data) in constants.affinities"></select>
       </div>
        <div class="span3">
         <div lm-skill-list="defaultSkills"></div>

@@ -53,7 +53,7 @@ def look(target_method, **kwargs):
 def help_action(source, args, **ignored):
     if not args:
         source.display_line('Available actions:')
-        verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in mud_actions]
+        verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in _mud_actions]
         return source.display_line(", ".join(sorted(verb_lists)))
     action_set = source.actions.get(args)
     if not action_set:

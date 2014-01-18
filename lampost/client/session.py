@@ -81,21 +81,27 @@ class SessionManager(object):
             old_session.player = None
             old_session.user = None
             old_session.append({'logout': 'other_location'})
-            session.display_line({'text': '-- Existing Session Logged Out --', 'display': SYSTEM_DISPLAY})
+            self._connect_session(session, player, '-- Existing Session Logged Out --')
+            player.parse('look')
         else:
-            player = self.user_manager.login_player(player_id)
-            session.display_line({'text': "Welcome " + player.name, 'display': SYSTEM_DISPLAY})
-        if player.user_id != session.user.dbo_id:
-            raise StateError("Player user does not match session user")
-        self.player_info_map[player.dbo_id] = session.connect_player(player)
-        self.player_session_map[player.dbo_id] = session
+            player = self.user_manager.find_player(player_id)
+            self._connect_session(session, player, 'Welcome {}'.format(player.name))
+            self.user_manager.login_player(player)
         client_data = {}
         dispatch('user_connect', session.user, client_data)
         dispatch('player_connect', player, client_data)
         session.append({'login': client_data})
         if not old_session:
             dispatch('player_login', player)
+        self.player_info_map[player.dbo_id] = session.player_info(session.activity_time)
         self._broadcast_status()
+
+    def _connect_session(self, session, player, text):
+        if player.user_id != session.user.dbo_id:
+            raise StateError("Player user does not match session user")
+        self.player_session_map[player.dbo_id] = session
+        session.connect_player(player)
+        session.display_line({'text': text, 'display': SYSTEM_DISPLAY})
 
     def logout(self, session):
         session.append({'logout': 'logout'})
@@ -186,7 +192,6 @@ class UserSession(object):
         self.player = player
         player.session = self
         self.activity_time = datetime.now()
-        return self.player_info(self.activity_time)
 
     def player_info(self, now):
         if self.ld_time:

@@ -7,6 +7,7 @@ from lampost.model.player import Player
 class PlayerLP(Player, EntityLP):
 
     race = DBOField('unknown')
+    affinity = 'player'
     skills = DBOField({}, BaseSkill)
     can_die = True
 

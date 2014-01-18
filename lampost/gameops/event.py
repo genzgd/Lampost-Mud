@@ -44,6 +44,9 @@ class Dispatcher:
         self._add_pulse(self.pulse_count + randomize, registration)
         return self._add_registration(registration)
 
+    def register_once(self, *args, **kwargs):
+        return self.register_p(repeat=False, *args, **kwargs)
+
     def dispatch(self, event_type, *args, **kwargs):
         sorted_events = sorted(self._registrations.get(event_type, []), key=lambda reg: reg.priority)
         for registration in sorted_events:

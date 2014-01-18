@@ -109,8 +109,10 @@ class UserManager(object):
     def _player_connect(self, player, client_data):
         client_data.update({'name': player.name, 'privilege': player.imm_level})
 
-    def login_player(self, player_id):
-        player = load_object(Player, player_id)
+    def find_player(self, player_id):
+        return load_object(Player, player_id)
+
+    def login_player(self, player):
         dispatch('player_baptise', player)
         player.last_login = int(time.time())
         if not player.created:

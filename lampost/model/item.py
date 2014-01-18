@@ -39,15 +39,15 @@ class BaseItem(TemplateInstance):
     def rec_social(self, social):
         pass
 
-    def enter_env(self, new_env):
+    def enter_env(self, new_env, ex=None):
         self.env = new_env
         if new_env:
             self.env.rec_entity_enters(self)
 
-    def leave_env(self):
+    def leave_env(self, ex=None):
         if self.env:
-            self.env.rec_entity_leaves(self)
-        self.env = None
+            self.env = None
+            self.env.rec_entity_leaves(self, ex)
 
     def detach(self):
         self.leave_env()

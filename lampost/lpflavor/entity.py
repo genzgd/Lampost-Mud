@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
-from lampost.lpflavor.ai import Fight
+from lampost.lpflavor.fight import Fight
 from lampost.lpflavor.attributes import need_refresh, POOL_LIST
 from lampost.lpflavor.combat import calc_consider
 from lampost.model.entity import Entity
@@ -32,6 +32,7 @@ class EntityLP(Entity):
 
     _refresh_pulse = None
     _current_action = None
+    _action_target = None
     _next_command = None
     _action_pulse = None
     _refresher = {}
@@ -49,10 +50,36 @@ class EntityLP(Entity):
                 self._do_equip(article, article.current_slot)
         self.fight = Fight(self)
 
-    @property
-    def weapon_type(self):
-        if self.weapon:
-            return self.weapon.weapon_type
+    def add_skill(self, skill):
+        self.skills[skill.template_id] = skill
+        if skill.auto_start:
+            skill.invoke(self)
+        else:
+            self.enhance_soul(skill)
+        try:
+            self.fight.update_skills()
+        except AttributeError:
+            pass
+
+    def remove_skill(self, skill_id):
+        try:
+            skill = self.skills.pop(skill_id)
+            if skill.auto_start:
+                skill.revoke(self)
+            self.fight.update_skills()
+        except KeyError:
+            raise ActionError('{} does not have that skill'.format(self.name))
+
+    def check_costs(self, costs):
+        for pool, cost in costs.iteritems():
+            if getattr(self, pool, 0) < cost:
+                raise ActionError("Your condition prevents you from doing that.")
+
+    def apply_costs(self, costs):
+        self.check_costs(costs)
+        for pool, cost in costs.iteritems():
+            setattr(self, pool, getattr(self, pool) - cost)
+        self.check_status()
 
     def filter_actions(self, matches):
         if not self._current_action:
@@ -66,7 +93,8 @@ class EntityLP(Entity):
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
         if prep_time:
-            self._current_action = action, act_args, register_p(self._finish_action, pulses=prep_time, priority=priority, repeat=False)
+            self._current_action = action, act_args, register_once(self._finish_action, prep_time, priority=priority)
+            self._action_target = act_args.get('target', None)
         else:
             super(EntityLP, self).process_action(action, act_args)
         self.check_follow(action, act_args)
@@ -84,14 +112,20 @@ class EntityLP(Entity):
     def _finish_action(self):
         action, action_args, action_pulse = self._current_action
         del self._current_action
-        target = action_args.get('target', None)
-        if target and not target in self.target_map:
-            raise ActionError("{} is no longer here.", target.name)
+        if self._action_target:
+            if not self._action_target in self.target_map:
+                raise ActionError("{} is no longer here.", self._action_target.name)
+            del self._action_target
         super(EntityLP, self).process_action(action, action_args)
         if self._next_command:
             self.parse(self._next_command)
             del self._next_command
         self.check_fight()
+
+    def rec_entity_leave_env(self, entity, ex):
+        super(EntityLP, self).rec_entity_leave_env(entity, ex)
+        if self._current_action and self._action_target == entity:
+            self._cancel_actions()
 
     def start_refresh(self):
         if not self._refresh_pulse and need_refresh(self):
@@ -108,25 +142,10 @@ class EntityLP(Entity):
         self.status_change()
         self.check_fight()
 
-    def add_skill(self, skill):
-        self.skills[skill.template_id] = skill
-        if skill.auto_start:
-            skill.invoke(self)
-        else:
-            self.enhance_soul(skill)
-        try:
-            self.fight.update_skills()
-        except AttributeError:
-            pass
-
-    def remove_skill(self, skill):
-        try:
-            del self.skills[skill.template_id]
-            if skill.auto_start:
-                skill.revoke(self)
-            self.fight_update_skills()
-        except KeyError:
-            raise ActionError('{} does not have that skill'.format(self.name))
+    @property
+    def weapon_type(self):
+        if self.weapon:
+            return self.weapon.weapon_type
 
     def rec_attack(self, source, attack):
         for defense in self.defenses:
@@ -161,17 +180,6 @@ class EntityLP(Entity):
         if self.last_opponent == source:
             del self.last_opponent
         self.status_change()
-
-    def check_costs(self, costs):
-        for pool, cost in costs.iteritems():
-            if getattr(self, pool, 0) < cost:
-                raise ActionError("Your condition prevents you from doing that.")
-
-    def apply_costs(self, costs):
-        self.check_costs(costs)
-        for pool, cost in costs.iteritems():
-            setattr(self, pool, getattr(self, pool) - cost)
-        self.check_status()
 
     def equip_article(self, article):
         if not article in self.inven:
@@ -247,7 +255,7 @@ class EntityLP(Entity):
     def check_status(self):
         if self.health <= 0:
             self._cancel_actions()
-            self.fight.lose()
+            self.fight.end_all()
             self.die()
         else:
             self.start_refresh()
@@ -261,8 +269,13 @@ class EntityLP(Entity):
         if self._current_action:
             unregister(self._current_action[2])
             del self._current_action
+            try:
+                del self._action_target
+            except AttributeError:
+                pass
         if self._next_command:
             del self._next_command
+
 
     def die(self):
         self.status = 'dead'

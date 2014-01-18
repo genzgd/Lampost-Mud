@@ -32,6 +32,7 @@ class Entity(BaseItem):
         self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
+        self.local_actions = set()
 
     def baptise(self):
         self.target_map[self] = {}
@@ -98,6 +99,7 @@ class Entity(BaseItem):
         for target_id in getattr(target, "target_aliases", []):
             self.add_target_key_set(target, target_entry, target_id, parent)
         self.target_map[target] = target_entry
+        return target
 
     def add_target_key_set(self, target, target_entry, target_id, parent):
         if parent == self.env:
@@ -253,27 +255,24 @@ class Entity(BaseItem):
 
     def leave_env(self, ex=None):
         if self.env:
-            self.remove_actions(self.env.elements)
-            self.remove_target(self.env)
-            self.remove_targets(self.env.elements)
-            try:
-                self.exit_msg.target = ex.dir_desc
-            except AttributeError:
-                self.exit_msg.target = None
-            self.env.rec_entity_leaves(self, ex)
+            old_env = self.env
             self.env = None
+            self.exit_msg.target = getattr(ex, 'dir_desc', None)
+            old_env.rec_entity_leaves(self, ex)
+            self.remove_actions(old_env.elements)
+            self.remove_target(old_env)
+            self.remove_targets(old_env.elements)
 
     def enter_env(self, new_env, ex=None):
         self.env = new_env
         self.room_id = new_env.room_id
+        new_env.rec_examine(self)
+        self.entry_msg.target = getattr(ex, 'from_desc', None)
+        self.env.rec_entity_enters(self)
         self.add_actions(new_env.elements)
         self.add_target(new_env)
         self.add_targets(new_env.elements, new_env)
-        try:
-            self.entry_msg.target = ex.from_desc
-        except AttributeError:
-            self.entry_msg.target = None
-        self.env.rec_entity_enters(self)
+
 
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)

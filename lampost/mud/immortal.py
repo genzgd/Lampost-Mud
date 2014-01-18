@@ -59,7 +59,6 @@ def summon(source, args, **ignored):
     player = session.player
     check_perm(source, player)
     player.change_env(source.env)
-    player.parse('look')
     source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=player)
 
 

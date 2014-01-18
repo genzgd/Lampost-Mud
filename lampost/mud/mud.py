@@ -83,7 +83,6 @@ class MudNature():
         client_data['editors'] = editors
         client_data['avail_channels'] = channels
         client_data['active_channels'] = [channel.id for channel in player.active_channels]
-        player.parse('look')
 
     def _baptise(self, player):
         player.baptise()

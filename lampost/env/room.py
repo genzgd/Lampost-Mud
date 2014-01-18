@@ -39,8 +39,6 @@ class Exit(RootDBO):
 
     def __call__(self, source, **ignored):
         source.change_env(self.destination, self)
-        if hasattr(source, 'session'):
-            return self.destination.rec_examine(source)
 
 
 class Room(RootDBO):
@@ -85,20 +83,22 @@ class Room(RootDBO):
         return source.display_line(self.title, ROOM_DISPLAY)
 
     def rec_entity_enters(self, source):
+        try:
+            source.entry_msg.source = source
+            self.rec_broadcast(source.entry_msg)
+        except AttributeError:
+            pass
         self.contents.append(source)
         self.tell_contents("rec_entity_enter_env", source)
-        entry_msg = getattr(source, "entry_msg", None)
-        if entry_msg:
-            source.entry_msg.source = source
-            self.rec_broadcast(entry_msg)
 
     def rec_entity_leaves(self, source, ex):
+        try:
+            source.exit_msg.source = source
+            self.rec_broadcast(source.exit_msg)
+        except AttributeError:
+            pass
         self.contents.remove(source)
         self.tell_contents("rec_entity_leave_env", source, ex)
-        exit_msg = getattr(source, "exit_msg", None)
-        if exit_msg:
-            source.exit_msg.source = source
-            self.rec_broadcast(exit_msg)
 
     def rec_broadcast(self, broadcast):
         if not broadcast:
@@ -143,10 +143,9 @@ class Room(RootDBO):
     # noinspection PyCallingNonCallable
     def tell_contents(self, msg_type, *args):
         for receiver in self.contents:
-            try:
-                getattr(receiver, msg_type)(*args)
-            except AttributeError:
-                pass
+            rec_method = getattr(receiver, msg_type, None)
+            if rec_method:
+                rec_method(*args)
 
     def reset(self):
         for m_reset in self.mobile_resets:
