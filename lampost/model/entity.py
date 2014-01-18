@@ -1,6 +1,5 @@
-import math
-
 from collections import defaultdict
+from operator import itemgetter
 from lampost.datastore.dbo import DBOField
 from lampost.gameops.action import action_handler
 
@@ -14,7 +13,6 @@ m_requires('log', __name__)
 
 
 class Entity(BaseItem):
-
     size = DBOField('medium')
 
     status = 'ok'
@@ -26,19 +24,21 @@ class Entity(BaseItem):
 
     def __init__(self, dbo_id=None):
         super(Entity, self).__init__(dbo_id)
+        self._target_order = 0
+        self._target_data = defaultdict(list)
         self.soul = defaultdict(set)
         self.followers = set()
         self.registrations = set()
-        self.target_map = {}
         self.target_key_map = {}
         self.actions = {}
         self.local_actions = set()
 
     def baptise(self):
-        self.target_map[self] = {}
-        self.add_target_keys([self.target_id, ('self',)], self, self.target_map[self])
+        for target_key in self.target_keys | {(unicode('self'),)}:
+            self._target_data[target_key] = self, 0, 0
+            self.target_key_map[target_key] = self
         self.add_actions(self.inven)
-        self.add_targets(self.inven, self.inven)
+        self.add_targets(self.inven, 10)
 
     def enhance_soul(self, action):
         for verb in action.verbs:
@@ -60,7 +60,7 @@ class Entity(BaseItem):
         article.leave_env()
         self.inven.add(article)
         self.add_action(article)
-        self.add_target(article, self.inven)
+        self.add_target(article, 10)
         self.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article)
 
     def drop_inven(self, article):
@@ -73,63 +73,52 @@ class Entity(BaseItem):
         self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
 
     def rec_entity_enter_env(self, entity):
-        self.add_target(entity)
+        self.add_target(entity, 30)
         self.add_action(entity)
 
     def rec_entity_leave_env(self, entity, ex):
         self.remove_target(entity)
         self.remove_action(entity)
 
-    def add_targets(self, targets, parent=None):
+    def add_targets(self, targets, parse_priority):
         for target in targets:
-            self.add_target(target, parent)
+            self.add_target(target, parse_priority)
 
-    def add_target(self, target, parent=None):
+    def add_target(self, target, parse_priority):
         if target == self:
             return
+        self._target_order += 1
         try:
-            target_id = target.target_id
+            target_keys = target.target_keys
         except AttributeError:
             return
-        if self.target_map.get(target):
-            error("Trying to add " + target_id + " more than once")
-            return
-        target_entry = {}
-        self.add_target_key_set(target, target_entry, target_id, parent)
-        for target_id in getattr(target, "target_aliases", []):
-            self.add_target_key_set(target, target_entry, target_id, parent)
-        self.target_map[target] = target_entry
-        return target
-
-    def add_target_key_set(self, target, target_entry, target_id, parent):
-        if parent == self.env:
-            prefix = unicode("the"),
-        elif parent == self.inven:
-            prefix = unicode("my"),
-        else:
-            prefix = ()
-        target_keys = self.gen_ids(prefix + target_id)
-        self.add_target_keys(target_keys, target, target_entry)
-
-    def add_target_keys(self, target_keys, target, target_entry):
+        self.clear_target_keys(target_keys)
         for target_key in target_keys:
-            current_key = target_key
-            key_count = 1
-            while self.target_key_map.get(current_key):
-                key_count += 1
-                current_key = target_key + (unicode(key_count),)
-            self.target_key_map[current_key] = target
-            target_entry[target_key] = key_count
+            existing_targets = self._target_data[target_key]
+            existing_targets.append((target, parse_priority, self._target_order))
+            existing_targets.sort(key=itemgetter(1, 2))
+        self.update_target_keys(target_keys)
+        self.on_target_added(target)
 
-    def gen_ids(self, target_id):
-        prefix_count = len(target_id) - 1
-        target = target_id[prefix_count],
-        for x in range(0, int(math.pow(2, prefix_count))):
-            next_prefix = []
-            for y in range(0, prefix_count):
-                if int(math.pow(2, y)) & x:
-                    next_prefix.append(target_id[y])
-            yield tuple(next_prefix) + target
+    def on_target_added(self, target):
+        pass
+
+    def clear_target_keys(self, target_keys):
+        for target_key in target_keys:
+            existing_targets = self._target_data.get(target_key, None)
+            if existing_targets:
+                del self.target_key_map[target_key]
+                for key_count in range(2, len(existing_targets)):
+                    del self.target_key_map[target_key + (unicode(key_count),)]
+
+    def update_target_keys(self, target_keys):
+        for target_key in target_keys:
+            self.update_target_key(target_key, self._target_data[target_key])
+
+    def update_target_key(self, target_key, target_list):
+        self.target_key_map[target_key] = target_list[0][0]
+        for key_count in range(1, len(target_list)):
+            self.target_key_map[target_key + (unicode(key_count + 1),)] = target_list[key_count][0]
 
     def remove_targets(self, targets):
         for target in targets:
@@ -138,27 +127,19 @@ class Entity(BaseItem):
     def remove_target(self, target):
         if self == target:
             return
-        target_keys = self.target_map.get(target, None)
-        if not target_keys:
+        try:
+            target_keys = target.target_keys
+        except AttributeError:
             return
-        del self.target_map[target]
-        for target_key, key_count in target_keys.iteritems():
-            if key_count > 1:
-                prev_key = target_key + (unicode(key_count),)
+        self.clear_target_keys(target_keys)
+        for target_key in target_keys:
+            existing_targets = self._target_data[target_key]
+            remaining_targets = [existing_target for existing_target in existing_targets if existing_target[0] != target]
+            if remaining_targets:
+                self._target_data[target_key] = remaining_targets
+                self.update_target_key(target_key, remaining_targets)
             else:
-                prev_key = target_key
-            del self.target_key_map[prev_key]
-            key_count += 1
-            next_key = target_key + (unicode(key_count),)
-            next_target = self.target_key_map.get(next_key)
-            while next_target:
-                self.target_key_map[prev_key] = next_target
-                self.target_map[next_target][target_key] = key_count - 1
-                del self.target_key_map[next_key]
-                prev_key = next_key
-                key_count += 1
-                next_key = target_key + (unicode(key_count),)
-                next_target = self.target_key_map.get(next_key)
+                del self._target_data[target_key]
 
     def add_actions(self, actions):
         for action in actions:
@@ -260,7 +241,6 @@ class Entity(BaseItem):
             self.exit_msg.target = getattr(ex, 'dir_desc', None)
             old_env.rec_entity_leaves(self, ex)
             self.remove_actions(old_env.elements)
-            self.remove_target(old_env)
             self.remove_targets(old_env.elements)
 
     def enter_env(self, new_env, ex=None):
@@ -270,9 +250,7 @@ class Entity(BaseItem):
         self.entry_msg.target = getattr(ex, 'from_desc', None)
         self.env.rec_entity_enters(self)
         self.add_actions(new_env.elements)
-        self.add_target(new_env)
-        self.add_targets(new_env.elements, new_env)
-
+        self.add_targets(new_env.elements, 30)
 
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)
@@ -305,17 +283,17 @@ class Entity(BaseItem):
         self.detach()
 
     def detach(self):
+        super(Entity, self).detach()
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
         if hasattr(self, 'following'):
             self.following.display_line("{} is no longer following you.".format(self.name))
             del self.following
-        self.target_map.clear()
+        self._target_data.clear()
         self.target_key_map.clear()
         self.actions.clear()
         self.equip_slots.clear()
-        super(Entity, self).detach()
 
     def equip_article(self, article):
         pass

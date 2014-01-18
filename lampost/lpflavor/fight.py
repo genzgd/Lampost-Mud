@@ -20,7 +20,6 @@ class Fight():
     def __init__(self, me):
         self.me = me
         self.opponents = {}
-        self.update_skills()
 
     def update_skills(self):
         self.attacks = [attack for attack in self.me.skills.viewvalues() if getattr(attack, 'msg_class', None) == 'rec_attack']
@@ -47,24 +46,13 @@ class Fight():
     def check_follow(self, opponent, ex):
         try:
             stats = self.opponents[opponent]
+            stats.last_exit = ex
             # Don't follow if we have other local opponents
-            if filter(lambda opp: opp.env == self.me.env, self.opponents.keys()):
-                stats.last_exit = ex
+            if [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]:
                 return
-
-            if stats.con_level < 1 and ex in self.me.env.exits:
-                self.me.start_action(ex, {'source': self.me})
-            else:
-                self.check_hunt()
+            self.try_chase()
         except KeyError:
             pass
-
-    def check_hunt(self):
-        self.clear_hunt_timer()
-        for opponent in self.opponents.viewkeys():
-            if opponent.env == self.me.env:
-                return
-        self.hunt_timer = register_once(self.end_all, seconds=120)
 
     def clear_hunt_timer(self):
         if self.hunt_timer:
@@ -72,10 +60,11 @@ class Fight():
             del self.hunt_timer
 
     def select_action(self):
-        try:
-            local_opponents = filter(lambda opp: opp.env == self.me.env, self.opponents.keys())
-            self.select_attack(reduce(lambda opp1, opp2: opp1 if opp1.health < opp2 else opp2, local_opponents))
-        except TypeError:
+        local_opponents = [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]
+        if local_opponents:
+            local_opponents.sort(key=lambda opponent: opponent.health)
+            self.select_attack(local_opponents[0])
+        else:
             self.try_chase()
 
     def select_attack(self, opponent):
@@ -93,9 +82,13 @@ class Fight():
             self.me.last_opponent = opponent
             self.me.start_action(attack, {'target': opponent, 'source': self.me, 'target_method': opponent.rec_attack})
             return
-        # Try again when another skill because available
+            # Try again when another skill because available
         if next_available < 10000:
             register_once(self.me.check_fight, next_available)
 
     def try_chase(self):
-        pass
+        opponent_escapes = [stats.last_exit for stats in self.opponents.viewvalues() if stats.con_level < 1 and stats.last_exit]
+        if opponent_escapes:
+            self.me.start_action(opponent_escapes[0], {'source': self.me})
+        else:
+            self.hunt_timer = register_once(self.end_all, seconds=120)

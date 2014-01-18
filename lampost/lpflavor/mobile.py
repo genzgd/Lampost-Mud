@@ -25,19 +25,15 @@ class MobileLP(Mobile, EntityLP):
     affinity = DBOField('neutral')
     enemies = ProtoField('enemies')
 
-    def add_target(self, target, parent=None):
-        super(MobileLP, self).add_target(target, parent)
-        self._entity_reaction(target)
+    def on_target_added(self, target):
+        if target in self.fight.opponents.viewkeys():
+            self.check_fight()
+        elif hasattr(target, 'affinity') and target.affinity in self.enemies:
+            self.start_combat(target)
 
     def rec_entity_leave_env(self, entity, ex):
         super(MobileLP, self).rec_entity_leave_env(entity, ex)
         self.fight.check_follow(entity, ex)
-
-    def _entity_reaction(self, entity):
-        if entity in self.fight.opponents.viewkeys():
-            self.check_fight()
-        elif hasattr(entity, 'affinity') and entity.affinity in self.enemies:
-            self.start_combat(entity)
 
 
 class MobileTemplateLP(MobileTemplate):

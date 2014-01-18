@@ -42,13 +42,14 @@ class EntityLP(Entity):
         self.effects = set()
         self.defenses = set()
         self.equip_slots = {}
+        self.fight = Fight(self)
 
     def baptise(self):
         super(EntityLP, self).baptise()
         for article in self.inven:
             if article.current_slot:
                 self._do_equip(article, article.current_slot)
-        self.fight = Fight(self)
+        self.fight.update_skills()
 
     def add_skill(self, skill):
         self.skills[skill.template_id] = skill
@@ -113,8 +114,6 @@ class EntityLP(Entity):
         action, action_args, action_pulse = self._current_action
         del self._current_action
         if self._action_target:
-            if not self._action_target in self.target_map:
-                raise ActionError("{} is no longer here.", self._action_target.name)
             del self._action_target
         super(EntityLP, self).process_action(action, action_args)
         if self._next_command:

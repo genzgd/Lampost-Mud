@@ -1,9 +1,25 @@
+import math
+
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, RootDBOMeta
 from lampost.datastore.proto import ProtoField
 from lampost.gameops.template import TemplateInstance
 
 m_requires('dispatcher', __name__)
+
+
+def gen_keys(target_id):
+    if not target_id:
+        return
+    target_tuple = tuple(unicode(target_id).lower().split(" "))
+    prefix_count = len(target_tuple) - 1
+    target = target_tuple[prefix_count],
+    for x in range(0, int(math.pow(2, prefix_count))):
+        next_prefix = []
+        for y in range(0, prefix_count):
+            if int(math.pow(2, y)) & x:
+                next_prefix.append(target_tuple[y])
+        yield tuple(next_prefix) + target
 
 
 class BaseItem(TemplateInstance):
@@ -13,8 +29,7 @@ class BaseItem(TemplateInstance):
     title = DBOField('')
     aliases = DBOField([])
     sex = DBOField('none')
-    target_id = ProtoField()
-    target_aliases = ProtoField([])
+    target_keys = ProtoField(set())
 
     living = False
     env = None
@@ -23,8 +38,9 @@ class BaseItem(TemplateInstance):
 
     @staticmethod
     def config_template(template):
-        template.target_id = tuple(unicode(template.title).lower().split(" "))
-        template.target_aliases = [tuple(unicode(alias).split(" ")) for alias in template.aliases]
+        template.target_keys = set(gen_keys(template.title))
+        for alias in template.aliases:
+            template.target_keys.update(gen_keys(alias))
 
     def rec_examine(self, source, **ignored):
         source.display_line(self.desc if self.desc else self.title)
@@ -55,5 +71,5 @@ class BaseItem(TemplateInstance):
         detach_events(self)
 
     def on_loaded(self):
-        if not self.target_id:
+        if not self.target_keys:
             self.config_template(self)

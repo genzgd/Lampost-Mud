@@ -158,6 +158,7 @@ def unmake(source, target, **ignored):
     if target.env == source.env:
         source.broadcast(s="{N} is no more.", target=target)
         target.leave_env()
+        target.detach()
         del target
     else:
         return "Can only unmake things in the room."

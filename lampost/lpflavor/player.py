@@ -4,6 +4,7 @@ from lampost.lpflavor.skill import SkillTemplate, BaseSkill
 
 from lampost.model.player import Player
 
+
 class PlayerLP(Player, EntityLP):
 
     race = DBOField('unknown')

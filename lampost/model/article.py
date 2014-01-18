@@ -13,6 +13,8 @@ class Article(BaseItem):
     art_type = DBOField('treasure')
     level = DBOField(1)
     current_slot = DBOField()
+    quantity = DBOField(None)
+    uses = DBOField(None)
 
     @property
     def name(self):

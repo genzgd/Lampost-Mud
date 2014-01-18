@@ -25,7 +25,7 @@ class Player(RootDBO):
 
     def __init__(self, dbo_id):
         super(Player, self).__init__(dbo_id)
-        self.target_id = self.dbo_id,
+        self.target_keys = {(self.dbo_id,)}
         self.name = self.dbo_id.capitalize()
         self.last_tell = None
         self.active_channels = set()
