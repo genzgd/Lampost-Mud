@@ -71,17 +71,14 @@ def find_targets(entity, matches):
         if msg_class == "rec_args":
             if target_args:
                 target_matches.append((action, verb, args, target_args, obj_args))
-            continue
-        if target_args:
-            fixed_targets = getattr(action, "fixed_targets", None)
+        elif target_args:
             target = entity.target_key_map.get(target_args)
-            if target and (not fixed_targets or target in fixed_targets):
+            if target:
                 target_matches.append((action, verb, args, target, obj_args))
-            continue
-        if hasattr(action, 'self_target'):
+        elif hasattr(action, 'self_target'):
             target_matches.append((action, verb, args, entity, obj_args))
-            continue
-        target_matches.append((action, verb, args, entity.env, obj_args))
+        else:
+            target_matches.append((action, verb, args, entity.env, obj_args))
     return target_matches
 
 
@@ -109,7 +106,11 @@ def validate_targets(matches):
         elif target:
             target_method = getattr(target, action.msg_class, None)
             if target_method:
-                target_matches.append((action, verb, args, target, obj, target_method))
+                if hasattr(action, 'item_action'):
+                    if target_method.im_self == target:
+                        target_matches.append((target_method, verb, args, target, obj, target_method))
+                else:
+                    target_matches.append((action, verb, args, target, obj, target_method))
         else:
             target_matches.append((action, verb, args, None, None, None))
     return target_matches

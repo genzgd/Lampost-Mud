@@ -1,5 +1,7 @@
 from lampost.context.resource import m_requires
+from lampost.env.feature import FeatureTemplate
 from lampost.lpflavor.combat import AttackSkill, DefenseSkill
+from lampost.lpflavor.touchstone import TouchStone
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_settings
 
@@ -18,8 +20,15 @@ GAME_SETTINGS = {'refresh_interval': {'desc': 'Time between entity refreshes (in
 
 
 def first_time_setup():
-    create_object(PlayerRace, {'dbo_id': 'unknown', 'name': 'Unknown'})
+    create_object(PlayerRace, {'dbo_id': 'human', 'name': 'Human'})
+    create_object(FeatureTemplate, {'dbo_id': 'touchstone', 'instance_class_id': 'touchstone'})
     game_settings()
+
+
+def first_room_setup(room):
+    touchstone_template = load_object(FeatureTemplate, 'touchstone')
+    touchstone = touchstone_template.create_instance(room)
+    room.features.append(touchstone)
 
 
 def game_settings():

@@ -5,6 +5,7 @@ from lampost.util.lmutil import cls_name
 m_requires('log', __name__)
 
 _registry = {None: None}
+_dbo_registry = {None: None}
 
 @provides('cls_registry')
 class ClassRegistry(object):
@@ -23,4 +24,7 @@ class ClassRegistry(object):
             _registry[base_cls.dbo_key_type] = sub_cls
         except AttributeError:
             pass
+
+    def set_dbo_class(self, class_id, dbo_class):
+        _dbo_registry[class_id] = dbo_class
 

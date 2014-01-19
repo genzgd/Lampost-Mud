@@ -1,6 +1,9 @@
+import itertools
+
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.env.feature import Feature
 from lampost.env.movement import Direction
 from lampost.model.item import BaseItem
 from lampost.model.mobile import MobileReset, MobileTemplate
@@ -51,6 +54,7 @@ class Room(RootDBO):
     extras = DBOField([], BaseItem)
     mobile_resets = DBOField([], MobileReset)
     article_resets = DBOField([], ArticleReset)
+    features = DBOField([], Feature)
     title = DBOField()
 
     def __init__(self, dbo_id, title=None, desc=None):
@@ -115,7 +119,7 @@ class Room(RootDBO):
 
     @property
     def elements(self):
-        return self.contents + self.exits + self.extras
+        return itertools.chain(self.contents, self.exits, self.extras, self.features)
 
     def rec_examine(self, source, **ignored):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
@@ -128,7 +132,7 @@ class Room(RootDBO):
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
 
-        for obj in self.contents:
+        for obj in itertools.chain(self.contents, self.features):
             if obj != source:
                 obj.rec_glance(source)
 

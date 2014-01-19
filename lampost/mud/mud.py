@@ -1,3 +1,4 @@
+from lampost.env.feature import FeatureTemplate
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops.template import template_class
@@ -15,7 +16,7 @@ __import__('lampost.comm.chat')
 __import__('lampost.mud.inventory')
 __import__('lampost.mud.socials')
 
-m_requires('log', 'datastore', 'dispatcher', 'perm', __name__)
+m_requires('log', 'cls_registry', 'datastore', 'dispatcher', 'perm', __name__)
 
 
 @requires('context', 'config_manager')
@@ -37,6 +38,7 @@ class MudNature():
 
         template_class(ArticleTemplate, Article)
         template_class(MobileTemplate, Mobile)
+        cls_registry.set_class('feature', FeatureTemplate)
 
         register('game_settings', self._game_settings)
         register('player_connect', self._player_connect)

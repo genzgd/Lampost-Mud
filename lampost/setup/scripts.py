@@ -34,11 +34,3 @@ def build_default_settings(settings, setting_type):
     defaults = load_raw(default_key, {})
     defaults.update(settings)
     save_raw(default_key, defaults)
-
-
-
-
-
-
-
-

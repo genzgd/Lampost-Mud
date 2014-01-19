@@ -22,18 +22,6 @@ def simple_action(self, target_method, **kwargs):
         return target_method(**kw_args)
 
 
-def add_action(verbs, method, msg_class=None):
-    owner = getattr(method, 'im_self')
-    try:
-        getattr(owner, 'providers')
-    except AttributeError:
-        owner.providers = set()
-    action = make_action(_ActionObject(), verbs, msg_class)
-    action.execute = MethodType(method, owner)
-    owner.providers.add(action)
-    return action
-
-
 def make_action(action, verbs=None, msg_class=None, prep=None, obj_msg_class=None, **kw_args):
     if verbs:
         action.verbs = getattr(action, 'verbs', set())
@@ -62,6 +50,21 @@ def make_action(action, verbs=None, msg_class=None, prep=None, obj_msg_class=Non
     return action
 
 
+def item_actions(*actions):
+    def wrapper(cls):
+        cls.providers = []
+        for action in actions:
+            if isinstance(action, basestring):
+                method_name = action
+            else:
+                method_name = action[0]
+            method_name = method_name.split(' ')[0]
+            method = getattr(cls, 'rec_{}'.format(method_name)).__func__
+            cls.providers.append(make_action(method, action, method_name, item_action=True))
+        return cls
+    return wrapper
+
+
 def action_handler(func):
     def wrapper(self, *args, **kwargs):
         try:
@@ -78,9 +81,3 @@ class ActionError(Exception):
     def __init__(self, message, display=None):
         self.message = message
         self.display = display
-
-
-class _ActionObject(object):
-    def __call__(self, **kwargs):
-        return self.execute(**kwargs)
-

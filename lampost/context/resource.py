@@ -69,11 +69,9 @@ def get_resource(name):
 
 
 def context_post_init():
-    global _registered_modules
     for module in sorted(_registered_modules, key=_priority_sort):
         if hasattr(module, '_post_init'):
             module._post_init()
-
 
 def _priority_sort(module):
     try:

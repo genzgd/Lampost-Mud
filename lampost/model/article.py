@@ -6,7 +6,24 @@ from lampost.gameops.template import Template
 VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
 
 
+class ArticleTemplate(Template):
+    dbo_key_type = "article"
+
+    @property
+    def area_id(self):
+        return self.dbo_id.split(":")[0]
+
+    @property
+    def dbo_set_key(self):
+        return "area_articles:{}".format(self.area_id)
+
+    @property
+    def reset_key(self):
+        return "article_resets:{}".format(self.dbo_id)
+
+
 class Article(BaseItem):
+    template_class = ArticleTemplate
 
     weight = DBOField(0)
     equip_slot = DBOField('none')
@@ -56,22 +73,6 @@ class Article(BaseItem):
         if self.current_slot:
             raise ActionError("You must unequip the item before dropping it.")
         return source.drop_inven(self)
-
-
-class ArticleTemplate(Template):
-    dbo_key_type = "article"
-
-    @property
-    def area_id(self):
-        return self.dbo_id.split(":")[0]
-
-    @property
-    def dbo_set_key(self):
-        return "area_articles:{}".format(self.area_id)
-
-    @property
-    def reset_key(self):
-        return "article_resets:{}".format(self.dbo_id)
 
 
 class ArticleReset(RootDBO):

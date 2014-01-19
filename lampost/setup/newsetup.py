@@ -17,13 +17,17 @@ m_requires('datastore', 'cls_registry', 'dispatcher', 'perm', __name__)
 def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
               imm_password="password", start_area="immortal"):
     DbContext(db_host=db_host, db_num=db_num, db_port=db_port, db_pw=db_pw)
+
+    Permissions()
+    ChannelService()
+    MudNature(flavor)
+    user_manager = UserManager()
     config = load_object(Config, config_id)
     if config:
         print "Error:  This instance is already set up"
         return
 
-    Permissions()
-    ChannelService()
+    context_post_init()
 
     config = Config(config_id)
     config_manager = ConfigManager(config_id)
@@ -36,10 +40,7 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     build_default_settings(GAME_SETTINGS_DEFAULT, 'game')
     config_manager._dispatch_update()
 
-    MudNature(flavor)
-    user_manager = UserManager()
 
-    context_post_init()
     dispatch('first_time_setup')
 
     imm_name = imm_name.lower()
@@ -49,6 +50,8 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
 
     room = create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room",
                                 'desc': "A brand new start room for immortals."})
+    dispatch('first_room_setup', room)
+    save_object(room)
 
     area.add_room(room)
 

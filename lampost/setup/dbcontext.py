@@ -17,8 +17,6 @@ class DbContext(object):
         Dispatcher()
         RedisStore(db_host, int(db_port), int(db_num), db_pw)
 
-        context_post_init()
-
     def set(self, key, value):
         self.properties[key] = value
 

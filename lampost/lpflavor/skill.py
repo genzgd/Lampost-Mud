@@ -48,7 +48,7 @@ class SkillTemplate(Template):
 
 
 class BaseSkill(TemplateInstance):
-    dbo_key_type = 'skill'
+    template_cls = SkillTemplate
 
     verb = DBOField()
     desc = DBOField()

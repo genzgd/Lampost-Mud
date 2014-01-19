@@ -146,13 +146,15 @@ class Entity(BaseItem):
             self.add_action(action)
 
     def add_action(self, action):
+        if action == self:
+            return
         for verb in getattr(action, "verbs", []):
             bucket = self.actions.get(verb)
             if not bucket:
                 bucket = set()
                 self.actions[verb] = bucket
             bucket.add(action)
-        for sub_action in getattr(action, "sub_actions", []):
+        for sub_action in getattr(action, "providers", []):
             self.add_action(sub_action)
 
     def remove_actions(self, actions):
@@ -168,7 +170,7 @@ class Entity(BaseItem):
                     del self.actions[verb]
             except KeyError:
                 error("Removing action {} that does not exist from {}".format(verb, self.name))
-        for sub_action in getattr(action, "sub_providers", []):
+        for sub_action in getattr(action, "providers", []):
             self.remove_action(sub_action)
 
     def parse(self, command):

@@ -11,6 +11,7 @@ from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTION
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
 from lampost.lpflavor.skill import add_skill
+from lampost.lpflavor.touchstone import TouchStone
 from lampost.model.area import Area
 from lampost.model.article import Article, ArticleTemplate
 from lampost.model.mobile import Mobile, MobileTemplate
@@ -45,6 +46,7 @@ def _post_init():
     cls_registry.set_class(ArticleTemplate, ArticleTemplateLP)
     cls_registry.set_class('attack', AttackTemplate)
     cls_registry.set_class('defense', DefenseTemplate)
+    cls_registry.set_class('touchstone', TouchStone)
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
@@ -62,6 +64,7 @@ def _post_init():
     context.set('calc_map', calc_map)
 
     register('first_time_setup', setup.first_time_setup)
+    register('first_room_setup', setup.first_room_setup)
     register('player_create', _player_create)
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
