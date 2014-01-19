@@ -96,16 +96,16 @@ class CreateExit(Resource):
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
         contents = save_contents(room)
-        this_exit = cls_registry(Exit)
-        this.exit.direction = new_dir
-        this.exit.destination = other_room
+        this_exit = cls_registry(Exit)()
+        this_exit.direction = new_dir
+        this_exit.destination = other_room
         room.exits.append(this_exit)
         save_object(room)
         restore_contents(room, contents)
         publish_edit('update', room, session)
         if not content.one_way:
             other_contents = save_contents(other_room)
-            other_exit = cls_registry(Exit)
+            other_exit = cls_registry(Exit)()
             other_exit.direction = rev_dir
             other_exit.destination = room
             other_room.exits.append(other_exit)
