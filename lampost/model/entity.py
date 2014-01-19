@@ -99,6 +99,7 @@ class Entity(BaseItem):
             existing_targets.sort(key=itemgetter(1, 2))
         self.update_target_keys(target_keys)
         self.on_target_added(target)
+        self.add_targets(getattr(target, 'target_providers', []), parse_priority)
 
     def on_target_added(self, target):
         pass
@@ -140,6 +141,7 @@ class Entity(BaseItem):
                 self.update_target_key(target_key, remaining_targets)
             else:
                 del self._target_data[target_key]
+        self.remove_targets(getattr(target, 'target_providers', []))
 
     def add_actions(self, actions):
         for action in actions:
@@ -154,7 +156,7 @@ class Entity(BaseItem):
                 bucket = set()
                 self.actions[verb] = bucket
             bucket.add(action)
-        for sub_action in getattr(action, "providers", []):
+        for sub_action in getattr(action, "action_providers", []):
             self.add_action(sub_action)
 
     def remove_actions(self, actions):
@@ -170,7 +172,7 @@ class Entity(BaseItem):
                     del self.actions[verb]
             except KeyError:
                 error("Removing action {} that does not exist from {}".format(verb, self.name))
-        for sub_action in getattr(action, "providers", []):
+        for sub_action in getattr(action, "action_providers", []):
             self.remove_action(sub_action)
 
     def parse(self, command):

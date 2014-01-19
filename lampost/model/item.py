@@ -1,8 +1,11 @@
 import math
+import itertools
 
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, RootDBOMeta
 from lampost.datastore.proto import ProtoField
+from lampost.gameops.action import item_actions
+from lampost.gameops.display import TELL_TO_DISPLAY
 from lampost.gameops.template import TemplateInstance
 
 m_requires('dispatcher', __name__)
@@ -23,8 +26,7 @@ def gen_keys(target_id):
 
 
 class BaseItem(TemplateInstance):
-    __metaclass__ = RootDBOMeta
-
+    _class_providers = []
     desc = DBOField('')
     title = DBOField('')
     aliases = DBOField([])
@@ -73,3 +75,19 @@ class BaseItem(TemplateInstance):
     def on_loaded(self):
         if not self.target_keys:
             self.config_template(self)
+
+    def _action_providers(self):
+        return []
+
+    @property
+    def action_providers(self):
+        return itertools.chain(self._class_providers, self._action_providers())
+
+
+
+@item_actions('read')
+class Readable(BaseItem):
+    text = DBOField('')
+
+    def rec_read(self, source, **ignored):
+        source.display_line(self.text, TELL_TO_DISPLAY)

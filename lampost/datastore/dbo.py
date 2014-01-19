@@ -129,7 +129,7 @@ class RootDBO(object):
 
     @property
     def dto_value(self):
-        dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.iteritems()}
+        dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.viewitems()}
         dto_value['dbo_key_type'] = getattr(self, 'class_id', self.dbo_key_type)
         return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_id'])
 

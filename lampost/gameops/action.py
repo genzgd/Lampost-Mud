@@ -1,4 +1,5 @@
 import inspect
+import copy
 
 from types import MethodType
 from lampost.util.lmutil import PermError
@@ -52,7 +53,7 @@ def make_action(action, verbs=None, msg_class=None, prep=None, obj_msg_class=Non
 
 def item_actions(*actions):
     def wrapper(cls):
-        cls.providers = []
+        cls._class_providers = copy.copy(getattr(cls, '_class_providers', []))
         for action in actions:
             if isinstance(action, basestring):
                 method_name = action
@@ -60,7 +61,7 @@ def item_actions(*actions):
                 method_name = action[0]
             method_name = method_name.split(' ')[0]
             method = getattr(cls, 'rec_{}'.format(method_name)).__func__
-            cls.providers.append(make_action(method, action, method_name, item_action=True))
+            cls._class_providers.append(make_action(method, action, method_name, item_action=True))
         return cls
     return wrapper
 
