@@ -27,7 +27,7 @@
       <textarea class="span12" rows="10" ng-model="model.desc"></textarea>
     </div>
     <div class="span4">
-      <table style="width: 100%; height:60%; table-layout: fixed;">
+      <table style="width: 100%; table-layout: fixed;">
         <thead>
         <tr>
           <th style="width: 10%;">Dir</th>
@@ -50,7 +50,21 @@
         </tbody>
       </table>
       <button style="margin-top: 8px" ng-click="addNewExit()" class="btn btn-success btn-small">Dig</button>
-    </div>
+      <h5>Features ({{model.features.length}})</h5>
+      <table style="width: 95%">
+        <tbody>
+          <tr class="table-bordered" ng-repeat="feature in model.features">
+            <td style="width: 80%">{{feature.template_id}}</td>
+            <td style="width: 20%"><a title="Remove Feature" ng-click="removeFeature(feature)" class="icon-link"><i class="icon-remove"></i></a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="spacer" ng-show="features">
+        <button type="button" ng-click="addFeature()" class="btn btn-small btn-success">Add</button>
+          <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature.dbo_id for feature in features">
+        </select>
+      </div>
+      </div>
     <div class="span4">
       <!-- Future map? -->
     </div>

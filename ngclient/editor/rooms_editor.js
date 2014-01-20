@@ -19,6 +19,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       $scope.activateArea(room.dbo_id.split(':')[0]);
       $scope.currentExtra = null;
       $scope.extraDisplay = 'desc';
+
       lmEditor.cache("constants").then(function (constants) {
         angular.forEach(constants.directions, function (dir) {
           dirMap[dir.key] = dir;
@@ -29,6 +30,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       });
       cacheKeys = [];
       var editPromises = [];
+      editPromises.push(lmEditor.cache('features').then(function (features) {
+        $scope.features = features;
+        if (features.length) {
+          $scope.newFeature = features[0];
+        }
+      }));
       angular.forEach(room.exits, function (exit) {
         editPromises.push(addRef('room', exit.destination));
       });
@@ -180,6 +187,17 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     $scope.showAliases = function (extra) {
       $scope.currentExtra = extra;
       $scope.extraDisplay = 'aliases';
+    };
+
+    $scope.addFeature = function () {
+      var feature = {template_id: $scope.newFeature.dbo_id};
+      $scope.model.features.push(feature);
+    };
+
+    $scope.removeFeature = function (feature) {
+      lmDialog.showConfirm("Remove Feature", "Are you sure you want to remove this feature?", function () {
+        $scope.model.features.splice($scope.model.features.indexOf(feature), 1);
+      });
     };
 
   }]);
