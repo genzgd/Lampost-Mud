@@ -1,10 +1,12 @@
 from collections import defaultdict
-from lampost.context.resource import provides, m_requires
+from lampost.context.resource import provides, m_requires, register
 from lampost.gameops.action import make_action, ActionError, simple_action, convert_verbs
 from lampost.util.lmutil import dump, StateError
 
 m_requires('user_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
-_mud_actions = defaultdict(set)
+_mud_actions = {}
+
+register('mud_actions', _mud_actions)
 imm_actions = set()
 
 
@@ -12,7 +14,7 @@ def mud_action(verbs, msg_class=None, **kwargs):
     def dec_wrapper(func):
         action = make_action(func, msg_class=msg_class, **kwargs)
         for verb in convert_verbs(verbs):
-            _mud_actions[verb].add(action)
+            _mud_actions[verb] = action
     return dec_wrapper
 
 
@@ -23,27 +25,6 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
         return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
 
-
-@provides('mud_actions')
-class MudActions(object):
-
-    def add_action(self, action):
-        for verb in action.verbs:
-            _mud_actions[verb].add(action)
-
-    def rem_verb(self, verbs, action):
-        for verb in convert_verbs(verbs):
-            _mud_actions.get(verb).remove(action)
-            if not _mud_actions.get(verb):
-                del _mud_actions[verb]
-
-    def add_verb(self, verb, action):
-        _mud_actions[verb].add(action)
-
-    def verb_list(self, verb):
-        return _mud_actions.get(verb, [])
-
-
 @mud_action(("look", "l", "exa", "examine", "look at"), "examine")
 def look(target_method, **kwargs):
     return target_method(**kwargs)
@@ -53,7 +34,10 @@ def look(target_method, **kwargs):
 def help_action(source, args, **ignored):
     if not args:
         source.display_line('Available actions:')
-        verb_lists = ["/".join([" ".join(list(verb)) for verb in action.verbs]) for action in _mud_actions]
+        action_verbs = defaultdict(list)
+        for verb, action in _mud_actions.viewitems():
+            action_verbs[action].append(" ".join(list(verb)))
+        verb_lists = ["/".join(verbs) for verbs in action_verbs.viewvalues()]
         return source.display_line(", ".join(sorted(verb_lists)))
     action_set = source.actions.get(args)
     if not action_set:
@@ -156,3 +140,10 @@ def unfollow(source, args,  **ignored):
     source.following.display_line("{} is no longer following you.".format(source.name))
     source.following.followers.remove(source)
     del source.following
+
+@mud_action('abandon')
+def abandon(source, **ignored):
+    if source.dead:
+        source.resurrect()
+    else:
+        source.display_line("You're not dead yet!")

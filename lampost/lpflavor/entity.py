@@ -72,7 +72,7 @@ class EntityLP(Entity):
             raise ActionError('{} does not have that skill'.format(self.name))
 
     def check_costs(self, costs):
-        for pool, cost in costs.iteritems():
+        for pool, cost in costs.viewitems():
             if getattr(self, pool, 0) < cost:
                 raise ActionError("Your condition prevents you from doing that.")
 
@@ -90,6 +90,8 @@ class EntityLP(Entity):
     @action_handler
     def start_action(self, action, act_args):
         if hasattr(action, 'prepare_action'):
+            if self.dead:
+                raise ActionError("Ah, would that you could.  Was it so long ago that you had such freedom of movement?")
             action.prepare_action(**act_args)
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
@@ -131,7 +133,7 @@ class EntityLP(Entity):
             self._refresh_pulse = register_p(self._refresh, pulses=self._refresh_interval)
 
     def _refresh(self):
-        if self.status == 'dead' or not need_refresh(self):
+        if self.dead or not need_refresh(self):
             unregister(self._refresh_pulse)
             del self._refresh_pulse
             return
@@ -275,10 +277,16 @@ class EntityLP(Entity):
         if self._next_command:
             del self._next_command
 
-
     def die(self):
-        self.status = 'dead'
+        self._death_effects()
         super(EntityLP, self).die()
+
+    def _death_effects(self):
+        self.status = 'dead'
+        self.action = 0
+        self.health = 0
+        self.stamina = 0
+        self.mental = 0
 
     def status_change(self):
         pass

@@ -5,7 +5,7 @@ from lampost.gameops.template import template_class
 from lampost.model.article import ArticleTemplate, Article
 from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
-from lampost.mud.action import imm_actions, MudActions
+from lampost.mud.action import imm_actions
 from lampost.context.resource import requires, m_requires, register_module
 from lampost.comm.channel import Channel
 
@@ -16,7 +16,7 @@ __import__('lampost.comm.chat')
 __import__('lampost.mud.inventory')
 __import__('lampost.mud.socials')
 
-m_requires('log', 'cls_registry', 'datastore', 'dispatcher', 'perm', __name__)
+m_requires('log', 'cls_registry', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)
 
 
 @requires('context', 'config_manager')
@@ -24,7 +24,6 @@ class MudNature():
 
     def __init__(self, flavor):
         flavor_module = __import__('lampost.' + flavor + '.flavor', globals(), locals())
-        MudActions()
         register_module(self)
 
     def _post_init(self):

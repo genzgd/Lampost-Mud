@@ -18,7 +18,8 @@ def find_actions(entity, command):
         args = tuple(words[verb_size:])
         actions += [(action, verb, args) for action in entity.soul.get(verb, [])]
         actions += [(action, verb, args) for action in entity.actions.get(verb, [])]
-        actions += [(action, verb, args) for action in mud_actions.verb_list(verb)]
+        if verb in mud_actions:
+            actions.append((mud_actions[verb], verb, args))
     return actions
 
 
