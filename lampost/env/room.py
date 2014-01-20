@@ -119,7 +119,7 @@ class Room(RootDBO):
 
     @property
     def elements(self):
-        return itertools.chain(self.contents, self.exits, self.extras, self.features)
+        return itertools.chain(self.exits, self.extras, self.features, self.contents)
 
     def rec_examine(self, source, **ignored):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
@@ -132,7 +132,7 @@ class Room(RootDBO):
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
 
-        for obj in itertools.chain(self.contents, self.features):
+        for obj in itertools.chain(self.features, self.contents):
             if obj != source:
                 obj.rec_glance(source)
 

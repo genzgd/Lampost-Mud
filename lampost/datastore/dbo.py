@@ -169,13 +169,20 @@ class DBOField(ProtoField):
 
     def save_value(self, instance):
         value = self.convert_save_value(instance.__dict__[self.field])
-        if value == self.default:
+        if hasattr(self.default, 'save_value'):
+            if value == self.default.save_value:
+                raise KeyError
+        elif value == self.default:
             raise KeyError
         try:
-            if value == getattr(instance.template, self.field):
-                raise KeyError
+            template_value = getattr(instance.template, self.field)
         except AttributeError:
-            pass
+            return value
+        if hasattr(template_value, 'save_value'):
+            if value == template_value:
+                raise KeyError
+        elif value == templ_value:
+            raise KeyError
         return value
 
 
