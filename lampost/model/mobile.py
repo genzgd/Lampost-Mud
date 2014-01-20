@@ -10,6 +10,10 @@ class Mobile(Entity):
     def name(self):
         return self.title
 
+    def detach(self):
+        super(Mobile, self).detach()
+        self.original_env.mobiles.remove(self)
+
 
 class MobileTemplate(Template):
     dbo_key_type = "mobile"
@@ -22,8 +26,11 @@ class MobileTemplate(Template):
     def area_id(self):
         return self.dbo_id.split(":")[0]
 
-    def config_instance(self, instance, owner):
+    def config_instance(self, instance, room):
+        instance.inven = set()
         instance.baptise()
+        instance.original_env = room
+        room.mobiles.add(instance)
 
     @property
     def reset_key(self):

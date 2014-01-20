@@ -53,6 +53,7 @@ class MudNature():
     def _imm_baptise(self, player):
         player.register_channel(self.imm_channel)
         player.can_die = False
+        player.immortal = True
         for cmd in imm_actions:
             if player.imm_level >= perm_level(cmd.imm_level):
                 player.enhance_soul(cmd)

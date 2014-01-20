@@ -16,6 +16,9 @@ class FeatureTemplate(Template):
     def on_loaded(self):
         self.instance_cls = cls_registry(self.instance_class_id)
 
+    def config_instance(self, instance, room):
+        instance.room = room
+
 
 class Feature(BaseItem):
     template_cls = FeatureTemplate

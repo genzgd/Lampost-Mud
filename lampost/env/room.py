@@ -62,6 +62,7 @@ class Room(RootDBO):
         self.title = title
         self.desc = desc
         self.contents = []
+        self.mobiles = set()
 
     @property
     def dbo_set_key(self):
@@ -157,7 +158,7 @@ class Room(RootDBO):
             if not template:
                 error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
                 continue
-            curr_count = len([entity for entity in self.contents if getattr(entity, 'template', None) == template])
+            curr_count = len(self.mobiles)
             for unused in range(m_reset.reset_count - curr_count):
                 self.add_mobile(template, m_reset)
             if m_reset.reset_count <= curr_count < m_reset.reset_max:
@@ -187,6 +188,6 @@ class Room(RootDBO):
                 instance.equip_article(article)
 
     def add_template(self, template):
-        instance = template.create_instance()
+        instance = template.create_instance(self)
         instance.enter_env(self)
         return instance

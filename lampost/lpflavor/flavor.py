@@ -11,7 +11,7 @@ from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTION
 from lampost.lpflavor.env import ExitLP
 from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
 from lampost.lpflavor.skill import add_skill
-from lampost.lpflavor.touchstone import TouchStone
+from lampost.lpflavor.feature.touchstone import TouchStone
 from lampost.model.area import Area
 from lampost.model.article import Article, ArticleTemplate
 from lampost.model.mobile import Mobile, MobileTemplate

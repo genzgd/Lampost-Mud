@@ -123,7 +123,7 @@ def validate_objects(matches):
             object_matches.append((action, verb, args, target, obj, target_method, None))
         else:
             obj_method = getattr(obj, action.obj_msg_class, None)
-            if obj_method:
+            if obj_method is not None:
                 object_matches.append((action, verb, args, target, obj, target_method, obj_method))
     return object_matches
 

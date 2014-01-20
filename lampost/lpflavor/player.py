@@ -10,6 +10,7 @@ class PlayerLP(Player, EntityLP):
     race = DBOField('human')
     affinity = 'player'
     skills = DBOField({}, BaseSkill)
+    bind_stone = DBOField()
     can_die = True
 
     def __init__(self, dbo_id):

@@ -1,7 +1,5 @@
 from lampost.context.resource import m_requires
 from lampost.env.feature import FeatureTemplate
-from lampost.lpflavor.combat import AttackSkill, DefenseSkill
-from lampost.lpflavor.touchstone import TouchStone
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_settings
 

@@ -28,3 +28,4 @@ class TouchStone(Feature):
 
     def rec_touch(self, source, **ignored):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
+        source.bind_stone = room.dbo_id

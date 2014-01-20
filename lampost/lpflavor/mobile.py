@@ -62,5 +62,4 @@ class MobileTemplateLP(MobileTemplate):
             skill.skill_level = skill_status['skill_level']
             mobile.add_skill(skill)
         fill_pools(mobile)
-        mobile.inven = set()
-        mobile.baptise()
+        super(MobileTemplateLP, self).config_instance(mobile, owner)

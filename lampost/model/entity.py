@@ -35,7 +35,7 @@ class Entity(BaseItem):
 
     def baptise(self):
         for target_key in self.target_keys | {(unicode('self'),)}:
-            self._target_data[target_key] = self, 0, 0
+            self._target_data[target_key] = [(self, 0, 0)]
             self.target_key_map[target_key] = self
         self.add_actions(self.inven)
         self.add_targets(self.inven, 10)
@@ -109,8 +109,8 @@ class Entity(BaseItem):
             existing_targets = self._target_data.get(target_key, None)
             if existing_targets:
                 del self.target_key_map[target_key]
-                for key_count in range(2, len(existing_targets)):
-                    del self.target_key_map[target_key + (unicode(key_count),)]
+                for key_count in range(1, len(existing_targets)):
+                    del self.target_key_map[target_key + (unicode(key_count + 1),)]
 
     def update_target_keys(self, target_keys):
         for target_key in target_keys:

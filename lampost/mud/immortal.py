@@ -164,6 +164,11 @@ def unmake(source, target, **ignored):
         return "Can only unmake things in the room."
 
 
+@imm_action('toggle mortal', 'has_immortal',  self_target=True)
+def toggle_mortal(source, target, **ignored):
+    target.can_die = not target.can_die
+    target.display_line("You can {} die.".format('now' if target.can_die else 'no longer'))
+
 @imm_action('home')
 def home(source, **ignored):
     if not getattr(source, 'home_room', None):

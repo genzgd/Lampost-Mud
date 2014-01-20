@@ -181,7 +181,7 @@ class DBOField(ProtoField):
         if hasattr(template_value, 'save_value'):
             if value == template_value:
                 raise KeyError
-        elif value == templ_value:
+        elif value == template_value:
             raise KeyError
         return value
 
