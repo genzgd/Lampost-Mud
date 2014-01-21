@@ -13,7 +13,7 @@ inscription.on_loaded()
 
 
 @item_actions('touch')
-class TouchStone(Feature):
+class Touchstone(Feature):
     title = DBOField('Touchstone')
     desc = DBOField("An unadorned marble obelisk about five feet high.  There is an inscription in an archaic script on one side.")
     aliases = DBOField(["obelisk"])
@@ -28,4 +28,4 @@ class TouchStone(Feature):
 
     def rec_touch(self, source, **ignored):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
-        source.touchstone = room.dbo_id
+        source.touchstone = self.room.dbo_id

@@ -74,5 +74,3 @@ class EditUpdateService(ClientService):
             else:
                 session.append(event)
         return event_dto
-
-

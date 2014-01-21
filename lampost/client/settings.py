@@ -104,7 +104,7 @@ class PlayerCreate(Resource):
 
 class GetPlayers(Resource):
     @request
-    def render_POST(self, content, session):
+    def render_POST(self, content):
         user = load_object(User, content.user_id)
         if not user:
             raise StateError("User {0} does not exist".format([content.user_id]))
@@ -192,8 +192,3 @@ def player_list(player_ids):
         player = load_object(Player, player_id)
         players.append({'name': player.name, 'dbo_id': player.dbo_id})
     return players
-
-
-
-
-

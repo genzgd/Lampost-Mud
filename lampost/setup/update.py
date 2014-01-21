@@ -5,7 +5,7 @@ from lampost.env.room import Room
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 
-m_requires('log', 'datastore', 'cls_registry',  __name__)
+m_requires('log', 'datastore', 'cls_registry', 'config_manager', __name__)
 
 
 def convert_areas(source):
@@ -38,6 +38,12 @@ def add_feature(source, feature_name):
         return "No appropriate feature class found"
 
 
+def add_display(source, display_key, display_desc, display_color):
+    display_desc = unicode.title(display_desc.replace('_', ' '))
+    config_manager.config.default_displays[display_key] = {'desc': display_desc, 'color': display_color}
+    config_manager.save_config()
+
+
 def convert_directions(source):
     for area_id in fetch_set_keys('areas'):
         for room_id in fetch_set_keys('area_rooms:{}'.format(area_id)):
@@ -49,19 +55,3 @@ def convert_directions(source):
                 del exit_dto['dir_name']
             print room_raw
             save_raw(room_key, room_raw)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

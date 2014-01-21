@@ -33,7 +33,7 @@ class PlayerLP(Player, EntityLP):
         if not self.session:
             return
         status = self.display_status
-        if self.last_opponent:
+        if self.last_opponent and self.last_opponent.env == self.env:
             status['opponent'] = self.last_opponent.display_status
             status['opponent']['name'] = self.last_opponent.name
         else:
