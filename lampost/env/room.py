@@ -1,3 +1,4 @@
+from collections import defaultdict
 import itertools
 
 from lampost.comm.broadcast import Broadcast
@@ -62,7 +63,7 @@ class Room(RootDBO):
         self.title = title
         self.desc = desc
         self.contents = []
-        self.mobiles = set()
+        self.mobiles = defaultdict(set)
 
     @property
     def dbo_set_key(self):
@@ -158,7 +159,7 @@ class Room(RootDBO):
             if not template:
                 error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
                 continue
-            curr_count = len(self.mobiles)
+            curr_count = len(self.mobiles[template])
             for unused in range(m_reset.reset_count - curr_count):
                 self.add_mobile(template, m_reset)
             if m_reset.reset_count <= curr_count < m_reset.reset_max:

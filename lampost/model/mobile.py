@@ -12,7 +12,7 @@ class Mobile(Entity):
 
     def detach(self):
         super(Mobile, self).detach()
-        self.original_env.mobiles.remove(self)
+        self.original_env.mobiles[self.template].remove(self)
 
 
 class MobileTemplate(Template):
@@ -30,7 +30,7 @@ class MobileTemplate(Template):
         instance.inven = set()
         instance.baptise()
         instance.original_env = room
-        room.mobiles.add(instance)
+        room.mobiles[self].add(instance)
 
     @property
     def reset_key(self):

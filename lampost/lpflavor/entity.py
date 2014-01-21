@@ -67,6 +67,8 @@ class EntityLP(Entity):
             skill = self.skills.pop(skill_id)
             if skill.auto_start:
                 skill.revoke(self)
+            else:
+                 self.diminish_soul(skill)
             self.fight.update_skills()
         except KeyError:
             raise ActionError('{} does not have that skill'.format(self.name))

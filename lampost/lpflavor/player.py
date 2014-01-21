@@ -36,6 +36,8 @@ class PlayerLP(Player, EntityLP):
         if self.last_opponent:
             status['opponent'] = self.last_opponent.display_status
             status['opponent']['name'] = self.last_opponent.name
+        else:
+            status['opponent'] = None
         self.session.update_status(status)
 
     def die(self):

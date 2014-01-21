@@ -1,9 +1,11 @@
 from lampost.context.resource import m_requires
+from lampost.datastore.exceptions import ObjectExistsError
+from lampost.env.feature import FeatureTemplate
 from lampost.env.room import Room
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 
-m_requires('log', 'datastore', __name__)
+m_requires('log', 'datastore', 'cls_registry',  __name__)
 
 
 def convert_areas(source):
@@ -23,6 +25,17 @@ def convert_areas(source):
                 del area_dict[coll_type]
             save_raw(area_key, area_dict)
     return 'Convert Complete'
+
+
+def add_feature(source, feature_name):
+    if cls_registry(feature_name):
+        try:
+            create_object(FeatureTemplate, {'dbo_id': feature_name, 'instance_class_id': feature_name})
+        except ObjectExistsError:
+            return "Feature template already exists"
+        return "{} created.".format(feature_name)
+    else:
+        return "No appropriate feature class found"
 
 
 def convert_directions(source):
