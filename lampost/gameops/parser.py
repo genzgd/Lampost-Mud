@@ -35,7 +35,7 @@ def parse_actions(entity, actions):
     matches = validate_targets(matches)
     if not matches:
         raise ParseError(INVALID_TARGET, "You can't do that to that")
-    matches = list(validate_objects(matches))
+    matches = validate_objects(matches)
     if not matches:
         raise ParseError(INVALID_OBJECT, "You can't do that with that.")
     if len(matches) > 1:

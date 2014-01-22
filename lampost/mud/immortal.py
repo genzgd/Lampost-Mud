@@ -71,17 +71,16 @@ def patch(source, verb, args, command, **ignored):
         new_value = find_extra(verb, split_ix + 2, command)
     except (ValueError, IndexError):
         return "Syntax -- 'patch [target] [:] [prop_name] [new_value]'"
-    target_list = list(source.matching_targets(target_id, "__dict__"))
-    if not target_list:
+    try:
+        target = source.target_key_map[target_id]
+    except KeyError:
         return "No matching target"
-    if len(target_list) > 1:
-        return "Multiple matching targets"
     if not new_value:
         return "New value required"
     if new_value == "None":
         new_value = None
     try:
-        patch_object(target_list[0][0], prop, new_value)
+        patch_object(target, prop, new_value)
     except PatchError as exp:
         return exp.message
     return "Object successfully patched"

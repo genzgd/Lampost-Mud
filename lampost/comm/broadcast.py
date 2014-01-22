@@ -62,15 +62,13 @@ class BroadcastMap(object):
                 return msg
             msg_key = defaults[msg_key]
             if not msg_key:
-                return "Invalid message type"
+                raise KeyError
 
 
 class Broadcast(object):
     def __init__(self, broadcast_map=None, source=None, target=None, display='default',
-                 silent=False, verb=None, message=None, **kwargs):
-        if message:
-            self._raw_translate = lambda observer: substitute(message, source, target, verb)
-        elif broadcast_map:
+                 silent=False, verb=None, **kwargs):
+        if broadcast_map:
             self.broadcast_map = broadcast_map
         else:
             self.broadcast_map = BroadcastMap(**kwargs)
@@ -83,9 +81,8 @@ class Broadcast(object):
     def translate(self, observer):
         if self.silent and observer == self.source:
             return None
-        return self._raw_translate(observer)
-
-    def _raw_translate(self, observer):
+        if hasattr(self.broadcast_map, 'raw'):
+            return self.broadcast_map['raw']
         if not self.target:
             if not self.source or self.source == observer:
                 return self.substitute('s')

@@ -12,4 +12,4 @@ class Tools(object):
                     message = message()
                 except TypeError:
                     pass
-            source.env.broadcast(message=message, source=source, target=target)
+            source.env.broadcast(s=message, source=source, target=target)
