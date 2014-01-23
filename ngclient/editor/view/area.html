@@ -17,8 +17,9 @@
         <td class="span4">{{area.dbo_id}}</td>
         <td class="span6">{{area.name}}</td>
         <td class="span2">
-          <a ng-click="deleteModel($event, area)" title="Delete Area" class="icon-link">
-            <i ng-class="area.can_write ? 'icon-remove' : 'icon-lock icon-gray'"></i></a>
+          <a ng-show="area.can_write" ng-click="deleteModel($event, area)" title="Delete Area" class="icon-link">
+            <i class="icon-remove"></i></a>
+          <i ng-hide="area.can_write" class="icon-lock icon-gray"></i>
         </td>
       </tr>
       </tbody>

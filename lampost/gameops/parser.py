@@ -46,7 +46,7 @@ def parse_actions(entity, actions):
 
 
 def has_action(entity, action, verb):
-    return action in entity.actions.get(verb, []) or action in mud_actions.verb_list(verb)
+    return action in entity.actions.get(verb, []) or verb in mud_actions
 
 
 def find_targets(entity, matches):

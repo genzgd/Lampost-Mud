@@ -69,7 +69,3 @@ class WebServer(Resource):
         info("Starting web server on port {}".format(self.port), self)
         reactor.listenTCP(self.port, Site(self), interface=interface)
         reactor.run()
-
-
-
-
