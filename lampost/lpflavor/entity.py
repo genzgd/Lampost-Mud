@@ -87,7 +87,7 @@ class EntityLP(Entity):
     def filter_actions(self, matches):
         if not self._current_action:
             return matches
-        return [(action, verb, args) for action, verb, args in matches if not hasattr(action, 'prep_time')]
+        return [match for match in matches if not getattr(match.action, 'prep_time', None)]
 
     @action_handler
     def start_action(self, action, act_args):

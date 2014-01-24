@@ -5,6 +5,7 @@ from lampost.gameops.action import action_handler
 
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
+from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, \
     MISSING_VERB, MISSING_TARGET
 from lampost.model.item import BaseItem
@@ -176,10 +177,10 @@ class Entity(BaseItem):
             self.remove_action(sub_action)
 
     def parse(self, command):
-        actions = find_actions(self, command)
-        actions = self.filter_actions(actions)
+        if command[0] == '\'':
+            command = 'say {}'.format(command[1:])
         try:
-            action, act_args = parse_actions(self, actions)
+            action, act_args = parse_actions(self, command)
             act_args['command'] = command
             act_args['source'] = self
             self.start_action(action, act_args)
@@ -213,10 +214,7 @@ class Entity(BaseItem):
                     follower.start_action(action, follow_args)
 
     def handle_parse_error(self, error, command):
-        if error.error_code in (MISSING_VERB, MISSING_TARGET):
-            self.parse('say {}'.format(command))
-        else:
-            self.display_line(error.message)
+        self.display_line(error.message, SYSTEM_DISPLAY)
 
     def rec_social(self, **ignored):
         pass
