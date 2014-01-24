@@ -1,9 +1,11 @@
-from lampost.model.item import BaseItem
+from lampost.datastore.proto import ProtoField
+from lampost.model.item import BaseItem, target_keys
 from lampost.gameops.action import ActionError
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.template import Template
+from lampost.util.lmutil import plural
 
-VOWELS = {'a', 'e', 'i', 'o', 'u', 'y'}
+VOWELS = {'a', 'e', 'i', 'o', 'u'}
 
 
 class ArticleTemplate(Template):
@@ -21,29 +23,53 @@ class ArticleTemplate(Template):
     def reset_key(self):
         return "article_resets:{}".format(self.dbo_id)
 
+    def on_loaded(self):
+        self.single_keys = target_keys(self)
+        if self.divisible:
+            self.plural_title = plural(self.title)
+            self.plural_keys = set()
+            for single_key in self.single_keys:
+                self.plural_keys.add(single_key[:-1] + (plural(single_key[-1:][0]),))
+        super(ArticleTemplate, self).on_loaded()
+
 
 class Article(BaseItem):
     template_class = ArticleTemplate
 
     weight = DBOField(0)
+    divisible = DBOField(False)
     equip_slot = DBOField('none')
     art_type = DBOField('treasure')
     level = DBOField(1)
     current_slot = DBOField()
-    quantity = DBOField(None)
-    uses = DBOField(None)
+    quantity = DBOField()
+    uses = DBOField()
+    single_keys = ProtoField(set())
+    plural_keys = ProtoField(set())
+    plural_title = ProtoField(None)
 
     @property
     def name(self):
         return self.title
 
+    @property
+    def target_keys(self):
+        if self.quantity > 1:
+            return self.plural_keys
+        return self.single_keys
+
     def short_desc(self, observer=None):
-        if self.title.lower().startswith(('a', 'an')):
+        if self.quantity:
+            prefix = unicode(self.quantity)
+            title = self.plural_title
+        elif self.title.lower().startswith(('a', 'an')):
             prefix = ""
+            title = self.title
         else:
             prefix = "An" if self.title[0] in VOWELS else "A"
+            title = self.title
         equipped = ' (equipped)' if self.current_slot else ''
-        return "{0} {1}.{2}".format(prefix, self.title, equipped)
+        return "{} {}.{}".format(prefix, title,  equipped)
 
     @property
     def rec_get(self):
@@ -51,8 +77,8 @@ class Article(BaseItem):
             return self.do_rec_get
         return None
 
-    def do_rec_get(self, source):
-        check_result = source.check_inven(self)
+    def do_rec_get(self, source, quantity=None):
+        check_result = source.check_inven(self, quantity)
         if check_result:
             return check_result
         return source.add_inven(self)
@@ -73,6 +99,19 @@ class Article(BaseItem):
         if self.current_slot:
             raise ActionError("You must unequip the item before dropping it.")
         return source.drop_inven(self)
+
+    def enter_env(self, env, ex=None):
+        if self.divisible and not self.quantity:
+            return
+        return super(Article, self).enter_env(env, ex)
+
+    def add_quantity(self, quantity):
+        if self.quantity:
+            self.leave_env(self.env)
+            self.quantity += quantity
+        else:
+            self.quantity = quantity
+        self.enter_env(self.env)
 
 
 class ArticleReset(RootDBO):

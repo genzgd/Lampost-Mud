@@ -21,6 +21,11 @@ def timestamp(record):
         return ':'.join([record, ts])
 
 
+def plural(noun):
+    if noun[-1:] == 's':
+        return "{}es".format(noun)
+    return "{}s".format(noun)
+
 def dump(dump_dict):
     return ["{0}: {1}".format(key, str(value)) for key, value in dump_dict.iteritems()]
 

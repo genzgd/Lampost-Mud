@@ -27,10 +27,6 @@ class Template(RootDBO):
 
     def on_loaded(self):
         self.template_id = self.dbo_id
-        try:
-            self.instance_cls.config_template(self)
-        except AttributeError:
-            pass
 
 
 class TemplateInstance(RootDBO):

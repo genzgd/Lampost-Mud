@@ -25,6 +25,13 @@ def gen_keys(target_id):
         yield tuple(next_prefix) + target
 
 
+def target_keys(item):
+    target_keys = set(gen_keys(item.title))
+    for alias in item.aliases:
+        target_keys.update(gen_keys(alias))
+    return target_keys
+
+
 class BaseItem(TemplateInstance):
     _class_providers = []
     desc = DBOField('')
@@ -38,18 +45,15 @@ class BaseItem(TemplateInstance):
 
     rec_general = True
 
-    @staticmethod
-    def config_template(template):
-        template.target_keys = set(gen_keys(template.title))
-        for alias in template.aliases:
-            template.target_keys.update(gen_keys(alias))
+    def short_desc(self, source):
+        return self.title
 
     def rec_examine(self, source, **ignored):
         source.display_line(self.desc if self.desc else self.title)
 
     def rec_glance(self, source, **ignored):
         if source.can_see(self):
-            source.display_line(self.title)
+            source.display_line(self.short_desc(source))
 
     def rec_broadcast(self, broadcast):
         pass
@@ -74,7 +78,7 @@ class BaseItem(TemplateInstance):
 
     def on_loaded(self):
         if not self.target_keys:
-            self.config_template(self)
+            self.target_keys = target_keys(self)
 
     def _action_providers(self):
         return []

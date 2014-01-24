@@ -2,6 +2,7 @@ from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.template import Template, TemplateInstance
 from lampost.model.article import ArticleLoad
 from lampost.model.entity import Entity
+from lampost.model.item import target_keys
 
 
 class Mobile(Entity):
@@ -35,6 +36,10 @@ class MobileTemplate(Template):
     @property
     def reset_key(self):
         return "mobile_resets:{}".format(self.dbo_id)
+
+    def on_loaded(self):
+        self.target_keys = target_keys(self)
+        super(MobileTemplate, self).on_loaded()
 
 
 class MobileReset(RootDBO):

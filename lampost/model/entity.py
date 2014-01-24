@@ -272,7 +272,7 @@ class Entity(BaseItem):
     def can_see(self, target):
         return True
 
-    def check_inven(self, article):
+    def check_inven(self, article, quantity):
         pass
 
     def die(self):

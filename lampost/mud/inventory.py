@@ -14,8 +14,9 @@ def drop(source, target_method, **ignored):
 @mud_action(('i', 'inven'))
 def inven(source, **ignored):
     if source.inven:
+        source.display_line("You are carrying:")
         for article in source.inven:
-            source.display_line(article.short_desc(source))
+            article.rec_glance(source)
     else:
         source.display_line("You aren't carrying anything.")
 

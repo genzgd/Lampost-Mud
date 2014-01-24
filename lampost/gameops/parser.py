@@ -25,8 +25,13 @@ class ActionMatch(object):
         self.obj = None
         self.target_method = None
         self.obj_method = None
-        self.quantity = None
         self.obj_args = None
+        self.quantity = None
+        if hasattr(self.action, 'quantity') and len(args) > 1:
+            try:
+                self.quantity = int(args[0])
+            except ValueError:
+                pass
 
     @property
     def msg_class(self):
@@ -94,6 +99,8 @@ class Parse(object):
                 reject_format['object'] = extra[prep_ix + len(reject.prep):]
             else:
                 reject_format['target'] = extra
+            if not reject_format['target'] and (last_reason == INVALID_TARGET or last_reason == ABSENT_TARGET):
+                last_reason = MISSING_TARGET
         raise ParseError(last_reason.format(**reject_format))
 
     def parse(self):
@@ -172,5 +179,4 @@ def parse_actions(entity, command):
 
 
 class ParseError(Exception):
-    def __init__(self, message):
-        super(ParseError, self).__init__(message)
+    pass
