@@ -65,6 +65,8 @@ class Room(RootDBO):
         self.desc = desc
         self.contents = []
         self.mobiles = defaultdict(set)
+        self.actions = set()
+        self.targets = set()
 
     @property
     def dbo_set_key(self):

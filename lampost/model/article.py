@@ -50,7 +50,17 @@ class Article(BaseItem):
 
     @property
     def name(self):
-        return self.title
+        if self.quantity:
+            prefix = unicode(self.quantity)
+            title = self.plural_title
+        elif self.title.lower().startswith(('a ', 'an ')):
+            prefix = ""
+            title = self.title
+        else:
+            prefix = "an" if self.title[0] in VOWELS else "a"
+            title = self.title
+        equipped = ' (equipped)' if self.current_slot else ''
+        return "{} {}.{}".format(prefix, title,  equipped)
 
     @property
     def target_keys(self):
@@ -59,17 +69,7 @@ class Article(BaseItem):
         return self.single_keys
 
     def short_desc(self, observer=None):
-        if self.quantity:
-            prefix = unicode(self.quantity)
-            title = self.plural_title
-        elif self.title.lower().startswith(('a', 'an')):
-            prefix = ""
-            title = self.title
-        else:
-            prefix = "An" if self.title[0] in VOWELS else "A"
-            title = self.title
-        equipped = ' (equipped)' if self.current_slot else ''
-        return "{} {}.{}".format(prefix, title,  equipped)
+        return self.name.capitalize()
 
     @property
     def rec_get(self):
@@ -78,10 +78,8 @@ class Article(BaseItem):
         return None
 
     def do_rec_get(self, source, quantity=None):
-        check_result = source.check_inven(self, quantity)
-        if check_result:
-            return check_result
-        return source.add_inven(self)
+        source.check_inven(self, quantity)
+        source.add_inven(self)
 
     def rec_wear(self):
         pass
@@ -104,6 +102,7 @@ class Article(BaseItem):
         if self.divisible and not self.quantity:
             return
         return super(Article, self).enter_env(env, ex)
+
 
     def add_quantity(self, quantity):
         if self.quantity:

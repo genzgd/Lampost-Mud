@@ -71,10 +71,6 @@ class Player(RootDBO):
     def rec_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)
 
-    def get_score(self):
-        score = {}
-        return score
-
     def die(self):
         pass
 

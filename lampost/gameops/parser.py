@@ -9,6 +9,7 @@ MISSING_TARGET = "'{command}' what? or whom?"
 ABSENT_TARGET = "'{target}' is not here."
 INVALID_TARGET = "You can't {verb} {target}."
 INVALID_OBJECT = "You can't {verb} {target} {prep} {object}"
+INSUFFICIENT_QUANTITY = "Not enough there to {verb} {quantity}"
 AMBIGUOUS_COMMAND = "Ambiguous command"
 
 
@@ -21,7 +22,7 @@ class ActionMatch(object):
         self.action = action
         self.verb = verb
         self.args = args
-        self.target = None
+        self.targets = []
         self.obj = None
         self.target_method = None
         self.obj_method = None
@@ -36,6 +37,10 @@ class ActionMatch(object):
     @property
     def msg_class(self):
         return getattr(self.action, 'msg_class', None)
+
+    @property
+    def target_class(self):
+        return getattr(self.action, 'target_class', None)
 
     @property
     def obj_msg_class(self):
@@ -65,7 +70,7 @@ def find_actions(entity, command):
         verb = tuple(words[:verb_size])
         args = tuple(words[verb_size:])
         matches.extend([ActionMatch(action, verb, args) for action in entity.soul.get(verb, [])])
-        matches.extend([ActionMatch(action, verb, args) for action in entity.actions.get(verb, [])])
+        matches.extend([ActionMatch(action, verb, args) for action in entity.inven_actions.get(verb, [])])
         if verb in mud_actions:
             matches.append(ActionMatch(mud_actions[verb], verb, args))
     return matches
@@ -87,6 +92,7 @@ class Parse(object):
         reject_format = {'command': self._command, 'verb': self._command.split(' ')[0]}
         if reject:
             extra = find_extra(reject.verb, 0, self._command)
+            reject_format['quantity'] = reject.quantity
             reject_format['verb'] = ' '.join(reject.verb)
             reject_format['extra'] = extra
             reject_format['prep'] = reject.prep
@@ -114,36 +120,56 @@ class Parse(object):
         match = self._matches[0]
         return match.action, match.__dict__
 
+    def add_targets(self, target_key, target_class, target_list, quantity=None):
+        if 'self' in target_class and (target_key == ('self',) or target_key in self._entity.target_keys):
+            target_list.append(self._entity)
+        inven = self._entity.inven
+        if 'equip' in target_class:
+            target_list.extend([equip for equip in inven if target_key in equip.target_keys and equip.current_slot])
+        if 'inven' in target_class:
+            target_list.extend([equip for equip in inven if target_key in equip.target_keys and not equip.current_slot])
+        env = self._entity.env
+        if not env:
+            return
+        if 'features' in target_class:
+            target_list.extend([feature for feature in env.features if target_key in feature.target_keys])
+        if 'env_living' in target_class:
+            target_list.extend([living for living in env.contents if target_key in living.target_keys and getattr(living, 'living', None)])
+        if 'env_items' in target_class:
+            target_list.extend([item for item in env.contents if target_key in item.target_keys and not getattr(item, 'living', None)])
+
     def find_targets(self):
         for match in reversed(self._matches):
-            args, msg_class, prep = match.args, match.msg_class, match.prep
-            if msg_class == 'no_args' and args:
-                self._reject(EXTRA_WORDS, match)
-                continue
-            if not msg_class or msg_class == 'no_args':
+
+            args, target_class, quantity, prep = match.args, match.target_class, match.quantity, match.prep
+            if target_class == 'none':
+                if args:
+                    self._reject(EXTRA_WORDS, match)
                 continue
 
-            target_args = args
+            target_args = args[1:] if quantity else args
             if prep:
                 try:
-                    prep_loc = args.index(prep)
-                    target_args = args[:prep_loc]
-                    match.obj_args = args[(prep_loc + 1):]
+                    prep_loc = target_args.index(prep)
+                    target_args = target_args[:prep_loc]
+                    match.obj_args = target_args[(prep_loc + 1):]
                 except ValueError:
                     if not match.self_object:
                         self._reject(MISSING_TARGET, match)
                         continue
-            if msg_class == "rec_args":
+            if target_class == "args":
                 if not target_args:
                     self._reject(MISSING_TARGET, match)
             elif target_args:
-                match.target = self._entity.target_key_map.get(target_args)
-                if not match.target:
+                self.add_targets(target_args, target_class, match.targets)
+                if not match.targets:
                     self._reject(ABSENT_TARGET, match)
             elif match.self_target:
-                match.target = self._entity
+                match.targets.append(self._entity)
+            elif 'env' in target_class:
+                match.targets.append(self._entity.env)
             else:
-                match.target = self._entity.env
+                self._reject(MISSING_TARGET, match)
 
     def find_objects(self):
         for match in reversed(self._matches):
@@ -156,15 +182,25 @@ class Parse(object):
 
     def validate_targets(self):
         for match in reversed(self._matches):
-            if match.target:
-                match.target_method = getattr(match.target, match.msg_class, None)
-                if match.target_method is None:
-                    self._reject(INVALID_TARGET, match)
+            if not match.targets:
+                continue
+            for target in reversed(match.targets):
+                if match.quantity and match.quantity < getattr(target, 'quantity', 0):
+                    match.targets.remove(target)
+                    continue
+                target_method = getattr(target, match.msg_class, None)
+                if target_method is None:
+                    match.targets.remove(target)
                 elif match.item_action:
                     if match.target_method.im_self == match.target:
-                        match.action = match.target_method
+                        match.action = target_method
+                        match.target_method = target_method
                     else:
                         self._reject(INVALID_TARGET, match)
+                else:
+                    match.target_method = target_method
+            if not match.targets:
+                self._reject(INVALID_TARGET, match)
 
     def validate_objects(self):
         for match in reversed(self._matches):

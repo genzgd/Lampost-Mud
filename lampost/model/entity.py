@@ -1,7 +1,7 @@
 from collections import defaultdict
 from operator import itemgetter
 from lampost.datastore.dbo import DBOField
-from lampost.gameops.action import action_handler
+from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
@@ -18,163 +18,57 @@ class Entity(BaseItem):
 
     status = 'ok'
     living = True
-    combat = False
 
     entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
     exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
 
     def __init__(self, dbo_id=None):
         super(Entity, self).__init__(dbo_id)
-        self._target_order = 0
-        self._target_data = defaultdict(list)
         self.soul = defaultdict(set)
         self.followers = set()
         self.registrations = set()
-        self.target_key_map = {}
-        self.actions = {}
-        self.local_actions = set()
+        self.inven_actions = defaultdict(set)
 
     def baptise(self):
-        for target_key in self.target_keys | {(unicode('self'),)}:
-            self._target_data[target_key] = [(self, 0, 0)]
-            self.target_key_map[target_key] = self
-        self.add_actions(self.inven)
-        self.add_targets(self.inven, 10)
+        add_actions(self.inven_actions, self.inven)
 
     def enhance_soul(self, action):
-        for verb in action.verbs:
-            self.soul[verb].add(action)
+        add_action(self.soul, action)
 
     def diminish_soul(self, action):
-        for verb in action.verbs:
-            verb_set = self.soul.get(verb)
-            if verb_set:
-                verb_set.remove(action)
-                if not verb_set:
-                    del self.soul[verb]
-            else:
-                debug("Trying to remove non-existent {} from {} soul".format(verb, self.name))
+        remove_action(self.soul, action)
 
     def add_inven(self, article):
         if article in self.inven:
             return "You already have that."
         article.leave_env()
+        if article.quantity:
+            try:
+                existing = next(inv_item for inv_item in self.inven if inv_item.template == article.template)
+                article.add_quantity(existing.quantity)
+                self._remove_inven(existing)
+            except StopIteration:
+                pass
         self.inven.add(article)
-        self.add_action(article)
-        self.add_target(article, 10)
+        add_action(self.inven_actions, article)
         self.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article)
+
+    def _remove_inven(self, article):
+        self.inven.remove(article)
+        remove_action(self.inven_actions, article)
 
     def drop_inven(self, article):
         if not article in self.inven:
             return "You don't have that."
-        self.inven.remove(article)
-        self.remove_action(article)
-        self.remove_target(article)
+        self._remove_inven(article)
         article.enter_env(self.env)
         self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
 
     def rec_entity_enter_env(self, entity):
-        self.add_target(entity, 30)
-        self.add_action(entity)
-
-    def rec_entity_leave_env(self, entity, ex):
-        self.remove_target(entity)
-        self.remove_action(entity)
-
-    def add_targets(self, targets, parse_priority):
-        for target in targets:
-            self.add_target(target, parse_priority)
-
-    def add_target(self, target, parse_priority):
-        if target == self:
-            return
-        self._target_order += 1
-        try:
-            target_keys = target.target_keys
-        except AttributeError:
-            return
-        self.clear_target_keys(target_keys)
-        for target_key in target_keys:
-            existing_targets = self._target_data[target_key]
-            existing_targets.append((target, parse_priority, self._target_order))
-            existing_targets.sort(key=itemgetter(1, 2))
-        self.update_target_keys(target_keys)
-        self.on_target_added(target)
-        self.add_targets(getattr(target, 'target_providers', []), parse_priority)
-
-    def on_target_added(self, target):
         pass
 
-    def clear_target_keys(self, target_keys):
-        for target_key in target_keys:
-            existing_targets = self._target_data.get(target_key, None)
-            if existing_targets:
-                del self.target_key_map[target_key]
-                for key_count in range(1, len(existing_targets)):
-                    del self.target_key_map[target_key + (unicode(key_count + 1),)]
-
-    def update_target_keys(self, target_keys):
-        for target_key in target_keys:
-            self.update_target_key(target_key, self._target_data[target_key])
-
-    def update_target_key(self, target_key, target_list):
-        self.target_key_map[target_key] = target_list[0][0]
-        for key_count in range(1, len(target_list)):
-            self.target_key_map[target_key + (unicode(key_count + 1),)] = target_list[key_count][0]
-
-    def remove_targets(self, targets):
-        for target in targets:
-            self.remove_target(target)
-
-    def remove_target(self, target):
-        if self == target:
-            return
-        try:
-            target_keys = target.target_keys
-        except AttributeError:
-            return
-        self.clear_target_keys(target_keys)
-        for target_key in target_keys:
-            existing_targets = self._target_data[target_key]
-            remaining_targets = [existing_target for existing_target in existing_targets if existing_target[0] != target]
-            if remaining_targets:
-                self._target_data[target_key] = remaining_targets
-                self.update_target_key(target_key, remaining_targets)
-            else:
-                del self._target_data[target_key]
-        self.remove_targets(getattr(target, 'target_providers', []))
-
-    def add_actions(self, actions):
-        for action in actions:
-            self.add_action(action)
-
-    def add_action(self, action):
-        if action == self:
-            return
-        for verb in getattr(action, "verbs", []):
-            bucket = self.actions.get(verb)
-            if not bucket:
-                bucket = set()
-                self.actions[verb] = bucket
-            bucket.add(action)
-        for sub_action in getattr(action, "action_providers", []):
-            self.add_action(sub_action)
-
-    def remove_actions(self, actions):
-        for action in actions:
-            self.remove_action(action)
-
-    def remove_action(self, action):
-        for verb in getattr(action, "verbs", []):
-            try:
-                bucket = self.actions[verb]
-                bucket.remove(action)
-                if not bucket:
-                    del self.actions[verb]
-            except KeyError:
-                error("Removing action {} that does not exist from {}".format(verb, self.name))
-        for sub_action in getattr(action, "action_providers", []):
-            self.remove_action(sub_action)
+    def rec_entity_leave_env(self, entity, ex):
+        pass
 
     def parse(self, command):
         if command[0] == '\'':
@@ -242,8 +136,6 @@ class Entity(BaseItem):
             self.env = None
             self.exit_msg.target = getattr(ex, 'dir_desc', None)
             old_env.rec_entity_leaves(self, ex)
-            self.remove_actions(old_env.elements)
-            self.remove_targets(old_env.elements)
 
     def enter_env(self, new_env, ex=None):
         self.env = new_env
@@ -251,8 +143,6 @@ class Entity(BaseItem):
         new_env.rec_examine(self)
         self.entry_msg.target = getattr(ex, 'from_desc', None)
         self.env.rec_entity_enters(self)
-        self.add_actions(new_env.elements)
-        self.add_targets(new_env.elements, 30)
 
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)
@@ -264,9 +154,6 @@ class Entity(BaseItem):
         pass
 
     def output(self, response):
-        pass
-
-    def update_score(self):
         pass
 
     def can_see(self, target):
@@ -292,9 +179,6 @@ class Entity(BaseItem):
         if hasattr(self, 'following'):
             self.following.display_line("{} is no longer following you.".format(self.name))
             del self.following
-        self._target_data.clear()
-        self.target_key_map.clear()
-        self.actions.clear()
         self.equip_slots.clear()
 
     def equip_article(self, article):

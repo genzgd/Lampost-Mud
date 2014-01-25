@@ -3,7 +3,7 @@ from lampost.context.resource import provides, m_requires, register
 from lampost.gameops.action import make_action, ActionError, simple_action, convert_verbs
 from lampost.util.lmutil import dump, StateError
 
-m_requires('user_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
+m_requires('log', 'user_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
 _mud_actions = {}
 
 register('mud_actions', _mud_actions)
@@ -14,7 +14,10 @@ def mud_action(verbs, msg_class=None, **kwargs):
     def dec_wrapper(func):
         action = make_action(func, msg_class=msg_class, **kwargs)
         for verb in convert_verbs(verbs):
-            _mud_actions[verb] = action
+            if verb in _mud_actions:
+                error("Adding mud action for {}".format(verb))
+            else:
+                _mud_actions[verb] = action
     return dec_wrapper
 
 
@@ -47,11 +50,6 @@ def help_action(source, args, **ignored):
     action = iter(action_set).next()
     return getattr(action, "help_text", "No help available.")
 
-
-@mud_action('score')
-def score(source, **ignored):
-    for line in dump(source.get_score()):
-        source.display_line(line)
 
 @mud_action('friends')
 def friends(source, **ignored):
