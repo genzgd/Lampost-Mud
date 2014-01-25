@@ -71,6 +71,12 @@ class Article(BaseItem):
     def short_desc(self, observer=None):
         return self.name.capitalize()
 
+    def long_desc(self, observer=None):
+        long_desc = super(Article, self).long_desc(observer)
+        if self.quantity:
+            return "{} ({})".format(long_desc, self.quantity)
+        return long_desc
+
     @property
     def rec_get(self):
         if self.env:

@@ -3,11 +3,12 @@ import copy
 
 from types import MethodType
 from lampost.context.resource import m_requires
+from lampost.gameops.target import TargetClass
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
 
-target_classes = ['self', 'equip', 'inven', 'env', 'features', 'env_living', 'env_items', 'players']
+default_target_classes = ['self', 'equip', 'inven', 'env', 'features', 'env_living', 'env_items']
 
 
 def convert_verbs(verbs):
@@ -42,16 +43,16 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
     if target_class:
         action.target_class = target_class
     elif not hasattr(action, 'target_class'):
-        action.target_class = {'self', 'equip', 'inven', 'env', 'features', 'env_living', 'env_items'}
+        action.target_class = TargetClass.DEFAULTS
         try:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
             if not args or (len(args) == 1 and args[0] == 'source'):
-                action.target_class = 'none'
+                action.target_class = []
         except TypeError:
             pass
 
     if prep:
-        action.prep = prep
+        action.prep = prep,
         if obj_msg_class.startswith('has_'):
             action.obj_msg_class = obj_msg_class[4:]
         else:

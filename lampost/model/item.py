@@ -45,11 +45,15 @@ class BaseItem(TemplateInstance):
 
     rec_general = True
 
-    def short_desc(self, source):
+    def short_desc(self, observer):
         return self.title
 
+    def long_desc(self, observer):
+        return self.desc if self.desc else self.title
+
     def rec_examine(self, source, **ignored):
-        source.display_line(self.desc if self.desc else self.title)
+        if source.can_see(self):
+            source.display_line(self.long_desc(source))
 
     def rec_glance(self, source, **ignored):
         if source.can_see(self):

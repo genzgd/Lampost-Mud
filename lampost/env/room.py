@@ -7,6 +7,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.env.feature import Feature
 from lampost.env.movement import Direction
+from lampost.gameops.action import remove_actions, add_actions, add_action, remove_action
 from lampost.model.item import BaseItem
 from lampost.model.mobile import MobileReset, MobileTemplate
 from lampost.model.article import ArticleReset, ArticleTemplate
@@ -17,6 +18,7 @@ m_requires('log', 'datastore', __name__)
 
 
 class Exit(RootDBO):
+    target_class = None
     direction = DBOField(None, Direction)
     destination = DBOField(None, 'room')
     desc = DBOField()
@@ -65,7 +67,7 @@ class Room(RootDBO):
         self.desc = desc
         self.contents = []
         self.mobiles = defaultdict(set)
-        self.actions = set()
+        self.actions = defaultdict(set)
         self.targets = set()
 
     @property
@@ -98,6 +100,7 @@ class Room(RootDBO):
         except AttributeError:
             pass
         self.contents.append(source)
+        add_action(self.actions, source)
         self.tell_contents("rec_entity_enter_env", source)
 
     def rec_entity_leaves(self, source, ex):
@@ -107,6 +110,7 @@ class Room(RootDBO):
         except AttributeError:
             pass
         self.contents.remove(source)
+        remove_action(self.actions, source)
         self.tell_contents("rec_entity_leave_env", source, ex)
 
     def rec_broadcast(self, broadcast):
@@ -201,3 +205,8 @@ class Room(RootDBO):
         instance = template.create_instance(self)
         instance.enter_env(self)
         return instance
+
+    def on_loaded(self):
+        super(Room, self).on_loaded()
+        add_actions(self.actions, self.features)
+        add_actions(self.actions, self.exits)
