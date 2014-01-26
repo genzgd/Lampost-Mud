@@ -30,12 +30,12 @@ class ArticleLP(Article):
 
 
 @mud_action(('wear', 'equip', 'wield'), 'wear')
-def wear(source, verb, target, target_method, **ignored):
+def wear(source, target, target_method, **ignored):
     target_method()
     source.equip_article(target)
 
 
 @mud_action(('remove', 'unequip', 'unwield'), 'remove')
-def remove(source, verb, target, target_method, **ignored):
+def remove(source, target, target_method, **ignored):
     target_method()
     source.remove_article(target)

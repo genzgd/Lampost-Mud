@@ -47,22 +47,26 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
         action.target_class = TargetClass.DEFAULTS
         try:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
-            if not args or (len(args) == 1 and args[0] == 'source'):
-                action.target_class = None
-            elif 'args' in args:
-                action.target_class = TargetClass.ARGS_ONLY
         except TypeError:
-            pass
+            args, var_args, var_kwargs, defaults = inspect.getargspec(action.__call__)
+        target_args = len(args) - len([arg for arg in args if arg in {'self', 'source', 'command', 'args', 'verb'}])
+        if not target_args:
+            if not args or len(args) == 1 and args[0] == 'source':
+                action.target_class = TargetClass.NO_ARGS
+            else:
+                action.target_class = None
 
-    if obj_target_class:
-        action.obj_target_class = make_target_class(target_class)
     if prep:
         action.prep = prep
-    if obj_msg_class:
-        if obj_msg_class.startswith('has_'):
-            action.obj_msg_class = obj_msg_class[4:]
-        else:
-            action.obj_msg_class = 'rec_{0}'.format(obj_msg_class)
+        if obj_target_class:
+            action.obj_target_class = make_target_class(obj_target_class)
+        elif not hasattr(action, 'obj_target_class'):
+            action.obj_target_class = TargetClass.DEFAULTS
+        if obj_msg_class:
+            if obj_msg_class.startswith('has_'):
+                action.obj_msg_class = obj_msg_class[4:]
+            else:
+                action.obj_msg_class = 'rec_{0}'.format(obj_msg_class)
     for arg_name, value in kw_args.iteritems():
         setattr(action, arg_name, value)
     return action

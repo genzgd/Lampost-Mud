@@ -1,4 +1,5 @@
 import itertools
+
 from lampost.context.resource import m_requires
 from lampost.gameops.target import TargetClass
 from lampost.util.lmutil import find_extra
@@ -26,6 +27,7 @@ def all_actions(entity, verb):
 
 def has_action(entity, action, verb):
     return action in all_actions(entity, verb)
+
 
 def find_actions(entity, command):
     words = unicode(command).lower().split()
@@ -55,11 +57,25 @@ class ActionMatch(object):
 
 def match_filter(func):
     def wrapper(self):
-        for match in self._matches:
+        for match in reversed(self._matches):
             result = func(self, match)
             if result:
                 self._reject(result, match)
     return wrapper
+
+
+def capture_index(target_key):
+    try:
+        return int(target_key[-1]) - 1, target_key[:-1]
+    except IndexError:
+        pass
+    except ValueError:
+        try:
+            first_split = target_key[0].split('.')
+            return int(first_split[0]) - 1, (first_split[1],) + target_key[1:]
+        except (ValueError, IndexError):
+            pass
+    return 0, target_key
 
 
 class Parse(object):
@@ -91,17 +107,18 @@ class Parse(object):
                 reject_format['object'] = extra[prep_ix + len(reject.prep):]
             else:
                 reject_format['target'] = extra
-            if not reject_format['target'] and (last_reason == INVALID_TARGET or last_reason == ABSENT_TARGET):
-                last_reason = MISSING_TARGET
+            if last_reason in (INVALID_TARGET, ABSENT_TARGET):
+                if not reject_format['target']:
+                    last_reason = MISSING_TARGET
+                elif last_reason == ABSENT_TARGET:
+                    last_reason = reject.action.target_class[0].absent_msg
         raise ParseError(last_reason.format(**reject_format))
 
     # noinspection PyArgumentList
     def parse(self):
         self._reject(MISSING_VERB)
-        self.validate_syntax()
-        self.validate_targets()
-        self.find_objects()
-        self.validate_objects()
+        self.parse_targets()
+        self.parse_objects()
         if len(self._matches) > 1:
             raise ParseError(AMBIGUOUS_COMMAND)
         match = self._matches[0]
@@ -111,13 +128,13 @@ class Parse(object):
         return itertools.chain.from_iterable([target_type.target_finder(self._entity, target_key) for target_type in target_class])
 
     @match_filter
-    def validate_syntax(self, match):
+    def parse_targets(self, match):
         action = match.action
         target_class, args = action.target_class, match.args
         if not target_class:
-            return EXTRA_WORDS if args else None
-        if target_class == TargetClass.ARGS:
             return
+        if target_class == TargetClass.NO_ARGS:
+            return EXTRA_WORDS if args else None
         target_key = args
         if hasattr(action, 'quantity'):
             try:
@@ -134,32 +151,23 @@ class Parse(object):
             except ValueError:
                 if not hasattr(action, 'self_object'):
                     return MISSING_TARGET
-        target_index = 0
-        if target_key:
-            try:
-                target_index = int(target_key[-1]) - 1
-                target_key = target_key[:-1]
-            except ValueError:
-                pass
+        target_index, target_key = capture_index(target_key)
+        if TargetClass.ARGS in target_class:
+            match.target = target_key
+            return
         if target_key:
             targets = self.find_targets(target_key, target_class)
             try:
-                match.target = itertools.islice(targets, target_index, target_index + 1).next()
+                target = itertools.islice(targets, target_index, target_index + 1).next()
             except StopIteration:
                 return ABSENT_TARGET
         else:
             if hasattr(action, 'self_target'):
-                match.target = self._entity
+                target = self._entity
             elif TargetClass.ENV in target_class:
-                match.target = self._entity.env
+                target = self._entity.env
             else:
                 return MISSING_TARGET
-
-    @match_filter
-    def validate_targets(self, match):
-        target = match.target
-        if not target:
-            return
         if match.quantity and match.quantity < getattr(target, 'quantity', 0):
             return INSUFFICIENT_QUANTITY
         match.target_method = getattr(target, match.action.msg_class, None)
@@ -170,38 +178,35 @@ class Parse(object):
                 match.action = match.target_method
             else:
                 return INVALID_TARGET
+        match.target = target
 
     @match_filter
-    def find_objects(self, match):
+    def parse_objects(self, match):
         obj_target_class, obj_key = getattr(match.action, 'obj_target_class', None), match.obj_key
-        if not obj_target_class or obj_target_class == TargetClass.ARGS:
+        if not obj_target_class:
             return
-        obj_index = 0
-        if obj_key:
-            try:
-                obj_index = int(obj_key[-1]) - 1
-                obj_key = obj_key[:-1]
-            except ValueError:
-                pass
+        if TargetClass.ARGS in obj_target_class:
+            match.obj = match.obj_key
+            return
+        obj_index, obj_key = capture_index(match.obj_key)
         if obj_key:
             objects = self.find_targets(obj_key, obj_target_class)
             try:
-                match.obj = itertools.islice(objects, obj_index, obj_index + 1).next()
+                obj = itertools.islice(objects, obj_index, obj_index + 1).next()
             except StopIteration:
                 return ABSENT_OBJECT
         else:
             if hasattr(match.action, 'self_obj'):
-                match.obj = self._entity
+                obj = self._entity
             else:
                 return MISSING_OBJECT
 
-    @match_filter
-    def validate_objects(self, match):
         obj_msg_class = getattr(match.action, 'obj_msg_class', None)
-        if match.obj and obj_msg_cls:
+        if obj_msg_class:
             match.obj_method = getattr(obj, obj_msg_class, None)
             if match.obj_method is None:
                 return INVALID_OBJECT
+        match.obj = obj
 
 
 def parse_actions(entity, command):

@@ -99,7 +99,7 @@ def skills(source, target, **ignored):
         source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 
 
-@imm_action("add skill", "args", prep="to", obj_msg_class="has_skills", self_object=True)
+@imm_action("add skill", target_class="args", prep="to", obj_msg_class="has_skills", self_object=True)
 def add_skill_action(target, obj, **ignored):
     skill_id = target[0]
     try:
@@ -112,7 +112,7 @@ def add_skill_action(target, obj, **ignored):
     return "Added {} to {}".format(target, obj.name)
 
 
-@imm_action("remove skill", "args", prep="from", obj_msg_class="has_skills", self_object=True)
+@imm_action("remove skill", target_class="args", prep="from", obj_msg_class="has_skills", self_object=True)
 def remove_skill(target, obj, **ignored):
     obj.remove_skill(target[0])
     if getattr(obj, 'dbo_id', None):

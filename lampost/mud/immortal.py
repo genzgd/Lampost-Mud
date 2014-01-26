@@ -164,9 +164,10 @@ def unmake(source, target, **ignored):
 
 
 @imm_action('toggle mortal', 'has_immortal',  self_target=True)
-def toggle_mortal(source, target, **ignored):
+def toggle_mortal(target, **ignored):
     target.can_die = not target.can_die
     target.display_line("You can {} die.".format('now' if target.can_die else 'no longer'))
+
 
 @imm_action('home')
 def home(source, **ignored):
@@ -210,7 +211,7 @@ def log_level(args, **ignored):
 
 
 @imm_action('promote', 'player', prep='to', obj_target_class='args', imm_level='admin')
-def promote(source, target, obj_key, **ignored):
+def promote(source, target, obj, **ignored):
     if source == target:
         return "Let someone else do that."
     check_perm(source, target)

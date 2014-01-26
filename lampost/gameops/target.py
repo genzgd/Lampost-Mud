@@ -1,5 +1,5 @@
 class TargetClass(object):
-    def __init__(self, target_finder, absent_msg="{target is not here}"):
+    def __init__(self, target_finder, absent_msg="`{target}' is not here."):
         self.target_finder = target_finder.__get__(self)
         self.absent_msg = absent_msg
 
@@ -50,9 +50,10 @@ def env_items_finder(self, entity, target_key):
 
 TargetClass.NONE = TargetClass(null_generator)
 TargetClass.ARGS = TargetClass(null_generator)
+TargetClass.NO_ARGS = TargetClass(null_generator)
 TargetClass.SELF = TargetClass(self_finder)
-TargetClass.EQUIP = TargetClass(equip_finder)
-TargetClass.INVEN = TargetClass(inven_finder)
+TargetClass.EQUIP = TargetClass(equip_finder, "You don't have `{target}' equipped")
+TargetClass.INVEN = TargetClass(inven_finder, "You don't have `{target}'")
 TargetClass.ENV = TargetClass(env_finder)
 TargetClass.FEATURE = TargetClass(feature_finder)
 TargetClass.ENV_LIVING = TargetClass(env_living_finder)
