@@ -1,13 +1,11 @@
 from collections import defaultdict
-from operator import itemgetter
 from lampost.datastore.dbo import DBOField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.gameops.display import SYSTEM_DISPLAY
-from lampost.gameops.parser import ParseError, find_actions, parse_actions, has_action, \
-    MISSING_VERB, MISSING_TARGET
+from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.model.item import BaseItem
 
 m_requires('log', __name__)

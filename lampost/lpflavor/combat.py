@@ -4,6 +4,7 @@ from lampost.datastore.dbo import DBOField
 from lampost.datastore.proto import RootProto, ProtoField
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
+from lampost.gameops.target import TargetClass
 from lampost.lpflavor.attributes import POOL_LIST
 from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
@@ -125,9 +126,10 @@ class AttackTemplate(SkillTemplate):
 
 class AttackSkill(BaseSkill):
     skill_type = 'attack'
+    target_class = [TargetClass.ENV_LIVING]
+
     display = COMBAT_DISPLAY
     msg_class = 'rec_attack'
-
     damage_type = DBOField('weapon')
     delivery = DBOField('melee')
     damage_calc = DBOField({})
@@ -183,6 +185,7 @@ class DefenseTemplate(SkillTemplate):
 class DefenseSkill(BaseSkill):
     skill_type = 'defense'
 
+    target_class = [TargetClass.ENV_LIVING]
     damage_type = DBOField(['physical'])
     delivery = DBOField(['melee', 'ranged'])
     weapon_type = DBOField('unused')

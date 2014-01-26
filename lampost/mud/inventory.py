@@ -2,12 +2,12 @@ from lampost.gameops.display import EXIT_DISPLAY
 from lampost.mud.action import mud_action
 
 
-@mud_action(('get', 'pick up'), 'get', target_class=["env_items"], quantity=True)
+@mud_action(('get', 'pick up'), 'get', target_class="env_items", quantity=True)
 def get(source, target_method, **ignored):
     return target_method(source)
 
 
-@mud_action(('drop', 'put down'), 'drop', target_class=["inven"])
+@mud_action(('drop', 'put down'), 'drop', target_class="inven")
 def drop(source, target_method, **ignored):
     return target_method(source)
 

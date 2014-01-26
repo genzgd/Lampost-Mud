@@ -12,6 +12,12 @@ def recursive_targets(target_list, target_key):
             yield target
 
 
+# noinspection PyUnreachableCode
+def null_generator(self, entity, target_key):
+    return
+    yield
+
+
 def self_finder(self, entity, target_key):
     if target_key == ('self',) or target_key in entity.target_keys:
         yield entity
@@ -42,14 +48,23 @@ def env_items_finder(self, entity, target_key):
     return recursive_targets([item for item in entity.env.contents if not getattr(item, 'living', None)], target_key)
 
 
-TargetClass.NONE = TargetClass(lambda self, entity, target_key: ())
+TargetClass.NONE = TargetClass(null_generator)
+TargetClass.ARGS = TargetClass(null_generator)
 TargetClass.SELF = TargetClass(self_finder)
 TargetClass.EQUIP = TargetClass(equip_finder)
 TargetClass.INVEN = TargetClass(inven_finder)
 TargetClass.ENV = TargetClass(env_finder)
 TargetClass.FEATURE = TargetClass(feature_finder)
-TargetClass.ENV_LIVING  = TargetClass(env_living_finder)
+TargetClass.ENV_LIVING = TargetClass(env_living_finder)
 TargetClass.ENV_ITEMS = TargetClass(env_items_finder)
 
 TargetClass.DEFAULTS = [TargetClass.SELF, TargetClass.EQUIP, TargetClass.EQUIP, TargetClass.INVEN, TargetClass.ENV, TargetClass.FEATURE,
                         TargetClass.ENV_LIVING, TargetClass.ENV_ITEMS]
+TargetClass.ARGS_ONLY = [TargetClass.ARGS]
+
+
+def make_target_class(target_class):
+    try:
+        return [getattr(TargetClass, t_class.upper()) for t_class in target_class.split(' ')]
+    except AttributeError:
+        return target_class

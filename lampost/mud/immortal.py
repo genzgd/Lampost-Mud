@@ -209,20 +209,20 @@ def log_level(args, **ignored):
     return "Log level at {0}".format(log.level_desc)
 
 
-@imm_action('promote', 'player', prep='to', obj_msg_class='args', imm_level='admin')
-def promote(source, target, obj, **ignored):
+@imm_action('promote', 'player', prep='to', obj_target_class='args', imm_level='admin')
+def promote(source, target, obj_key, **ignored):
     if source == target:
         return "Let someone else do that."
     check_perm(source, target)
     if not obj:
         return "Promote {0} to what?".format(target.name)
-    imm_level = perm_to_level(obj[0])
+    imm_level = perm_to_level(obj_key[0])
     if imm_level is None:
         return "That is not a valid level"
     target.imm_level = imm_level
     dispatch('imm_baptise', target)
     update_immortal_list(target)
-    source.broadcast(s="You promote {N} to " + obj[0], t="{n} promotes you to " + obj[0] + "!", e="{N} gets promoted!", target=target)
+    source.broadcast(s="You promote {N} to " + obj_key[0], t="{n} promotes you to " + obj_key[0] + "!", e="{N} gets promoted!", target=target)
 
 
 @imm_action('run update', imm_level='supreme')

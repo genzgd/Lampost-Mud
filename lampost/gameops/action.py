@@ -3,7 +3,7 @@ import copy
 
 from types import MethodType
 from lampost.context.resource import m_requires
-from lampost.gameops.target import TargetClass
+from lampost.gameops.target import TargetClass, make_target_class
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
@@ -29,7 +29,8 @@ def simple_action(self, target_method, **kwargs):
         return target_method(**kw_args)
 
 
-def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None, obj_msg_class=None, **kw_args):
+def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None,
+                obj_msg_class=None, obj_target_class=None, **kw_args):
     if verbs:
         action.verbs = getattr(action, 'verbs', set())
         action.verbs.update(convert_verbs(verbs))
@@ -41,18 +42,23 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
             action.msg_class = 'rec_{0}'.format(msg_class)
 
     if target_class:
-        action.target_class = target_class
+        action.target_class = make_target_class(target_class)
     elif not hasattr(action, 'target_class'):
         action.target_class = TargetClass.DEFAULTS
         try:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
             if not args or (len(args) == 1 and args[0] == 'source'):
-                action.target_class = []
+                action.target_class = None
+            elif 'args' in args:
+                action.target_class = TargetClass.ARGS_ONLY
         except TypeError:
             pass
 
+    if obj_target_class:
+        action.obj_target_class = make_target_class(target_class)
     if prep:
-        action.prep = prep,
+        action.prep = prep
+    if obj_msg_class:
         if obj_msg_class.startswith('has_'):
             action.obj_msg_class = obj_msg_class[4:]
         else:
