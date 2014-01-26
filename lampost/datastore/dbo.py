@@ -88,9 +88,13 @@ class RootDBO(object):
 
         if getattr(self, 'dbo_id', None):
             append(self.dbo_id, 'dbo_id')
-            if level > 0:
-                return
-        for field, dbo_field in self.dbo_fields.viewitems():
+            level *= 99
+        if getattr(self, 'template_id', None):
+            append(self.template_id, 'template_id')
+            level *= 99
+        if level > 3:
+            return
+        for field, dbo_field in sorted(self.dbo_fields.viewitems(), key=lambda (field, value): field):
             value = getattr(self, field)
             if value:
                 wrapper = value_wrapper(value)

@@ -1,4 +1,5 @@
 from lampost.gameops.display import TELL_TO_DISPLAY
+from lampost.gameops.parser import find_targets
 import lampost.setup.update
 
 from lampost.client.user import User
@@ -62,19 +63,14 @@ def summon(source, args, **ignored):
     source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=player)
 
 
-@imm_action('patch', imm_level='supreme')
-def patch(source, verb, args, command, **ignored):
+@imm_action('patch', 'has___dict__', imm_level='supreme', prep=":", obj_target_class="args")
+def patch(target, verb, args, command, **ignored):
     try:
         split_ix = args.index(":")
-        target_id = args[:split_ix]
         prop = args[split_ix + 1]
         new_value = find_extra(verb, split_ix + 2, command)
     except (ValueError, IndexError):
         return "Syntax -- 'patch [target] [:] [prop_name] [new_value]'"
-    try:
-        target = source.target_key_map[target_id]
-    except KeyError:
-        return "No matching target"
     if not new_value:
         return "New value required"
     if new_value == "None":
@@ -123,28 +119,9 @@ def set_home(source, **ignored):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force')
-def force(source, command, **ignored):
-    space_ix = command.find(" ")
-    if space_ix == -1:
-        raise ActionError("Force who?")
-    remainder = command[space_ix + 1:]
-    words = tuple(remainder.split(' '))
-    match = None
-    for ix in xrange(0, len(words)):
-        space_ix = remainder.find(' ')
-        if space_ix == -1:
-            remainder = None
-        else:
-            remainder = remainder[space_ix + 1:]
-        target = source.target_key_map.get(words[:ix + 1])
-        if target and hasattr(target, 'parse'):
-            if match:
-                return "Ambiguous target"
-            match = target, remainder
-    if not match:
-        return "No target found"
-    target, force_cmd = match
+@imm_action('force', msg_class="has_living", prep="to", obj_target_class="args")
+def force(source, target, obj, **ignored):
+    force_cmd = ' '.join(obj)
     if not force_cmd:
         return "Force {} to do what?".format(target.name)
     check_perm(source, target)

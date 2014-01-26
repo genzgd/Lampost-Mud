@@ -41,11 +41,11 @@ def feature_finder(self, entity, target_key):
 
 
 def env_living_finder(self, entity, target_key):
-    return recursive_targets([living for living in entity.env.contents if getattr(living, 'living', None)], target_key)
+    return recursive_targets([living for living in entity.env.denizens],  target_key)
 
 
 def env_items_finder(self, entity, target_key):
-    return recursive_targets([item for item in entity.env.contents if not getattr(item, 'living', None)], target_key)
+    return recursive_targets([item for item in entity.env.inven], target_key)
 
 
 TargetClass.NONE = TargetClass(null_generator)

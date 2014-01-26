@@ -1,8 +1,6 @@
-from collections import defaultdict
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.lpflavor.article import ArticleLP
-from lampost.model.entity import Entity
+from lampost.model.article import Article
 
 m_requires('log', 'dispatcher', __name__)
 
@@ -19,7 +17,8 @@ class Player(RootDBO):
     age = DBOField(0)
     room_id = DBOField()
     home_room = DBOField()
-    inven = DBOField(set(), ArticleLP)
+    perm_inven = DBOField([], Article)
+
     rec_player = True
     can_die = True
 

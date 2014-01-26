@@ -6,7 +6,9 @@ from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, parse_actions, has_action
+from lampost.model.article import Article
 from lampost.model.item import BaseItem
+from lampost.mud.inventory import InvenContainer
 
 m_requires('log', __name__)
 
@@ -23,11 +25,12 @@ class Entity(BaseItem):
     def __init__(self, dbo_id=None):
         super(Entity, self).__init__(dbo_id)
         self.soul = defaultdict(set)
+        self.inven_actions = defaultdict(set)
         self.followers = set()
         self.registrations = set()
-        self.inven_actions = defaultdict(set)
 
     def baptise(self):
+        self.inven = InvenContainer(self.perm_inven)
         add_actions(self.inven_actions, self.inven)
 
     def enhance_soul(self, action):
@@ -37,30 +40,12 @@ class Entity(BaseItem):
         remove_action(self.soul, action)
 
     def add_inven(self, article):
-        if article in self.inven:
-            return "You already have that."
-        article.leave_env()
-        if article.quantity:
-            try:
-                existing = next(inv_item for inv_item in self.inven if inv_item.template == article.template)
-                article.add_quantity(existing.quantity)
-                self._remove_inven(existing)
-            except StopIteration:
-                pass
-        self.inven.add(article)
+        self.inven.append(article)
         add_action(self.inven_actions, article)
-        self.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=article)
 
-    def _remove_inven(self, article):
+    def remove_inven(self, article):
         self.inven.remove(article)
         remove_action(self.inven_actions, article)
-
-    def drop_inven(self, article):
-        if not article in self.inven:
-            return "You don't have that."
-        self._remove_inven(article)
-        article.enter_env(self.env)
-        self.broadcast(s="You drop {N}", e="{n} drops {N}", target=article)
 
     def rec_entity_enter_env(self, entity):
         pass
@@ -133,14 +118,14 @@ class Entity(BaseItem):
             old_env = self.env
             self.env = None
             self.exit_msg.target = getattr(ex, 'dir_desc', None)
-            old_env.rec_entity_leaves(self, ex)
+            old_env.entity_leaves(self, ex)
 
     def enter_env(self, new_env, ex=None):
         self.env = new_env
         self.room_id = new_env.room_id
         new_env.rec_examine(self)
         self.entry_msg.target = getattr(ex, 'from_desc', None)
-        self.env.rec_entity_enters(self)
+        self.env.entity_enters(self, ex)
 
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)
@@ -160,11 +145,15 @@ class Entity(BaseItem):
     def check_inven(self, article, quantity):
         pass
 
+    def check_drop(self, article, quantity):
+        pass
+
     def die(self):
         self.exit_msg = Broadcast(s="{n} expires, permanently.")
-        for article in self.inven.copy():
+        for article in reversed(self.inven):
             article.current_slot = None
-            self.drop_inven(article)
+            article.rec_drop(self)
+
         self.leave_env()
         self.status = 'dead'
         self.detach()

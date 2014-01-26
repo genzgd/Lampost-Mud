@@ -185,10 +185,6 @@ class EntityLP(Entity):
         self.status_change()
 
     def equip_article(self, article):
-        if not article in self.inven:
-            raise ActionError('You must pick up the item before you can equip it.')
-        if article.current_slot:
-            raise ActionError('This article is already equipped.')
         if article.equip_slot == 'none':
             raise ActionError('This is not something you can equip.')
         if article.art_type == 'weapon' and self.weapon:
@@ -201,10 +197,6 @@ class EntityLP(Entity):
         self._do_equip(article, equip_slot)
 
     def remove_article(self, article):
-        if not article.equip_slot:
-            raise ActionError("{0} is not equipped.".format(article.name))
-        if not article in self.inven:
-            raise ActionError("{0} is not yours.".format(article.name))
         if article.equip_slot == 'two_hand':
             del self.equip_slots['r_hand']
             del self.equip_slots['l_hand']

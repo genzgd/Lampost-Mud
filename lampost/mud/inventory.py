@@ -1,15 +1,19 @@
+from collections import Sequence
+
 from lampost.gameops.display import EXIT_DISPLAY
+from lampost.gameops.template import Template
+from lampost.model.item import BaseItem
 from lampost.mud.action import mud_action
 
 
 @mud_action(('get', 'pick up'), 'get', target_class="env_items", quantity=True)
-def get(source, target_method, **ignored):
-    return target_method(source)
+def get(source, target_method, quantity=None,  **ignored):
+    target_method(source, quantity)
 
 
-@mud_action(('drop', 'put down'), 'drop', target_class="inven")
-def drop(source, target_method, **ignored):
-    return target_method(source)
+@mud_action(('drop', 'put down'), 'drop', target_class="inven", quantity=True)
+def drop(source, target_method, quantity=None, **ignored):
+    return target_method(source, quantity)
 
 
 @mud_action(('i', 'inven'))
@@ -22,18 +26,27 @@ def inven(source, **ignored):
         source.display_line("You aren't carrying anything.")
 
 
-class InvenContainer:
-    def __init__(self):
-        self.contents = []
-        self.supports_drop = True
+class InvenContainer(BaseItem):
+    def __init__(self, contents=None):
+        self.contents = contents if contents is not None else []
 
-    def rec_entity_enters(self, source):
-        self.contents.append(source)
+    def __iter__(self):
+        for item in self.contents:
+            yield item
 
-    def rec_entity_leaves(self, source):
-        self.contents.remove(source)
+    def __len__(self):
+        return len(self.contents)
 
-    def add(self, article):
-        self.contents.append(article)
+    def __contains__(self, item):
+        return item in self.contents
+
+    def __getitem__(self, key):
+        return self.contents[key]
+
+    def append(self, item):
+        self.contents.append(item)
+
+    def remove(self, item):
+        self.contents.remove(item)
 
 

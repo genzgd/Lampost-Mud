@@ -77,15 +77,54 @@ class Article(BaseItem):
             return "{} ({})".format(long_desc, self.quantity)
         return long_desc
 
-    @property
-    def rec_get(self):
-        if self.env:
-            return self.do_rec_get
-        return None
-
-    def do_rec_get(self, source, quantity=None):
+    def rec_get(self, source, quantity=None, **ignored):
         source.check_inven(self, quantity)
-        source.add_inven(self)
+        gotten = self
+        if quantity and quantity < self.quantity:
+            gotten = self.template.create_instance()
+            gotten.quantity = quantity
+            self.quantity -= quantity
+        else:
+            self.leave_env()
+        source.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=gotten)
+        gotten.enter_env(source)
+
+    def rec_drop(self, source, quantity=None, **ignored):
+        source.check_drop(self, quantity)
+        if self.current_slot:
+            raise ActionError("You must unequip the item before dropping it.")
+
+        if quantity and quantity < self.quantity:
+            self.quantity -= quantity
+            drop = self.template.create_instance()
+            drop.quantity = quantity
+            drop.enter_env(source.env)
+        else:
+            drop = self
+            self.change_env(source.env)
+        source.broadcast(s="You drop {N}", e="{n} drops {N}", target=drop)
+
+    def change_env(self, new_env):
+        self.leave_env()
+        self.enter_env(new_env)
+
+    def enter_env(self, new_env):
+        self.env = new_env
+        if new_env:
+            if self.quantity:
+                try:
+                    existing = [item for item in new_env.inven if item.template == self.template][0]
+                    existing.quantity += self.quantity
+                    return
+                except IndexError:
+                    pass
+            new_env.add_inven(self)
+
+    def leave_env(self):
+        if self.env:
+            old_env = self.env
+            self.env = None
+            old_env.remove_inven(self)
 
     def rec_wear(self):
         pass
@@ -93,30 +132,7 @@ class Article(BaseItem):
     def rec_remove(self):
         pass
 
-    @property
-    def rec_drop(self):
-        if self.env:
-            return None
-        return self.do_rec_drop
 
-    def do_rec_drop(self, source):
-        if self.current_slot:
-            raise ActionError("You must unequip the item before dropping it.")
-        return source.drop_inven(self)
-
-    def enter_env(self, env, ex=None):
-        if self.divisible and not self.quantity:
-            return
-        return super(Article, self).enter_env(env, ex)
-
-
-    def add_quantity(self, quantity):
-        if self.quantity:
-            self.leave_env(self.env)
-            self.quantity += quantity
-        else:
-            self.quantity = quantity
-        self.enter_env(self.env)
 
 
 class ArticleReset(RootDBO):

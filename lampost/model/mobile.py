@@ -1,5 +1,5 @@
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.gameops.template import Template, TemplateInstance
+from lampost.gameops.template import Template
 from lampost.model.article import ArticleLoad
 from lampost.model.entity import Entity
 from lampost.model.item import target_keys
@@ -28,7 +28,7 @@ class MobileTemplate(Template):
         return self.dbo_id.split(":")[0]
 
     def config_instance(self, instance, room):
-        instance.inven = set()
+        instance.perm_inven = []
         instance.baptise()
         instance.original_env = room
         room.mobiles[self].add(instance)

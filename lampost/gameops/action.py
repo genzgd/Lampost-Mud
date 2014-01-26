@@ -82,7 +82,7 @@ def item_actions(*actions):
                 method_name = action[0]
             method_name = method_name.split(' ')[0]
             method = getattr(cls, 'rec_{}'.format(method_name)).__func__
-            cls._class_providers.append(make_action(method, action, method_name, item_action=True))
+            cls._class_providers.append(make_action(method, action, method_name, target_class=TargetClass.DEFAULTS, item_action=True))
         return cls
     return wrapper
 

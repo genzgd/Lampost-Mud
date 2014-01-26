@@ -12,9 +12,18 @@ from lampost.model.item import BaseItem
 from lampost.model.mobile import MobileReset, MobileTemplate
 from lampost.model.article import ArticleReset, ArticleTemplate
 from lampost.gameops.display import *
+from lampost.mud.inventory import InvenContainer
 
 
 m_requires('log', 'datastore', __name__)
+
+
+def tell(listeners, msg_type, *args):
+    for listener in listeners:
+        try:
+            getattr(listener, msg_type)(*args)
+        except AttributeError:
+            pass
 
 
 class Exit(RootDBO):
@@ -65,7 +74,8 @@ class Room(RootDBO):
         super(Room, self).__init__(dbo_id)
         self.title = title
         self.desc = desc
-        self.contents = []
+        self.inven = InvenContainer()
+        self.denizens = []
         self.mobiles = defaultdict(set)
         self.actions = defaultdict(set)
         self.targets = set()
@@ -90,45 +100,53 @@ class Room(RootDBO):
     def area_id(self):
         return self.dbo_id.split(":")[0]
 
+    @property
+    def contents(self):
+        return itertools.chain(self.features, self.denizens, self.inven)
+
     def rec_glance(self, source, **ignored):
         return source.display_line(self.title, ROOM_DISPLAY)
 
-    def rec_entity_enters(self, source):
+    def entity_enters(self, entity, ex):
         try:
-            source.entry_msg.source = source
-            self.rec_broadcast(source.entry_msg)
+            entity.entry_msg.source = entity
+            self.rec_broadcast(entity.entry_msg)
         except AttributeError:
             pass
-        self.contents.append(source)
-        add_action(self.actions, source)
-        self.tell_contents("rec_entity_enter_env", source)
+        self.denizens.append(entity)
+        add_action(self.actions, entity)
+        tell(self.contents, "rec_entity_enter_env", entity)
 
-    def rec_entity_leaves(self, source, ex):
+    def entity_leaves(self, entity, ex):
         try:
-            source.exit_msg.source = source
-            self.rec_broadcast(source.exit_msg)
+            entity.exit_msg.source = entity
+            self.rec_broadcast(entity.exit_msg)
         except AttributeError:
             pass
-        self.contents.remove(source)
-        remove_action(self.actions, source)
-        self.tell_contents("rec_entity_leave_env", source, ex)
+        self.denizens.remove(entity)
+        remove_action(self.actions, entity)
+        tell(self.contents, "rec_entity_leave_env", entity, ex)
+
+    def add_inven(self, article):
+        self.inven.append(article)
+        add_action(self.actions, article)
+
+    def remove_inven(self, article):
+        self.inven.remove(article)
+        remove_action(self.actions, article)
 
     def rec_broadcast(self, broadcast):
         if not broadcast:
             return
         if getattr(broadcast, 'target', None) == self:
             broadcast.target = None
-        self.tell_contents("rec_broadcast", broadcast)
+        tell(self.contents, "rec_broadcast", broadcast)
 
     def broadcast(self, **kwargs):
         self.rec_broadcast(Broadcast(**kwargs))
 
     def rec_social(self):
         pass
-
-    @property
-    def elements(self):
-        return itertools.chain(self.exits, self.extras, self.features, self.contents)
 
     def rec_examine(self, source, **ignored):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
@@ -140,10 +158,7 @@ class Room(RootDBO):
                 my_exit.rec_examine(source)
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
-
-        for obj in itertools.chain(self.features, self.contents):
-            if obj != source:
-                obj.rec_glance(source)
+        tell(filter(lambda x: x != source, self.contents), 'rec_glance', source)
 
     def short_exits(self):
         return ", ".join([ex.dir_desc for ex in self.exits])
@@ -153,12 +168,6 @@ class Room(RootDBO):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-    # noinspection PyCallingNonCallable
-    def tell_contents(self, msg_type, *args):
-        for receiver in self.contents:
-            rec_method = getattr(receiver, msg_type, None)
-            if rec_method:
-                rec_method(*args)
 
     def reset(self):
         for m_reset in self.mobile_resets:
@@ -176,11 +185,11 @@ class Room(RootDBO):
             if not template:
                 error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
                 continue
-            curr_count = len([entity for entity in self.contents if getattr(entity, 'template', None) == template])
+            curr_count = len([entity for entity in self.inven if getattr(entity, 'template', None) == template])
             if template.divisible:
                 if not curr_count:
                     instance = template.create_instance(self)
-                    instance.add_quantity(random.randrange(a_reset.reset_count, a_reset.reset_max))
+                    instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max)
                     instance.enter_env(self)
             else:
                 for unused in range(a_reset.reset_count - curr_count):

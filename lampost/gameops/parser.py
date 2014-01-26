@@ -7,13 +7,14 @@ from lampost.util.lmutil import find_extra
 m_requires('log', 'mud_actions', __name__)
 
 MISSING_VERB = "Unrecognized command '{verb}'.  Perhaps you should try 'help'?"
-EXTRA_WORDS = "'{extra}' does not make sense with '{verb}'"
+EXTRA_WORDS = "'{extra}' does not make sense with '{verb}'."
 MISSING_TARGET = "'{command}' what? or whom?"
 ABSENT_TARGET = "'{target}' is not here."
 ABSENT_OBJECT = "'{object}' is not here."
+MISSING_PREP = "'{prep}' missing from command."
 INVALID_TARGET = "You can't {verb} {target}."
-INVALID_OBJECT = "You can't {verb} {target} {prep} {object}"
-INSUFFICIENT_QUANTITY = "Not enough there to {verb} {quantity}"
+INVALID_OBJECT = "You can't {verb} {target} {prep} {object}."
+INSUFFICIENT_QUANTITY = "Not enough there to {verb} {quantity}."
 AMBIGUOUS_COMMAND = "Ambiguous command"
 
 
@@ -37,6 +38,10 @@ def find_actions(entity, command):
         args = tuple(words[verb_size:])
         matches.extend([ActionMatch(action, verb, args) for action in all_actions(entity, verb)])
     return matches
+
+
+def find_targets(entity, target_key, target_class):
+    return itertools.chain.from_iterable([target_type.target_finder(entity, target_key) for target_type in target_class])
 
 
 class ActionMatch(object):
@@ -124,8 +129,6 @@ class Parse(object):
         match = self._matches[0]
         return match.action, match.__dict__
 
-    def find_targets(self, target_key, target_class):
-        return itertools.chain.from_iterable([target_type.target_finder(self._entity, target_key) for target_type in target_class])
 
     @match_filter
     def parse_targets(self, match):
@@ -150,13 +153,13 @@ class Parse(object):
                 target_key = target_key[:prep_loc]
             except ValueError:
                 if not hasattr(action, 'self_object'):
-                    return MISSING_TARGET
+                    return MISSING_PREP
         target_index, target_key = capture_index(target_key)
         if TargetClass.ARGS in target_class:
             match.target = target_key
             return
         if target_key:
-            targets = self.find_targets(target_key, target_class)
+            targets = find_targets(self._entity, target_key, target_class)
             try:
                 target = itertools.islice(targets, target_index, target_index + 1).next()
             except StopIteration:
@@ -168,7 +171,7 @@ class Parse(object):
                 target = self._entity.env
             else:
                 return MISSING_TARGET
-        if match.quantity and match.quantity < getattr(target, 'quantity', 0):
+        if match.quantity and match.quantity > getattr(target, 'quantity', 0):
             return INSUFFICIENT_QUANTITY
         match.target_method = getattr(target, match.action.msg_class, None)
         if match.target_method is None:
@@ -190,7 +193,7 @@ class Parse(object):
             return
         obj_index, obj_key = capture_index(match.obj_key)
         if obj_key:
-            objects = self.find_targets(obj_key, obj_target_class)
+            objects = find_targets(self._entity, obj_key, obj_target_class)
             try:
                 obj = itertools.islice(objects, obj_index, obj_index + 1).next()
             except StopIteration:
