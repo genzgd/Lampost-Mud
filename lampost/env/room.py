@@ -168,7 +168,6 @@ class Room(RootDBO):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-
     def reset(self):
         for m_reset in self.mobile_resets:
             template = load_object(MobileTemplate, m_reset.mobile_id)

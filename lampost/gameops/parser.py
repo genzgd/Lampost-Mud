@@ -72,7 +72,7 @@ def match_filter(func):
 def capture_index(target_key):
     try:
         return int(target_key[-1]) - 1, target_key[:-1]
-    except IndexError:
+    except (TypeError, IndexError):
         pass
     except ValueError:
         try:
@@ -128,7 +128,6 @@ class Parse(object):
             raise ParseError(AMBIGUOUS_COMMAND)
         match = self._matches[0]
         return match.action, match.__dict__
-
 
     @match_filter
     def parse_targets(self, match):
@@ -199,10 +198,10 @@ class Parse(object):
             except StopIteration:
                 return ABSENT_OBJECT
         else:
-            if hasattr(match.action, 'self_obj'):
+            if hasattr(match.action, 'self_object'):
                 obj = self._entity
             else:
-                return MISSING_OBJECT
+                return MISSING_TARGET
 
         obj_msg_class = getattr(match.action, 'obj_msg_class', None)
         if obj_msg_class:

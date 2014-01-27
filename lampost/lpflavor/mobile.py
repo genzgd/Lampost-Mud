@@ -25,7 +25,7 @@ class MobileLP(Mobile, EntityLP):
     affinity = DBOField('neutral')
     enemies = ProtoField('enemies')
 
-    def on_target_added(self, target):
+    def rec_entity_enter_env(self, target):
         if target in self.fight.opponents.viewkeys():
             self.check_fight()
         elif hasattr(target, 'affinity') and target.affinity in self.enemies:
