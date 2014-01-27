@@ -24,7 +24,7 @@ class Fight():
     def update_skills(self):
         self.attacks = [attack for attack in self.me.skills.viewvalues() if getattr(attack, 'msg_class', None) == 'rec_attack']
         self.attacks.sort(key=lambda x: x.points_per_pulse(self.me), reverse=True)
-        self.defenses = [defense for defense in self.me.skills.viewvalues() if defense.skill_type == 'defense' and not skill.auto_start]
+        self.defenses = [defense for defense in self.me.skills.viewvalues() if defense.skill_type == 'defense' and not defense.auto_start]
         self.consider = self.me.rec_consider()
 
     def add(self, opponent):

@@ -6,7 +6,7 @@ from lampost.editor.base import EditResource
 from lampost.model.player import Player
 from lampost.client.user import User
 
-m_requires('datastore', 'perm', 'user_manager', __name__)
+m_requires('log', 'datastore', 'perm', 'user_manager', __name__)
 
 
 class PlayerResource(EditResource):
@@ -26,6 +26,9 @@ class PlayerResource(EditResource):
 
 def check_player_perm(player, session):
     user = load_object(User, player.user_id)
+    if not user:
+        error("Missing user for player delete.")
+        return
     if user_manager.user_imm_level(user) > 0:
         check_perm(session, 'supreme')
     else:

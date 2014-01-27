@@ -54,9 +54,10 @@ class UserManager(object):
         delete_object(user)
 
     def delete_player(self, user, player_id):
-        self._player_delete(player_id)
-        user.player_ids.remove(player_id)
-        save_object(user)
+        if user:
+            self._player_delete(player_id)
+            user.player_ids.remove(player_id)
+            save_object(user)
 
     def attach_player(self, user, player_dto):
         player = create_object(Player, player_dto)
@@ -135,5 +136,10 @@ class UserManager(object):
         return unicode(player_name.lower())
 
     def _player_delete(self, player_id):
+        player = load_object(Player, player_id)
+        if player:
+            delete_object(player)
+        else:
+            warn("Attempting to delete player {} who does not exist.".format(player_id))
         delete_index('ix:player:user', player_id)
         dispatch('player_deleted', player_id)
