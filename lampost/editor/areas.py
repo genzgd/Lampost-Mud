@@ -214,7 +214,7 @@ def clear_resets(room):
 def save_contents(start_room):
     safe_room = Room("safe_room", "A Temporary Safe Room")
     contents = []
-    for entity in start_room.contents[:]:
+    for entity in list(start_room.contents)[:]:
         if hasattr(entity, 'change_env'):
             entity.change_env(safe_room)
             contents.append(entity)

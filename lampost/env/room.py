@@ -189,7 +189,7 @@ class Room(RootDBO):
             if template.divisible:
                 if not curr_count:
                     instance = template.create_instance(self)
-                    instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max)
+                    instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max + 1)
                     instance.enter_env(self)
             else:
                 for unused in range(a_reset.reset_count - curr_count):
