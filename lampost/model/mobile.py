@@ -28,7 +28,6 @@ class MobileTemplate(Template):
         return self.dbo_id.split(":")[0]
 
     def config_instance(self, instance, room):
-        instance.perm_inven = []
         instance.baptise()
         instance.original_env = room
         room.mobiles[self].add(instance)

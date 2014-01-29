@@ -3,7 +3,7 @@ import copy
 
 from types import MethodType
 from lampost.context.resource import m_requires
-from lampost.gameops.target import TargetClass, make_target_class
+from lampost.gameops.target import TargetClass, make_target_class, im_self_finder
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)
@@ -37,9 +37,10 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
 
     if msg_class:
         if msg_class.startswith('has_'):
-            action.msg_class = msg_class[4:]
-        else:
-            action.msg_class = 'rec_{0}'.format(msg_class)
+            msg_class = msg_class[4:]
+        elif not msg_class.startswith('rec_'):
+            msg_class = 'rec_{0}'.format(msg_class)
+        action.msg_class = msg_class
 
     if target_class:
         action.target_class = make_target_class(target_class)
@@ -72,19 +73,25 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
     return action
 
 
-def item_actions(*actions):
-    def wrapper(cls):
-        cls._class_providers = copy.copy(getattr(cls, '_class_providers', []))
-        for action in actions:
-            if isinstance(action, basestring):
-                method_name = action
-            else:
-                method_name = action[0]
-            method_name = method_name.split(' ')[0]
-            method = getattr(cls, 'rec_{}'.format(method_name)).__func__
-            cls._class_providers.append(make_action(method, action, method_name, target_class=TargetClass.DEFAULTS, item_action=True))
-        return cls
-    return wrapper
+def item_action(**kwargs):
+    local_args = kwargs
+
+    def decorator(func):
+        verbs = local_args.get('verbs', None)
+        msg_class = local_args.get('msg_class', None)
+        if not verbs:
+            verbs = func.func_name
+            if verbs.startswith('rec_'):
+                verbs = verbs[4:]
+        if not msg_class:
+            msg_class = verbs
+        local_args['verbs'] = verbs
+        local_args['msg_class'] = msg_class
+        if not 'target_class' in local_args:
+            local_args['target_class'] = 'im_self'
+        make_action(func, **local_args)
+        return func
+    return decorator
 
 
 def add_action(action_set, action):

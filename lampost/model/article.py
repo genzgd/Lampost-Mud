@@ -85,7 +85,7 @@ class Article(BaseItem):
             gotten.quantity = quantity
             self.quantity -= quantity
         else:
-            self.leave_env()
+            source.env.remove_inven(self)
         source.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=gotten)
         gotten.enter_env(source)
 
@@ -98,41 +98,27 @@ class Article(BaseItem):
             self.quantity -= quantity
             drop = self.template.create_instance()
             drop.quantity = quantity
-            drop.enter_env(source.env)
         else:
             drop = self
-            self.change_env(source.env)
+            source.remove_inven(self)
+        drop.enter_env(source.env)
         source.broadcast(s="You drop {N}", e="{n} drops {N}", target=drop)
 
-    def change_env(self, new_env):
-        self.leave_env()
-        self.enter_env(new_env)
-
     def enter_env(self, new_env):
-        self.env = new_env
-        if new_env:
-            if self.quantity:
-                try:
-                    existing = [item for item in new_env.inven if item.template == self.template][0]
-                    existing.quantity += self.quantity
-                    return
-                except IndexError:
-                    pass
-            new_env.add_inven(self)
-
-    def leave_env(self):
-        if self.env:
-            old_env = self.env
-            self.env = None
-            old_env.remove_inven(self)
+        if self.quantity:
+            try:
+                existing = [item for item in new_env.inven if item.template == self.template][0]
+                existing.quantity += self.quantity
+                return
+            except IndexError:
+                pass
+        new_env.add_inven(self)
 
     def rec_wear(self):
         pass
 
     def rec_remove(self):
         pass
-
-
 
 
 class ArticleReset(RootDBO):

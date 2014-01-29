@@ -26,7 +26,7 @@ class ProtoField(object):
             self._get_default = self._complex_default
 
     def __get__(self, instance, owner=None):
-        if not instance:
+        if instance is None:
             return self
         try:
             return instance.__dict__[self.field]

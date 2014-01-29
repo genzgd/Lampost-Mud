@@ -17,7 +17,6 @@ class Player(RootDBO):
     age = DBOField(0)
     room_id = DBOField()
     home_room = DBOField()
-    perm_inven = DBOField([], Article)
 
     rec_player = True
     can_die = True

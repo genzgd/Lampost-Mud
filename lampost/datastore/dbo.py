@@ -190,6 +190,25 @@ class DBOField(ProtoField):
         return value
 
 
+class InstanceField(DBOField):
+    def __get__(self, instance, owner=None):
+        if not instance:
+            return self
+        try:
+            return instance.__dict__[self.field]
+        except KeyError:
+            return self._get_default(instance)
+
+    def save_value(self, instance):
+        value = self.convert_save_value(instance.__dict__[self.field])
+        if hasattr(self.default, 'save_value'):
+            if value == self.default.save_value:
+                raise KeyError
+        elif value == self.default:
+            raise KeyError
+        return value
+
+
 def value_wrapper(value, for_dto=True):
     if isinstance(value, set):
         return list_wrapper if for_dto else set_wrapper

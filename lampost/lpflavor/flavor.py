@@ -9,6 +9,7 @@ from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
     fill_pools, base_pools, POOL_MAP
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, DefenseTemplate, AttackTemplate, DefenseSkill, AttackSkill, WEAPON_TYPES
 from lampost.lpflavor.env import ExitLP
+from lampost.lpflavor.feature.store import Store
 from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
 from lampost.lpflavor.skill import add_skill
 from lampost.lpflavor.feature.touchstone import Touchstone
@@ -47,6 +48,7 @@ def _post_init():
     cls_registry.set_class('attack', AttackTemplate)
     cls_registry.set_class('defense', DefenseTemplate)
     cls_registry.set_class('touchstone', Touchstone)
+    cls_registry.set_class('store', Store)
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)

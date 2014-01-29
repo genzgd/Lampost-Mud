@@ -15,6 +15,7 @@ m_requires('log', __name__)
 
 class Entity(BaseItem):
     size = DBOField('medium')
+    inven = DBOField(InvenContainer(), InvenContainer)
 
     status = 'ok'
     living = True
@@ -30,7 +31,6 @@ class Entity(BaseItem):
         self.registrations = set()
 
     def baptise(self):
-        self.inven = InvenContainer(self.perm_inven)
         add_actions(self.inven_actions, self.inven)
 
     def enhance_soul(self, action):

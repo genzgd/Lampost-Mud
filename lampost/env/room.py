@@ -89,10 +89,6 @@ class Room(RootDBO):
         return self.dbo_id
 
     @property
-    def env(self):
-        return self
-
-    @property
     def name(self):
         return self.title
 
@@ -195,6 +191,9 @@ class Room(RootDBO):
                     self.add_template(template)
                 if a_reset.reset_count <= curr_count < a_reset.reset_max:
                     self.add_template(template)
+        if hasattr(self, 'dirty'):
+            save_object(self)
+            del self.dirty
 
     def add_mobile(self, template, reset):
         instance = self.add_template(template)

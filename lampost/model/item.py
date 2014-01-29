@@ -4,8 +4,9 @@ import itertools
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, RootDBOMeta
 from lampost.datastore.proto import ProtoField
-from lampost.gameops.action import item_actions
+from lampost.gameops.action import item_action, make_action
 from lampost.gameops.display import TELL_TO_DISPLAY
+from lampost.gameops.target import im_self_finder
 from lampost.gameops.template import TemplateInstance
 
 m_requires('dispatcher', __name__)
@@ -32,8 +33,16 @@ def target_keys(item):
     return target_keys
 
 
+class BaseItemMeta(RootDBOMeta):
+    def __init__(cls, class_name, bases, new_attrs):
+        super(BaseItemMeta, cls).__init__(class_name, bases, new_attrs)
+        cls._class_providers = {func.func_name for func in new_attrs.viewvalues() if hasattr(func, 'verbs')}
+        for base in bases:
+            cls._class_providers.update(getattr(base, '_class_providers', ()))
+
+
 class BaseItem(TemplateInstance):
-    _class_providers = []
+    __metaclass__ = BaseItemMeta
     desc = DBOField('')
     title = DBOField('')
     aliases = DBOField([])
@@ -44,6 +53,15 @@ class BaseItem(TemplateInstance):
     env = None
 
     rec_general = True
+
+    def __init__(self, dbo_id=None):
+        self.action_providers = [getattr(self, func_name) for func_name in self._class_providers]
+        self.target_providers = []
+        super(BaseItem, self).__init__(dbo_id)
+
+    def target_finder(self, entity, target_key):
+        if target_key in self.target_keys:
+            yield self
 
     def short_desc(self, observer):
         return self.title
@@ -73,18 +91,10 @@ class BaseItem(TemplateInstance):
         if not self.target_keys:
             self.target_keys = target_keys(self)
 
-    def _action_providers(self):
-        return []
 
-    @property
-    def action_providers(self):
-        return itertools.chain(self._class_providers, self._action_providers())
-
-
-
-@item_actions('read')
 class Readable(BaseItem):
     text = DBOField('')
 
+    @item_action()
     def rec_read(self, source, **ignored):
         source.display_line(self.text, TELL_TO_DISPLAY)

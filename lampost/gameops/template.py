@@ -20,6 +20,7 @@ class Template(RootDBO):
         instance.template = self
         instance.template_id = self.dbo_id
         self.config_instance(instance, owner)
+
         return instance
 
     def config_instance(self, instance, owner):
@@ -35,8 +36,15 @@ class TemplateInstance(RootDBO):
     def load_ref(cls, dto_repr, owner=None):
         if hasattr(cls, 'template_cls'):
             template = load_object(cls.template_cls, dto_repr['template_id'])
-            return template.create_instance(owner).hydrate(dto_repr)
-        return cls().hydrate(dto_repr)
+            instance = template.create_instance(owner)
+        else:
+            instance = cls()
+        instance.hydrate(dto_repr)
+        try:
+            instance.on_created()
+        except AttributeError:
+            pass
+        return instance
 
     @property
     def save_value(self):

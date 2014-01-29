@@ -40,8 +40,8 @@ def find_actions(entity, command):
     return matches
 
 
-def find_targets(entity, target_key, target_class):
-    return itertools.chain.from_iterable([target_type.target_finder(entity, target_key) for target_type in target_class])
+def find_targets(entity, target_key, target_class, action):
+    return itertools.chain.from_iterable([target_type.target_finder(entity, target_key, action) for target_type in target_class])
 
 
 class ActionMatch(object):
@@ -158,7 +158,7 @@ class Parse(object):
             match.target = target_key
             return
         if target_key:
-            targets = find_targets(self._entity, target_key, target_class)
+            targets = find_targets(self._entity, target_key, target_class, action)
             try:
                 target = itertools.islice(targets, target_index, target_index + 1).next()
             except StopIteration:
