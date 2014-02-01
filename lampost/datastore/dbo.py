@@ -182,7 +182,6 @@ class DBOField(AutoField):
 
 
 class DBOTField(DBOField, TemplateField):
-
     def save_value(self, instance):
         value = self.convert_save_value(instance.__dict__[self.field])
         if hasattr(self.default, 'save_value'):

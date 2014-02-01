@@ -40,7 +40,7 @@ def find_actions(entity, command):
     return matches
 
 
-def find_targets(entity, target_key, target_class, action):
+def find_targets(entity, target_key, target_class, action=None):
     return itertools.chain.from_iterable([target_type.target_finder(entity, target_key, action) for target_type in target_class])
 
 
