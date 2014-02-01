@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import DBOField, InstanceField
+from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops.action import item_action, ActionError
 from lampost.model.article import Article
@@ -7,8 +7,7 @@ from lampost.mud.inventory import InvenContainer
 
 class Store(Feature):
     currency = DBOField()
-    inven = InstanceField(InvenContainer(), InvenContainer)
-
+    inven = DBOField(InvenContainer(), InvenContainer)
     title = DBOField('Vending Machine')
     desc = DBOField("A rickety vending machine.  It looks like you can both buy and sell pretty much anything here.")
 

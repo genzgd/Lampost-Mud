@@ -1,7 +1,7 @@
-from lampost.datastore.proto import ProtoField
+from lampost.datastore.auto import TemplateField
 from lampost.model.item import BaseItem, target_keys
 from lampost.gameops.action import ActionError
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.gameops.template import Template
 from lampost.util.lmutil import plural
 
@@ -36,17 +36,17 @@ class ArticleTemplate(Template):
 class Article(BaseItem):
     template_class = ArticleTemplate
 
-    weight = DBOField(0)
-    divisible = DBOField(False)
-    equip_slot = DBOField('none')
-    art_type = DBOField('treasure')
-    level = DBOField(1)
+    weight = DBOTField(0)
+    divisible = DBOTField(False)
+    equip_slot = DBOTField('none')
+    art_type = DBOTField('treasure')
+    level = DBOTField(1)
     current_slot = DBOField()
     quantity = DBOField()
     uses = DBOField()
-    single_keys = ProtoField(set())
-    plural_keys = ProtoField(set())
-    plural_title = ProtoField(None)
+    single_keys = TemplateField(set())
+    plural_keys = TemplateField(set())
+    plural_title = TemplateField(None)
 
     @property
     def name(self):

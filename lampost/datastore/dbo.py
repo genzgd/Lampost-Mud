@@ -1,6 +1,6 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires
-from lampost.datastore.proto import ProtoMeta, ProtoField
+from lampost.datastore.auto import AutoMeta, TemplateField, AutoField
 
 m_requires('log', 'datastore', 'cls_registry', __name__)
 
@@ -17,7 +17,7 @@ def _post_init():
     dbo_field_classes.clear()
 
 
-class RootDBOMeta(ProtoMeta):
+class RootDBOMeta(AutoMeta):
     def __init__(cls, class_name, bases, new_attrs):
         super(RootDBOMeta, cls).__init__(class_name, bases, new_attrs)
         cls.dbo_fields = {}
@@ -149,7 +149,7 @@ class RootDBO(object):
         return dto_repr
 
 
-class DBOField(ProtoField):
+class DBOField(AutoField):
     def __init__(self, default=None, dbo_class_id=None):
         super(DBOField, self).__init__(default)
         if dbo_class_id:
@@ -178,6 +178,18 @@ class DBOField(ProtoField):
                 raise KeyError
         elif value == self.default:
             raise KeyError
+        return value
+
+
+class DBOTField(DBOField, TemplateField):
+
+    def save_value(self, instance):
+        value = self.convert_save_value(instance.__dict__[self.field])
+        if hasattr(self.default, 'save_value'):
+            if value == self.default.save_value:
+                raise KeyError
+        elif value == self.default:
+            raise KeyError
         try:
             template_value = getattr(instance.template, self.field)
         except AttributeError:
@@ -186,25 +198,6 @@ class DBOField(ProtoField):
             if value == template_value:
                 raise KeyError
         elif value == template_value:
-            raise KeyError
-        return value
-
-
-class InstanceField(DBOField):
-    def __get__(self, instance, owner=None):
-        if not instance:
-            return self
-        try:
-            return instance.__dict__[self.field]
-        except KeyError:
-            return self._get_default(instance)
-
-    def save_value(self, instance):
-        value = self.convert_save_value(instance.__dict__[self.field])
-        if hasattr(self.default, 'save_value'):
-            if value == self.default.save_value:
-                raise KeyError
-        elif value == self.default:
             raise KeyError
         return value
 

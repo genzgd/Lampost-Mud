@@ -1,7 +1,7 @@
 from __future__ import division
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
-from lampost.datastore.proto import RootProto, ProtoField
+from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.auto import RootAuto, TemplateField
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.gameops.target import TargetClass
@@ -94,13 +94,13 @@ def consider_level(source_con, target_con):
     return int(perc / 13.27) - CON_RANGE
 
 
-class Attack(RootProto):
+class Attack(RootAuto):
 
-    success_map = ProtoField()
-    fail_map = ProtoField()
-    delivery = ProtoField()
-    damage_pool = ProtoField()
-    verb = ProtoField()
+    success_map = TemplateField()
+    fail_map = TemplateField()
+    delivery = TemplateField()
+    damage_pool = TemplateField()
+    verb = TemplateField()
 
     def from_skill(self, skill, source):
         self.template = skill
@@ -130,15 +130,15 @@ class AttackSkill(BaseSkill):
 
     display = COMBAT_DISPLAY
     msg_class = 'rec_attack'
-    damage_type = DBOField('weapon')
-    delivery = DBOField('melee')
-    damage_calc = DBOField({})
-    damage_pool = DBOField('health')
-    accuracy_calc = DBOField({})
-    weapon_type = DBOField('any')
-    prep_map = DBOField({'s': 'You prepare to {v} {N}.', 't' : '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
-    success_map = DBOField({'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
-    fail_map = DBOField({'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
+    damage_type = DBOTField('weapon')
+    delivery = DBOTField('melee')
+    damage_calc = DBOTField({})
+    damage_pool = DBOTField('health')
+    accuracy_calc = DBOTField({})
+    weapon_type = DBOTField('any')
+    prep_map = DBOTField({'s': 'You prepare to {v} {N}.', 't' : '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
+    success_map = DBOTField({'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
+    fail_map = DBOTField({'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
 
     def validate(self, source, target, **kwargs):
         if source == target:
@@ -186,13 +186,13 @@ class DefenseSkill(BaseSkill):
     skill_type = 'defense'
 
     target_class = [TargetClass.ENV_LIVING]
-    damage_type = DBOField(['physical'])
-    delivery = DBOField(['melee', 'ranged'])
-    weapon_type = DBOField('unused')
-    absorb_calc = DBOField({})
-    avoid_calc = DBOField({})
-    success_map = DBOField({'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
-    calc_damage_types = ProtoField([])
+    damage_type = DBOTField(['physical'])
+    delivery = DBOTField(['melee', 'ranged'])
+    weapon_type = DBOTField('unused')
+    absorb_calc = DBOTField({})
+    avoid_calc = DBOTField({})
+    success_map = DBOTField({'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
+    calc_damage_types = TemplateField([])
 
     def invoke(self, source, **ignored):
         source.defenses.add(self)

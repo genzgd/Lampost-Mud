@@ -1,6 +1,6 @@
 from lampost.comm.broadcast import BroadcastMap
-from lampost.datastore.dbo import DBOField
-from lampost.datastore.proto import ProtoField
+from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.auto import TemplateField
 from lampost.model.article import Article, ArticleTemplate
 from lampost.mud.action import mud_action
 
@@ -16,11 +16,11 @@ class ArticleTemplateLP(ArticleTemplate):
 
 
 class ArticleLP(Article):
-    weapon_type = DBOField('mace')
-    damage_type = DBOField('blunt')
-    delivery = DBOField('melee')
-    equip_msg = ProtoField()
-    remove_msg = ProtoField()
+    weapon_type = DBOTField('mace')
+    damage_type = DBOTField('blunt')
+    delivery = DBOTField('melee')
+    equip_msg = TemplateField()
+    remove_msg = TemplateField()
 
     def on_equipped(self, equipper):
         equipper.broadcast(target=self, broadcast_map=self.equip_msg)

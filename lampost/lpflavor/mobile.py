@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
-from lampost.datastore.proto import ProtoField
+from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.auto import TemplateField
 from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
@@ -20,20 +20,28 @@ def _post_init():
 
 
 class MobileLP(Mobile, EntityLP):
-    archetype = DBOField()
-    level = DBOField(1)
-    affinity = DBOField('neutral')
-    enemies = ProtoField('enemies')
+    archetype = DBOTField()
+    level = DBOTField(1)
+    affinity = DBOTField('neutral')
+    enemies = TemplateField('enemies')
 
-    def rec_entity_enter_env(self, target):
-        if target in self.fight.opponents.viewkeys():
-            self.check_fight()
-        elif hasattr(target, 'affinity') and target.affinity in self.enemies:
-            self.start_combat(target)
+    def rec_entity_enter_env(self, entity):
+        self._react_entity(entity)
 
     def rec_entity_leave_env(self, entity, ex):
         super(MobileLP, self).rec_entity_leave_env(entity, ex)
         self.fight.check_follow(entity, ex)
+
+    def enter_env(self, new_env, ex=None):
+        super(MobileLP, self).enter_env(new_env, ex)
+        for entity in new_env.denizens:
+            self._react_entity(entity)
+
+    def _react_entity(self, entity):
+        if entity in self.fight.opponents.viewkeys():
+            self.check_fight()
+        elif hasattr(entity, 'affinity') and entity.affinity in self.enemies:
+            self.start_combat(entity)
 
 
 class MobileTemplateLP(MobileTemplate):

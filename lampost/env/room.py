@@ -188,15 +188,17 @@ class Room(RootDBO):
                     instance.enter_env(self)
             else:
                 for unused in range(a_reset.reset_count - curr_count):
-                    self.add_template(template)
+                    instance = template.create_instance(self)
+                    instance.enter_env(self)
                 if a_reset.reset_count <= curr_count < a_reset.reset_max:
-                    self.add_template(template)
+                    instance = template.create_instance(self)
+                    instance.enter_env(self)
         if hasattr(self, 'dirty'):
             save_object(self)
             del self.dirty
 
     def add_mobile(self, template, reset):
-        instance = self.add_template(template)
+        instance = template.create_instance(self)
         for article_load in reset.article_loads:
             article_template = load_object(ArticleTemplate, article_load.article_id)
             if not template:
@@ -207,11 +209,8 @@ class Room(RootDBO):
             instance.add_inven(article)
             if article_load.load_type == "equip":
                 instance.equip_article(article)
+            instance.enter_env(self)
 
-    def add_template(self, template):
-        instance = template.create_instance(self)
-        instance.enter_env(self)
-        return instance
 
     def on_loaded(self):
         super(Room, self).on_loaded()

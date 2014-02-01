@@ -1,7 +1,7 @@
 from random import randint
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.datastore.proto import ProtoField
+from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
+from lampost.datastore.auto import TemplateField
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template, TemplateInstance
 from lampost.mud.action import mud_action, imm_action
@@ -50,19 +50,19 @@ class SkillTemplate(Template):
 class BaseSkill(TemplateInstance):
     template_cls = SkillTemplate
 
-    verb = DBOField()
-    desc = DBOField()
-    prep_time = DBOField(0)
-    cool_down = DBOField(0)
-    pre_reqs = DBOField([])
-    costs = DBOField({})
-    prep_map = DBOField({})
-    display = DBOField('default')
-    auto_start = DBOField(False)
+    verb = DBOTField()
+    desc = DBOTField()
+    prep_time = DBOTField(0)
+    cool_down = DBOTField(0)
+    pre_reqs = DBOTField([])
+    costs = DBOTField({})
+    prep_map = DBOTField({})
+    display = DBOTField('default')
+    auto_start = DBOTField(False)
     skill_level = DBOField(1)
     last_used = DBOField(0)
-    verbs = ProtoField()
-    name = ProtoField()
+    verbs = TemplateField()
+    name = TemplateField()
 
     def prepare_action(self, source, target, **kwargs):
         if self.available > 0:

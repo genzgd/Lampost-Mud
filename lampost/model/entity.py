@@ -1,5 +1,5 @@
 from collections import defaultdict
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 
 from lampost.comm.broadcast import Broadcast
@@ -14,7 +14,7 @@ m_requires('log', __name__)
 
 
 class Entity(BaseItem):
-    size = DBOField('medium')
+    size = DBOTField('medium')
     inven = DBOField(InvenContainer(), InvenContainer)
 
     status = 'ok'

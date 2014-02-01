@@ -2,8 +2,8 @@ import math
 import itertools
 
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, RootDBOMeta
-from lampost.datastore.proto import ProtoField
+from lampost.datastore.dbo import DBOField, RootDBOMeta, DBOTField
+from lampost.datastore.auto import TemplateField
 from lampost.gameops.action import item_action, make_action
 from lampost.gameops.display import TELL_TO_DISPLAY
 from lampost.gameops.target import im_self_finder
@@ -43,11 +43,11 @@ class BaseItemMeta(RootDBOMeta):
 
 class BaseItem(TemplateInstance):
     __metaclass__ = BaseItemMeta
-    desc = DBOField('')
-    title = DBOField('')
-    aliases = DBOField([])
-    sex = DBOField('none')
-    target_keys = ProtoField(set())
+    desc = DBOTField('')
+    title = DBOTField('')
+    aliases = DBOTField([])
+    sex = DBOTField('none')
+    target_keys = TemplateField(set())
 
     living = False
     env = None

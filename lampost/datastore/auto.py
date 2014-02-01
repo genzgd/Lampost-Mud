@@ -1,23 +1,24 @@
 import copy
 
 
-class ProtoMeta(type):
+class AutoMeta(type):
     def __init__(cls, class_name, bases, new_attrs):
         cls._meta_init_attrs(new_attrs)
 
     def _meta_init_attrs(cls, new_attrs):
-        for name, attr in new_attrs.iteritems():
+        for name, attr in new_attrs.viewitems():
             try:
                 attr.meta_init(name)
             except AttributeError:
                 pass
 
 
-class RootProto(object):
-    __metaclass__ = ProtoMeta
+class RootAuto(object):
+    __metaclass__ = AutoMeta
 
 
-class ProtoField(object):
+class AutoField(object):
+
     def __init__(self, default=None):
         self.default = default
         if default is None or isinstance(default, (int, basestring, bool, tuple, float)):
@@ -31,10 +32,7 @@ class ProtoField(object):
         try:
             return instance.__dict__[self.field]
         except KeyError:
-            try:
-                return getattr(instance.template, self.field)
-            except AttributeError:
-                return self._get_default(instance)
+            return self._get_default(instance)
 
     def __set__(self, instance, value):
         if value == self.default:
@@ -52,3 +50,17 @@ class ProtoField(object):
 
     def meta_init(self, field):
         self.field = field
+
+
+class TemplateField(AutoField):
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        try:
+            return instance.__dict__[self.field]
+        except KeyError:
+            try:
+                return getattr(instance.template, self.field)
+            except AttributeError:
+                return self._get_default(instance)
