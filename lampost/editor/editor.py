@@ -1,5 +1,7 @@
+import copy
 from twisted.web.resource import Resource
 from lampost.client.resources import request
+from lampost.datastore.classes import get_sub_classes
 from lampost.context.resource import requires
 from lampost.editor.areas import AreaResource, RoomResource
 from lampost.editor.articles import ArticleResource
@@ -9,7 +11,6 @@ from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
 from lampost.editor.socials import SocialsResource
-from lampost.env.feature import FeatureTemplate
 from lampost.lpflavor.combat import AttackTemplate, DefenseTemplate
 from lampost.model.area import Area
 from lampost.model.player import Player
@@ -31,23 +32,12 @@ class EditorResource(Resource):
         self.putChild('race', EditResource(PlayerRace))
         self.putChild('attack', EditResource(AttackTemplate))
         self.putChild('defense', EditResource(DefenseTemplate))
-        self.putChild('features', EditResource(FeatureTemplate))
 
 
 @requires('context')
 class PropertiesResource(Resource):
     @request
     def render_POST(self):
-        return self.context.properties
-
-
-
-
-
-
-
-
-
-
-
-
+        constants = copy.copy(self.context.properties)
+        constants['features'] = get_sub_classes('feature')
+        return constants

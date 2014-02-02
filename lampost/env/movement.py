@@ -2,6 +2,7 @@ from lampost.datastore.dbo import RootDBO, DBOField
 
 
 class Direction(RootDBO):
+    class_id = 'direction'
     ref_map = {}
     ordered = []
     key = DBOField()

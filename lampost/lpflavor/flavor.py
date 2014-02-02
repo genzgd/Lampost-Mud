@@ -1,7 +1,6 @@
 import sys
 from lampost.datastore.dbo import DBOField
 from lampost.env.room import Exit, Room
-from lampost.gameops.template import template_class
 from lampost.lpflavor import setup
 from lampost.lpflavor.archetype import PLayerRaceLP
 from lampost.lpflavor.article import ArticleLP, ArticleTemplateLP
@@ -22,7 +21,7 @@ from lampost.lpflavor.player import PlayerLP
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
 
-m_requires('cls_registry', 'context', 'dispatcher', 'datastore', 'perm', __name__)
+m_requires('context', 'dispatcher', 'datastore', 'perm', __name__)
 
 equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
@@ -35,20 +34,6 @@ def _post_init():
 
     PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in ATTR_LIST})
     PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in POOL_MAP.viewkeys()})
-
-    cls_registry.set_class(Area, Area)
-    cls_registry.set_class(Room, Room)
-    cls_registry.set_class(Player, PlayerLP)
-    cls_registry.set_class(Mobile, MobileLP)
-    cls_registry.set_class(Article, ArticleLP)
-    cls_registry.set_class(Exit, ExitLP)
-    cls_registry.set_class(PlayerRace, PLayerRaceLP)
-    cls_registry.set_class(MobileTemplate, MobileTemplateLP)
-    cls_registry.set_class(ArticleTemplate, ArticleTemplateLP)
-    cls_registry.set_class('attack', AttackTemplate)
-    cls_registry.set_class('defense', DefenseTemplate)
-    cls_registry.set_class('touchstone', Touchstone)
-    cls_registry.set_class('store', Store)
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
@@ -71,9 +56,6 @@ def _post_init():
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
     register('game_settings', _game_settings)
-
-    template_class(DefenseTemplate, DefenseSkill)
-    template_class(AttackTemplate, AttackSkill)
 
 
 def _player_create(player):

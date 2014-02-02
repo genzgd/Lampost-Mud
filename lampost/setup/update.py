@@ -1,11 +1,10 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.exceptions import ObjectExistsError
-from lampost.env.feature import FeatureTemplate
 from lampost.env.room import Room
+from lampost.lpflavor.combat import AttackTemplate, DefenseTemplate
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 
-m_requires('log', 'datastore', 'cls_registry', 'config_manager', __name__)
+m_requires('log', 'datastore', 'config_manager', __name__)
 
 
 def convert_areas(source):
@@ -27,21 +26,24 @@ def convert_areas(source):
     return 'Convert Complete'
 
 
-def add_feature(source, feature_name):
-    if cls_registry(feature_name):
-        try:
-            create_object(FeatureTemplate, {'dbo_id': feature_name, 'instance_class_id': feature_name})
-        except ObjectExistsError:
-            return "Feature template already exists"
-        return "{} created.".format(feature_name)
-    else:
-        return "No appropriate feature class found"
-
-
 def add_display(source, display_key, display_desc, display_color):
     display_desc = unicode.title(display_desc.replace('_', ' '))
     config_manager.config.default_displays[display_key] = {'desc': display_desc, 'color': display_color}
     config_manager.save_config()
+
+
+def fix_subclasses(source):
+    for template_class in AttackTemplate, DefenseTemplate:
+        for dbo_key in fetch_set_keys(template_class.dbo_set_key):
+            raw_key = '{}:{}'.format(template_class.dbo_key_type, dbo_key)
+            class_raw = load_raw(raw_key)
+            try:
+                class_id = class_raw['class_id']
+                class_raw['sub_class_id'] = class_id
+                del class_raw['class_id']
+                save_raw(raw_key, class_raw)
+            except KeyError:
+                warn('No class id found in {}'.format(raw_key))
 
 
 def convert_directions(source):

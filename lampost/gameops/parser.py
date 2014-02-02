@@ -1,6 +1,7 @@
 import itertools
 
 from lampost.context.resource import m_requires
+from lampost.gameops.action import find_actions
 from lampost.gameops.target import TargetClass
 from lampost.util.lmutil import find_extra
 
@@ -19,10 +20,13 @@ AMBIGUOUS_COMMAND = "Ambiguous command"
 
 
 def all_actions(entity, verb):
-    actions = [action for action in itertools.chain.from_iterable(
-        [actions.get(verb, []) for actions in (entity.soul, entity.inven_actions, entity.env.actions)])]
-    if verb in mud_actions:
-        actions.append(mud_actions[verb])
+    actions = {action for action in itertools.chain.from_iterable(
+        [actions.get(verb, []) for actions in (entity.soul, entity.inven_actions)])}
+    try:
+        actions.add(mud_actions[verb])
+    except KeyError:
+        pass
+    actions.update(find_actions(verb, entity.env.action_providers))
     return actions
 
 
@@ -30,7 +34,7 @@ def has_action(entity, action, verb):
     return action in all_actions(entity, verb)
 
 
-def find_actions(entity, command):
+def entity_actions(entity, command):
     words = unicode(command).lower().split()
     matches = []
     for verb_size in range(1, len(words) + 1):
@@ -85,7 +89,7 @@ def capture_index(target_key):
 
 class Parse(object):
     def __init__(self, entity, command):
-        matches = find_actions(entity, command)
+        matches = entity_actions(entity, command)
         matches = entity.filter_actions(matches)
         self._entity = entity
         self._matches = matches

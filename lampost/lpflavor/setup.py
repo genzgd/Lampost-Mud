@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.env.feature import FeatureTemplate
+from lampost.lpflavor.feature.touchstone import Touchstone
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_settings
 
@@ -24,9 +24,7 @@ def first_time_setup():
 
 
 def first_room_setup(room):
-    touchstone_template = load_object(FeatureTemplate, 'touchstone')
-    touchstone = touchstone_template.create_instance(room)
-    room.features.append(touchstone)
+    room.features.append(Touchstone())
 
 
 def game_settings():

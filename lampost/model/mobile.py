@@ -5,17 +5,6 @@ from lampost.model.entity import Entity
 from lampost.model.item import target_keys
 
 
-class Mobile(Entity):
-
-    @property
-    def name(self):
-        return self.title
-
-    def detach(self):
-        super(Mobile, self).detach()
-        self.original_env.mobiles[self.template].remove(self)
-
-
 class MobileTemplate(Template):
     dbo_key_type = "mobile"
 
@@ -41,11 +30,24 @@ class MobileTemplate(Template):
         super(MobileTemplate, self).on_loaded()
 
 
+class Mobile(Entity):
+    template_id = 'mobile'
+
+    @property
+    def name(self):
+        return self.title
+
+    def detach(self):
+        super(Mobile, self).detach()
+        self.original_env.mobiles[self.template].remove(self)
+
+
 class MobileReset(RootDBO):
+    class_id = 'mobile_reset'
     mobile_id = DBOField()
     reset_count = DBOField(1)
     reset_max = DBOField(1)
-    article_loads = DBOField([], ArticleLoad)
+    article_loads = DBOField([], 'article_load')
 
     @property
     def reset_key(self):

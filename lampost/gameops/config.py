@@ -73,4 +73,3 @@ class Config(RootDBO):
     default_displays = DBOField({})
     server_settings = DBOField({})
     game_settings = DBOField({})
-

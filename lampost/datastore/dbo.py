@@ -1,20 +1,8 @@
-from collections import defaultdict
+from lampost.datastore.classes import set_dbo_class, get_dbo_class, add_sub_class
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoMeta, TemplateField, AutoField
 
-m_requires('log', 'datastore', 'cls_registry', __name__)
-
-dbo_field_classes = defaultdict(set)
-
-_init_priority = 10000
-
-
-def _post_init():
-    for class_id, dbo_fields in dbo_field_classes.iteritems():
-        dbo_class = cls_registry(class_id)
-        for dbo_field in dbo_fields:
-            dbo_field.dbo_class = dbo_class
-    dbo_field_classes.clear()
+m_requires('log', 'datastore', __name__)
 
 
 class RootDBOMeta(AutoMeta):
@@ -27,6 +15,13 @@ class RootDBOMeta(AutoMeta):
             except AttributeError:
                 pass
         cls._update_dbo_fields(new_attrs)
+        if 'class_id' in new_attrs:
+            set_dbo_class(cls.class_id, cls)
+        elif 'sub_class_id' in new_attrs:
+            set_dbo_class(cls.sub_class_id, cls)
+            add_sub_class(cls)
+        elif cls.dbo_key_type:
+            set_dbo_class(cls.dbo_key_type, cls)
 
     def _update_dbo_fields(cls, new_attrs):
         cls.dbo_fields.update({name: dbo_field for name, dbo_field in new_attrs.iteritems() if hasattr(dbo_field, 'hydrate_value')})
@@ -113,7 +108,7 @@ class RootDBO(object):
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
                 continue
-        return self.metafields(save_value, ['dbo_id', 'class_id'])
+        return self.metafields(save_value, ['dbo_id', 'sub_class_id'])
 
     def to_dto_dict(self):
         return
@@ -135,7 +130,7 @@ class RootDBO(object):
     def dto_value(self):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.viewitems()}
         dto_value['dbo_key_type'] = getattr(self, 'class_id', self.dbo_key_type)
-        return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_id'])
+        return self.metafields(dto_value, ['dbo_id', 'class_id', 'sub_class_id', 'template_id'])
 
     def autosave(self):
         save_object(self, autosave=True)
@@ -153,7 +148,7 @@ class DBOField(AutoField):
     def __init__(self, default=None, dbo_class_id=None):
         super(DBOField, self).__init__(default)
         if dbo_class_id:
-            dbo_field_classes[dbo_class_id].add(self)
+            self.dbo_class_id = dbo_class_id
             self.hydrate_value =  value_wrapper(self.default, False)(self.hydrate_dbo_value)
             self.convert_save_value = value_wrapper(self.default)(self.dbo_save_value)
             self.dto_value = value_wrapper(self.default)(self.dbo_dto_value)
@@ -162,14 +157,17 @@ class DBOField(AutoField):
             self.convert_save_value = lambda value: value
             self.dto_value = lambda value: value
 
+    def _dbo_class(self):
+        return get_dbo_class(self.dbo_class_id)
+
     def dbo_dto_value(self, dbo_value):
-        return self.dbo_class.to_dto_repr(dbo_value)
+        return self._dbo_class().to_dto_repr(dbo_value)
 
     def dbo_save_value(self, dbo_value):
-        return self.dbo_class.to_save_repr(dbo_value)
+        return self._dbo_class().to_save_repr(dbo_value)
 
     def hydrate_dbo_value(self, dto_repr, instance):
-        return self.dbo_class.load_ref(dto_repr, instance)
+        return self._dbo_class().load_ref(dto_repr, instance)
 
     def save_value(self, instance):
         value = self.convert_save_value(instance.__dict__[self.field])

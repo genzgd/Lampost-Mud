@@ -11,7 +11,7 @@ from lampost.setup.dbcontext import DbContext
 from lampost.setup.scripts import build_default_displays, build_default_settings
 from lampost.setup.settings import SERVER_SETTINGS_DEFAULT, GAME_SETTINGS_DEFAULT
 
-m_requires('datastore', 'cls_registry', 'dispatcher', 'perm', __name__)
+m_requires('datastore', 'dispatcher', 'perm', __name__)
 
 
 def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',

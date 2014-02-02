@@ -29,7 +29,9 @@ def inven(source, **ignored):
 
 
 class InvenContainer(BaseItem):
-    contents = DBOField([], Article)
+    class_id = 'container'
+
+    contents = DBOField([], 'article_inst')
 
     def __iter__(self):
         for item in self.contents:

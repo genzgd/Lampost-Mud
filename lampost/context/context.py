@@ -3,7 +3,6 @@ from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
 from lampost.comm.channel import ChannelService
 from lampost.comm.message import MessageService
-from lampost.context.classes import ClassRegistry
 from lampost.context.resource import provides, context_post_init
 from lampost.client.server import WebServer
 from lampost.context.scripts import select_json
@@ -28,7 +27,6 @@ class Context(object):
         self.properties = {}
         Log(log_level, log_file).info('starting server with {}'.format(locals()))
         select_json()
-        ClassRegistry()
         Tools()
         RedisStore(db_host, int(db_port), int(db_num), db_pw)
         Dispatcher()

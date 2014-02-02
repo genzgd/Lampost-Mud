@@ -5,12 +5,9 @@ import random
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.env.feature import Feature
 from lampost.env.movement import Direction
-from lampost.gameops.action import remove_actions, add_actions, add_action, remove_action
-from lampost.model.item import BaseItem
-from lampost.model.mobile import MobileReset, MobileTemplate
-from lampost.model.article import ArticleReset, ArticleTemplate
+from lampost.model.mobile import MobileTemplate
+from lampost.model.article import ArticleTemplate
 from lampost.gameops.display import *
 from lampost.mud.inventory import InvenContainer
 
@@ -27,8 +24,10 @@ def tell(listeners, msg_type, *args):
 
 
 class Exit(RootDBO):
+    class_id = 'exit'
+
     target_class = None
-    direction = DBOField(None, Direction)
+    direction = DBOField(None, 'direction')
     destination = DBOField(None, 'room')
     desc = DBOField()
     aliases = DBOField([])
@@ -63,11 +62,11 @@ class Room(RootDBO):
     dbo_rev = DBOField(0)
     desc = DBOField()
     size = DBOField(10)
-    exits = DBOField([], Exit)
-    extras = DBOField([], BaseItem)
-    mobile_resets = DBOField([], MobileReset)
-    article_resets = DBOField([], ArticleReset)
-    features = DBOField([], Feature)
+    exits = DBOField([], 'exit')
+    extras = DBOField([], 'base_item')
+    mobile_resets = DBOField([], 'mobile_reset')
+    article_resets = DBOField([], 'article_reset')
+    features = DBOField([], 'feature')
     title = DBOField()
 
     def __init__(self, dbo_id, title=None, desc=None):
@@ -77,8 +76,10 @@ class Room(RootDBO):
         self.inven = InvenContainer()
         self.denizens = []
         self.mobiles = defaultdict(set)
-        self.actions = defaultdict(set)
-        self.targets = set()
+
+    @property
+    def action_providers(self):
+        return itertools.chain(self.features, self.exits, self.denizens, self.inven)
 
     @property
     def dbo_set_key(self):
@@ -110,7 +111,6 @@ class Room(RootDBO):
         except AttributeError:
             pass
         self.denizens.append(entity)
-        add_action(self.actions, entity)
         tell(self.contents, "rec_entity_enter_env", entity)
 
     def entity_leaves(self, entity, ex):
@@ -120,16 +120,13 @@ class Room(RootDBO):
         except AttributeError:
             pass
         self.denizens.remove(entity)
-        remove_action(self.actions, entity)
         tell(self.contents, "rec_entity_leave_env", entity, ex)
 
     def add_inven(self, article):
         self.inven.append(article)
-        add_action(self.actions, article)
 
     def remove_inven(self, article):
         self.inven.remove(article)
-        remove_action(self.actions, article)
 
     def rec_broadcast(self, broadcast):
         if not broadcast:
@@ -210,9 +207,3 @@ class Room(RootDBO):
             if article_load.load_type == "equip":
                 instance.equip_article(article)
             instance.enter_env(self)
-
-
-    def on_loaded(self):
-        super(Room, self).on_loaded()
-        add_actions(self.actions, self.features)
-        add_actions(self.actions, self.exits)

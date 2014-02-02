@@ -1,9 +1,5 @@
-from lampost.env.feature import FeatureTemplate
 from lampost.env.movement import Direction
 from lampost.env.room import Room
-from lampost.gameops.template import template_class
-from lampost.model.article import ArticleTemplate, Article
-from lampost.model.mobile import MobileTemplate, Mobile
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.mud.action import imm_actions
 from lampost.context.resource import requires, m_requires, register_module
@@ -16,7 +12,7 @@ __import__('lampost.comm.chat')
 __import__('lampost.mud.inventory')
 __import__('lampost.mud.socials')
 
-m_requires('log', 'cls_registry', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)
+m_requires('log', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)
 
 
 @requires('context', 'config_manager')
@@ -34,10 +30,6 @@ class MudNature():
         self.context.set('broadcast_types', broadcast_types)
         self.context.set('broadcast_tokens', broadcast_tokens)
         self.context.set('directions', Direction.ordered)
-
-        template_class(ArticleTemplate, Article)
-        template_class(MobileTemplate, Mobile)
-        cls_registry.set_class('feature', FeatureTemplate)
 
         register('game_settings', self._game_settings)
         register('player_connect', self._player_connect)

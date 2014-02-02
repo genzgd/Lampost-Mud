@@ -1,12 +1,13 @@
 from weakref import WeakValueDictionary
 from redis import ConnectionPool
 from redis.client import StrictRedis
+from lampost.datastore.classes import get_dbo_class
 from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 
 from lampost.util.lmlog import logged
-from lampost.context.resource import requires, provides, m_requires
+from lampost.context.resource import provides, m_requires
 
-m_requires('log', 'json_encode', 'json_decode', 'cls_registry', __name__)
+m_requires('log', 'json_encode', 'json_decode', __name__)
 
 
 @provides('datastore', export_methods=True)
@@ -16,8 +17,8 @@ class RedisStore():
         self.redis = StrictRedis(connection_pool=pool)
         self._object_map = WeakValueDictionary()
 
-    def create_object(self, base_class, dbo_dict):
-        dbo_class = cls_registry(dbo_dict.get('class_id', base_class))
+    def create_object(self, dbo_class, dbo_dict):
+        dbo_class = get_dbo_class(dbo_dict.get('sub_class_id', dbo_class.dbo_key_type))
         dbo_id = dbo_dict['dbo_id']
         if self.object_exists(dbo_class.dbo_key_type, dbo_id):
             raise ObjectExistsError(dbo_id)
@@ -53,7 +54,7 @@ class RedisStore():
         return self._object_map.get(unicode('{0}:{1}'.format(key_type, key)))
 
     @logged
-    def load_by_key(self, key_type, key, base_class=None):
+    def load_by_key(self, key_type, key):
         dbo_key = unicode('{0}:{1}'.format(key_type, key))
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
@@ -63,7 +64,7 @@ class RedisStore():
             warn("Failed to find {} in database".format(dbo_key))
             return None
         dbo_dict = json_decode(json_str)
-        dbo_cls = cls_registry(dbo_dict.get('class_id', base_class))
+        dbo_cls = get_dbo_class(dbo_dict.get('sub_class_id', key_type))
         dbo = dbo_cls(key)
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
@@ -73,7 +74,7 @@ class RedisStore():
         return self.redis.exists(unicode('{}:{}'.format(obj_type, obj_id)))
 
     def load_object(self, dbo_class, key):
-        return self.load_by_key(dbo_class.dbo_key_type, key, dbo_class)
+        return self.load_by_key(dbo_class.dbo_key_type, key)
 
     def load_object_set(self, dbo_class, set_key=None):
         if not set_key:

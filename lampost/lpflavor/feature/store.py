@@ -6,8 +6,10 @@ from lampost.mud.inventory import InvenContainer
 
 
 class Store(Feature):
+    sub_class_id = 'store'
+
     currency = DBOField()
-    inven = DBOField(InvenContainer(), InvenContainer)
+    inven = DBOField(InvenContainer(), 'container')
     title = DBOField('Vending Machine')
     desc = DBOField("A rickety vending machine.  It looks like you can both buy and sell pretty much anything here.")
 

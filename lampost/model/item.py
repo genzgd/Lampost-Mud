@@ -1,13 +1,11 @@
 import math
-import itertools
 
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, RootDBOMeta, DBOTField
+from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField
-from lampost.gameops.action import item_action, make_action
+from lampost.gameops.action import item_action
 from lampost.gameops.display import TELL_TO_DISPLAY
-from lampost.gameops.target import im_self_finder
-from lampost.gameops.template import TemplateInstance
+from lampost.gameops.template import TemplateInstance, TemplateMeta
 
 m_requires('dispatcher', __name__)
 
@@ -33,7 +31,7 @@ def target_keys(item):
     return target_keys
 
 
-class BaseItemMeta(RootDBOMeta):
+class BaseItemMeta(TemplateMeta):
     def __init__(cls, class_name, bases, new_attrs):
         super(BaseItemMeta, cls).__init__(class_name, bases, new_attrs)
         cls._class_providers = {func.func_name for func in new_attrs.viewvalues() if hasattr(func, 'verbs')}
@@ -43,6 +41,8 @@ class BaseItemMeta(RootDBOMeta):
 
 class BaseItem(TemplateInstance):
     __metaclass__ = BaseItemMeta
+    class_id = 'base_item'
+
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])
@@ -83,6 +83,9 @@ class BaseItem(TemplateInstance):
     def rec_social(self, social):
         pass
 
+    def leave_env(self):
+        pass
+
     def detach(self):
         self.leave_env()
         detach_events(self)
@@ -93,6 +96,8 @@ class BaseItem(TemplateInstance):
 
 
 class Readable(BaseItem):
+    class_id = 'readable'
+
     text = DBOField('')
 
     @item_action()

@@ -24,18 +24,16 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
         angular.forEach(constants.directions, function (dir) {
           dirMap[dir.key] = dir;
         });
+        $scope.features = constants.features;
+        if ($scope.features.length) {
+          $scope.newFeature = $scope.features[0];
+        }
       });
       angular.forEach(cacheKeys, function (key) {
         lmEditor.deref(key);
       });
       cacheKeys = [];
       var editPromises = [];
-      editPromises.push(lmEditor.cache('features').then(function (features) {
-        $scope.features = features;
-        if (features.length) {
-          $scope.newFeature = features[0];
-        }
-      }));
       angular.forEach(room.exits, function (exit) {
         editPromises.push(addRef('room', exit.destination));
       });
@@ -190,7 +188,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.addFeature = function () {
-      var feature = {template_id: $scope.newFeature.dbo_id};
+      var feature = {sub_class_id: $scope.newFeature};
       $scope.model.features.push(feature);
     };
 

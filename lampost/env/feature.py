@@ -1,27 +1,25 @@
+from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
-from lampost.gameops.template import Template, TemplateInstance
-from lampost.model.item import BaseItem, target_keys
+from lampost.model.item import BaseItem
 
-
-m_requires('cls_registry', __name__)
-
-
-class FeatureTemplate(Template):
-    dbo_set_key = 'features'
-    dbo_key_type = 'feature'
-
-    instance_class_id = DBOField()
-
-    def on_loaded(self):
-        self.instance_cls = cls_registry(self.instance_class_id)
-
-    def config_instance(self, instance, room):
-        target_keys(instance)
-        instance.room = room
+m_requires('log', __name__)
 
 
 class Feature(BaseItem):
-    template_cls = FeatureTemplate
+    class_id = 'feature'
 
-
+    @classmethod
+    def load_ref(cls, dbo_repr, owner=None):
+        try:
+            feature_cls = get_dbo_class(dbo_repr['sub_class_id'])
+        except KeyError:
+            error("Feature missing subclass id {} in room {}".format(dbo_repr, owner.dbo_id))
+            return
+        feature = feature_cls()
+        feature.room = owner
+        feature.hydrate(dbo_repr)
+        try:
+            feature.on_created()
+        except AttributeError:
+            pass
+        return feature

@@ -12,10 +12,11 @@ m_requires('dispatcher', 'datastore', 'config_manager', __name__)
 
 
 class PlayerLP(Player, EntityLP):
+    dbo_key_type = 'player'
 
     race = DBOField('human')
     affinity = 'player'
-    skills = DBOField({}, BaseSkill)
+    skills = DBOField({}, 'skill_inst')
     touchstone = DBOField()
     can_die = True
 

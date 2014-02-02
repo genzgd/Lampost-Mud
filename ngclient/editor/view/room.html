@@ -54,14 +54,14 @@
       <table style="width: 95%">
         <tbody>
           <tr class="table-bordered" ng-repeat="feature in model.features">
-            <td style="width: 80%">{{feature.template_id}}</td>
+            <td style="width: 80%">{{feature.sub_class_id}}</td>
             <td style="width: 20%"><a title="Remove Feature" ng-click="removeFeature(feature)" class="icon-link"><i class="icon-remove"></i></a></td>
           </tr>
         </tbody>
       </table>
       <div class="spacer" ng-show="features">
         <button type="button" ng-click="addFeature()" class="btn btn-small btn-success">Add</button>
-          <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature.dbo_id for feature in features">
+          <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature for feature in features">
         </select>
       </div>
       </div>

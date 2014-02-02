@@ -77,11 +77,11 @@ def validate_dam_type(ability, damage_type):
 
 def calc_consider(entity):
     try:
-        best_attack = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.skill_type == 'attack'])
+        best_attack = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.template_id == 'attack'])
     except ValueError:
         best_attack = 0
     try:
-        best_defense = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.skill_type == 'defense'])
+        best_defense = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.template_id == 'defense'])
     except ValueError:
         best_defense = 0
     pool_levels = sum(getattr(entity, base_pool_id, 0) for pool_id, base_pool_id in POOL_LIST)
@@ -119,13 +119,13 @@ class Attack(RootAuto):
 
 
 class AttackTemplate(SkillTemplate):
+    class_id = 'attack'
     dbo_set_key = 'attacks'
-
-    class_id = DBOField('attack')
 
 
 class AttackSkill(BaseSkill):
-    skill_type = 'attack'
+    template_id = 'attack'
+
     target_class = [TargetClass.ENV_LIVING]
 
     display = COMBAT_DISPLAY
@@ -168,9 +168,8 @@ class AttackSkill(BaseSkill):
 
 
 class DefenseTemplate(SkillTemplate):
+    class_id = 'defense'
     dbo_set_key = 'defenses'
-
-    class_id = DBOField('defense')
 
     def on_loaded(self):
         super(DefenseTemplate, self).on_loaded()
@@ -183,7 +182,7 @@ class DefenseTemplate(SkillTemplate):
 
 
 class DefenseSkill(BaseSkill):
-    skill_type = 'defense'
+    template_id = 'defense'
 
     target_class = [TargetClass.ENV_LIVING]
     damage_type = DBOTField(['physical'])

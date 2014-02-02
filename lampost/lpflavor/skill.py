@@ -48,7 +48,7 @@ class SkillTemplate(Template):
 
 
 class BaseSkill(TemplateInstance):
-    template_cls = SkillTemplate
+    template_id = 'skill'
 
     verb = DBOTField()
     desc = DBOTField()

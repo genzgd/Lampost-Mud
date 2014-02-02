@@ -1,9 +1,9 @@
-from lampost.context.resource import provides, context_post_init
+from lampost.context.resource import provides
 from lampost.context.scripts import select_json
 from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.event import Dispatcher
 from lampost.util.lmlog import Log
-from lampost.context.classes import ClassRegistry
+from lampost.datastore.classes import ClassRegistry
 
 
 @provides('context')

@@ -34,7 +34,7 @@ class ArticleTemplate(Template):
 
 
 class Article(BaseItem):
-    template_class = ArticleTemplate
+    template_id  = 'article'
 
     weight = DBOTField(0)
     divisible = DBOTField(False)
@@ -122,6 +122,7 @@ class Article(BaseItem):
 
 
 class ArticleReset(RootDBO):
+    class_id = 'article_reset'
     article_id = DBOField()
     reset_count = DBOField(1)
     reset_max = DBOField(1)
@@ -132,6 +133,7 @@ class ArticleReset(RootDBO):
 
 
 class ArticleLoad(RootDBO):
+    class_id = 'article_load'
     article_id = DBOField()
     count = DBOField(1)
     load_type = DBOField('equip')

@@ -117,6 +117,17 @@ def remove_action(action_set, action):
             debug("Trying to remove non-existent action {}".format(verb))
 
 
+def find_actions(verb, action_set):
+    for action in action_set:
+        try:
+            if verb in action.verbs:
+                yield action
+        except AttributeError:
+            pass
+        for sub_action in find_actions(verb, getattr(action, 'action_providers', [])):
+            yield sub_action
+
+
 def remove_actions(action_set, actions):
     for action in actions:
         remove_action(action_set, action)

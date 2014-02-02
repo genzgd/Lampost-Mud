@@ -6,7 +6,6 @@ from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, parse_actions, has_action
-from lampost.model.article import Article
 from lampost.model.item import BaseItem
 from lampost.mud.inventory import InvenContainer
 
@@ -15,7 +14,7 @@ m_requires('log', __name__)
 
 class Entity(BaseItem):
     size = DBOTField('medium')
-    inven = DBOField(InvenContainer(), InvenContainer)
+    inven = DBOField(InvenContainer(), 'container')
 
     status = 'ok'
     living = True

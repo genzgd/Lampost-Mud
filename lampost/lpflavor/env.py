@@ -14,6 +14,7 @@ def find_cost(room):
 
 
 class ExitLP(Exit):
+    class_id = 'exit'
     prep_time = 1
 
     def prepare_action(self, source, **ignored):

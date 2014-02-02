@@ -1,15 +1,16 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
+from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.editor.base import EditResource
 from lampost.env.movement import Direction
-from lampost.env.room import Room, Exit
+from lampost.env.room import Room
 from lampost.model.area import Area
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 
-m_requires('datastore', 'log', 'perm', 'dispatcher', 'cls_registry', 'edit_update_service',  __name__)
+m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager',  __name__)
 
 
 class AreaResource(EditResource):
@@ -62,13 +63,10 @@ class RoomResource(EditResource):
 
     def pre_update(self, room, session):
         check_perm(session, parent_area(room))
-        room.update_contents = save_contents(room)
         clear_resets(room)
 
     def post_update(self, room, session):
-        restore_contents(room, room.update_contents)
         add_resets(room)
-        del room.update_contents
 
     def pre_delete(self, room, session):
         check_perm(session, parent_area(room))
@@ -95,21 +93,17 @@ class CreateExit(Resource):
             other_area, other_room = find_area_room(other_id, session)
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
-        contents = save_contents(room)
-        this_exit = cls_registry(Exit)()
+        this_exit = get_dbo_class('exit')()
         this_exit.direction = new_dir
         this_exit.destination = other_room
         room.exits.append(this_exit)
         save_object(room)
-        restore_contents(room, contents)
         publish_edit('update', room, session)
         if not content.one_way:
-            other_contents = save_contents(other_room)
-            other_exit = cls_registry(Exit)()
+            other_exit = get_dbo_class('exit')()
             other_exit.direction = rev_dir
             other_exit.destination = room
             other_room.exits.append(other_exit)
-            restore_contents(other_room, other_contents)
             save_object(other_room)
             publish_edit('update', other_room, session, True)
         return this_exit.dto_value
@@ -123,10 +117,8 @@ class DeleteExit(Resource):
         local_exit = room.find_exit(direction)
         if not local_exit:
             raise DataError('Exit does not exist')
-        contents = save_contents(room)
         room.exits.remove(local_exit)
         save_object(room)
-        restore_contents(room, contents)
 
         if content.both_sides:
             other_room = local_exit.destination
@@ -179,17 +171,25 @@ def parent_area(child):
 
 
 def room_clean_up(room, session, area_delete=None):
-    save_contents(room)
     for my_exit in room.exits:
         other_room = my_exit.destination
         if other_room and other_room.area_id != area_delete:
             for other_exit in other_room.exits:
                 if other_exit.destination == room:
-                    other_contents = save_contents(other_room)
                     other_room.exits.remove(other_exit)
                     save_object(other_room, True)
-                    restore_contents(other_room, other_contents)
                     publish_edit('update', other_room, session, True)
+    for denizen in room.denizens:
+        if hasattr(denizen, 'rec_player'):
+            denizen.display_line('You were in a room that was destroyed by some unknown force')
+            safe_room = load_object(Room, config_manager.start_room)
+            if not safe_room:
+                safe_room = Room("Safe Room", "A temporary safe room when room deleted")
+            denizen.change_env(safe_room)
+        else:
+            denizen.die()
+    for thing in [thing for thing in room.contents if hasattr(thing, 'detach')]:
+        thing.detach()
     if not area_delete:
         try:
             parent_area(room).rooms.pop(room.dbo_id)
@@ -209,18 +209,3 @@ def clear_resets(room):
         delete_set_key(mobile_reset.reset_key, room.dbo_id)
     for article_reset in room.article_resets:
         delete_set_key(article_reset.reset_key, room.dbo_id)
-
-
-def save_contents(start_room):
-    safe_room = Room("safe_room", "A Temporary Safe Room")
-    contents = []
-    for entity in list(start_room.contents)[:]:
-        if hasattr(entity, 'change_env'):
-            entity.change_env(safe_room)
-            contents.append(entity)
-    return contents
-
-
-def restore_contents(room, contents):
-    for entity in contents:
-        entity.change_env(room)
