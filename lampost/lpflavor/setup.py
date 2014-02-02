@@ -19,7 +19,6 @@ GAME_SETTINGS = {'refresh_interval': {'desc': 'Time between entity refreshes (in
 
 def first_time_setup():
     create_object(PlayerRace, {'dbo_id': 'human', 'name': 'Human'})
-    create_object(FeatureTemplate, {'dbo_id': 'touchstone', 'instance_class_id': 'touchstone'})
     game_settings()
 
 

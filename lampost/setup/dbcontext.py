@@ -3,7 +3,6 @@ from lampost.context.scripts import select_json
 from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.event import Dispatcher
 from lampost.util.lmlog import Log
-from lampost.datastore.classes import ClassRegistry
 
 
 @provides('context')
@@ -13,7 +12,6 @@ class DbContext(object):
 
         Log(log_level, log_file)
         select_json()
-        ClassRegistry()
         Dispatcher()
         RedisStore(db_host, int(db_port), int(db_num), db_pw)
 
