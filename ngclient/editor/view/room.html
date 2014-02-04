@@ -55,7 +55,8 @@
         <tbody>
           <tr class="table-bordered" ng-repeat="feature in model.features">
             <td style="width: 80%">{{feature.sub_class_id}}</td>
-            <td style="width: 20%"><a title="Remove Feature" ng-click="removeFeature(feature)" class="icon-link"><i class="icon-remove"></i></a></td>
+            <td style="width: 20%"><a title="Remove Feature" ng-click="removeFeature(feature)" class="icon-link"><i class="icon-remove"></i></a>
+              <a ng-show="availFeatures[feature.sub_class_id]" title="Edit Feature" ng-click="editFeature(feature)" class="icon-link"><i class="icon-wrench"></i></a></td>
           </tr>
         </tbody>
       </table>

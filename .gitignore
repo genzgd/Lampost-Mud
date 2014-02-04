@@ -2,3 +2,4 @@
 *.idea
 src_ext
 data
+ngclient/local_lib
