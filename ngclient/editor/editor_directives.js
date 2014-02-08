@@ -230,21 +230,65 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   }
 }]);
 
-angular.module('lampost_editor').directive('lmFormSubmit', [function() {
+angular.module('lampost_editor').directive('lmFormSubmit', [function () {
   return {
-        restrict:'A',
-        link:function (scope, element, attrs) {
-            element.bind('keypress', function (event) {
-                if (event.keyCode == 13) {
-                    event.preventDefault();
-                    this.form.submit();
-                    return false;
-                }
-                return true;
-            })
+    restrict: 'A',
+    link: function (scope, element, attrs) {
+      element.bind('keypress', function (event) {
+        if (event.keyCode == 13) {
+          event.preventDefault();
+          this.form.submit();
+          return false;
         }
+        return true;
+      })
+    }
   }
 }]);
+
+angular.module('lampost_editor').controller('lmAreaSelectorController', ['$scope', 'lmEditor', 'lmBus',
+  function ($scope, lmEditor, lmBus) {
+
+  var listKey;
+
+  $scope.$on('$destroy', function () {
+    lmEditor.deref(listKey)
+  });
+
+   lmBus.register('activateArea', function (newArea, oldArea) {
+      if (newArea) {
+        $scope.selectArea(newArea);
+      } else if (oldArea == $scope.selectedArea) {
+        $scope.selectArea(areaList[0]);
+      }
+  });
+
+  $scope.areaList = [];
+
+  lmEditor.cache('area').then(function (areas) {
+    $scope.selectAreaList = areas;
+    if ($scope.startArea) {
+      $scope.area = $scope.startArea;
+    } else {
+      $scope.area = areas[0];
+    }
+    $scope.selectArea($scope.area);
+  });
+
+  $scope.selectArea = function (selectedArea) {
+    $scope.areaChange($scope.area);
+    lmEditor.deref(listKey);
+    $scope.selectedArea = selectedArea;
+    $scope.selectedAreaId = selectedArea.dbo_id;
+    listKey = $scope.objType + ':' + $scope.selectedAreaId;
+    lmEditor.cache(listKey).then(function (objects) {
+      $scope.listChange(objects);
+
+    });
+  };
+
+}]);
+
 
 angular.module('lampost_editor').controller('objectSelectorController', ['$scope', 'lmEditor', 'lmBus',
   function ($scope, lmEditor, lmBus) {
@@ -254,7 +298,7 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
 
     $scope.areaList = [];
 
-    lmBus.register('activateArea', function(newArea, oldArea) {
+    lmBus.register('activateArea', function (newArea, oldArea) {
       if (newArea) {
         $scope.selectArea(newArea);
       } else if (oldArea == $scope.selectedArea) {
@@ -284,7 +328,7 @@ angular.module('lampost_editor').controller('objectSelectorController', ['$scope
       lmEditor.deref(listKey);
       $scope.selectedArea = selectedArea;
       $scope.selectedAreaId = selectedArea.dbo_id;
-      listKey = obj_type + ':' +  $scope.selectedAreaId;
+      listKey = obj_type + ':' + $scope.selectedAreaId;
       lmEditor.cache(listKey).then(function (objects) {
         $scope.selectObjectList = objects;
         $scope.selectedObject = objects[0];

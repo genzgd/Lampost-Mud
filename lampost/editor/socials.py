@@ -16,11 +16,11 @@ class SocialsResource(EditResource):
         self.putChild('preview', SocialPreview())
 
     def pre_create(self, social_dto, session):
-        if mud_actions.verb_list((social_dto['dbo_id'],)):
+        if (social_dto['dbo_id'],) in mud_actions:
             raise DataError("Verb already in use")
 
     def post_delete(self, social, session):
-        mud_actions.rem_verb(social.dbo_id, social)
+        del mud_actions[(social.dbo_id,)]
 
 
 class SocialPreview(Resource):

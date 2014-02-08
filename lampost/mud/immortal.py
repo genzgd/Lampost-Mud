@@ -129,15 +129,18 @@ def force(source, target, obj, **ignored):
     target.parse(force_cmd)
 
 
-@imm_action('unmake', 'general')
+@imm_action('unmake', 'general', target_class="env_living env_items")
 def unmake(source, target, **ignored):
-    if target.env == source.env:
+    if hasattr(target, 'rec_player'):
+        raise ActionError("You can't unmake players")
+    if target in source.env.inven:
         source.broadcast(s="{N} is no more.", target=target)
+        source.env.remove_inven(target)
+        target.detach()
+    elif target in source.env.denizens:
+        source.broadcast(s="{N} is unmade", target=target)
         target.leave_env()
         target.detach()
-        del target
-    else:
-        return "Can only unmake things in the room."
 
 
 @imm_action('toggle mortal', 'has_immortal',  self_target=True)

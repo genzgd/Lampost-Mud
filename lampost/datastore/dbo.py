@@ -51,7 +51,10 @@ class RootDBO(object):
         try:
             return value.dbo_id
         except AttributeError:
-            return value.dto_value
+            try:
+                return value.dto_value
+            except AttributeError:
+                return None
 
     @classmethod
     def to_save_repr(cls, value):

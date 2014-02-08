@@ -42,12 +42,9 @@ def help_action(source, args, **ignored):
             action_verbs[action].append(" ".join(list(verb)))
         verb_lists = ["/".join(verbs) for verbs in action_verbs.viewvalues()]
         return source.display_line(", ".join(sorted(verb_lists)))
-    action_set = source.actions.get(args)
-    if not action_set:
+    action = _mud_actions.get(args, None)
+    if not action:
         raise ActionError("No matching command found")
-    if len(action_set) > 1:
-        raise ActionError("Multiple matching commands")
-    action = iter(action_set).next()
     return getattr(action, "help_text", "No help available.")
 
 

@@ -19,7 +19,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       $scope.activateArea(room.dbo_id.split(':')[0]);
       $scope.currentExtra = null;
       $scope.extraDisplay = 'desc';
-      $scope.availFeatures = {}
+
 
       lmEditor.cache("constants").then(function (constants) {
         angular.forEach(constants.directions, function (dir) {
@@ -29,15 +29,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
         if ($scope.features.length) {
           $scope.newFeature = $scope.features[0];
         }
-        angular.forEach($scope.features, function(feature) {
-          try {
-          var controller = $controller(feature + "FeatureController");
-          if (controller) {
-            $scope.availFeatures[feature] = feature;
-            }
-          }catch(err) {
-          }
-        })
       });
       angular.forEach(cacheKeys, function (key) {
         lmEditor.deref(key);
@@ -77,6 +68,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     this.preCreate = function (newModel) {
       newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
     };
+
+    $scope.availFeatures = {store: 'store'};
 
     $scope.visitRoom = function () {
       lmRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id});
@@ -209,8 +202,9 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.editFeature = function(feature) {
-
-    }
+      lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
+        locals: {room: $scope.model, feature: feature}});
+    };
 
   }]);
 

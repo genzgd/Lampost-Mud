@@ -1,8 +1,9 @@
 import math
+import itertools
 
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, DBOTField
-from lampost.datastore.auto import TemplateField
+from lampost.datastore.auto import TemplateField, AutoField
 from lampost.gameops.action import item_action
 from lampost.gameops.display import TELL_TO_DISPLAY
 from lampost.gameops.template import TemplateInstance, TemplateMeta
@@ -34,9 +35,9 @@ def target_keys(item):
 class BaseItemMeta(TemplateMeta):
     def __init__(cls, class_name, bases, new_attrs):
         super(BaseItemMeta, cls).__init__(class_name, bases, new_attrs)
-        cls._class_providers = {func.func_name for func in new_attrs.viewvalues() if hasattr(func, 'verbs')}
+        cls.class_providers = {func.func_name for func in new_attrs.viewvalues() if hasattr(func, 'verbs')}
         for base in bases:
-            cls._class_providers.update(getattr(base, '_class_providers', ()))
+            cls.class_providers.update(getattr(base, 'class_providers', ()))
 
 
 class BaseItem(TemplateInstance):
@@ -48,6 +49,7 @@ class BaseItem(TemplateInstance):
     aliases = DBOTField([])
     sex = DBOTField('none')
     target_keys = TemplateField(set())
+    instance_providers = AutoField([])
 
     living = False
     env = None
@@ -55,9 +57,12 @@ class BaseItem(TemplateInstance):
     rec_general = True
 
     def __init__(self, dbo_id=None):
-        self.action_providers = [getattr(self, func_name) for func_name in self._class_providers]
         self.target_providers = []
         super(BaseItem, self).__init__(dbo_id)
+
+    @property
+    def action_providers(self):
+        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.instance_providers)
 
     def target_finder(self, entity, target_key):
         if target_key in self.target_keys:

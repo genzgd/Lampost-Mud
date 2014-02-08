@@ -23,6 +23,11 @@ class ArticleTemplate(Template):
     def reset_key(self):
         return "article_resets:{}".format(self.dbo_id)
 
+    def plural_name(self, quantity):
+        if quantity == 1:
+            return self.title
+        return self.plural_title
+
     def on_loaded(self):
         self.single_keys = target_keys(self)
         if self.divisible:
@@ -37,6 +42,7 @@ class Article(BaseItem):
     template_id  = 'article'
 
     weight = DBOTField(0)
+    value = DBOTField(0)
     divisible = DBOTField(False)
     equip_slot = DBOTField('none')
     art_type = DBOTField('treasure')
@@ -60,7 +66,7 @@ class Article(BaseItem):
             prefix = "an" if self.title[0] in VOWELS else "a"
             title = self.title
         equipped = ' (equipped)' if self.current_slot else ''
-        return "{} {}.{}".format(prefix, title,  equipped)
+        return "{} {}{}".format(prefix, title,  equipped)
 
     @property
     def target_keys(self):
@@ -93,7 +99,11 @@ class Article(BaseItem):
         source.check_drop(self, quantity)
         if self.current_slot:
             raise ActionError("You must unequip the item before dropping it.")
+        drop = self.take_from(source, quantity)
+        drop.enter_env(source.env)
+        source.broadcast(s="You drop {N}", e="{n} drops {N}", target=drop)
 
+    def take_from(self, source, quantity):
         if quantity and quantity < self.quantity:
             self.quantity -= quantity
             drop = self.template.create_instance()
@@ -101,8 +111,7 @@ class Article(BaseItem):
         else:
             drop = self
             source.remove_inven(self)
-        drop.enter_env(source.env)
-        source.broadcast(s="You drop {N}", e="{n} drops {N}", target=drop)
+        return drop
 
     def enter_env(self, new_env):
         if self.quantity:
