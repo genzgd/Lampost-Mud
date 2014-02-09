@@ -21,7 +21,7 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
   };
 
   $scope.updateCurrency = function() {
-    if ($scope.newCurrency == noCurrency) {
+    if ($scope.newCurrency == noCurrency.dbo_id) {
       $scope.store.currency = null;
     } else {
       $scope.store.currency = $scope.newCurrency;
