@@ -1,7 +1,6 @@
-from collections import defaultdict
 from lampost.client.services import ClientService
 from lampost.gameops.action import make_action
-from lampost.context.resource import m_requires, provides, requires
+from lampost.context.resource import m_requires, provides
 from lampost.util.lmutil import timestamp
 
 m_requires('dispatcher', 'datastore', 'channel_service', __name__)

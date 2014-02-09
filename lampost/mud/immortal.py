@@ -1,5 +1,4 @@
 from lampost.gameops.display import TELL_TO_DISPLAY
-from lampost.gameops.parser import find_targets
 import lampost.setup.update
 
 from lampost.client.user import User

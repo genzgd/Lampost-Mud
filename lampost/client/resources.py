@@ -1,8 +1,6 @@
 import cgi
 import inspect
 
-from datetime import datetime
-
 from twisted.web.resource import Resource, NoResource
 from twisted.web.server import NOT_DONE_YET
 from lampost.datastore.exceptions import DataError

@@ -1,8 +1,4 @@
-import copy
-
-from collections import defaultdict
 from lampost.context.resource import m_requires, provides
-from lampost.util.lmutil import StateError
 
 m_requires('log', 'session_manager', 'dispatcher', 'perm', __name__)
 

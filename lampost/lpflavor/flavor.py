@@ -1,21 +1,11 @@
 import sys
+
 from lampost.datastore.dbo import DBOField
-from lampost.env.room import Exit, Room
 from lampost.lpflavor import setup
-from lampost.lpflavor.archetype import PLayerRaceLP
-from lampost.lpflavor.article import ArticleLP, ArticleTemplateLP
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
     fill_pools, base_pools, POOL_MAP
-from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, DefenseTemplate, AttackTemplate, DefenseSkill, AttackSkill, WEAPON_TYPES
-from lampost.lpflavor.env import ExitLP
-from lampost.lpflavor.feature.store import Store
-from lampost.lpflavor.mobile import MobileLP, MobileTemplateLP
+from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, WEAPON_TYPES
 from lampost.lpflavor.skill import add_skill
-from lampost.lpflavor.feature.touchstone import Touchstone
-from lampost.model.area import Area
-from lampost.model.article import Article, ArticleTemplate
-from lampost.model.mobile import Mobile, MobileTemplate
-from lampost.model.player import Player
 from lampost.lpflavor.player import PlayerLP
 
 from lampost.context.resource import m_requires
@@ -27,6 +17,11 @@ equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms'
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
 
 equip_types = ['armor', 'shield', 'weapon', 'treasure']
+
+__import__('lampost.lpflavor.env')
+__import__('lampost.lpflavor.mobile')
+__import__('lampost.lpflavor.archetype')
+__import__('lampost.lpflavor.feature', globals(), locals(), ['store', 'touchstone'])
 
 
 def _post_init():

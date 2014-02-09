@@ -20,6 +20,7 @@ def _post_init():
 
 
 class MobileTemplateLP(MobileTemplate):
+    dbo_key_type = 'mobile'
     default_skills = DBOField({})
 
     def on_loaded(self):

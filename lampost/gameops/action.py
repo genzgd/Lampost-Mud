@@ -1,9 +1,7 @@
 import inspect
-import copy
 
-from types import MethodType
 from lampost.context.resource import m_requires
-from lampost.gameops.target import TargetClass, make_target_class, im_self_finder
+from lampost.gameops.target import TargetClass, make_target_class
 from lampost.util.lmutil import PermError
 
 m_requires('log', __name__)

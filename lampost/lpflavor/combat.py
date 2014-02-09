@@ -1,6 +1,6 @@
 from __future__ import division
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.dbo import DBOTField
 from lampost.datastore.auto import RootAuto, TemplateField
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
@@ -119,8 +119,7 @@ class Attack(RootAuto):
 
 
 class AttackTemplate(SkillTemplate):
-    class_id = 'attack'
-    dbo_set_key = 'attacks'
+    sub_class_id = 'attack'
 
 
 class AttackSkill(BaseSkill):
@@ -168,8 +167,7 @@ class AttackSkill(BaseSkill):
 
 
 class DefenseTemplate(SkillTemplate):
-    class_id = 'defense'
-    dbo_set_key = 'defenses'
+    sub_class_id = 'defense'
 
     def on_loaded(self):
         super(DefenseTemplate, self).on_loaded()

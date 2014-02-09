@@ -1,5 +1,5 @@
 from lampost.comm.broadcast import BroadcastMap
-from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.dbo import DBOTField
 from lampost.datastore.auto import TemplateField
 from lampost.model.article import Article, ArticleTemplate
 from lampost.mud.action import mud_action

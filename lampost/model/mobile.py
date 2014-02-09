@@ -1,6 +1,5 @@
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.template import Template
-from lampost.model.article import ArticleLoad
 from lampost.model.entity import Entity
 from lampost.model.item import target_keys
 

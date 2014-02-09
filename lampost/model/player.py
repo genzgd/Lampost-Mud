@@ -1,6 +1,5 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.model.article import Article
 
 m_requires('log', 'dispatcher', __name__)
 

@@ -3,7 +3,6 @@ from lampost.datastore.dbo import DBOField
 from lampost.env.room import Room
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 from lampost.lpflavor.entity import EntityLP
-from lampost.lpflavor.skill import SkillTemplate, BaseSkill
 
 from lampost.model.player import Player
 

@@ -3,7 +3,6 @@ from random import randint
 from twisted.internet import task
 
 from lampost.context.resource import provides, m_requires
-from lampost.util.lmlog import logged
 
 m_requires("log", "datastore", __name__)
 

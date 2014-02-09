@@ -54,6 +54,9 @@ class TemplateInstance(RootDBO):
             except KeyError:
                 warn("Missing template_id loading template {}".format(dbo_repr))
                 return None
+            except AttributeError:
+                warn("Missing database template loading template {}".format(dbo_repr))
+                return None
         else:
             instance = cls()
         instance.hydrate(dbo_repr)

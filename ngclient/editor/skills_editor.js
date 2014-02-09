@@ -1,5 +1,11 @@
-angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope', 'lmEditor', 'lmDialog',
-  function ($q, $scope, lmEditor, lmDialog) {
+angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope', '$filter', 'lmEditor', 'lmDialog',
+  function ($q, $scope, $filter, lmEditor, lmDialog) {
+
+    this.subClassId = 'attack';
+
+    $scope.$watch('modelList', function(models) {
+      $scope.attackList = $filter('filter')(models, {sub_class_id: 'attack'});
+    }, true);
 
     $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
       calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
@@ -10,7 +16,7 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope',
     $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
       effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
 
-    lmEditor.prepare(this, $scope).prepareList('attack');
+    lmEditor.prepare(this, $scope).prepareList('skill');
 
     this.preCreate = function (attack) {
       attack.verb = attack.dbo_id;
@@ -28,8 +34,14 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope',
   }]);
 
 
-angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialog', '$scope', 'lmEditor',
-  function ($q, lmDialog, $scope, lmEditor) {
+angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter', 'lmDialog', '$scope', 'lmEditor',
+  function ($q, $filter, lmDialog, $scope, lmEditor) {
+
+    this.subClassId = 'defense';
+
+    $scope.$watch('modelList', function(models) {
+      $scope.defenseList = $filter('filter')(models, {sub_class_id: 'defense'});
+    }, true);
 
     $scope.avoidList = {effectDesc: 'Chance to avoid attack based on attributes and roll', effectName: 'Avoid Calculation',
       calcWatch: 'avoid_calc', calcDefs: $scope.constants.calc_map};
@@ -64,7 +76,7 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', 'lmDialo
       return $q.when();
     };
 
-    lmEditor.prepare(this, $scope).prepareList('defense');
+    lmEditor.prepare(this, $scope).prepareList('skill');
 
   }]);
 

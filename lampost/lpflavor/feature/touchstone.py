@@ -1,5 +1,3 @@
-import itertools
-
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops.action import item_action

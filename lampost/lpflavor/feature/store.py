@@ -5,8 +5,6 @@ from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops.action import item_action, ActionError
-from lampost.gameops.target import TargetClass
-from lampost.model.article import Article
 from lampost.mud.inventory import InvenContainer
 
 m_requires('dispatcher', __name__)

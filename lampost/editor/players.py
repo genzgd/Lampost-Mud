@@ -1,9 +1,6 @@
-from twisted.web.resource import Resource
-from lampost.client.resources import request
-from lampost.context.resource import m_requires, requires
+from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.editor.base import EditResource
-from lampost.model.player import Player
 from lampost.client.user import User
 
 m_requires('log', 'datastore', 'perm', 'user_manager', __name__)

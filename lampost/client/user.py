@@ -1,6 +1,6 @@
 import time
 
-from lampost.context.resource import requires, provides, m_requires
+from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password

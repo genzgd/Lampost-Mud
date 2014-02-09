@@ -5,7 +5,6 @@ from lampost.env.room import Room
 from lampost.gameops.config import Config, ConfigManager
 from lampost.gameops.permissions import Permissions
 from lampost.model.area import Area
-from lampost.model.player import Player
 from lampost.mud.mud import MudNature
 from lampost.setup.dbcontext import DbContext
 from lampost.setup.scripts import build_default_displays, build_default_settings

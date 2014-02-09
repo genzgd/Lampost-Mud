@@ -1,6 +1,6 @@
 <div class="v-full" ng-controller="AttackEditorCtrl" ng-show="ready">
   <div class="span2">
-    <h4>Attack Skills ({{modelList.length}})</h4>
+    <h4>Attacks ({{attackList.length}})</h4>
     <button ng-click="newModelDialog()" class="btn btn-small btn-success">New Attack</button>
     <div style="padding-bottom: 15px;"></div>
 
@@ -13,7 +13,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr class="edit-row" ng-class="modelRowClass(model)" ng-click="editModel(model)" ng-repeat="model in modelList">
+      <tr class="edit-row" ng-class="modelRowClass(model)" ng-click="editModel(model)" ng-repeat="model in attackList">
         <td class="span8">{{model.dbo_id}}</td>
         <td class="span4">
           <a ng-click="deleteModel($event, model)" title="Delete Attack" class="icon-link"><i class="icon-remove"></i></a>

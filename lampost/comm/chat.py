@@ -1,4 +1,3 @@
-from lampost.comm.broadcast import Broadcast
 from lampost.gameops.display import *
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires

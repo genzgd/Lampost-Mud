@@ -1,6 +1,6 @@
 from random import randint
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
+from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template, TemplateInstance
@@ -36,6 +36,7 @@ def avg_calc(source, calc, skill_level=0):
 
 class SkillTemplate(Template):
     dbo_key_type = 'skill'
+    dbo_set_key = 'skills'
 
     def on_loaded(self):
         super(SkillTemplate, self).on_loaded()

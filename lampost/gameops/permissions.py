@@ -1,5 +1,4 @@
 from lampost.context.resource import provides, m_requires
-from lampost.model.player import Player
 from lampost.util.lmutil import PermError
 
 m_requires('datastore', __name__)

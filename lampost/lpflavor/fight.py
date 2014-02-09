@@ -1,6 +1,5 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import ActionError
-from lampost.gameops.parser import has_action
 from lampost.lpflavor.combat import consider_level
 
 m_requires('log', 'dispatcher', 'tools', __name__)

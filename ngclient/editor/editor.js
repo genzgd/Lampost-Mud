@@ -395,6 +395,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
 
       $scope.submitNewModel = function () {
         intercept('preCreate', $scope.newModel).then(function () {
+          $scope.newModel.sub_class_id = controller.subClassId;
           lmRemote.request(baseUrl + 'create', $scope.newModel).then(
             function (createdObject) {
               insertModel(createdObject);
@@ -516,8 +517,8 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEd
       social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
       display: {label: "Display", url: "display"},
       race: {label: "Races", objLabel: "Race", url: "race"},
-      attack: {label: "Attacks", objLabel: "Attack", url: "attack"},
-      defense: {label: "Defenses", objLabel: "Defense", url: "defense"}
+      attack: {label: "Attacks", objLabel: "Attack", url: "skill"},
+      defense: {label: "Defenses", objLabel: "Defense", url: "skill"}
     };
 
     $scope.activateArea = function (areaId) {

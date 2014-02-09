@@ -1,9 +1,6 @@
-from collections import Sequence
 from lampost.datastore.dbo import DBOField
 
 from lampost.gameops.display import EXIT_DISPLAY
-from lampost.gameops.template import Template
-from lampost.model.article import Article
 from lampost.model.item import BaseItem
 from lampost.mud.action import mud_action
 

@@ -1,6 +1,6 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
-from lampost.context.resource import m_requires, requires
+from lampost.context.resource import m_requires
 
 m_requires('perm', 'datastore', 'config_manager', __name__)
 

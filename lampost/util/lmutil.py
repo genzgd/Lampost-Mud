@@ -1,7 +1,4 @@
-from collections import defaultdict
 import time
-
-from datetime import datetime
 
 pronouns = {'none': ['it', 'it', 'its', 'itself', 'its'],
             'male': ['he', 'him', 'his', 'himself', 'his'],
