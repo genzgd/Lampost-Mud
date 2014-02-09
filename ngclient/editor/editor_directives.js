@@ -153,33 +153,14 @@ angular.module('lampost_editor').directive('lmSkillList', [function () {
 angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor', 'lmBus',
   function ($q, $scope, lmEditor, lmBus) {
 
-    var skillTypes = ['attack', 'defense'];
-    var skillPromises = [];
-    var skillLists = [];
-
-    lmBus.register('modelCreate', checkLists);
-    lmBus.register('modelDelete', checkLists);
 
     $scope.$on('updateModel', updateModel);
 
-    angular.forEach(skillTypes, function (skillType) {
-      skillPromises.push(lmEditor.cache(skillType).then(function (skills) {
-        skillLists.push(skills);
-      }))
-    });
-    $q.all(skillPromises).then(refresh);
-
-    function checkLists(list) {
-      if (skillLists.indexOf(list) > -1) {
-        refresh();
-      }
-    }
-
-    function refresh() {
-      $scope.allSkills = [].concat.apply([], skillLists);
+    lmEditor.cache('skill').then(function(skills) {
+      $scope.allSkills = skills;;
       $scope.ready = true;
       updateModel();
-    }
+    });
 
     function updateModel() {
       if ($scope.$parent.model) {
@@ -209,7 +190,6 @@ angular.module('lampost_editor').controller('SkillListController', ['$q', '$scop
       $scope.skillMap[$scope.newId] = {skill_level: 1};
       updateUnused();
     };
-
 
   }]);
 

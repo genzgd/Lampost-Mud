@@ -206,4 +206,4 @@ class Room(RootDBO):
             instance.add_inven(article)
             if article_load.load_type == "equip":
                 instance.equip_article(article)
-            instance.enter_env(self)
+        instance.enter_env(self)
