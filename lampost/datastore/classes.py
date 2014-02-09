@@ -24,6 +24,7 @@ def add_sub_class(cls):
     else:
         _subclass_registry[cls.class_id].append(cls.sub_class_id)
 
+
 def get_sub_classes(class_id):
     return _subclass_registry.get(class_id, [])
 

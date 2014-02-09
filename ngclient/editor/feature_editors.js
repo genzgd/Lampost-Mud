@@ -24,12 +24,12 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
     if ($scope.newCurrency == noCurrency) {
       $scope.store.currency = null;
     } else {
-      $scope.store.currency = $scope.newCurrency.dbo_id;
+      $scope.store.currency = $scope.newCurrency;
     }
   };
 
   $scope.currency = function() {
-    return $scope.store.currency || noCurrency;
+    return $scope.store.currency || noCurrency.dbo_id;
   };
 
   $scope.addPerm = function() {

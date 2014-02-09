@@ -62,7 +62,7 @@
       </table>
       <div class="spacer" ng-show="features">
         <button type="button" ng-click="addFeature()" class="btn btn-small btn-success">Add</button>
-          <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature for feature in features">
+          <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature as feature.sub_class_id for feature in features">
         </select>
       </div>
       </div>

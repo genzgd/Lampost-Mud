@@ -105,7 +105,7 @@ class Store(Feature):
                     price = self._price(article)
                     name = self.currency.plural_name(price)
                 else:
-                    price, name = None, None
+                    price, name = '', ''
                 source.display_line('{} {} {}'.format(article.short_desc(), price, name))
         else:
             source.display_line("Unfortunately, it's out of everything.")

@@ -1,7 +1,7 @@
 import copy
 from twisted.web.resource import Resource
 from lampost.client.resources import request
-from lampost.datastore.classes import get_sub_classes
+from lampost.datastore.classes import get_sub_classes, get_dbo_class
 from lampost.context.resource import requires
 from lampost.editor.areas import AreaResource, RoomResource
 from lampost.editor.articles import ArticleResource
@@ -38,5 +38,5 @@ class PropertiesResource(Resource):
     @request
     def render_POST(self):
         constants = copy.copy(self.context.properties)
-        constants['features'] = get_sub_classes('feature')
+        constants['features'] = [get_dbo_class(feature_id)().dto_value for feature_id in get_sub_classes('feature')]
         return constants

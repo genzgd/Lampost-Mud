@@ -191,8 +191,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.addFeature = function () {
-      var feature = {sub_class_id: $scope.newFeature};
-      $scope.model.features.push(feature);
+      $scope.model.features.push(angular.copy($scope.newFeature));
     };
 
     $scope.removeFeature = function (feature) {
