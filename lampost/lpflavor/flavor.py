@@ -20,6 +20,7 @@ equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
 __import__('lampost.lpflavor.env')
 __import__('lampost.lpflavor.mobile')
+__import__('lampost.lpflavor.article')
 __import__('lampost.lpflavor.archetype')
 __import__('lampost.lpflavor.feature', globals(), locals(), ['store', 'touchstone'])
 

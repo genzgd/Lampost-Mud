@@ -80,6 +80,9 @@ class BaseSkill(TemplateInstance):
         self.invoke(source, **kwargs)
         self.last_used = dispatcher.pulse_count
 
+    def invoke(self, source, **ignored):
+        pass
+
     def revoke(self, source):
         pass
 

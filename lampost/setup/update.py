@@ -33,17 +33,17 @@ def add_display(source, display_key, display_desc, display_color):
 
 
 def fix_subclasses(source):
-    for template_class in AttackTemplate, DefenseTemplate:
-        for dbo_key in fetch_set_keys(template_class.dbo_set_key):
-            raw_key = '{}:{}'.format(template_class.dbo_key_type, dbo_key)
-            class_raw = load_raw(raw_key)
-            try:
-                class_id = class_raw['class_id']
-                class_raw['sub_class_id'] = class_id
-                del class_raw['class_id']
-                save_raw(raw_key, class_raw)
-            except KeyError:
-                warn('No class id found in {}'.format(raw_key))
+
+    for dbo_key in fetch_set_keys('skills'):
+        raw_key = '{}:{}'.format('skill', dbo_key)
+        class_raw = load_raw(raw_key)
+        try:
+            class_id = class_raw['class_id']
+            class_raw['sub_class_id'] = class_id
+            del class_raw['class_id']
+            save_raw(raw_key, class_raw)
+        except KeyError:
+            warn('No class id found in {}'.format(raw_key))
 
 
 def convert_directions(source):
