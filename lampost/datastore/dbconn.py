@@ -103,6 +103,9 @@ class RedisStore():
                 self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
         if __debug__:
             debug("object deleted: {}".format(key), self)
+        self.evict_object(dbo)
+
+    def evict_object(self, dbo):
         try:
             self._object_map.pop(dbo.dbo_key)
         except KeyError:

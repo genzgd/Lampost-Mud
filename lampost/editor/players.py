@@ -15,10 +15,13 @@ class PlayerResource(EditResource):
         check_player_perm(player, session)
 
     def post_delete(self, player, session):
+        user_manager.remove_player_indexes(player.dbo_id)
         user = load_object(User, player.user_id)
-        user_manager.delete_player(user, player.dbo_id)
+        user.player_ids.remove(player.dbo_id)
         if not user.player_ids:
-            user_manager.delete_user(user)
+            delete_object(user)
+        else:
+            save_object(user)
 
 
 def check_player_perm(player, session):

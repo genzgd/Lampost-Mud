@@ -1,6 +1,7 @@
 angular.module('lampost_editor').controller('storeFeatureController', ['$scope', '$filter', 'room', 'feature', function($scope, $filter, room, feature) {
 
   var noCurrency = {dbo_id: '--None--'};
+  var noItems = {dbo_id: '--No Items--', invalid: true};
 
   $scope.objType = 'article';
   $scope.store = angular.copy(feature);
@@ -14,8 +15,11 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
   $scope.areaChange = function() {};
   $scope.listChange = function(objects) {
     $scope.currencyList = $filter('filter')(objects, {divisible: true});
-    $scope.currencyList.unshift(noCurrency);
+    $scope.currencyList.push(noCurrency);
     $scope.permList = $filter('filter')(objects, {divisible: false});
+    if ($scope.permList.length === 0) {
+      $scope.permList = [noItems];
+    }
     $scope.newPerm = $scope.permList[0].dbo_id;
     $scope.newCurrency = $scope.currencyList[0].dbo_id;
   };
@@ -37,7 +41,7 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
   };
 
   $scope.permExists = function() {
-    return $scope.store.perm_inven.indexOf($scope.newPerm) > -1;
+    return $scope.newPerm.invalid || $scope.store.perm_inven.indexOf($scope.newPerm) > -1;
   };
 
   $scope.removePerm = function(perm) {

@@ -125,6 +125,7 @@ class UserManager(object):
         player.age += player.last_logout - player.last_login
         player.detach()
         save_object(player)
+        evict_object(player)
 
     def id_to_name(self, player_id):
         try:
@@ -135,11 +136,15 @@ class UserManager(object):
     def name_to_id(self, player_name):
         return unicode(player_name.lower())
 
+    def remove_player_indexes(self, player_id):
+        delete_index('ix:player:user', player_id)
+        dispatch('player_deleted', player_id)
+
     def _player_delete(self, player_id):
         player = load_object(Player, player_id)
         if player:
             delete_object(player)
         else:
             warn("Attempting to delete player {} who does not exist.".format(player_id))
-        delete_index('ix:player:user', player_id)
-        dispatch('player_deleted', player_id)
+        self.remove_player_indexes(player_id)
+
