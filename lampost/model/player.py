@@ -23,7 +23,6 @@ class Player(RootDBO):
     def __init__(self, dbo_id):
         super(Player, self).__init__(dbo_id)
         self.target_keys = {(self.dbo_id,)}
-        self.name = self.dbo_id.capitalize()
         self.last_tell = None
         self.active_channels = set()
 
@@ -33,9 +32,16 @@ class Player(RootDBO):
         dto_value['logged_in'] = "Yes" if hasattr(self, 'session') else "No"
         return dto_value
 
+    @property
+    def name(self):
+        return self.dbo_id.capitalize()
+
     def on_loaded(self):
         if not self.desc:
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
+
+    def check_logout(self):
+        pass
 
     def start(self):
         register_p(self.autosave, seconds=20)

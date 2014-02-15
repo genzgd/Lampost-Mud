@@ -40,11 +40,17 @@ class Dispatcher:
         if randomize:
             randomize = randint(0, randomize)
         registration = PulseRegistration(pulses, callback, priority=priority, repeat=repeat)
-        self._add_pulse(self.pulse_count + randomize, registration)
+        self._add_pulse(self._pulse_count + randomize, registration)
         return self._add_registration(registration)
 
     def register_once(self, *args, **kwargs):
         return self.register_p(repeat=False, *args, **kwargs)
+
+    def current_pulse(self):
+        return self._pulse_count
+
+    def future_pulse(self, seconds):
+        return int(self._pulse_count + self.pulses_per_second * seconds)
 
     def dispatch(self, event_type, *args, **kwargs):
         sorted_events = sorted(self._registrations.get(event_type, []), key=lambda reg: reg.priority)
@@ -60,16 +66,16 @@ class Dispatcher:
 
     def _pulse(self):
         self.dispatch('pulse')
-        for reg in sorted(self._pulse_map[self.pulse_count], key=lambda reg: reg.priority):
+        for reg in sorted(self._pulse_map[self._pulse_count], key=lambda reg: reg.priority):
             if reg.freq:
                 try:
                     reg.callback()
                 except Exception as pulse_error:
                     error('Pulse Error', 'Dispatcher', pulse_error)
                 if reg.repeat:
-                    self._add_pulse(self.pulse_count, reg)
-        del self._pulse_map[self.pulse_count]
-        self.pulse_count += 1
+                    self._add_pulse(self._pulse_count, reg)
+        del self._pulse_map[self._pulse_count]
+        self._pulse_count += 1
 
     def _add_registration(self, registration):
         self._registrations[registration.event_type].add(registration)
@@ -80,8 +86,8 @@ class Dispatcher:
         self._pulse_map[start + event.freq].add(event)
 
     def _post_init(self):
-        self.pulse_count = load_raw('event_pulse', 0)
-        self.register_p(lambda: save_raw('event_pulse', self.pulse_count), 100)
+        self._pulse_count = load_raw('event_pulse', 0)
+        self.register_p(lambda: save_raw('event_pulse', self._pulse_count), 100)
         self.register("server_settings", self._update_settings, priority=-1000)
 
     def _update_settings(self, server_settings):

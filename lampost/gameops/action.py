@@ -22,11 +22,6 @@ def convert_verbs(verbs):
     return results
 
 
-def simple_action(self, target_method, **kwargs):
-    if target_method:
-        return target_method(**kw_args)
-
-
 def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None,
                 obj_msg_class=None, obj_target_class=None, **kw_args):
     if verbs:

@@ -91,11 +91,7 @@ class ActionResource(Resource):
         player = session.player
         if not player:
             return {"link_status": "no_login"}
-        action = cgi.escape(content.action).strip()
-        if action in ["quit", "logout", "log out"]:
-            session_manager.logout(session)
-        else:
-            player.parse(action)
+        player.parse(cgi.escape(content.action).strip())
         return session.pull_output()
 
 

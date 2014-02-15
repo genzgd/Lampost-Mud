@@ -49,7 +49,9 @@ class MobileTemplateLP(MobileTemplate):
         super(MobileTemplateLP, self).config_instance(mobile, owner)
 
 
-class MobileLP(Mobile, EntityLP):
+class MobileLP(EntityLP):
+    template_id = "mobile"
+
     archetype = DBOTField()
     level = DBOTField(1)
     affinity = DBOTField('neutral')
@@ -69,7 +71,12 @@ class MobileLP(Mobile, EntityLP):
 
     def _react_entity(self, entity):
         if entity in self.fight.opponents.viewkeys():
+            self.fight.add(entity)
             self.check_fight()
         elif hasattr(entity, 'affinity') and entity.affinity in self.enemies:
             self.start_combat(entity)
+
+    def detach(self):
+        super(MobileLP, self).detach()
+        self.original_env.mobiles[self.template].remove(self)
 

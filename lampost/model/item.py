@@ -61,6 +61,10 @@ class BaseItem(TemplateInstance):
         super(BaseItem, self).__init__(dbo_id)
 
     @property
+    def name(self):
+        return self.title
+
+    @property
     def action_providers(self):
         return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.instance_providers)
 

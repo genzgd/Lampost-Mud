@@ -10,6 +10,8 @@ class FightStats():
         self.attack_results = {}
         self.defend_results = {}
         self.con_level = con_level
+        self.last_exit = None
+        self.last_seen = current_pulse()
 
 
 class Fight():
@@ -27,12 +29,17 @@ class Fight():
         self.consider = self.me.rec_consider()
 
     def add(self, opponent):
-        if opponent not in self.opponents.viewkeys():
+        try:
+            self.opponents[opponent].last_seen = current_pulse()
+        except KeyError:
             self.opponents[opponent] = FightStats(consider_level(self.consider, opponent.rec_consider()))
+            self.me.check_fight()
 
     def end(self, opponent, victory):
         try:
             del self.opponents[opponent]
+            if opponent.last_opponent == self:
+                opponent.last_opponent = None
         except KeyError:
             warn("Removing opponent not in fight")
 
@@ -46,10 +53,8 @@ class Fight():
         try:
             stats = self.opponents[opponent]
             stats.last_exit = ex
-            # Don't follow if we have other local opponents
-            if [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]:
-                return
-            self.try_chase()
+            stats.last_seen = current_pulse()
+            self.select_action()
         except KeyError:
             pass
 
@@ -59,6 +64,7 @@ class Fight():
             del self.hunt_timer
 
     def select_action(self):
+        self.clear_hunt_timer()
         local_opponents = [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]
         if local_opponents:
             local_opponents.sort(key=lambda opponent: opponent.health)
@@ -86,8 +92,20 @@ class Fight():
             register_once(self.me.check_fight, next_available)
 
     def try_chase(self):
-        opponent_escapes = [stats.last_exit for stats in self.opponents.viewvalues() if stats.con_level < 1 and stats.last_exit]
-        if opponent_escapes:
-            self.me.start_action(opponent_escapes[0], {'source': self.me})
-        else:
-            self.hunt_timer = register_once(self.end_all, seconds=120)
+        stale_pulse = future_pulse(-120)
+        removed = [opponent for opponent, stats in self.opponents.viewitems() if stats.last_seen < stale_pulse]
+        for opponent in removed:
+            self.end(opponent, False)
+        if not self.opponents:
+            return
+        for stats in sorted(self.opponents.viewvalues(), key=lambda x: x.last_seen, reverse=True):
+            if stats.con_level < 1 and stats.last_exit in self.me.env.action_providers:
+                try:
+                    self.me.start_action(stats.last_exit, {'source': self.me})
+                    break
+                except ActionError:
+                    pass
+        self.hunt_timer = register_p(self.select_action, seconds=10)
+
+
+

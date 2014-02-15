@@ -18,9 +18,10 @@ m_requires('log', 'datastore', __name__)
 def tell(listeners, msg_type, *args):
     for listener in listeners:
         try:
-            getattr(listener, msg_type)(*args)
+            receiver = getattr(listener, msg_type)
         except AttributeError:
-            pass
+            continue
+        receiver(*args)
 
 
 class Exit(RootDBO):

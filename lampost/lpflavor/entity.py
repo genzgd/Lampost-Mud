@@ -170,9 +170,7 @@ class EntityLP(Entity):
 
     def start_combat(self, source):
         self.last_opponent = source
-        if source not in self.fight.opponents.viewkeys():
-            self.fight.add(source)
-            self.check_fight()
+        self.fight.add(source)
 
     def check_fight(self):
         if self.auto_fight and not self._current_action and not self._next_command:

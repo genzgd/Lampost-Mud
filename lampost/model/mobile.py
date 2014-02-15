@@ -32,10 +32,6 @@ class MobileTemplate(Template):
 class Mobile(Entity):
     template_id = 'mobile'
 
-    @property
-    def name(self):
-        return self.title
-
     def detach(self):
         super(Mobile, self).detach()
         self.original_env.mobiles[self.template].remove(self)

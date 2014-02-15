@@ -5,7 +5,7 @@ from os import urandom
 from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
-from lampost.gameops.display import SYSTEM_DISPLAY
+from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 
 m_requires('log', 'dispatcher', __name__)
 
@@ -104,7 +104,6 @@ class SessionManager(object):
         session.display_line({'text': text, 'display': SYSTEM_DISPLAY})
 
     def logout(self, session):
-        session.append({'logout': 'logout'})
         player = session.player
         if player:
             player.last_logout = int(time.time())
@@ -112,6 +111,7 @@ class SessionManager(object):
             session.player = None
             del self.player_info_map[player.dbo_id]
             del self.player_session_map[player.dbo_id]
+        session.append({'logout': 'logout'})
         session.user = None
         self._broadcast_status()
 

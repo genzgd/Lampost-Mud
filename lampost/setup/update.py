@@ -30,30 +30,3 @@ def add_display(source, display_key, display_desc, display_color):
     display_desc = unicode.title(display_desc.replace('_', ' '))
     config_manager.config.default_displays[display_key] = {'desc': display_desc, 'color': display_color}
     config_manager.save_config()
-
-
-def fix_subclasses(source):
-
-    for dbo_key in fetch_set_keys('skills'):
-        raw_key = '{}:{}'.format('skill', dbo_key)
-        class_raw = load_raw(raw_key)
-        try:
-            class_id = class_raw['class_id']
-            class_raw['sub_class_id'] = class_id
-            del class_raw['class_id']
-            save_raw(raw_key, class_raw)
-        except KeyError:
-            warn('No class id found in {}'.format(raw_key))
-
-
-def convert_directions(source):
-    for area_id in fetch_set_keys('areas'):
-        for room_id in fetch_set_keys('area_rooms:{}'.format(area_id)):
-            room_key = 'room:{}'.format(room_id)
-            room_raw = load_raw(room_key)
-            for exit_dto in room_raw.get('exits', []):
-                dir_key = exit_dto['dir_name']
-                exit_dto['direction'] = dir_key
-                del exit_dto['dir_name']
-            print room_raw
-            save_raw(room_key, room_raw)

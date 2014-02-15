@@ -78,7 +78,7 @@ class BaseSkill(TemplateInstance):
     def use(self, source, **kwargs):
         source.apply_costs(self.costs)
         self.invoke(source, **kwargs)
-        self.last_used = dispatcher.pulse_count
+        self.last_used = current_pulse()
 
     def invoke(self, source, **ignored):
         pass
@@ -88,7 +88,7 @@ class BaseSkill(TemplateInstance):
 
     @property
     def available(self):
-        return self.last_used + self.cool_down - dispatcher.pulse_count
+        return self.last_used + self.cool_down - current_pulse()
 
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)

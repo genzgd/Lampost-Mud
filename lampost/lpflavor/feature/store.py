@@ -60,7 +60,7 @@ class Store(Feature):
             offer.quantity = self._offer(target)
             offer.enter_env(source)
             sell_msg = ''.join(("You sell {N} for ", offer.name, '.'))
-            self.buybacks.appendleft(Buyback(source, target, offer.quantity, dispatcher.pulse_count))
+            self.buybacks.appendleft(Buyback(source, target, offer.quantity, current_pulse()))
             self._start_buyback()
         else:
             sell_msg = "You sell {N}."
@@ -129,7 +129,7 @@ class Store(Feature):
             self.buyback_reg = register_p(self._trim_buybacks, seconds=30)
 
     def _trim_buybacks(self):
-        stale_pulse = dispatcher.pulse_count - dispatcher.pulses_per_second * self.buyback_seconds
+        stale_pulse = future_pulse(-self.buyback_seconds)
         try:
             last = self.buybacks[-1]
             while last.pulse < stale_pulse:

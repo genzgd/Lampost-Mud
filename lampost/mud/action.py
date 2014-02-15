@@ -3,7 +3,7 @@ from lampost.context.resource import m_requires, register
 from lampost.gameops.action import make_action, ActionError, convert_verbs
 from lampost.util.lmutil import StateError
 
-m_requires('log', 'user_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
+m_requires('log', 'user_manager', 'session_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
 _mud_actions = {}
 
 register('mud_actions', _mud_actions)
@@ -27,6 +27,13 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
         func.imm_level = imm_level
         return make_action(func, verbs, msg_class, **kwargs)
     return dec_wrapper
+
+
+@mud_action(('quit', 'log out'))
+def quit_action(source, **ignored):
+    source.check_logout()
+    session_manager.logout(source.session)
+
 
 @mud_action(("look", "l", "exa", "examine", "look at"), "examine")
 def look(target_method, **kwargs):

@@ -1,6 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.room import Room
+from lampost.gameops.action import ActionError
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 from lampost.lpflavor.entity import EntityLP
 
@@ -28,6 +29,10 @@ class PlayerLP(Player, EntityLP):
         super(PlayerLP, self).on_loaded()
         for skill in self.skills.viewvalues():
             self.add_skill(skill)
+
+    def check_logout(self):
+        if self.last_opponent:
+            raise ActionError("You can't log out right now.", COMBAT_DISPLAY)
 
     def status_change(self):
         if not self.session:
