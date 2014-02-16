@@ -18,6 +18,7 @@ class Entity(BaseItem):
 
     status = 'ok'
     living = True
+    instance = None
 
     entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
     exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
@@ -120,6 +121,12 @@ class Entity(BaseItem):
             old_env.entity_leaves(self, ex)
 
     def enter_env(self, new_env, ex=None):
+        new_instance = getattr(new_env, 'instance', None)
+        if self.instance != new_instance:
+            if self.instance:
+                self.instance.remove_entity(self)
+            if new_instance:
+                new_instance.add_entity(self)
         self.env = new_env
         self.room_id = new_env.room_id
         new_env.rec_examine(self)

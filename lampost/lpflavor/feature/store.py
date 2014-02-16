@@ -68,7 +68,6 @@ class Store(Feature):
 
         source.check_drop(target, None)
         source.remove_inven(target)
-        self.room.dirty = True
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 
     @item_action(msg_class="get")
@@ -84,9 +83,10 @@ class Store(Feature):
             target = target.template.create_instance()
         else:
             self.inven.remove(target)
+            self.room.dirty = True
         target.enter_env(source)
         source.broadcast(s=self_msg,e="{n} buys {N}.", target=target)
-        self.room.dirty = True
+
 
     @item_action(verbs=("buy back",), msg_class="buyback", target_class=buyback_targets)
     def rec_buyback(self, source, target, **ignored):
@@ -144,6 +144,7 @@ class Store(Feature):
             if getattr(perm_article, 'store', None) == self and article.template == perm_article.template and article.save_value == perm_article.save_value:
                 return
         self.inven.append(article)
+        self.room.dirty = True
 
     def on_created(self):
         self.target_providers = self.inven.contents

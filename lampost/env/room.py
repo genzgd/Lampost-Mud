@@ -4,7 +4,7 @@ import random
 
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.env.movement import Direction
 from lampost.model.mobile import MobileTemplate
 from lampost.model.article import ArticleTemplate
@@ -13,6 +13,9 @@ from lampost.mud.inventory import InvenContainer
 
 
 m_requires('log', 'datastore', __name__)
+
+default_room_size = 10
+room_garbage_time = 600
 
 
 def tell(listeners, msg_type, *args):
@@ -29,7 +32,7 @@ class Exit(RootDBO):
 
     target_class = None
     direction = DBOField(None, 'direction')
-    destination = DBOField(None, 'room')
+    destination = DBOField()
     desc = DBOField()
     aliases = DBOField([])
 
@@ -50,25 +53,36 @@ class Exit(RootDBO):
         if from_dir:
             return from_dir.desc
 
+    @property
+    def dest_room(self):
+        return load_by_key('room', self.destination)
+
     def rec_examine(self, source, **ignored):
-        source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.destination.title), EXIT_DISPLAY)
+        source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
 
     def __call__(self, source, **ignored):
-        source.change_env(self.destination, self)
+        if source.instance:
+            destination = source.instance.get_room(self.destination)
+        else:
+            destination = self.dest_room
+        source.change_env(destination, self)
 
 
 class Room(RootDBO):
     dbo_key_type = "room"
 
-    dbo_rev = DBOField(0)
-    desc = DBOField()
-    size = DBOField(10)
-    exits = DBOField([], 'exit')
-    extras = DBOField([], 'base_item')
-    mobile_resets = DBOField([], 'mobile_reset')
-    article_resets = DBOField([], 'article_reset')
-    features = DBOField([], 'feature')
-    title = DBOField()
+    dbo_rev = DBOTField(0)
+    desc = DBOTField()
+    size = DBOTField(default_room_size)
+    exits = DBOTField([], 'exit')
+    extras = DBOTField([], 'base_item')
+    mobile_resets = DBOTField([], 'mobile_reset')
+    article_resets = DBOTField([], 'article_reset')
+    features = DBOTField([], 'feature')
+    title = DBOTField()
+
+    instance = None
+    garbage_collector = None
 
     def __init__(self, dbo_id, title=None, desc=None):
         super(Room, self).__init__(dbo_id)
@@ -162,6 +176,9 @@ class Room(RootDBO):
             if my_exit.direction == exit_dir:
                 return my_exit
 
+    def on_loaded(self):
+        self.reset()
+
     def reset(self):
         for m_reset in self.mobile_resets:
             template = load_object(MobileTemplate, m_reset.mobile_id)
@@ -191,7 +208,7 @@ class Room(RootDBO):
                 if a_reset.reset_count <= curr_count < a_reset.reset_max:
                     instance = template.create_instance(self)
                     instance.enter_env(self)
-        if hasattr(self, 'dirty'):
+        if hasattr(self, 'dirty') and not self.instance:
             save_object(self)
             del self.dirty
 
@@ -208,3 +225,13 @@ class Room(RootDBO):
             if article_load.load_type == "equip":
                 instance.equip_article(article)
         instance.enter_env(self)
+
+    def clean_up(self):
+        for mobile in self.mobiles:
+            mobile.enter_env(self)
+        for obj in self.contents:
+            if hasattr(obj, 'detach'):
+                obj.detach()
+
+
+

@@ -1,5 +1,4 @@
-import sys
-
+from importlib import import_module
 from lampost.datastore.dbo import DBOField
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
@@ -18,7 +17,7 @@ equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms'
 
 equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
-__import__('lampost.lpflavor.env')
+env_module = import_module('lampost.lpflavor.env')
 __import__('lampost.lpflavor.mobile')
 __import__('lampost.lpflavor.article')
 __import__('lampost.lpflavor.archetype')
@@ -74,7 +73,6 @@ def _player_baptise(player):
 
 
 def _game_settings(game_settings):
-    env_module = sys.modules['lampost.lpflavor.env']
     env_module.stamina_calc = game_settings.get('room_stamina', 2)
     env_module.action_calc = game_settings.get('room_action', 10)
 

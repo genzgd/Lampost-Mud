@@ -95,14 +95,14 @@ class CreateExit(Resource):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
         this_exit = get_dbo_class('exit')()
         this_exit.direction = new_dir
-        this_exit.destination = other_room
+        this_exit.destination = other_id
         room.exits.append(this_exit)
         save_object(room)
         publish_edit('update', room, session)
         if not content.one_way:
             other_exit = get_dbo_class('exit')()
             other_exit.direction = rev_dir
-            other_exit.destination = room
+            other_exit.destination = room.dbo_id
             other_room.exits.append(other_exit)
             save_object(other_room)
             publish_edit('update', other_room, session, True)
@@ -121,7 +121,7 @@ class DeleteExit(Resource):
         save_object(room)
 
         if content.both_sides:
-            other_room = local_exit.destination
+            other_room = local_exit.dest_room
             other_exit = other_room.find_exit(direction.rev_dir)
             if other_exit:
                 other_room.exits.remove(other_exit)
@@ -172,7 +172,7 @@ def parent_area(child):
 
 def room_clean_up(room, session, area_delete=None):
     for my_exit in room.exits:
-        other_room = my_exit.destination
+        other_room = my_exit.dest_room
         if other_room and other_room.area_id != area_delete:
             for other_exit in other_room.exits:
                 if other_exit.destination == room:

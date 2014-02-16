@@ -1,16 +1,19 @@
+from importlib import import_module
 from lampost.env.movement import Direction
-from lampost.env.room import Room
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
+from lampost.env.room import Room
 from lampost.mud.action import imm_actions
 from lampost.context.resource import requires, m_requires, register_module
 from lampost.comm.channel import Channel
 
-from lampost.model.area import Area
 
+room_module = import_module('lampost.env.room')
+area_module = import_module('lampost.model.area')
 __import__('lampost.mud.immortal')
 __import__('lampost.comm.chat')
 __import__('lampost.mud.inventory')
 __import__('lampost.mud.socials')
+__import__('lampost.env.instance')
 
 m_requires('log', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)
 
@@ -36,11 +39,6 @@ class MudNature():
         register('player_baptise', self._baptise, priority=-100)
         register('imm_baptise', self._imm_baptise, priority=-100)
 
-    def start_service(self):
-        info("Loading mud", self)
-        load_object_set(Area)
-        info("Mud loaded", self)
-
     def _imm_baptise(self, player):
         player.register_channel(self.imm_channel)
         player.can_die = False
@@ -52,8 +50,9 @@ class MudNature():
                 player.diminish_soul(cmd)
 
     def _game_settings(self, game_settings):
-        Area.reset_time = game_settings.get('area_reset', 180)
-        Room.size = game_settings.get('room_size', 10)
+        area_module.reset_time = game_settings.get('area_reset', area_module.reset_time)
+        room_module.default_room_size = game_settings.get('room_size', room_module.default_room_size)
+        room_module.room_garbage_time = game_settings.get('room_garbage_time', room_module.room_garbage_time)
 
     def _player_connect(self, player, client_data):
         editors = []

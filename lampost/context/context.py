@@ -42,12 +42,11 @@ class Context(object):
         PlayerListService()
         EditUpdateService()
         AnyLoginService()
-        mud_nature = MudNature(flavor)
+        MudNature(flavor)
         web_server = WebServer(int(port))
         context_post_init()
 
         config_mgr.start_service()
-        mud_nature.start_service()
         web_server.start_service(server_interface)
 
     def set(self, key, value):

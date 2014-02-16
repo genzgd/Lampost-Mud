@@ -79,6 +79,12 @@ class RootDBO(object):
         self.on_loaded()
         return self
 
+    def clone(self, instance_id):
+        clone = self.__class__()
+        clone.instance_id = instance_id
+        clone.template = self
+        return clone
+
     def describe(self, display, level):
 
         def append(value, key):

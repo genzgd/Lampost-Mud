@@ -4,6 +4,7 @@ from lampost.lpflavor.combat import consider_level
 
 m_requires('log', 'dispatcher', 'tools', __name__)
 
+chase_time = 120
 
 class FightStats():
     def __init__(self, con_level):
@@ -92,7 +93,7 @@ class Fight():
             register_once(self.me.check_fight, next_available)
 
     def try_chase(self):
-        stale_pulse = future_pulse(-120)
+        stale_pulse = future_pulse(-chase_time)
         removed = [opponent for opponent, stats in self.opponents.viewitems() if stats.last_seen < stale_pulse]
         for opponent in removed:
             self.end(opponent, False)
