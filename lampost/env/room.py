@@ -15,7 +15,7 @@ from lampost.mud.inventory import InvenContainer
 m_requires('log', 'dispatcher', 'datastore', __name__)
 
 default_room_size = 10
-room_garbage_time = 10
+room_garbage_time = 600
 
 
 def tell(listeners, msg_type, *args):
@@ -250,7 +250,3 @@ class Room(RootDBO):
                 obj.detach()
         if not getattr(self, 'template', None):
             evict_object(self)
-
-
-
-

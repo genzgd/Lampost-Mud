@@ -51,27 +51,55 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
     }
   };
 
-
 }]);
 
 
-angular.module('lampost_editor').controller('entranceFeatureController', ['$scope', '$filter', 'room', 'feature', 'isAdd',
-  function($scope, $filter, room, feature, isAdd) {
+angular.module('lampost_editor').controller('entranceFeatureController', ['$scope', '$filter', 'lmEditor', 'lmDialog',  'room', 'feature', 'isAdd',
+  function($scope, $filter, lmEditor, lmDialog, room, feature, isAdd) {
 
     $scope.objType = 'room';
     $scope.entrance = angular.copy(feature);
+    $scope.room = room;
 
     $scope.areaChange = function() {};
     $scope.listChange = function(rooms) {
-      $scope.roomList = rooms;
+
       if (rooms.length > 0) {
-        $scope.entrance.destination = rooms[0].dbo_id;
+        $scope.roomList = rooms;
+        $scope.hasRoom = true;
       } else {
-        $scope.entrance.destination = null;
+        $scope.roomList = [{dbo_id: "N/A"}];
+        $scope.hasRoom= false;
+      }
+       $scope.entranceRoom = $scope.roomList[0];
+    };
+
+    lmEditor.cache('constants').then(function (constants) {
+        $scope.directions = constants.directions;
+    });
+
+    $scope.checkVerb = function() {
+      if ($scope.entrance.verb) {
+        $scope.entrance.direction = null;
       }
     };
 
+    $scope.checkDirection = function () {
+      if ($scope.entrance.direction) {
+        $scope.entrance.verb = null;
+      }
+    };
+
+    $scope.changeDest = function() {
+      $scope.entrance.destination = $scope.entranceRoom.dbo_id;
+    };
+
     $scope.finishEdit = function() {
+      if (!$scope.entrance.destination) {
+        lmDialog.showOk("Destination Request", "Please set a destination");
+        return;
+      }
+
       if (isAdd) {
         room.features.push($scope.entrance);
       } else {

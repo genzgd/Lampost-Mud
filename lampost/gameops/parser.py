@@ -102,7 +102,9 @@ class Parse(object):
             return
         reject_format = {'command': self._command, 'verb': self._command.split(' ')[0]}
         if reject:
-            extra = find_extra(reject.verb, 0, self._command).strip()
+            extra = find_extra(reject.verb, 0, self._command)
+            if extra:
+                extra = extra.strip()
             reject_format['quantity'] = reject.quantity
             reject_format['verb'] = ' '.join(reject.verb)
             reject_format['extra'] = extra

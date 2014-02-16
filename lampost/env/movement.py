@@ -9,11 +9,11 @@ class Direction(RootDBO):
 
     @classmethod
     def load_ref(cls, key, owner=None):
-        return cls.ref_map[key]
+        return cls.ref_map[key] if key else None
 
     @classmethod
     def to_dto_repr(cls, value):
-        return value.key
+        return value.key if value else None
 
     @classmethod
     def to_save_repr(cls, value):

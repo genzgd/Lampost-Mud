@@ -27,6 +27,10 @@ def im_self_finder(self, entity, target_key, func):
     return recursive_targets([func.im_self], target_key)
 
 
+def action_finder(self, entity, target_key, action):
+    return recursive_targets([action], target_key)
+
+
 def equip_finder(self, entity, target_key, *ignored):
     return recursive_targets([equip for equip in entity.inven if equip.current_slot], target_key)
 
@@ -63,6 +67,7 @@ TargetClass.ENV = TargetClass(env_finder)
 TargetClass.FEATURE = TargetClass(feature_finder)
 TargetClass.ENV_LIVING = TargetClass(env_living_finder)
 TargetClass.ENV_ITEMS = TargetClass(env_items_finder)
+TargetClass.ACTION = TargetClass(action_finder)
 
 TargetClass.DEFAULTS = [TargetClass.SELF, TargetClass.EQUIP, TargetClass.EQUIP, TargetClass.INVEN, TargetClass.ENV, TargetClass.FEATURE,
                         TargetClass.ENV_LIVING, TargetClass.ENV_ITEMS]

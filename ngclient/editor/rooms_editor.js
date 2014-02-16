@@ -17,7 +17,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     function editFeature(feature, isAdd) {
       lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
-        locals: {room: $scope.model, feature: feature, isAdd: isAdd}});
+        locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
     }
 
     this.startEdit = function (room) {

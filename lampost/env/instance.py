@@ -2,6 +2,8 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops.action import convert_verbs
+from lampost.gameops.display import EXIT_DISPLAY
+from lampost.gameops.target import TargetClass
 
 m_requires('datastore', __name__)
 
@@ -49,19 +51,40 @@ class Entrance(Feature):
     sub_class_id = 'entrance'
 
     verb = DBOField('enter')
+    direction = DBOField(None, 'direction')
     destination = DBOField()
+    instanced = DBOField(True)
     edit_required = DBOField(True)
 
-    target_class = None
+    msg_class = "__call__"
 
     def on_loaded(self):
         super(Feature, self).on_loaded()
-        self.verbs = convert_verbs(self.verb)
-        if not self.title:
+        if self.direction:
+            self.verbs = (self.direction.key,), (self.direction.desc,)
+            self.target_class = [TargetClass.NO_ARGS]
+        else:
+            self.verbs = convert_verbs(self.verb)
+            self.target_class = [TargetClass.ACTION]
+        if not self.title and self.verb:
             self.title = self.verb
 
+    @property
+    def dest_room(self):
+        return load_by_key('room', self.destination)
+
+    def rec_glance(self, source, **ignored):
+        if self.direction:
+            source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
+        else:
+            source.display_line(self.title, EXIT_DISPLAY)
+
     def __call__(self, source, **ignored):
-        instance = next_instance()
-        source.change_env(instance.get_room(self.destination))
+        if self.instanced:
+            instance = next_instance()
+            destination = instance.get_room(self.destination)
+        else:
+            destination = self.dest_room
+        source.change_env(destination)
 
 
