@@ -15,6 +15,11 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       return $q.when()
     }
 
+    function editFeature(feature, isAdd) {
+      lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
+        locals: {room: $scope.model, feature: feature, isAdd: isAdd}});
+    }
+
     this.startEdit = function (room) {
       $scope.activateArea(room.dbo_id.split(':')[0]);
       $scope.currentExtra = null;
@@ -69,7 +74,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
     };
 
-    $scope.availFeatures = {store: 'store'};
+    $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
     $scope.visitRoom = function () {
       lmRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id});
@@ -191,7 +196,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.addFeature = function () {
-      $scope.model.features.push(angular.copy($scope.newFeature));
+      var feature = angular.copy($scope.newFeature);
+      if (feature.edit_required){
+        editFeature(feature, true)
+      } else {
+        $scope.model.features.push(feature);
+      }
     };
 
     $scope.removeFeature = function (feature) {
@@ -201,8 +211,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.editFeature = function(feature) {
-      lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
-        locals: {room: $scope.model, feature: feature}});
+      editFeature(feature);
     };
 
   }]);

@@ -79,10 +79,10 @@ class RootDBO(object):
         self.on_loaded()
         return self
 
-    def clone(self, instance_id):
-        clone = self.__class__()
-        clone.instance_id = instance_id
+    def clone(self):
+        clone = self.__class__(getattr(self, 'dbo_id', None))
         clone.template = self
+        clone.on_loaded()
         return clone
 
     def describe(self, display, level):

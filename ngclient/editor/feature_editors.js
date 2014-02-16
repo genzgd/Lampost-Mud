@@ -53,3 +53,31 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
 
 
 }]);
+
+
+angular.module('lampost_editor').controller('entranceFeatureController', ['$scope', '$filter', 'room', 'feature', 'isAdd',
+  function($scope, $filter, room, feature, isAdd) {
+
+    $scope.objType = 'room';
+    $scope.entrance = angular.copy(feature);
+
+    $scope.areaChange = function() {};
+    $scope.listChange = function(rooms) {
+      $scope.roomList = rooms;
+      if (rooms.length > 0) {
+        $scope.entrance.destination = rooms[0].dbo_id;
+      } else {
+        $scope.entrance.destination = null;
+      }
+    };
+
+    $scope.finishEdit = function() {
+      if (isAdd) {
+        room.features.push($scope.entrance);
+      } else {
+        angular.copy($scope.entrance, feature);
+      }
+      $scope.dismiss();
+    };
+
+}]);

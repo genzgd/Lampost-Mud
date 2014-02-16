@@ -1,5 +1,6 @@
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
+from lampost.datastore.dbo import DBOField
 from lampost.model.item import BaseItem
 
 m_requires('log', __name__)
@@ -7,6 +8,8 @@ m_requires('log', __name__)
 
 class Feature(BaseItem):
     class_id = 'feature'
+
+    edit_required = DBOField(False)
 
     @classmethod
     def load_ref(cls, dbo_repr, owner=None):

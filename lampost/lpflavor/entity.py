@@ -281,7 +281,7 @@ class EntityLP(Entity):
         self.mental = 0
 
     def status_change(self):
-        pass
+        self.pulse_stamp = current_pulse()
 
     def detach(self):
         self._cancel_actions()

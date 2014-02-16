@@ -24,7 +24,7 @@ class BuybackTargets(object):
     absent_msg = "{target} is not available to buy back"
 
     def target_finder(self, entity, target_key, func):
-        return [buyback for buyback in func.im_self.buybacks if buyback.owner == entity and target_key in buyback.article.target_keys]
+        return [buyback for buyback in func.im_self.buybacks if buyback.owner == entity.dbo_id and target_key in buyback.article.target_keys]
 
 buyback_targets = [BuybackTargets()]
 
@@ -60,7 +60,7 @@ class Store(Feature):
             offer.quantity = self._offer(target)
             offer.enter_env(source)
             sell_msg = ''.join(("You sell {N} for ", offer.name, '.'))
-            self.buybacks.appendleft(Buyback(source, target, offer.quantity, current_pulse()))
+            self.buybacks.appendleft(Buyback(source.dbo_id, target, offer.quantity, current_pulse()))
             self._start_buyback()
         else:
             sell_msg = "You sell {N}."
@@ -87,7 +87,6 @@ class Store(Feature):
         target.enter_env(source)
         source.broadcast(s=self_msg,e="{n} buys {N}.", target=target)
 
-
     @item_action(verbs=("buy back",), msg_class="buyback", target_class=buyback_targets)
     def rec_buyback(self, source, target, **ignored):
         article = target.article
@@ -109,7 +108,7 @@ class Store(Feature):
                 source.display_line('{} {} {}'.format(article.short_desc(), price, name))
         else:
             source.display_line("Unfortunately, it's out of everything.")
-        buybacks = [buyback for buyback in self.buybacks if buyback.owner == source]
+        buybacks = [buyback for buyback in self.buybacks if buyback.owner == source.dbo_id]
         if buybacks:
             source.display_line("You can 'buy back' these items")
             for buyback in buybacks:
@@ -125,6 +124,7 @@ class Store(Feature):
         raise ActionError("You don't have any {}!".format(self.currency.plural_title))
 
     def _start_buyback(self):
+        self.pulse_stamp = current_pulse()
         if not self.buyback_reg:
             self.buyback_reg = register_p(self._trim_buybacks, seconds=30)
 

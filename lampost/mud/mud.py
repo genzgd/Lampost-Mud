@@ -94,5 +94,7 @@ class MudNature():
                 player.room_id = player.env.dbo_id
                 save_object(player)
         if not room:
-            room = Room("temp_start_room", "A Temporary Room when Start Room is Missing")
+            room = Room('temp:start')
+            room.title = "Temp Start Room"
+            room.desc = "A Temporary Room when Start Room is Missing"
         player.change_env(room)

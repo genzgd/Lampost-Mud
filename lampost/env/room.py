@@ -12,10 +12,10 @@ from lampost.gameops.display import *
 from lampost.mud.inventory import InvenContainer
 
 
-m_requires('log', 'datastore', __name__)
+m_requires('log', 'dispatcher', 'datastore', __name__)
 
 default_room_size = 10
-room_garbage_time = 600
+room_garbage_time = 10
 
 
 def tell(listeners, msg_type, *args):
@@ -82,12 +82,9 @@ class Room(RootDBO):
     title = DBOTField()
 
     instance = None
-    garbage_collector = None
 
-    def __init__(self, dbo_id, title=None, desc=None):
+    def __init__(self, dbo_id=None):
         super(Room, self).__init__(dbo_id)
-        self.title = title
-        self.desc = desc
         self.inven = InvenContainer()
         self.denizens = []
         self.mobiles = defaultdict(set)
@@ -126,6 +123,7 @@ class Room(RootDBO):
         except AttributeError:
             pass
         self.denizens.append(entity)
+        entity.pulse_stamp = current_pulse()
         tell(self.contents, "rec_entity_enter_env", entity)
 
     def entity_leaves(self, entity, ex):
@@ -139,6 +137,7 @@ class Room(RootDBO):
 
     def add_inven(self, article):
         self.inven.append(article)
+        article.pulse_stamp = current_pulse()
 
     def remove_inven(self, article):
         self.inven.remove(article)
@@ -178,6 +177,23 @@ class Room(RootDBO):
 
     def on_loaded(self):
         self.reset()
+        self.garbage_time()
+
+    def garbage_time(self):
+        register_once(self.check_garbage, seconds=room_garbage_time + 1)
+
+    def check_garbage(self):
+        if hasattr(self, 'dirty'):
+            if not self.instance:
+                save_object(self)
+            del self.dirty
+        stale_pulse = future_pulse(-room_garbage_time)
+        for obj in self.contents:
+            obj_pulse = getattr(obj, 'pulse_stamp', 0)
+            if obj_pulse > stale_pulse or hasattr(obj, 'rec_player'):
+                self.garbage_time()
+                return
+        self.clean_up()
 
     def reset(self):
         for m_reset in self.mobile_resets:
@@ -208,9 +224,6 @@ class Room(RootDBO):
                 if a_reset.reset_count <= curr_count < a_reset.reset_max:
                     instance = template.create_instance(self)
                     instance.enter_env(self)
-        if hasattr(self, 'dirty') and not self.instance:
-            save_object(self)
-            del self.dirty
 
     def add_mobile(self, template, reset):
         instance = template.create_instance(self)
@@ -227,11 +240,17 @@ class Room(RootDBO):
         instance.enter_env(self)
 
     def clean_up(self):
-        for mobile in self.mobiles:
-            mobile.enter_env(self)
+        detach_events(self)
+        for mobile_list in self.mobiles.viewvalues():
+            for mobile in mobile_list:
+                if mobile.env != self:
+                    mobile.enter_env(self)
         for obj in self.contents:
             if hasattr(obj, 'detach'):
                 obj.detach()
+        if not getattr(self, 'template', None):
+            evict_object(self)
+
 
 
 

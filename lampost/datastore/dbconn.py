@@ -107,7 +107,7 @@ class RedisStore():
 
     def evict_object(self, dbo):
         try:
-            self._object_map.pop(dbo.dbo_key)
+            del self._object_map[dbo.dbo_key]
         except KeyError:
             warn("Removing object {} not previously cached".format(dbo.dbo_id))
 

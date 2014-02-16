@@ -17,7 +17,6 @@ class Area(RootDBO):
     next_room_id = DBOField(0)
     owner_id = DBOField()
     dbo_rev = DBOField(0)
-    instanced = DBOField(False)
 
     def on_loaded(self):
         register_p(self.reset, seconds=reset_time, randomize=reset_time)
@@ -43,9 +42,18 @@ class Area(RootDBO):
             return clone
         return room
 
-    def add_room(self, room):
-        while self.rooms.get(self.dbo_id + ':' + str(self.next_room_id)):
-            self.next_room_id += 1
+    def add_room(self):
+        next_id = 0
+        sorted_ids = self.sorted_keys
+        if sorted_ids:
+            next_id = int(sorted_ids[0].split(":")[1])
+        for dbo_id in sorted_ids:
+            room_id = int(dbo_id.split(':')[1])
+            if room_id == next_id:
+                next_id += 1
+            else:
+                break
+        self.next_room_id = next_id
         save_object(self)
 
     def reset(self):

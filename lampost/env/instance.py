@@ -39,18 +39,23 @@ class AreaInstance(object):
         try:
             room = self.rooms[room_id]
         except KeyError:
-            room = load_object('room', room_id).clone()
+            room = load_by_key('room', room_id).clone()
             room.instance = self
+            self.rooms[room_id] = room
         return room
 
 
-class InstanceEntrance(Feature):
-    sub_class_id = 'instance_entrance'
+class Entrance(Feature):
+    sub_class_id = 'entrance'
 
-    verb = DBOField()
+    verb = DBOField('enter')
     destination = DBOField()
+    edit_required = DBOField(True)
+
+    target_class = None
 
     def on_loaded(self):
+        super(Feature, self).on_loaded()
         self.verbs = convert_verbs(self.verb)
         if not self.title:
             self.title = self.verb

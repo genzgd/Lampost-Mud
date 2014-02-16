@@ -27,6 +27,7 @@ class Dispatcher:
         event_registrations.remove(registration)
         if not event_registrations:
             del self._registrations[registration.event_type]
+        registration.owner = None
 
     def unregister_type(self, owner, event_type):
         for registration in self._owner_map[owner].copy():
@@ -61,8 +62,9 @@ class Dispatcher:
                 error("Dispatch Error", 'Dispatcher', dispatch_error)
 
     def detach_events(self, owner):
-        for registration in self._owner_map[owner].copy():
-            self.unregister(registration)
+        if owner in self._owner_map:
+            for registration in self._owner_map[owner].copy():
+                self.unregister(registration)
 
     def _pulse(self):
         self.dispatch('pulse')

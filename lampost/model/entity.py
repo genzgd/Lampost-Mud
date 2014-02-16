@@ -127,8 +127,9 @@ class Entity(BaseItem):
                 self.instance.remove_entity(self)
             if new_instance:
                 new_instance.add_entity(self)
+        if not self.instance and new_env.room_id:
+             self.room_id = new_env.room_id
         self.env = new_env
-        self.room_id = new_env.room_id
         new_env.rec_examine(self)
         self.entry_msg.target = getattr(ex, 'from_desc', None)
         self.env.entity_enters(self, ex)
@@ -166,6 +167,8 @@ class Entity(BaseItem):
 
     def detach(self):
         super(Entity, self).detach()
+        if self.instance:
+            self.instance.remove_entity(self)
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))

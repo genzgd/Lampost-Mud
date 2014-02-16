@@ -1,4 +1,4 @@
-from lampost.gameops.display import TELL_TO_DISPLAY
+import pdb
 import lampost.setup.update
 
 from lampost.client.user import User
@@ -10,6 +10,7 @@ from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action
 from lampost.model.player import Player
 from lampost.util.lmutil import find_extra, patch_object, PatchError
+from lampost.gameops.display import TELL_TO_DISPLAY
 
 m_requires('session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
 
@@ -47,8 +48,8 @@ def goto(source, args, **ignored):
             new_env = load_object(Room, dest)
     if new_env:
         source.change_env(new_env)
-        return source.parse("look")
-    raise ActionError("Cannot find " + dest)
+    else:
+        raise ActionError("Cannot find " + dest)
 
 
 @imm_action('summon')
@@ -60,6 +61,11 @@ def summon(source, args, **ignored):
     check_perm(source, player)
     player.change_env(source.env)
     source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=player)
+
+
+@imm_action('debug', 'supreme')
+def debug(**ignored):
+    pdb.set_trace()
 
 
 @imm_action('patch', 'has___dict__', imm_level='supreme', prep=":", obj_target_class="args")

@@ -58,7 +58,7 @@ class RoomResource(EditResource):
         check_perm(session, area)
 
     def post_create(self, room, session):
-        add_room(parent_area(room), room, session)
+        add_room(parent_area(room), session)
         add_resets(room)
 
     def pre_update(self, room, session):
@@ -88,7 +88,7 @@ class CreateExit(Resource):
         if content.is_new:
             other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
             publish_edit('create', other_room, session, True)
-            add_room(area, other_room, session)
+            add_room(area,  session)
         else:
             other_area, other_room = find_area_room(other_id, session)
             if not content.one_way and other_room.find_exit(rev_dir):
@@ -144,8 +144,8 @@ class RoomVisit(Resource):
         session.player.change_env(room)
 
 
-def add_room(area, room, session):
-    area.add_room(room)
+def add_room(area, session):
+    area.add_room()
     publish_edit('update', area, session, True)
 
 
@@ -184,7 +184,9 @@ def room_clean_up(room, session, area_delete=None):
             denizen.display_line('You were in a room that was destroyed by some unknown force')
             safe_room = load_object(Room, config_manager.start_room)
             if not safe_room:
-                safe_room = Room("Safe Room", "A temporary safe room when room deleted")
+                safe_room = Room('temp:safe')
+                safe_room.title = "Safe Room"
+                safe_room.desc = "A temporary safe room when room deleted"
             denizen.change_env(safe_room)
         else:
             denizen.die()
