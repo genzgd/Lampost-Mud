@@ -181,8 +181,8 @@ class Parse(object):
         match.target_method = getattr(target, match.action.msg_class, None)
         if match.target_method is None:
             return INVALID_TARGET
-        if hasattr(match.action, 'item_action'):
-            if match.target_method.im_self == target:
+        if hasattr(match.action, 'self_action'):
+            if action.im_self == target:
                 match.action = match.target_method
             else:
                 return INVALID_TARGET

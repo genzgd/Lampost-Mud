@@ -7,7 +7,7 @@ from lampost.model.item import Readable
 inscription = Readable()
 inscription.title = "Archaic Inscription"
 inscription.text = "Herewith wilt thou be bound"
-inscription.on_loaded()
+inscription._on_loaded()
 
 
 class Touchstone(Feature):
@@ -18,11 +18,11 @@ class Touchstone(Feature):
     aliases = DBOField(["obelisk"])
     inscription = DBOField(inscription, 'readable')
 
-    @item_action()
-    def rec_touch(self, source, **ignored):
+    @item_action(target_class="feature")
+    def touch(self, source, **ignored):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
         source.touchstone = self.room.dbo_id
 
     def on_created(self):
         self.target_providers.append(self.inscription)
-        self.instance_providers.append(self.inscription)
+        self.self_providers.append(self.inscription)

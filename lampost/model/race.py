@@ -12,6 +12,8 @@ class PlayerRace(RootDBO):
     name = DBOField("Unnamed")
     desc = DBOField('')
     base_attrs = DBOField({})
+    start_room = DBOField()
+    start_room_instanced = DBOField(False)
 
     def on_created(self):
         if not self.base_attrs:

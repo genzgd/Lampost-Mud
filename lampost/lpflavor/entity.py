@@ -125,8 +125,8 @@ class EntityLP(Entity):
             del self._next_command
         self.check_fight()
 
-    def rec_entity_leave_env(self, entity, ex):
-        super(EntityLP, self).rec_entity_leave_env(entity, ex)
+    def entity_leave_env(self, entity, ex):
+        super(EntityLP, self).entity_leave_env(entity, ex)
         if self._current_action and self._action_target == entity:
             self._cancel_actions()
 
@@ -150,7 +150,7 @@ class EntityLP(Entity):
         if self.weapon:
             return self.weapon.weapon_type
 
-    def rec_attack(self, source, attack):
+    def attacked(self, source, attack):
         for defense in self.defenses:
             defense.apply(self, attack)
             if attack.adj_damage <= 0 or attack.adj_accuracy <= 0:
@@ -205,7 +205,7 @@ class EntityLP(Entity):
             self.weapon = None
         article.on_removed(self)
 
-    def rec_consider(self, **ignored):
+    def considered(self, **ignored):
         return calc_consider(self)
 
     def _do_equip(self, article, equip_slot):
@@ -297,6 +297,6 @@ class EntityLP(Entity):
             display_status[base_pool_id] = getattr(self, base_pool_id)
         return display_status
 
-    def rec_status(self):
+    def combat_status(self):
         return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
                                                  for pool_id, ignored in POOL_LIST])])

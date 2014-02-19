@@ -35,7 +35,6 @@ class ArticleTemplate(Template):
             self.plural_keys = set()
             for single_key in self.single_keys:
                 self.plural_keys.add(single_key[:-1] + (plural(single_key[-1:][0]),))
-        super(ArticleTemplate, self).on_loaded()
 
 
 class Article(BaseItem):
@@ -83,7 +82,7 @@ class Article(BaseItem):
             return "{} ({})".format(long_desc, self.quantity)
         return long_desc
 
-    def rec_get(self, source, quantity=None, **ignored):
+    def get(self, source, quantity=None, **ignored):
         source.check_inven(self, quantity)
         gotten = self
         if quantity and quantity < self.quantity:
@@ -95,7 +94,7 @@ class Article(BaseItem):
         source.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=gotten)
         gotten.enter_env(source)
 
-    def rec_drop(self, source, quantity=None, **ignored):
+    def drop(self, source, quantity=None, **ignored):
         source.check_drop(self, quantity)
         if self.current_slot:
             raise ActionError("You must unequip the item before dropping it.")
@@ -123,10 +122,10 @@ class Article(BaseItem):
                 pass
         new_env.add_inven(self)
 
-    def rec_wear(self):
+    def wear(self):
         pass
 
-    def rec_remove(self):
+    def remove(self):
         pass
 
 

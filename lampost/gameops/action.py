@@ -29,10 +29,6 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
         action.verbs.update(convert_verbs(verbs))
 
     if msg_class:
-        if msg_class.startswith('has_'):
-            msg_class = msg_class[4:]
-        elif not msg_class.startswith('rec_'):
-            msg_class = 'rec_{0}'.format(msg_class)
         action.msg_class = msg_class
 
     if target_class:
@@ -57,10 +53,7 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
         elif not hasattr(action, 'obj_target_class'):
             action.obj_target_class = TargetClass.DEFAULTS
         if obj_msg_class:
-            if obj_msg_class.startswith('has_'):
-                action.obj_msg_class = obj_msg_class[4:]
-            else:
-                action.obj_msg_class = 'rec_{0}'.format(obj_msg_class)
+            action.obj_msg_class = obj_msg_class
     for arg_name, value in kw_args.iteritems():
         setattr(action, arg_name, value)
     return action
@@ -74,14 +67,11 @@ def item_action(**kwargs):
         msg_class = local_args.get('msg_class', None)
         if not verbs:
             verbs = func.func_name
-            if verbs.startswith('rec_'):
-                verbs = verbs[4:]
         if not msg_class:
             msg_class = verbs
+            func.self_action = True
         local_args['verbs'] = verbs
         local_args['msg_class'] = msg_class
-        if not 'target_class' in local_args:
-            local_args['target_class'] = 'im_self'
         make_action(func, **local_args)
         return func
     return decorator

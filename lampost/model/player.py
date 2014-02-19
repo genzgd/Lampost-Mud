@@ -17,7 +17,7 @@ class Player(RootDBO):
     room_id = DBOField()
     home_room = DBOField()
 
-    rec_player = True
+    is_player = True
     can_die = True
 
     def __init__(self, dbo_id):
@@ -46,7 +46,7 @@ class Player(RootDBO):
     def start(self):
         register_p(self.autosave, seconds=20)
 
-    def rec_glance(self, source, **ignored):
+    def glance(self, source, **ignored):
         source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))
 
     def display_line(self, text, display='default'):
@@ -71,7 +71,7 @@ class Player(RootDBO):
         except ValueError:
             warn("Removing channel {} not in list".format(channel.display), self)
 
-    def rec_broadcast(self, broadcast):
+    def receive_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)
 
     def die(self):

@@ -24,16 +24,16 @@ class Fight():
         self.opponents = {}
 
     def update_skills(self):
-        self.attacks = [attack for attack in self.me.skills.viewvalues() if getattr(attack, 'msg_class', None) == 'rec_attack']
+        self.attacks = [attack for attack in self.me.skills.viewvalues() if getattr(attack, 'msg_class', None) == 'attacked']
         self.attacks.sort(key=lambda x: x.points_per_pulse(self.me), reverse=True)
         self.defenses = [defense for defense in self.me.skills.viewvalues() if defense.template_id == 'defense' and not defense.auto_start]
-        self.consider = self.me.rec_consider()
+        self.consider = self.me.considered()
 
     def add(self, opponent):
         try:
             self.opponents[opponent].last_seen = current_pulse()
         except KeyError:
-            self.opponents[opponent] = FightStats(consider_level(self.consider, opponent.rec_consider()))
+            self.opponents[opponent] = FightStats(consider_level(self.consider, opponent.considered()))
             self.me.check_fight()
 
     def end(self, opponent, victory):
@@ -86,7 +86,7 @@ class Fight():
             except ActionError:
                 continue
             self.me.last_opponent = opponent
-            self.me.start_action(attack, {'target': opponent, 'source': self.me, 'target_method': opponent.rec_attack})
+            self.me.start_action(attack, {'target': opponent, 'source': self.me, 'target_method': opponent.attacked})
             return
             # Try again when another skill because available
         if next_available < 10000:

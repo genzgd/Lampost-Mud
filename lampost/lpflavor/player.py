@@ -26,7 +26,6 @@ class PlayerLP(Player, EntityLP):
         self.auto_fight = False
 
     def on_loaded(self):
-        super(PlayerLP, self).on_loaded()
         for skill in self.skills.viewvalues():
             self.add_skill(skill)
 

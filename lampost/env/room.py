@@ -57,7 +57,7 @@ class Exit(RootDBO):
     def dest_room(self):
         return load_by_key('room', self.destination)
 
-    def rec_examine(self, source, **ignored):
+    def examine(self, source, **ignored):
         source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
 
     def __call__(self, source, **ignored):
@@ -113,27 +113,27 @@ class Room(RootDBO):
     def contents(self):
         return itertools.chain(self.features, self.denizens, self.inven)
 
-    def rec_glance(self, source, **ignored):
+    def glance(self, source, **ignored):
         return source.display_line(self.title, ROOM_DISPLAY)
 
     def entity_enters(self, entity, ex):
         try:
             entity.entry_msg.source = entity
-            self.rec_broadcast(entity.entry_msg)
+            self.receive_broadcast(entity.entry_msg)
         except AttributeError:
             pass
         self.denizens.append(entity)
         entity.pulse_stamp = current_pulse()
-        tell(self.contents, "rec_entity_enter_env", entity)
+        tell(self.contents, "entity_enter_env", entity)
 
     def entity_leaves(self, entity, ex):
         try:
             entity.exit_msg.source = entity
-            self.rec_broadcast(entity.exit_msg)
+            self.receive_broadcast(entity.exit_msg)
         except AttributeError:
             pass
         self.denizens.remove(entity)
-        tell(self.contents, "rec_entity_leave_env", entity, ex)
+        tell(self.contents, "entity_leave_env", entity, ex)
 
     def add_inven(self, article):
         self.inven.append(article)
@@ -142,30 +142,30 @@ class Room(RootDBO):
     def remove_inven(self, article):
         self.inven.remove(article)
 
-    def rec_broadcast(self, broadcast):
+    def receive_broadcast(self, broadcast):
         if not broadcast:
             return
         if getattr(broadcast, 'target', None) == self:
             broadcast.target = None
-        tell(self.contents, "rec_broadcast", broadcast)
+        tell(self.contents, "receive_broadcast", broadcast)
 
     def broadcast(self, **kwargs):
-        self.rec_broadcast(Broadcast(**kwargs))
+        self.receive_broadcast(Broadcast(**kwargs))
 
-    def rec_social(self):
+    def social(self):
         pass
 
-    def rec_examine(self, source, **ignored):
+    def examine(self, source, **ignored):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
         source.display_line('HRT', ROOM_DISPLAY)
         source.display_line(self.desc, ROOM_DISPLAY)
         source.display_line('HRB', ROOM_DISPLAY)
         if self.exits:
             for my_exit in self.exits:
-                my_exit.rec_examine(source)
+                my_exit.examine(source)
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
-        tell(filter(lambda x: x != source, self.contents), 'rec_glance', source)
+        tell(filter(lambda x: x != source, self.contents), 'glance', source)
 
     def short_exits(self):
         return ", ".join([ex.dir_desc for ex in self.exits])
@@ -190,7 +190,7 @@ class Room(RootDBO):
         stale_pulse = future_pulse(-room_garbage_time)
         for obj in self.contents:
             obj_pulse = getattr(obj, 'pulse_stamp', 0)
-            if obj_pulse > stale_pulse or hasattr(obj, 'rec_player'):
+            if obj_pulse > stale_pulse or hasattr(obj, 'is_player'):
                 self.garbage_time()
                 return
         self.clean_up()

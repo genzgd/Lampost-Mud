@@ -180,7 +180,7 @@ def room_clean_up(room, session, area_delete=None):
                     save_object(other_room, True)
                     publish_edit('update', other_room, session, True)
     for denizen in room.denizens:
-        if hasattr(denizen, 'rec_player'):
+        if hasattr(denizen, 'is_player'):
             denizen.display_line('You were in a room that was destroyed by some unknown force')
             safe_room = load_object(Room, config_manager.start_room)
             if not safe_room:

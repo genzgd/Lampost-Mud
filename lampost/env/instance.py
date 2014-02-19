@@ -1,8 +1,9 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
-from lampost.gameops.action import convert_verbs
+from lampost.gameops.action import convert_verbs, item_action
 from lampost.gameops.display import EXIT_DISPLAY
+from lampost.gameops.script import Script
 from lampost.gameops.target import TargetClass
 
 m_requires('datastore', __name__)
@@ -59,7 +60,6 @@ class Entrance(Feature):
     msg_class = "__call__"
 
     def on_loaded(self):
-        super(Feature, self).on_loaded()
         if self.direction:
             self.verbs = (self.direction.key,), (self.direction.desc,)
             self.target_class = [TargetClass.NO_ARGS]
@@ -73,7 +73,7 @@ class Entrance(Feature):
     def dest_room(self):
         return load_by_key('room', self.destination)
 
-    def rec_glance(self, source, **ignored):
+    def glance(self, source, **ignored):
         if self.direction:
             source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
         else:

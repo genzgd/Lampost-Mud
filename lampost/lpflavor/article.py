@@ -12,7 +12,6 @@ class ArticleTemplateLP(ArticleTemplate):
     def on_loaded(self):
         if self.art_type == 'weapon':
             self.equip_msg = BroadcastMap(s="You wield {N}", e="{n} wields {N}")
-        super(ArticleTemplateLP, self).on_loaded()
 
 
 class ArticleLP(Article):

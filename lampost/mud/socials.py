@@ -17,7 +17,7 @@ class Social(RootDBO):
 
     b_map = DBOField({})
 
-    msg_class = 'rec_social'
+    msg_class = 'social'
 
     def on_loaded(self):
         mud_action(self.dbo_id)(self)

@@ -47,10 +47,10 @@ class Entity(BaseItem):
         self.inven.remove(article)
         remove_action(self.inven_actions, article)
 
-    def rec_entity_enter_env(self, entity):
+    def entity_enter_env(self, entity):
         pass
 
-    def rec_entity_leave_env(self, entity, ex):
+    def entity_leave_env(self, entity, ex):
         pass
 
     def parse(self, command):
@@ -93,19 +93,19 @@ class Entity(BaseItem):
     def handle_parse_error(self, error, command):
         self.display_line(error.message, SYSTEM_DISPLAY)
 
-    def rec_social(self, **ignored):
+    def social(self, **ignored):
         pass
 
-    def rec_follow(self, source, **ignored):
+    def follow(self, source, **ignored):
         self.followers.add(source)
         source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
 
-    def rec_examine(self, source, **ignored):
-        super(Entity, self).rec_examine(source, **ignored)
+    def examine(self, source, **ignored):
+        super(Entity, self).examine(source, **ignored)
         source.display_line("{0} is carrying:".format(self.name))
         if self.inven:
             for article in self.inven:
-                article.rec_glance(source)
+                article.glance(source)
         else:
             source.display_line("Nothing")
 
@@ -130,7 +130,7 @@ class Entity(BaseItem):
         if not self.instance and new_env.room_id:
              self.room_id = new_env.room_id
         self.env = new_env
-        new_env.rec_examine(self)
+        new_env.examine(self)
         self.entry_msg.target = getattr(ex, 'from_desc', None)
         self.env.entity_enters(self, ex)
 
@@ -138,7 +138,7 @@ class Entity(BaseItem):
         broadcast = Broadcast(**kwargs)
         broadcast.source = self
         if self.env:
-            self.env.rec_broadcast(broadcast)
+            self.env.receive_broadcast(broadcast)
 
     def display_line(self, line, display='default'):
         pass
@@ -159,7 +159,7 @@ class Entity(BaseItem):
         self.exit_msg = Broadcast(s="{n} expires, permanently.")
         for article in reversed(self.inven):
             article.current_slot = None
-            article.rec_drop(self)
+            article.drop(self)
 
         self.leave_env()
         self.status = 'dead'

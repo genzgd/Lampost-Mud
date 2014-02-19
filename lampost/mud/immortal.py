@@ -68,7 +68,7 @@ def debug(**ignored):
     pdb.set_trace()
 
 
-@imm_action('patch', 'has___dict__', imm_level='supreme', prep=":", obj_target_class="args")
+@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_target_class="args")
 def patch(target, verb, args, command, **ignored):
     try:
         split_ix = args.index(":")
@@ -124,7 +124,7 @@ def set_home(source, **ignored):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="has_living", prep="to", obj_target_class="args")
+@imm_action('force', msg_class="living", prep="to", obj_target_class="args")
 def force(source, target, obj, **ignored):
     force_cmd = ' '.join(obj)
     if not force_cmd:
@@ -136,7 +136,7 @@ def force(source, target, obj, **ignored):
 
 @imm_action('unmake', 'general', target_class="env_living env_items")
 def unmake(source, target, **ignored):
-    if hasattr(target, 'rec_player'):
+    if hasattr(target, 'is_player'):
         raise ActionError("You can't unmake players")
     if target in source.env.inven:
         source.broadcast(s="{N} is no more.", target=target)
@@ -148,7 +148,7 @@ def unmake(source, target, **ignored):
         target.detach()
 
 
-@imm_action('toggle mortal', 'has_immortal',  self_target=True)
+@imm_action('toggle mortal', 'immortal',  self_target=True)
 def toggle_mortal(target, **ignored):
     target.can_die = not target.can_die
     target.display_line("You can {} die.".format('now' if target.can_die else 'no longer'))
@@ -178,7 +178,7 @@ def unregister_display(source, args, **ignored):
 @imm_action('describe', 'describe')
 def describe(source, target, **ignored):
     source.display_line('&nbsp;&nbsp;')
-    for line in target.rec_describe():
+    for line in target.describe():
         source.display_line(line, TELL_TO_DISPLAY)
 
 @imm_action('reset')
@@ -241,12 +241,12 @@ def combat_log(source, **ignored):
         return "Combat logging added to {}.".format(source.env.name)
 
 
-@imm_action('status', 'status', self_target=True)
-def status(target, **ignored):
-    return substitute(target.rec_status(), target=target)
+@imm_action('status', 'combat_status', self_target=True)
+def combat_status(target, **ignored):
+    return substitute(target.combat_status(), target=target)
 
 
-@imm_action('save', 'has_save_value', self_target=True)
+@imm_action('save', 'save_value', self_target=True)
 def save(target, **ignored):
     save_object(target)
     return '{} saved.'.format(target.name)

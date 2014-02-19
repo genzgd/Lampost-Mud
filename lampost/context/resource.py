@@ -73,6 +73,7 @@ def context_post_init():
         if hasattr(module, '_post_init'):
             module._post_init()
 
+
 def _priority_sort(module):
     try:
         return getattr(module, '_init_priority')
@@ -81,8 +82,9 @@ def _priority_sort(module):
             return 1000
         return 2000
 
+
 def _inject(cls, name, service):
     setattr(cls, name, service)
-    for attr, value in _methods.get(name, {}).iteritems():
+    for attr, value in _methods.get(name, {}).viewitems():
         if not getattr(cls, attr, None):
             setattr(cls, attr, value)

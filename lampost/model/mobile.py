@@ -26,7 +26,6 @@ class MobileTemplate(Template):
 
     def on_loaded(self):
         self.target_keys = target_keys(self)
-        super(MobileTemplate, self).on_loaded()
 
 
 class Mobile(Entity):

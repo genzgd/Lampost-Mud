@@ -128,7 +128,7 @@ class AttackSkill(BaseSkill):
     target_class = [TargetClass.ENV_LIVING]
 
     display = COMBAT_DISPLAY
-    msg_class = 'rec_attack'
+    msg_class = 'attacked'
     damage_type = DBOTField('weapon')
     delivery = DBOTField('melee')
     damage_calc = DBOTField({})
@@ -170,7 +170,6 @@ class DefenseTemplate(SkillTemplate):
     sub_class_id = 'defense'
 
     def on_loaded(self):
-        super(DefenseTemplate, self).on_loaded()
         self.calc_damage_types = set()
         for damage_type in self.damage_type:
             try:
@@ -223,7 +222,7 @@ class DefenseSkill(BaseSkill):
 @mud_action(('con', 'consider'), 'consider')
 def consider(target_method, source, target, **ignored):
     target_con = target_method()
-    source_con = source.rec_consider()
+    source_con = source.considered()
     con_string = CON_LEVELS[consider_level(source_con, target_con) + CON_RANGE]
     source.last_opponent = target
     source.status_change()

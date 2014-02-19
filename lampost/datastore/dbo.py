@@ -9,12 +9,18 @@ class RootDBOMeta(AutoMeta):
     def __init__(cls, class_name, bases, new_attrs):
         super(RootDBOMeta, cls).__init__(class_name, bases, new_attrs)
         cls.dbo_fields = {}
+        cls._load_functions = []
         for base in bases:
             try:
                 cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.iteritems() if name not in new_attrs.keys()})
             except AttributeError:
                 pass
+            cls._load_functions.extend(getattr(base, '_load_functions', []))
         cls._update_dbo_fields(new_attrs)
+        try:
+            cls._load_functions.append(new_attrs['on_loaded'])
+        except KeyError:
+            pass
         if 'class_id' in new_attrs:
             set_dbo_class(cls.class_id, cls)
         elif 'sub_class_id' in new_attrs:
@@ -24,7 +30,7 @@ class RootDBOMeta(AutoMeta):
             set_dbo_class(cls.dbo_key_type, cls)
 
     def _update_dbo_fields(cls, new_attrs):
-        cls.dbo_fields.update({name: dbo_field for name, dbo_field in new_attrs.iteritems() if hasattr(dbo_field, 'hydrate_value')})
+        cls.dbo_fields.update({name: attr for name, attr in new_attrs.iteritems() if hasattr(attr, 'hydrate_value')})
 
     def add_dbo_fields(cls, new_fields):
         cls._meta_init_attrs(new_fields)
@@ -67,6 +73,10 @@ class RootDBO(object):
         if dbo_id:
             self.dbo_id = unicode(str(dbo_id).lower())
 
+    def _on_loaded(self):
+        for load_func in reversed(self._load_functions):
+            load_func(self)
+
     def hydrate(self, dto):
         for field, dbo_field in self.dbo_fields.viewitems():
             if field in dto:
@@ -76,16 +86,16 @@ class RootDBO(object):
                     delattr(self, field)
                 except AttributeError:
                     pass
-        self.on_loaded()
+        self._on_loaded()
         return self
 
     def clone(self):
         clone = self.__class__(getattr(self, 'dbo_id', None))
         clone.template = self
-        clone.on_loaded()
+        clone._on_loaded()
         return clone
 
-    def describe(self, display, level):
+    def _describe(self, display, level):
 
         def append(value, key):
             display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
@@ -104,7 +114,7 @@ class RootDBO(object):
                 wrapper = value_wrapper(value)
                 if hasattr(dbo_field, 'dbo_class'):
                     append('', field)
-                    wrapper(lambda value : value.describe(display, level + 1))(value)
+                    wrapper(lambda value : value._describe(display, level + 1))(value)
                 else:
                     wrapper(append)(value, field)
         return display
@@ -125,10 +135,7 @@ class RootDBO(object):
     def on_created(self):
         pass
 
-    def on_loaded(self):
-        pass
-
-    def rec_describe(self):
+    def describe(self):
         return self.describe([], 0)
 
     @property

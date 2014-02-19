@@ -1,14 +1,16 @@
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
+from lampost.gameops.script import Scriptable
 from lampost.model.item import BaseItem
 
 m_requires('log', __name__)
 
 
-class Feature(BaseItem):
+class Feature(BaseItem, Scriptable):
     class_id = 'feature'
 
+    editor = DBOField(False)
     edit_required = DBOField(False)
 
     @classmethod
@@ -26,3 +28,4 @@ class Feature(BaseItem):
         except AttributeError:
             pass
         return feature
+

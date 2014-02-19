@@ -33,7 +33,6 @@ class MobileTemplateLP(MobileTemplate):
             for attr_name in Archetype.attr_list:
                 setattr(self.instance_cls, attr_name, base_attr_value * self.level)
         self.enemies = affinities[self.affinity]['enemies']
-        super(MobileTemplateLP, self).on_loaded()
 
     def config_instance(self, mobile, owner):
         mobile.skills = {}
@@ -57,11 +56,11 @@ class MobileLP(EntityLP):
     affinity = DBOTField('neutral')
     enemies = TemplateField('enemies')
 
-    def rec_entity_enter_env(self, entity):
+    def entity_enter_env(self, entity):
         self._react_entity(entity)
 
-    def rec_entity_leave_env(self, entity, ex):
-        super(MobileLP, self).rec_entity_leave_env(entity, ex)
+    def entity_leave_env(self, entity, ex):
+        super(MobileLP, self).entity_leave_env(entity, ex)
         self.fight.check_follow(entity, ex)
 
     def enter_env(self, new_env, ex=None):

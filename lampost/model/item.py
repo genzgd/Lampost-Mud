@@ -49,12 +49,12 @@ class BaseItem(TemplateInstance):
     aliases = DBOTField([])
     sex = DBOTField('none')
     target_keys = TemplateField(set())
-    instance_providers = AutoField([])
+    self_providers = AutoField([])
 
     living = False
     env = None
 
-    rec_general = True
+    general = True
 
     def __init__(self, dbo_id=None):
         self.target_providers = []
@@ -66,7 +66,7 @@ class BaseItem(TemplateInstance):
 
     @property
     def action_providers(self):
-        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.instance_providers)
+        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.self_providers)
 
     def target_finder(self, entity, target_key):
         if target_key in self.target_keys:
@@ -78,18 +78,18 @@ class BaseItem(TemplateInstance):
     def long_desc(self, observer):
         return self.desc if self.desc else self.title
 
-    def rec_examine(self, source, **ignored):
+    def examine(self, source, **ignored):
         if source.can_see(self):
             source.display_line(self.long_desc(source))
 
-    def rec_glance(self, source, **ignored):
+    def glance(self, source, **ignored):
         if source.can_see(self):
             source.display_line(self.short_desc(source))
 
-    def rec_broadcast(self, broadcast):
+    def receive_broadcast(self, broadcast):
         pass
 
-    def rec_social(self, social):
+    def social(self, social):
         pass
 
     def leave_env(self):
@@ -110,5 +110,5 @@ class Readable(BaseItem):
     text = DBOField('')
 
     @item_action()
-    def rec_read(self, source, **ignored):
+    def read(self, source, **ignored):
         source.display_line(self.text, TELL_TO_DISPLAY)
