@@ -50,13 +50,20 @@ class Scriptable(object):
         pass
 
 
-
 class Script(RootDBO):
     dbo_key_type = 'script'
-    dbo_set_key = 'scripts'
-
     approved = DBOField(False)
     text = DBOField('')
+
+    @property
+    def dbo_set_key(self):
+        return "area_scripts:{}".format(self.area_id)
+
+    @property
+    def area_id(self):
+        return self.dbo_id.split(":")[0]
+
+
 
 
 

@@ -42,6 +42,11 @@ def inven_finder(self, entity, target_key, *ignored):
 def env_finder(self, entity, target_key, *ignored):
     if not target_key:
         yield entity.env
+    for extra in entity.env.extras:
+        if target_key in getattr(extra, 'target_keys', ()):
+            yield extra
+        for target in recursive_targets(getattr(extra, 'target_providers', ()), target_key):
+            yield target
 
 
 def feature_finder(self, entity, target_key, *ignored):

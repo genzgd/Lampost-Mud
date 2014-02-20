@@ -62,6 +62,7 @@ class MudNature():
             editors.append('room')
             editors.append('mobile')
             editors.append('article')
+            editors.append('script')
             channels.append('imm_channel')
         if has_perm(player, 'admin'):
             editors.append('players')

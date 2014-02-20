@@ -131,17 +131,17 @@ class Article(BaseItem):
 
 class ArticleReset(RootDBO):
     class_id = 'article_reset'
-    article_id = DBOField()
+    article_id = DBOField(None, 'article')
     reset_count = DBOField(1)
     reset_max = DBOField(1)
 
     @property
     def reset_key(self):
-        return "article_resets:{}".format(self.article_id)
+        return "article_resets:{}".format(self.article_id.dbo_id)
 
 
 class ArticleLoad(RootDBO):
     class_id = 'article_load'
-    article_id = DBOField()
+    article_id = DBOField(None, 'article')
     count = DBOField(1)
     load_type = DBOField('equip')

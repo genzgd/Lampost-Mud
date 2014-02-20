@@ -10,6 +10,7 @@ from lampost.editor.config import ConfigResource
 from lampost.editor.display import DisplayResource
 from lampost.editor.mobiles import MobileResource
 from lampost.editor.players import PlayerResource
+from lampost.editor.scripts import ScriptResource
 from lampost.editor.socials import SocialsResource
 from lampost.lpflavor.skill import SkillTemplate
 from lampost.model.area import Area
@@ -31,6 +32,7 @@ class EditorResource(Resource):
         self.putChild('display', DisplayResource())
         self.putChild('race', EditResource(PlayerRace))
         self.putChild('skill', EditResource(SkillTemplate))
+        self.putChild('script', ScriptResource())
 
 
 @requires('context')

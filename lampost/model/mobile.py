@@ -38,7 +38,7 @@ class Mobile(Entity):
 
 class MobileReset(RootDBO):
     class_id = 'mobile_reset'
-    mobile_id = DBOField()
+    mobile_id = DBOField(None, 'mobile', True)
     reset_count = DBOField(1)
     reset_max = DBOField(1)
     article_loads = DBOField([], 'article_load')

@@ -80,12 +80,16 @@ class RootDBO(object):
     def hydrate(self, dto):
         for field, dbo_field in self.dbo_fields.viewitems():
             if field in dto:
-                setattr(self, field, dbo_field.hydrate_value(dto[field], self))
+                dbo_value = dbo_field.hydrate_value(dto[field], self)
+                setattr(self, field, dbo_value)
             else:
+                dbo_value = None
                 try:
                     delattr(self, field)
                 except AttributeError:
                     pass
+            if not dbo_value and dbo_field.required:
+                error("Missing required field {} in object {}".format(field, self.dbo_id))
         self._on_loaded()
         return self
 
@@ -112,7 +116,7 @@ class RootDBO(object):
             value = getattr(self, field)
             if value:
                 wrapper = value_wrapper(value)
-                if hasattr(dbo_field, 'dbo_class'):
+                if hasattr(dbo_field, 'dbo_class_id'):
                     append('', field)
                     wrapper(lambda value : value._describe(display, level + 1))(value)
                 else:
@@ -136,7 +140,7 @@ class RootDBO(object):
         pass
 
     def describe(self):
-        return self.describe([], 0)
+        return self._describe([], 0)
 
     @property
     def dbo_key(self):
@@ -161,8 +165,9 @@ class RootDBO(object):
 
 
 class DBOField(AutoField):
-    def __init__(self, default=None, dbo_class_id=None):
+    def __init__(self, default=None, dbo_class_id=None, required=False):
         super(DBOField, self).__init__(default)
+        self.required = required
         if dbo_class_id:
             self.dbo_class_id = dbo_class_id
             self.hydrate_value =  value_wrapper(self.default, False)(self.hydrate_dbo_value)

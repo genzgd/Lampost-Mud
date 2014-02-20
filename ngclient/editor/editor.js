@@ -514,6 +514,7 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEd
       room: {label: "Room", url: "room", create: 'dialog'},
       mobile: {label: "Mobile", url: "mobile", create: "dialog"},
       article: {label: "Article", url: "article", create: "dialog"},
+      script: {label: "Script", url: "script", create: 'dialog'},
       social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
       display: {label: "Display", url: "display"},
       race: {label: "Races", objLabel: "Race", url: "race"},

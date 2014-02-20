@@ -1,0 +1,27 @@
+<div ng-controller="ScriptListCtrl" ng-show="ready" class="wrapper">
+  <div class="span2">
+    <button ng-click="newModelDialog()" class="btn btn-small btn-success">New Script</button>
+  </div>
+  <div class="span8 scrollable">
+    <table class="table table-condensed">
+      <thead>
+      <tr>
+        <th class="span1">Id</th>
+        <th class="span2">Title</th>
+        <th class="span1"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="edit-row table-bordered" ng-click="startEditor('article', article)" ng-repeat="script in modelList">
+        <td class="span1 unselectable">{{idOnly(script)}}</td>
+        <td class="span2 unselectable">{{script.title}}</td>
+        <td class="span1">
+          <div class="pull-right">
+            <a ng-click="deleteModel($event, script)" title="Delete Script" class="icon-link"><i class="icon-remove"></i></a>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

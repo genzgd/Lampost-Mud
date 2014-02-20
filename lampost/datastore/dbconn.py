@@ -79,7 +79,15 @@ class RedisStore():
     def load_object_set(self, dbo_class, set_key=None):
         if not set_key:
             set_key = dbo_class.dbo_set_key
-        return [self.load_object(dbo_class, dbo_id) for dbo_id in self.fetch_set_keys(set_key)]
+        results = []
+        for dbo_id in self.fetch_set_keys(set_key):
+            obj = self.load_object(dbo_class, dbo_id)
+            if obj:
+                results.append(obj)
+            else:
+                warn("Removing missing object from set {}".format(set_key))
+                self.delete_set_key(set_key, dbo_id)
+        return results
 
     def delete_object_set(self, dbo_class, set_key=None):
         if not set_key:
