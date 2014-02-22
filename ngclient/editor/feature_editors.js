@@ -61,7 +61,6 @@ angular.module('lampost_editor').controller('entranceFeatureController', ['$scop
     $scope.entrance = angular.copy(feature);
     $scope.room = room;
 
-    $scope.areaChange = function() {};
     $scope.listChange = function(rooms) {
 
       if (rooms.length > 0) {

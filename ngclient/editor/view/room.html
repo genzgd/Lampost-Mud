@@ -1,5 +1,5 @@
 <div ng-controller="RoomEditorCtrl" class="wrapper">
-<div class="wrapper" ng-show="selectionMode" lm-object-selector></div>
+<div class="wrapper" ng-show="selectionMode" lm-object-selector="room"></div>
 <div ng-hide="selectionMode" class="scrollable">
   <div class="row-fluid">
     <h4 class="span3"><a style="cursor: pointer;" title="Change Room" ng-click="selectionMode = true">Room: {{model.dbo_id}}</a></h4>
@@ -80,8 +80,8 @@
       </ul>
 
       <div class="tab-content">
-        <div lm-include="editor/view/room_extras.html"></div>
-        <div lm-include="editor/view/room_scripts.html"></div>
+        <div lm-include="editor/fragments/room_extras.html"></div>
+        <div lm-include="editor/fragments/room_scripts.html"></div>
       </div>
     </div>
     <div class="span5">

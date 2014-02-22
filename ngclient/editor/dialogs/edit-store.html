@@ -10,7 +10,7 @@
           <label>Store Title</label>
           <input class="input" type="text" ng-model="store.title" required>
         </div>
-        <div class="span6" ng-controller="lmAreaSelectorController">
+        <div class="span6" ng-controller="objSelectorController">
           <label>Source Area</label>
           <select class="span10" ng-model="selectedArea" ng-change="selectArea()" ng-options="area as area.dbo_id for area in selectAreaList"></select>
         </div>

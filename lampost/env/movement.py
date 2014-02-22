@@ -5,19 +5,10 @@ class Direction(RootDBO):
     class_id = 'direction'
     ref_map = {}
     ordered = []
-    key = DBOField()
 
     @classmethod
-    def load_ref(cls, key, owner=None):
-        return cls.ref_map[key] if key else None
-
-    @classmethod
-    def to_dto_repr(cls, value):
-        return value.key if value else None
-
-    @classmethod
-    def to_save_repr(cls, value):
-        return value.key
+    def load_ref(cls, dbo_id, owner=None):
+        return cls.ref_map[dbo_id] if dbo_id else None
 
     @classmethod
     def find_dir(cls, name):
@@ -25,12 +16,12 @@ class Direction(RootDBO):
             if name == key or name == value.desc:
                 return value
 
-    def __init__(self, key, desc, rev_key):
-        self.key = key
+    def __init__(self, dbo_id, desc, rev_key):
+        self.dbo_id = dbo_id
         self.desc = desc
         self.rev_key = rev_key
-        Direction.ref_map[key] = self
-        Direction.ordered.append({'key':key, 'name':desc, 'rev_key': rev_key})
+        Direction.ref_map[dbo_id] = self
+        Direction.ordered.append({'dbo_id':dbo_id, 'name':desc, 'rev_key': rev_key})
 
     @property
     def rev_dir(self):

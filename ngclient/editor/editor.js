@@ -24,7 +24,9 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
 
     window.onunload = function () {
       window.windowClosing = true;
-      window.opener.jQuery('body').trigger('editor_closing');
+      if (window.opener && window.opener.jQuery) {
+        window.opener.jQuery('body').trigger('editor_closing');
+      }
     };
 
     window.editUpdate = lmEditor.editUpdate;
@@ -514,7 +516,7 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEd
       room: {label: "Room", url: "room", create: 'dialog'},
       mobile: {label: "Mobile", url: "mobile", create: "dialog"},
       article: {label: "Article", url: "article", create: "dialog"},
-      script: {label: "Scripts", objLabel: "Script", url: "script"},
+      script: {label: "Script", url: "script"},
       social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
       display: {label: "Display", url: "display"},
       race: {label: "Races", objLabel: "Race", url: "race"},

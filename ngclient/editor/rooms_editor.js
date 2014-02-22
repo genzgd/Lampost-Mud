@@ -28,7 +28,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
       lmEditor.cache("constants").then(function (constants) {
         angular.forEach(constants.directions, function (dir) {
-          dirMap[dir.key] = dir;
+          dirMap[dir.dbo_id] = dir;
         });
         $scope.features = constants.features;
         if ($scope.features.length) {
@@ -298,7 +298,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
 
     $scope.digExit = function () {
       var destId = $scope.useNew ? $scope.destAreaId + ':' + $scope.destRoom.destId : $scope.destRoom.dbo_id;
-      var newExit = {start_room: room.dbo_id, direction: $scope.direction.key, is_new: $scope.useNew,
+      var newExit = {start_room: room.dbo_id, direction: $scope.direction.dbo_id, is_new: $scope.useNew,
         dest_id: destId, one_way: $scope.oneWay, dest_title: $scope.destRoom.title};
       lmRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
         room.exits.push(newExit);

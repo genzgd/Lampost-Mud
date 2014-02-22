@@ -16,12 +16,12 @@
       </tbody>
     </table>
   </div>
-  <div class="span6" ng-controller="lmAreaSelectorController" ng-init="objType = 'script'" >
+  <div class="span6" ng-controller="objSelectorController" ng-init="objType = 'script'" >
     <h5>Select Scripts</h5>
     <label>Source Area</label>
     <select class="span10" ng-model="selectedArea" ng-change="selectArea()" ng-options="area as area.dbo_id for area in selectAreaList"></select>
     <label>Available Scripts</label>
-    <select class="span10" ng-disabled="!hasAreaObj" ng-model="selectedAreaObj" ng-change="objChange()" ng-options="script as script.dbo_id for script in areaObjList"></select>
+    <select class="span10" ng-disabled="!hasAreaObj" ng-model="selectedAreaObj" ng-change="objChange()" ng-options="script as script.dbo_id for script in selObjList"></select>
     <div class="spacer"></div>
     <button ng-disabled="!hasAreaObj" type="button" class="btn btn-success btn-small" ng-click="selectScript(selectedAreaObj)">Add Script</button>
   </div>

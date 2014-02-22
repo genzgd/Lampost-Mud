@@ -42,7 +42,7 @@ class Exit(RootDBO):
 
     @property
     def verbs(self):
-        return (self.direction.key,), (self.direction.desc,)
+        return (self.direction.dbo_id,), (self.direction.desc,)
 
     @property
     def dir_desc(self):

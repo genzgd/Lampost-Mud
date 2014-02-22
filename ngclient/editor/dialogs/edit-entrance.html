@@ -29,8 +29,8 @@
             <option value>Use Direction</option>
           </select>
         </div>
-        <div class="span6" ng-controller="lmAreaSelectorController">
-          <div>
+        <div class="span6" >
+          <div ng-controller="objSelectorController">
             <label>Source Area</label>
             <select class="span10" ng-model="selectedArea" ng-change="selectArea()" ng-options="area as area.dbo_id for area in selectAreaList"></select>
           </div>
