@@ -1,4 +1,5 @@
 from lampost.datastore.auto import TemplateField
+from lampost.gameops.script import Scriptable
 from lampost.model.item import BaseItem, target_keys
 from lampost.gameops.action import ActionError
 from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
@@ -37,7 +38,7 @@ class ArticleTemplate(Template):
                 self.plural_keys.add(single_key[:-1] + (plural(single_key[-1:][0]),))
 
 
-class Article(BaseItem):
+class Article(BaseItem, Scriptable):
     template_id  = 'article'
 
     weight = DBOTField(0)

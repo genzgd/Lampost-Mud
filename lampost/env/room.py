@@ -6,6 +6,7 @@ from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.env.movement import Direction
+from lampost.gameops.script import Scriptable
 from lampost.model.mobile import MobileTemplate
 from lampost.model.article import ArticleTemplate
 from lampost.gameops.display import *
@@ -68,7 +69,7 @@ class Exit(RootDBO):
         source.change_env(destination, self)
 
 
-class Room(RootDBO):
+class Room(Scriptable):
     dbo_key_type = "room"
 
     dbo_rev = DBOTField(0)

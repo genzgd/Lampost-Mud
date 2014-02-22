@@ -27,7 +27,7 @@ class EditResource(Resource):
     def post_create(self, new_obj, session):
         pass
 
-    def pre_update(self, existing_obj, session):
+    def pre_update(self, existing_obj, new_dto, session):
         pass
 
     def post_update(self, existing_obj, session):
@@ -82,7 +82,7 @@ class EditUpdateResource(EditBaseResource):
         if not existing_obj:
             raise DataError("Gone: Object with key {} no longer exists.".format(raw['dbo.id']))
         check_perm(session, existing_obj)
-        self.editor.pre_update(existing_obj, session)
+        self.editor.pre_update(existing_obj, raw, session)
         update_object(existing_obj, raw)
         self.editor.post_update(existing_obj, session)
         return publish_edit('update', existing_obj, session)

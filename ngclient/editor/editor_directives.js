@@ -226,16 +226,18 @@ angular.module('lampost_editor').directive('lmFormSubmit', [function () {
   }
 }]);
 
+
 angular.module('lampost_editor').controller('lmAreaSelectorController', ['$scope', 'lmEditor', 'lmBus',
   function ($scope, lmEditor, lmBus) {
 
   var listKey;
+  var noObj = {dbo_id: "N/A"};
 
   $scope.$on('$destroy', function () {
     lmEditor.deref(listKey)
   });
 
-   lmBus.register('activateArea', function (newArea, oldArea) {
+  lmBus.register('activateArea', function (newArea, oldArea) {
       if (newArea) {
         $scope.selectArea(newArea);
       } else if (oldArea == $scope.selectedArea) {
@@ -247,7 +249,7 @@ angular.module('lampost_editor').controller('lmAreaSelectorController', ['$scope
 
   lmEditor.cache('area').then(function (areas) {
     $scope.selectAreaList = areas;
-    if ($scope.startArea) {
+    if (areas.indexOf($scope.startArea) > -1) {
       $scope.selectedArea = $scope.startArea;
     } else {
       $scope.selectedArea = areas[0];
@@ -256,13 +258,17 @@ angular.module('lampost_editor').controller('lmAreaSelectorController', ['$scope
   });
 
   $scope.selectArea = function () {
-    $scope.areaChange($scope.selectedArea);
     lmEditor.deref(listKey);
-    $scope.selectedAreaId = $scope.selectedArea.dbo_id;
-    listKey = $scope.objType + ':' + $scope.selectedAreaId;
+    listKey = $scope.objType + ':' + $scope.selectedArea.dbo_id;
     lmEditor.cache(listKey).then(function (objects) {
-      $scope.listChange(objects);
-
+      if (objects.length > 0) {
+        $scope.areaObjList = objects;
+        $scope.hasAreaObj = true;
+      } else {
+        $scope.areaObjList = [noObj];
+        $scope.hasAreaObj = false;
+      }
+      $scope.selectedAreaObj = $scope.areaObjList[0];
     });
   };
 

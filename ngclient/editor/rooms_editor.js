@@ -52,6 +52,9 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       angular.forEach(room.article_resets, function (reset) {
         editPromises.push(addRef('article', reset.article_id));
       });
+      angular.forEach(room.scripts, function(script) {
+        editPromises.push(addRef('script', script))
+      });
       return $q.all(editPromises);
     };
 
@@ -93,10 +96,14 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       return lmEditor.cacheValue('article:' + articleReset.article_id.split(':')[0], articleReset.article_id);
     };
 
+    $scope.script = function(script) {
+      return lmEditor.cacheValue('script:' + script.split(':')[0], script);
+    };
+
     $scope.exitTwoWay = function (exit) {
       var otherRoom = $scope.exitRoom(exit);
       if (!otherRoom) {
-        return; // This can happen temporarily while creating a new exit
+        return false; // This can happen temporarily while creating a new exit
       }
       var otherExits = otherRoom.exits;
       var rev_key = dirMap[exit.direction].rev_key;
@@ -143,11 +150,11 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       })
     };
 
-    $scope.deleteExtra = function (extraIx) {
-      if (angular.equals($scope.currentExtra, $scope.model.extras[extraIx])) {
+    $scope.deleteExtra = function (extra) {
+      if ($scope.currentExtra === extra) {
         $scope.currentExtra = null;
       }
-      $scope.model.extras.splice(extraIx, 1);
+      $scope.model.extras.splice($scope.model.extras.indexOf(extra), 1);
     };
 
     $scope.addNewReset = function (resetType) {
@@ -202,6 +209,19 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       } else {
         $scope.model.features.push(feature);
       }
+    };
+
+    $scope.selectScript = function(script) {
+      angular.forEach($scope.model.scripts, function(oldScript) {
+        if (oldScript == script.dbo_id) {
+          lmDialog.showOk("Script Exists", "This script is already in use.")
+        }
+      });
+      $scope.model.scripts.push(script.dbo_id);
+    };
+
+    $scope.deleteScript = function(script_id) {
+      $scope.model.scripts.splice($scope.model.scripts.indexOf(script_id), 1);
     };
 
     $scope.removeFeature = function (feature) {

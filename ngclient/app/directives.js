@@ -145,6 +145,16 @@ angular.module('lampost_dir').directive("lmStep", [function() {
   }
 }]);
 
+angular.module('lampost_dir').directive('lmInclude', [function () {
+  return {
+    replace: true,
+    restrict: 'A',
+    templateUrl: function (element, attr) {
+      return attr.lmInclude;
+    }
+  }
+}]);
+
 
 angular.module('lampost_dir').directive("colorPicker", [function () {
     return {

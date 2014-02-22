@@ -61,7 +61,7 @@ class RoomResource(EditResource):
         add_room(parent_area(room), session)
         add_resets(room)
 
-    def pre_update(self, room, session):
+    def pre_update(self, room, new_dto, session):
         check_perm(session, parent_area(room))
         clear_resets(room)
 

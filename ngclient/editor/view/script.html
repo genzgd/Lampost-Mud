@@ -1,0 +1,43 @@
+<div class="wrapper" ng-controller="ScriptEditorCtrl">
+  <div class="wrapper" ng-show="selectionMode" lm-object-selector></div>
+  <div class="scrollable" ng-hide="selectionMode">
+    <div class="row-fluid">
+      <div class="span4">
+        <div class="row-fluid">
+          <h4 class="span8"><a style="cursor: pointer;" title="Change Script" ng-click="selectionMode = true">Script: {{model.dbo_id}}</a></h4>
+          <h5 class="span3">Rev: {{model.dbo_rev}}</h5>
+        </div>
+      </div>
+      <div class="span4"></div>
+      <div class="span4">
+        <div class="row-fluid">
+          <div class="span8">
+            <button ng-disabled="!isDirty" ng-click="updateModel()" class="btn btn-primary">Update</button>
+            <button ng-disabled="!isDirty" ng-click="revertModel()" class="btn">Revert</button>
+            <button ng-click="deleteModel()" class="btn btn-danger" style="margin-left: 6px;">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span3">
+        <label>Title</label>
+        <input type="text" ng-model="model.title" required="true"/>
+      </div>
+      <div class="span4">
+        <div class="badge" ng-class="approvedClass()">{{approvedText()}}</div>
+      </div>
+    </div>
+    <div class="row-fluid">
+
+      <div class="span11">
+        <label>Text</label>
+        <div class="alert alert-error" ng-show="dataError">
+          <button type="button" class="close" ng-click="dataError = null">×</button>
+          {{dataError}}
+        </div>
+        <textarea class="span12 scrollable" rows="30" ng-model="model.text"></textarea>
+      </div>
+    </div>
+  </div>
+</div>

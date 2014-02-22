@@ -99,30 +99,6 @@ class RootDBO(object):
         clone._on_loaded()
         return clone
 
-    def _describe(self, display, level):
-
-        def append(value, key):
-            display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
-
-        if getattr(self, 'dbo_id', None):
-            append(self.dbo_id, 'dbo_id')
-            level *= 99
-        if getattr(self, 'template_id', None):
-            append(self.template_id, 'template_id')
-            level *= 99
-        if level > 3:
-            return
-        for field, dbo_field in sorted(self.dbo_fields.viewitems(), key=lambda (field, value): field):
-            value = getattr(self, field)
-            if value:
-                wrapper = value_wrapper(value)
-                if hasattr(dbo_field, 'dbo_class_id'):
-                    append('', field)
-                    wrapper(lambda value : value._describe(display, level + 1))(value)
-                else:
-                    wrapper(append)(value, field)
-        return display
-
     @property
     def save_value(self):
         save_value = {}
@@ -132,9 +108,6 @@ class RootDBO(object):
             except KeyError:
                 continue
         return self.metafields(save_value, ['dbo_id', 'sub_class_id'])
-
-    def to_dto_dict(self):
-        return
 
     def on_created(self):
         pass
@@ -162,6 +135,30 @@ class RootDBO(object):
             except AttributeError:
                 pass
         return dto_repr
+
+    def _describe(self, display, level):
+
+        def append(value, key):
+            display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
+
+        if getattr(self, 'dbo_id', None):
+            append(self.dbo_id, 'dbo_id')
+            level *= 99
+        if getattr(self, 'template_id', None):
+            append(self.template_id, 'template_id')
+            level *= 99
+        if level > 3:
+            return
+        for field, dbo_field in sorted(self.dbo_fields.viewitems(), key=lambda (field, value): field):
+            value = getattr(self, field)
+            if value:
+                wrapper = value_wrapper(value)
+                if hasattr(dbo_field, 'dbo_class_id'):
+                    append('', field)
+                    wrapper(lambda value : value._describe(display, level + 1))(value)
+                else:
+                    wrapper(append)(value, field)
+        return display
 
 
 class DBOField(AutoField):

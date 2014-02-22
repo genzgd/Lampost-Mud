@@ -19,7 +19,7 @@ class MobileResource(EditResource):
     def pre_create(self, dto, session):
         check_perm(session, parent_area(dto))
 
-    def pre_update(self, dbo, session):
+    def pre_update(self, dbo, new_dto, session):
         check_perm(session, parent_area(dbo))
 
     def pre_delete(self, dbo, session):

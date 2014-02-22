@@ -36,7 +36,7 @@ def apply_script(host, script):
             setattr(host, name, binding)
 
 
-class Scriptable(object):
+class Scriptable(RootDBO):
 
     scripts = DBOField([], 'script')
 
@@ -44,16 +44,19 @@ class Scriptable(object):
         for script in self.scripts:
             if script.approved:
                 apply_script(self, script)
-        self.post_scripts()
+        self.post_script()
 
-    def post_scripts(self):
+    def post_script(self):
         pass
 
 
 class Script(RootDBO):
     dbo_key_type = 'script'
-    approved = DBOField(False)
+
+    dbo_rev = DBOField(0)
+    title = DBOField('')
     text = DBOField('')
+    approved = DBOField(False)
 
     @property
     def dbo_set_key(self):
