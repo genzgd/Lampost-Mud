@@ -16,7 +16,7 @@ m_requires('session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender',
 
 @imm_action('edit')
 def edit(source, **ignored):
-    check_perm(source, load_object(Area, source.env.area_id))
+    check_perm(source, load_object(Area, source.env.parent_id))
     return {'start_room_edit': source.env.dbo_id}
 
 
@@ -44,7 +44,7 @@ def goto(source, args, **ignored):
             new_env = session.player.env
         else:
             if not ":" in dest:
-                dest = ":".join([source.env.area_id, dest])
+                dest = ":".join([source.env.parent_id, dest])
             new_env = load_object(Room, dest)
     if new_env:
         source.change_env(new_env)
@@ -246,7 +246,7 @@ def combat_status(target, **ignored):
     return substitute(target.combat_status(), target=target)
 
 
-@imm_action('save', 'save_value', self_target=True)
+@imm_action('save', 'save_value')
 def save(target, **ignored):
     save_object(target)
     return '{} saved.'.format(target.name)

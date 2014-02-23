@@ -1,3 +1,4 @@
+from collections import defaultdict
 from weakref import WeakValueDictionary
 from redis import ConnectionPool
 from redis.client import StrictRedis
@@ -35,8 +36,8 @@ class RedisStore():
             rev = getattr(dbo, "dbo_rev", None)
             dbo.dbo_rev = 1 if not rev else rev + 1
         if dbo.dbo_indexes:
-            self.update_indexes(dbo)
-        self.redis.set(dbo.dbo_key, json_encode(dbo.save_value))
+            self._update_indexes(dbo)
+        self.redis.set(dbo.dbo_key, json_encode(self._save_root(dbo)))
         if __debug__:
             debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
         self._object_map[dbo.dbo_key] = dbo
@@ -146,8 +147,8 @@ class RedisStore():
     def delete_index(self, index_name, key):
         return self.redis.hdel(index_name, key)
 
-    def get_all_index(self, index_name):
-        return self.redis.hgetall(index_name)
+    def get_all_hash(self, index_name):
+        return {key: json_decode(value) for key, value in self.redis.hgetall(index_name).viewitems()}
 
     def set_db_hash(self, hash_id, hash_key, value):
         return self.redis.hset(hash_id, hash_key, json_encode(value))
@@ -170,7 +171,7 @@ class RedisStore():
     def trim_db_list(self, list_id, start, end):
         return self.redis.ltrim(list_id, start, end)
 
-    def update_indexes(self, dbo):
+    def _update_indexes(self, dbo):
         try:
             old_dbo = json_decode(self.redis.get(dbo.dbo_key))
         except TypeError:
@@ -188,3 +189,53 @@ class RedisStore():
                 if self.get_index(ix_key, new_val):
                     raise NonUniqueError(ix_key, new_val)
                 self.set_index(ix_key, new_val, dbo.dbo_id)
+
+    def _save_root(self, root_dbo):
+        self._clear_old_refs(root_dbo)
+        new_refs = defaultdict(list)
+
+        def add_refs(dbo):
+            if dbo.dbo_key_type and root_dbo != dbo:
+                for attr in ['dbo_id', 'template_id']:
+                    dbo_id = getattr(dbo, attr, None)
+                    if dbo_id:
+                        new_refs[dbo.dbo_key_type].append(dbo_id)
+
+        def save_level(dbo, first=False):
+            add_refs(dbo)
+            if getattr(dbo, 'dbo_id', None) and not first:
+                return dbo.dbo_id
+            save_value = {}
+            for field, dbo_field in dbo.dbo_fields.viewitems():
+                try:
+                    field_value = dbo.__dict__[field]
+                except KeyError:
+                    continue
+                if hasattr(dbo_field, 'dbo_class_id'):
+                    field_value = dbo_field.value_wrapper(save_level)(field_value)
+                try:
+                    dbo_field.should_save(field_value, dbo)
+                except KeyError:
+                    continue
+                save_value[field] = field_value
+            return dbo.metafields(save_value, ['sub_class_id', 'template_id'])
+
+        root_save = save_level(root_dbo, True)
+        self._set_new_refs(root_dbo, new_refs)
+        return root_save
+
+    def _clear_old_refs(self, dbo):
+        dbo_key = dbo.dbo_key
+        ref_key = unicode("{}:refs".format(dbo_key))
+        for key_type, refs in self.get_all_hash(ref_key).viewitems():
+            for ref_id in refs:
+                self.delete_set_key(unicode("{}:{}:hldrs".format(key_type, ref_id)), dbo_key)
+        self.delete_key(ref_key)
+
+    def _set_new_refs(self, dbo, new_refs):
+        dbo_key = dbo.dbo_key
+        ref_key = unicode("{}:refs".format(dbo_key))
+        for key_type, refs in new_refs.viewitems():
+            self.set_db_hash(ref_key, key_type, refs)
+            for ref_id in refs:
+                self.add_set_key(unicode("{}:{}:hldrs".format(key_type, ref_id)), dbo_key)

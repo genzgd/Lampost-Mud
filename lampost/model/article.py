@@ -11,18 +11,7 @@ VOWELS = {'a', 'e', 'i', 'o', 'u'}
 
 class ArticleTemplate(Template):
     dbo_key_type = "article"
-
-    @property
-    def area_id(self):
-        return self.dbo_id.split(":")[0]
-
-    @property
-    def dbo_set_key(self):
-        return "area_articles:{}".format(self.area_id)
-
-    @property
-    def reset_key(self):
-        return "article_resets:{}".format(self.dbo_id)
+    dbo_parent_type = "area"
 
     def plural_name(self, quantity):
         if quantity == 1:
@@ -135,10 +124,6 @@ class ArticleReset(RootDBO):
     article_id = DBOField(None, 'article')
     reset_count = DBOField(1)
     reset_max = DBOField(1)
-
-    @property
-    def reset_key(self):
-        return "article_resets:{}".format(self.article_id.dbo_id)
 
 
 class ArticleLoad(RootDBO):

@@ -42,7 +42,7 @@ class RootDBOMeta(AutoMeta):
 class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
-    dbo_set_key = None
+    dbo_parent_key = None
 
     dbo_indexes = ()
 
@@ -61,13 +61,6 @@ class RootDBO(object):
                 return value.dto_value
             except AttributeError:
                 return None
-
-    @classmethod
-    def to_save_repr(cls, value):
-        try:
-            return value.dbo_id
-        except AttributeError:
-            return value.save_value
 
     def __init__(self, dbo_id=None):
         if dbo_id:
@@ -120,6 +113,17 @@ class RootDBO(object):
         return unicode(":".join([self.dbo_key_type, self.dbo_id]))
 
     @property
+    def parent_id(self):
+        if self.dbo_id:
+            return dbo_id.split(':')[0]
+
+    @property
+    def dbo_set_key(self):
+        if dbo_parent_key:
+            return "{}_{}s:{}".format(self.dbo_parent_type, self.dbo_key_type, self.parent_id)
+
+
+    @property
     def dto_value(self):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.viewitems()}
         dto_value['dbo_key_type'] = self.dbo_key_type
@@ -166,9 +170,10 @@ class DBOField(AutoField):
         super(DBOField, self).__init__(default)
         self.required = required
         if dbo_class_id:
+            self.value_wrapper = value_wrapper(self.default)
             self.dbo_class_id = dbo_class_id
             self.hydrate_value =  value_wrapper(self.default, False)(self.hydrate_dbo_value)
-            self.convert_save_value = value_wrapper(self.default)(self.dbo_save_value)
+            self.convert_save_value = value_wrapper(self.default)(save_repr)
             self.dto_value = value_wrapper(self.default)(self.dbo_dto_value)
         else:
             self.hydrate_value = lambda dto_repr, instance: dto_repr
@@ -181,40 +186,44 @@ class DBOField(AutoField):
     def dbo_dto_value(self, dbo_value):
         return self._dbo_class().to_dto_repr(dbo_value)
 
-    def dbo_save_value(self, dbo_value):
-        return self._dbo_class().to_save_repr(dbo_value)
-
     def hydrate_dbo_value(self, dto_repr, instance):
         return self._dbo_class().load_ref(dto_repr, instance)
 
     def save_value(self, instance):
         value = self.convert_save_value(instance.__dict__[self.field])
+        self.should_save(value, instance)
+        return value
+
+    def should_save(self, value, instance):
+        self.check_default(value)
+
+    def check_default(self, value):
         if hasattr(self.default, 'save_value'):
             if value == self.default.save_value:
                 raise KeyError
         elif value == self.default:
             raise KeyError
-        return value
 
 
 class DBOTField(DBOField, TemplateField):
-    def save_value(self, instance):
-        value = self.convert_save_value(instance.__dict__[self.field])
-        if hasattr(self.default, 'save_value'):
-            if value == self.default.save_value:
-                raise KeyError
-        elif value == self.default:
-            raise KeyError
+    def should_save(self, value, instance):
+        self.check_default(value)
         try:
             template_value = getattr(instance.template, self.field)
         except AttributeError:
-            return value
+            return
         if hasattr(template_value, 'save_value'):
             if value == template_value:
                 raise KeyError
         elif value == template_value:
             raise KeyError
-        return value
+
+
+def save_repr(value):
+    try:
+        return value.dbo_id
+    except AttributeError:
+        return value.save_value
 
 
 def value_wrapper(value, for_dto=True):

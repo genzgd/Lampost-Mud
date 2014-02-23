@@ -7,13 +7,15 @@ m_requires('log', 'datastore', 'perm', 'edit_update_service',  __name__)
 
 
 class EditResource(Resource):
-
     def __init__(self, obj_class, imm_level='admin'):
         Resource.__init__(self)
-        self.putChild('list', EditListResource(self, obj_class, imm_level))
-        self.putChild('create', EditCreateResource(self, obj_class, imm_level))
-        self.putChild('delete', EditDeleteResource(self, obj_class, imm_level))
-        self.putChild('update', EditUpdateResource(self, obj_class, imm_level))
+        self.obj_class = obj_class
+        self.imm_level = imm_level
+        self.putChild('list', EditListResource(self))
+        self.putChild('create', EditCreateResource(self))
+        self.putChild('delete', EditDeleteResource(self))
+        self.putChild('update', EditUpdateResource(self))
+        self.putChild('test_delete', EditTestDeleteResource(self))
 
     def pre_delete(self, del_obj, session):
         pass
@@ -35,11 +37,11 @@ class EditResource(Resource):
 
 
 class EditBaseResource(Resource):
-    def __init__(self, editor, obj_class, imm_level):
+    def __init__(self, editor):
         Resource.__init__(self)
-        self.obj_class = obj_class
-        self.imm_level = imm_level
         self.editor = editor
+        self.obj_class = editor.obj_class
+        self.imm_level = editor.imm_level
 
     @property
     def cache_key(self):
@@ -80,10 +82,18 @@ class EditUpdateResource(EditBaseResource):
     def render_POST(self, raw, session):
         existing_obj = load_object(self.obj_class, raw['dbo_id'])
         if not existing_obj:
-            raise DataError("Gone: Object with key {} no longer exists.".format(raw['dbo.id']))
+            raise DataError("GONE:  Object with key {} no longer exists.".format(raw['dbo.id']))
         check_perm(session, existing_obj)
         self.editor.pre_update(existing_obj, raw, session)
         update_object(existing_obj, raw)
         self.editor.post_update(existing_obj, session)
         return publish_edit('update', existing_obj, session)
 
+
+class EditTestDeleteResource(EditBaseResource):
+    @request
+    def render_POST(self, raw):
+        mobile = load_object(self.obj_class, raw['dbo_id'])
+        if not mobile:
+            raise DataError("GONE:  Object already deleted")
+        return list(fetch_set_keys(mobile.reset_key))

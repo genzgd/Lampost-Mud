@@ -51,8 +51,8 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
                                 'desc': "A brand new start room for immortals."})
     dispatch('first_room_setup', room)
     save_object(room)
+    area.add_room()
 
-    area.add_room(room)
 
     user = user_manager.create_user(imm_account, imm_password)
     player = {'dbo_id': imm_name, 'room_id': room_id,

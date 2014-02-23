@@ -224,7 +224,6 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
     controller: 'objSelectorController',
     link: function(scope, element, attrs) {
       scope.objType = attrs.lmObjectSelector;
-      scope.listEmpty = true;
     }
   }
 }]);
@@ -247,6 +246,10 @@ angular.module('lampost_editor').controller('objSelectorController', ['$scope', 
       }
   });
 
+  $scope.selectedClass = function (area) {
+      return $scope.selectedArea == area ? 'alert-info' : '';
+  };
+
   lmEditor.cache('area').then(function (areas) {
     $scope.selectAreaList = areas;
     if (areas.indexOf($scope.startArea) > -1) {
@@ -259,6 +262,7 @@ angular.module('lampost_editor').controller('objSelectorController', ['$scope', 
 
   $scope.selectArea = function (selectedArea) {
     $scope.selectedArea = selectedArea || $scope.selectedArea;
+    $scope.selectedAreaId = $scope.selectedArea.dbo_id;
     if ($scope.areaChange) {
       $scope.areaChange($scope.selectedArea);
     }

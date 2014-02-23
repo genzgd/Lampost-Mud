@@ -52,21 +52,9 @@ class Scriptable(RootDBO):
 
 class Script(RootDBO):
     dbo_key_type = 'script'
+    dbo_parent_key = 'area'
 
     dbo_rev = DBOField(0)
     title = DBOField('')
     text = DBOField('')
     approved = DBOField(False)
-
-    @property
-    def dbo_set_key(self):
-        return "area_scripts:{}".format(self.area_id)
-
-    @property
-    def area_id(self):
-        return self.dbo_id.split(":")[0]
-
-
-
-
-

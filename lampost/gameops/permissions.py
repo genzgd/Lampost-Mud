@@ -15,16 +15,14 @@ class Permissions(object):
             self.rev_levels[level] = name
 
     def _post_init(self):
-        self.immortals = get_all_index('immortals')
-        for key, value in self.immortals.iteritems():
-            self.immortals[key] = int(value)
+        self.immortals = get_all_hash('immortals')
 
     def perm_name(self, num_level):
         return self.rev_levels.get(num_level, 'none')
 
     def update_immortal_list(self, player):
         if player.imm_level:
-            set_index('immortals', player.dbo_id, player.imm_level)
+            set_db_hash('immortals', player.dbo_id, player.imm_level)
             self.immortals[player.dbo_id] = player.imm_level
         else:
             delete_index('immortals', player.dbo_id)

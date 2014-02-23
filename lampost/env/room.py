@@ -70,7 +70,8 @@ class Exit(RootDBO):
 
 
 class Room(Scriptable):
-    dbo_key_type = "room"
+    dbo_key_type = 'room'
+    dbo_parent_key = 'area'
 
     dbo_rev = DBOTField(0)
     desc = DBOTField()
@@ -95,20 +96,12 @@ class Room(Scriptable):
         return itertools.chain(self.features, self.exits, self.denizens, self.inven)
 
     @property
-    def dbo_set_key(self):
-        return "area_rooms:{}".format(self.area_id)
-
-    @property
     def room_id(self):
         return self.dbo_id
 
     @property
     def name(self):
         return self.title
-
-    @property
-    def area_id(self):
-        return self.dbo_id.split(":")[0]
 
     @property
     def contents(self):
