@@ -52,7 +52,7 @@ class Scriptable(RootDBO):
 
 class Script(RootDBO):
     dbo_key_type = 'script'
-    dbo_parent_key = 'area'
+    dbo_parent_type = 'area'
 
     dbo_rev = DBOField(0)
     title = DBOField('')

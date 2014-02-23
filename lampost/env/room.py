@@ -71,7 +71,7 @@ class Exit(RootDBO):
 
 class Room(Scriptable):
     dbo_key_type = 'room'
-    dbo_parent_key = 'area'
+    dbo_parent_type = 'area'
 
     dbo_rev = DBOTField(0)
     desc = DBOTField()
@@ -227,10 +227,16 @@ class Room(Scriptable):
                 error(
                     "Invalid article load for roomId: {0}, mobileId: {1}, articleId: {2}".format(self.dbo_id, template.mobile_id, article_template.article_id))
                 continue
-            article = article_template.create_instance()
-            instance.add_inven(article)
-            if article_load.load_type == "equip":
-                instance.equip_article(article)
+            if article_template.divisible:
+                article = article_template.create_instance()
+                article.quantity = article_load.count
+                instance.add_inven(article)
+            else:
+                for _ in range(article_load.count):
+                    article = article_template.create_instance()
+                    instance.add_inven(article)
+                    if article_load.load_type == "equip":
+                        instance.equip_article(article)
         instance.enter_env(self)
 
     def clean_up(self):

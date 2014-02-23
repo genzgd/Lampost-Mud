@@ -6,7 +6,7 @@ from lampost.model.item import target_keys
 
 class MobileTemplate(Template):
     dbo_key_type = "mobile"
-    dbo_parent_key = "area"
+    dbo_parent_type = "area"
 
     def config_instance(self, instance, room):
         instance.baptise()

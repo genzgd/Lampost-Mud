@@ -1,15 +1,16 @@
 from twisted.web.resource import Resource
 from lampost.client.resources import request
 from lampost.context.resource import m_requires
+from lampost.datastore.exceptions import DataError
 from lampost.editor.base import EditResource, EditBaseResource
 
-m_requires('perm', __name__)
+m_requires('perm', 'datastore', __name__)
 
 
 class EditChildrenResource(EditResource):
     def __init__(self, obj_class, imm_level='admin'):
         EditResource.__init__(self, obj_class, imm_level)
-        self.parent_type = obj_class.dbo_parent_key
+        self.parent_type = obj_class.dbo_parent_type
         self.putChild('list', ChildrenListResource(self))
 
     def _check_perm(self, obj, session):
@@ -30,7 +31,7 @@ class ChildrenListResource(EditBaseResource):
         EditBaseResource.__init__(self, editor)
 
     def getChild(self, parent_id, request):
-        return ChildrenListLeaf(editor, parent_id)
+        return ChildrenListLeaf(self.editor, parent_id)
 
 
 class ChildrenListLeaf(Resource):

@@ -42,7 +42,7 @@ class RootDBOMeta(AutoMeta):
 class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
-    dbo_parent_key = None
+    dbo_parent_type = None
 
     dbo_indexes = ()
 
@@ -115,11 +115,11 @@ class RootDBO(object):
     @property
     def parent_id(self):
         if self.dbo_id:
-            return dbo_id.split(':')[0]
+            return self.dbo_id.split(':')[0]
 
     @property
     def dbo_set_key(self):
-        if dbo_parent_key:
+        if self.dbo_parent_type:
             return "{}_{}s:{}".format(self.dbo_parent_type, self.dbo_key_type, self.parent_id)
 
 
