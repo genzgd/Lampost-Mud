@@ -93,15 +93,15 @@ class Entity(BaseItem):
     def handle_parse_error(self, error, command):
         self.display_line(error.message, SYSTEM_DISPLAY)
 
-    def social(self, **ignored):
+    def social(self, **_):
         pass
 
-    def follow(self, source, **ignored):
+    def follow(self, source, **_):
         self.followers.add(source)
         source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
 
-    def examine(self, source, **ignored):
-        super(Entity, self).examine(source, **ignored)
+    def examine(self, source, **_):
+        super(Entity, self).examine(source, **_)
         source.display_line("{0} is carrying:".format(self.name))
         if self.inven:
             for article in self.inven:

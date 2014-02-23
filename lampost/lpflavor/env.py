@@ -17,9 +17,9 @@ class ExitLP(lampost.env.room.Exit):
     class_id = 'exit'
     prep_time = 1
 
-    def prepare_action(self, source, **ignored):
+    def prepare_action(self, source, **_):
         source.display_line("You head {}.".format(self.direction.desc))
 
-    def __call__(self, source, **ignored):
+    def __call__(self, source, **_):
         source.apply_costs(find_cost(source.env))
         super(ExitLP, self).__call__(source)

@@ -58,10 +58,10 @@ class Exit(RootDBO):
     def dest_room(self):
         return load_by_key('room', self.destination)
 
-    def examine(self, source, **ignored):
+    def examine(self, source, **_):
         source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
 
-    def __call__(self, source, **ignored):
+    def __call__(self, source, **_):
         if source.instance:
             destination = source.instance.get_room(self.destination)
         else:
@@ -107,7 +107,7 @@ class Room(Scriptable):
     def contents(self):
         return itertools.chain(self.features, self.denizens, self.inven)
 
-    def glance(self, source, **ignored):
+    def glance(self, source, **_):
         return source.display_line(self.title, ROOM_DISPLAY)
 
     def entity_enters(self, entity, ex):
@@ -149,7 +149,7 @@ class Room(Scriptable):
     def social(self):
         pass
 
-    def examine(self, source, **ignored):
+    def examine(self, source, **_):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
         source.display_line('HRT', ROOM_DISPLAY)
         source.display_line(self.desc, ROOM_DISPLAY)

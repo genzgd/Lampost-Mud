@@ -30,7 +30,7 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
 
 
 @mud_action(('quit', 'log out'))
-def quit_action(source, **ignored):
+def quit_action(source, **_):
     source.check_logout()
     session_manager.logout(source.session)
 
@@ -41,7 +41,7 @@ def look(target_method, **kwargs):
 
 
 @mud_action('help')
-def help_action(source, args, **ignored):
+def help_action(source, args, **_):
     if not args:
         source.display_line('Available actions:')
         action_verbs = defaultdict(list)
@@ -56,13 +56,13 @@ def help_action(source, args, **ignored):
 
 
 @mud_action('friends')
-def friends(source, **ignored):
+def friends(source, **_):
     friend_list = friend_service.friend_list(source.dbo_id)
     return "Your friends are:<br/>&nbsp&nbsp{}".format(friend_list) if friend_list else "Alas, you are friendless."
 
 
 @mud_action('friend', 'player')
-def friend(source, target, **ignored):
+def friend(source, target, **_):
     if source == target or friend_service.is_friend(source.dbo_id, target.dbo_id):
         return "{} is already your friend.".format(target.name)
     try:
@@ -73,7 +73,7 @@ def friend(source, target, **ignored):
 
 
 @mud_action('unfriend')
-def unfriend(source, args, **ignored):
+def unfriend(source, args, **_):
     if not args or len(args) > 1:
         raise ActionError("Who do you want to unfriend?")
     unfriend_id = user_manager.name_to_id(args[0])
@@ -87,7 +87,7 @@ def unfriend(source, args, **ignored):
 
 
 @mud_action('message')
-def message(source, args, command, **ignored):
+def message(source, args, command, **_):
     if not args:
         raise ActionError("Message who?")
     if len(args) == 1:
@@ -100,7 +100,7 @@ def message(source, args, command, **ignored):
 
 
 @mud_action('block')
-def block(source, args, **ignored):
+def block(source, args, **_):
     if not args or len(args) > 1:
         raise ActionError("Who do you want to block?")
     block_id = user_manager.name_to_id(args[0])
@@ -114,7 +114,7 @@ def block(source, args, **ignored):
 
 
 @mud_action('unblock')
-def unblock(source, args, **ignored):
+def unblock(source, args, **_):
     if not args or len(args) > 1:
         raise ActionError("Who do you want to unblock?")
     block_id = user_manager.name_to_id(args[0])
@@ -125,7 +125,7 @@ def unblock(source, args, **ignored):
 
 
 @mud_action('follow', msg_class='follow')
-def follow(source, target, target_method, **ignored):
+def follow(source, target, target_method, **_):
     if hasattr(source, 'following'):
         return "You are already following {}.".format(source.following.name)
     target_method(source)
@@ -133,7 +133,7 @@ def follow(source, target, target_method, **ignored):
 
 
 @mud_action('unfollow')
-def unfollow(source, args,  **ignored):
+def unfollow(source, args,  **_):
     if not hasattr(source, 'following'):
         return "You aren't following anyone."
     if args and args[0].lower() != source.following.name.lower():
@@ -144,7 +144,7 @@ def unfollow(source, args,  **ignored):
     del source.following
 
 @mud_action('abandon')
-def abandon(source, **ignored):
+def abandon(source, **_):
     if source.dead:
         source.resurrect()
     else:

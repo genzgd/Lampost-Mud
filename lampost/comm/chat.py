@@ -7,7 +7,7 @@ m_requires('session_manager', __name__)
 
 
 @mud_action(('t', 'tell'))
-def tell(source, args, command, **ignored):
+def tell(source, args, command, **_):
     if not args:
         raise ActionError("Tell who?")
     tell_message(source, args[0], command.partition(args[0])[2][1:])
@@ -26,7 +26,7 @@ def tell_message(source, player_id, statement):
 
 
 @mud_action(('r', 'reply'))
-def reply(source, verb, command, **ignored):
+def reply(source, verb, command, **_):
     if not source.last_tell:
         raise ActionError("You have not received a tell recently.")
     ix = command.find(verb[0]) + len(verb[0]) + 1
@@ -34,7 +34,7 @@ def reply(source, verb, command, **ignored):
 
 
 @mud_action('say')
-def say(source, command, **ignored):
+def say(source, command, **_):
     space_ix = command.find(" ")
     if space_ix == -1:
         raise ActionError("Say what?")

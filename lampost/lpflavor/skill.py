@@ -79,7 +79,7 @@ class BaseSkill(TemplateInstance):
         self.invoke(source, **kwargs)
         self.last_used = current_pulse()
 
-    def invoke(self, source, **ignored):
+    def invoke(self, source, **_):
         pass
 
     def revoke(self, source):
@@ -94,7 +94,7 @@ class BaseSkill(TemplateInstance):
 
 
 @mud_action("skills", "skills", self_target=True)
-def skills(source, target, **ignored):
+def skills(source, target, **_):
     source.display_line("{}'s Skills:".format(target.name))
 
     for skill_id, skill in target.skills.iteritems():
@@ -103,7 +103,7 @@ def skills(source, target, **ignored):
 
 
 @imm_action("add skill", target_class="args", prep="to", obj_msg_class="skills", self_object=True)
-def add_skill_action(target, obj, **ignored):
+def add_skill_action(target, obj, **_):
     skill_id = target[0]
     try:
         skill_level = int(target[1])
@@ -116,7 +116,7 @@ def add_skill_action(target, obj, **ignored):
 
 
 @imm_action("remove skill", target_class="args", prep="from", obj_msg_class="skills", self_object=True)
-def remove_skill(target, obj, **ignored):
+def remove_skill(target, obj, **_):
     obj.remove_skill(target[0])
     if getattr(obj, 'dbo_id', None):
         save_object(obj)

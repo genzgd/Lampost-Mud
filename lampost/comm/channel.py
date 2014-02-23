@@ -13,7 +13,7 @@ class Channel(object):
         self.display = "{}_display".format(verb)
         channel_service.known_channels.append(self.id)
 
-    def __call__(self, source, command, **ignored):
+    def __call__(self, source, command, **_):
         space_ix = command.find(" ")
         if space_ix == -1:
             return source.display_line("Say what?")

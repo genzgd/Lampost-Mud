@@ -46,7 +46,7 @@ class Player(RootDBO):
     def start(self):
         register_p(self.autosave, seconds=20)
 
-    def glance(self, source, **ignored):
+    def glance(self, source, **_):
         source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))
 
     def display_line(self, text, display='default'):

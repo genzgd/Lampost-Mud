@@ -30,7 +30,7 @@ class Area(RootDBO):
         return sorted(self.room_keys,  key=lambda x: int(x.split(":")[1]))
 
     @property
-    def first_room(self):
+    def first_room(self, instance=0):
         return self.load_room(self.sorted_keys[0], instance)
 
     def load_room(self, dbo_id, instance=0):

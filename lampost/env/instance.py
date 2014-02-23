@@ -73,13 +73,13 @@ class Entrance(Feature):
     def dest_room(self):
         return load_by_key('room', self.destination)
 
-    def glance(self, source, **ignored):
+    def glance(self, source, **_):
         if self.direction:
             source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
         else:
             source.display_line(self.title, EXIT_DISPLAY)
 
-    def __call__(self, source, **ignored):
+    def __call__(self, source, **_):
         if self.instanced:
             instance = next_instance()
             destination = instance.get_room(self.destination)

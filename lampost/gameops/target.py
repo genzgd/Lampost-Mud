@@ -13,12 +13,12 @@ def recursive_targets(target_list, target_key):
 
 
 # noinspection PyUnreachableCode
-def null_generator(self, entity, target_key, *ignored):
+def null_generator(self, entity, target_key, *_):
     return
     yield
 
 
-def self_finder(self, entity, target_key, *ignored):
+def self_finder(self, entity, target_key, *_):
     if target_key == ('self',) or target_key in entity.target_keys:
         yield entity
 
@@ -31,15 +31,15 @@ def action_finder(self, entity, target_key, action):
     return recursive_targets([action], target_key)
 
 
-def equip_finder(self, entity, target_key, *ignored):
+def equip_finder(self, entity, target_key, *_):
     return recursive_targets([equip for equip in entity.inven if equip.current_slot], target_key)
 
 
-def inven_finder(self, entity, target_key, *ignored):
+def inven_finder(self, entity, target_key, *_):
     return recursive_targets([equip for equip in entity.inven if not equip.current_slot], target_key)
 
 
-def env_finder(self, entity, target_key, *ignored):
+def env_finder(self, entity, target_key, *_):
     if not target_key:
         yield entity.env
     for extra in entity.env.extras:
@@ -49,15 +49,15 @@ def env_finder(self, entity, target_key, *ignored):
             yield target
 
 
-def feature_finder(self, entity, target_key, *ignored):
+def feature_finder(self, entity, target_key, *_):
     return recursive_targets([feature for feature in entity.env.features], target_key)
 
 
-def env_living_finder(self, entity, target_key, *ignored):
+def env_living_finder(self, entity, target_key, *_):
     return recursive_targets([living for living in entity.env.denizens],  target_key)
 
 
-def env_items_finder(self, entity, target_key, *ignored):
+def env_items_finder(self, entity, target_key, *_):
     return recursive_targets([item for item in entity.env.inven], target_key)
 
 

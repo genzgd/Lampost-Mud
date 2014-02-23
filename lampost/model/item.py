@@ -78,11 +78,11 @@ class BaseItem(TemplateInstance):
     def long_desc(self, observer):
         return self.desc if self.desc else self.title
 
-    def examine(self, source, **ignored):
+    def examine(self, source, **_):
         if source.can_see(self):
             source.display_line(self.long_desc(source))
 
-    def glance(self, source, **ignored):
+    def glance(self, source, **_):
         if source.can_see(self):
             source.display_line(self.short_desc(source))
 
@@ -110,5 +110,5 @@ class Readable(BaseItem):
     text = DBOField('')
 
     @item_action()
-    def read(self, source, **ignored):
+    def read(self, source, **_):
         source.display_line(self.text, TELL_TO_DISPLAY)

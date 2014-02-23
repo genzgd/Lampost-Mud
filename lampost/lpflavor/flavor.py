@@ -77,5 +77,5 @@ def _game_settings(game_settings):
     env_module.action_calc = game_settings.get('room_action', 10)
 
 
-def _player_connect(player, *ignored):
+def _player_connect(player, *_):
     player.status_change()

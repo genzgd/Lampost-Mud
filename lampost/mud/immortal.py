@@ -1,4 +1,5 @@
 import pdb
+import time
 import lampost.setup.update
 
 from lampost.client.user import User
@@ -15,19 +16,30 @@ from lampost.gameops.display import TELL_TO_DISPLAY
 m_requires('session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
 
 @imm_action('edit')
-def edit(source, **ignored):
+def edit(source, **_):
     check_perm(source, load_object(Area, source.env.parent_id))
     return {'start_room_edit': source.env.dbo_id}
 
 
 @imm_action(('cmds', 'commands'))
-def cmds(source, **ignored):
+def cmds(source, **_):
     verb_lists = [" ".join(["/".join(list(verb)) for verb in source.soul])]
     return ", ".join(sorted(verb_lists))
 
 
+@imm_action('timeit')
+def timeit(source, command, **_):
+    timed_command = command[command.find(' ') + 1:].strip()
+    if timed_command.startswith('timeit'):
+        return "Can't time timeit"
+    start = time.time()
+    source.parse(timed_command)
+    ms = (time.time() - start) * 1000
+    source.display_line("Time: {} ms".format(round(ms, 1)))
+
+
 @imm_action('goto')
-def goto(source, args, **ignored):
+def goto(source, args, **_):
     if not args:
         raise ActionError("Go to whom? or to where?")
     dest = args[0].lower()
@@ -35,8 +47,6 @@ def goto(source, args, **ignored):
         area = load_object(Area, args[1])
         if not area:
             raise ActionError("Area does not exist")
-        if not area.rooms:
-            raise ActionError("Area has no rooms!")
         new_env = area.first_room
     else:
         session = session_manager.player_session(dest)
@@ -53,7 +63,7 @@ def goto(source, args, **ignored):
 
 
 @imm_action('summon')
-def summon(source, args, **ignored):
+def summon(source, args, **_):
     session = session_manager.player_session(args[0].lower())
     if not session:
         return "Player is not logged in"
@@ -64,12 +74,12 @@ def summon(source, args, **ignored):
 
 
 @imm_action('debug', 'supreme')
-def debug(**ignored):
+def debug(**_):
     pdb.set_trace()
 
 
 @imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_target_class="args")
-def patch(target, verb, args, command, **ignored):
+def patch(target, verb, args, command, **_):
     try:
         split_ix = args.index(":")
         prop = args[split_ix + 1]
@@ -88,7 +98,7 @@ def patch(target, verb, args, command, **ignored):
 
 
 @imm_action('patch_db', imm_level='supreme')
-def patch_db(verb, args, command, **ignored):
+def patch_db(verb, args, command, **_):
     if len(args) == 0:
         return "Type required."
     obj_type = args[0]
@@ -119,13 +129,13 @@ def patch_db(verb, args, command, **ignored):
 
 
 @imm_action('set home')
-def set_home(source, **ignored):
+def set_home(source, **_):
     source.home_room = source.env.dbo_id
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
 @imm_action('force', msg_class="living", prep="to", obj_target_class="args")
-def force(source, target, obj, **ignored):
+def force(source, target, obj, **_):
     force_cmd = ' '.join(obj)
     if not force_cmd:
         return "Force {} to do what?".format(target.name)
@@ -135,7 +145,7 @@ def force(source, target, obj, **ignored):
 
 
 @imm_action('unmake', 'general', target_class="env_living env_items")
-def unmake(source, target, **ignored):
+def unmake(source, target, **_):
     if hasattr(target, 'is_player'):
         raise ActionError("You can't unmake players")
     if target in source.env.inven:
@@ -149,20 +159,20 @@ def unmake(source, target, **ignored):
 
 
 @imm_action('toggle mortal', 'immortal',  self_target=True)
-def toggle_mortal(target, **ignored):
+def toggle_mortal(target, **_):
     target.can_die = not target.can_die
     target.display_line("You can {} die.".format('now' if target.can_die else 'no longer'))
 
 
 @imm_action('home')
-def home(source, **ignored):
+def home(source, **_):
     if not getattr(source, 'home_room', None):
         return "Please set your home room first!"
     return goto(source=source, args=(source.home_room,))
 
 
 @imm_action('register display')
-def register_display(source, args, **ignored):
+def register_display(source, args, **_):
     if not args:
         return "No event specified"
     register(args[0], source.display_line)
@@ -170,25 +180,25 @@ def register_display(source, args, **ignored):
 
 
 @imm_action('unregister display')
-def unregister_display(source, args, **ignored):
+def unregister_display(source, args, **_):
     unregister_type(source, args[0])
     source.display_line("Events of type {0} will no longer be displayed".format(args[0]))
 
 
 @imm_action('describe', 'describe')
-def describe(source, target, **ignored):
+def describe(source, target, **_):
     source.display_line('&nbsp;&nbsp;')
     for line in target.describe():
         source.display_line(line, TELL_TO_DISPLAY)
 
 @imm_action('reset')
-def reset(source, **ignored):
+def reset(source, **_):
     source.env.reset()
     return "Room reset"
 
 
 @imm_action("log level", imm_level='supreme')
-def log_level(args, **ignored):
+def log_level(args, **_):
     log = get_resource("log")
     if args:
         log._set_level(args[0])
@@ -196,7 +206,7 @@ def log_level(args, **ignored):
 
 
 @imm_action('promote', 'player', prep='to', obj_target_class='args', imm_level='admin')
-def promote(source, target, obj, **ignored):
+def promote(source, target, obj, **_):
     if source == target:
         return "Let someone else do that."
     check_perm(source, target)
@@ -212,7 +222,7 @@ def promote(source, target, obj, **ignored):
 
 
 @imm_action('run update', imm_level='supreme')
-def run_update(source, args, **ignored):
+def run_update(source, args, **_):
     try:
         return lampost.setup.update.__dict__[args[0]](source, *args[1:])
     except KeyError:
@@ -220,7 +230,7 @@ def run_update(source, args, **ignored):
 
 
 @imm_action('email', imm_level='admin')
-def email(verb, args, command, **ignored):
+def email(verb, args, command, **_):
     if len(args) < 2:
         return "Player and message required"
     player = user_manager.find_player(args[0])
@@ -232,7 +242,7 @@ def email(verb, args, command, **ignored):
 
 
 @imm_action('combat log')
-def combat_log(source, **ignored):
+def combat_log(source, **_):
     try:
         delattr(source.env, 'combat_log')
         return "Combat logging removed from {}".format(source.env.name)
@@ -242,11 +252,11 @@ def combat_log(source, **ignored):
 
 
 @imm_action('status', 'combat_status', self_target=True)
-def combat_status(target, **ignored):
+def combat_status(target, **_):
     return substitute(target.combat_status(), target=target)
 
 
 @imm_action('save', 'save_value')
-def save(target, **ignored):
+def save(target, **_):
     save_object(target)
     return '{} saved.'.format(target.name)

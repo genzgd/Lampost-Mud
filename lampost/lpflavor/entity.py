@@ -205,7 +205,7 @@ class EntityLP(Entity):
             self.weapon = None
         article.on_removed(self)
 
-    def considered(self, **ignored):
+    def considered(self, **_):
         return calc_consider(self)
 
     def _do_equip(self, article, equip_slot):
@@ -299,4 +299,4 @@ class EntityLP(Entity):
 
     def combat_status(self):
         return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
-                                                 for pool_id, ignored in POOL_LIST])])
+                                                 for pool_id, _ in POOL_LIST])])

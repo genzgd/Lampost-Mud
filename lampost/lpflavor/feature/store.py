@@ -50,7 +50,7 @@ class Store(Feature):
         return (article.value // self.currency.value * (100 - self.discount)) // 100
 
     @item_action(target_class="inven", msg_class="drop")
-    def sell(self, source, target, quantity=None, **ignored):
+    def sell(self, source, target, quantity=None, **_):
         if quantity or target.quantity:
             raise ActionError("You can't sell that kind of item.")
         if self.currency:
@@ -71,7 +71,7 @@ class Store(Feature):
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 
     @item_action(target_class="im_self", msg_class="get")
-    def buy(self, source, target, **ignored):
+    def buy(self, source, target, **_):
         if target not in self.inven:
             raise ActionError("That is not in the store.")
         if self.currency and target.value:
@@ -88,14 +88,14 @@ class Store(Feature):
         source.broadcast(s=self_msg,e="{n} buys {N}.", target=target)
 
     @item_action(verbs=("buy back",), msg_class="buyback", target_class=buyback_targets)
-    def buyback(self, source, target, **ignored):
+    def buyback(self, source, target, **_):
         article = target.article
         money = self._take_money(source, target.price)
         self_msg = ''.join(("You recover {N} for ", money.name, '.'))
         article.enter_env(source)
         source.broadcast(s=self_msg, e="{n) recovers {N}", target=article)
 
-    def examine(self, source, **ignored):
+    def examine(self, source, **_):
         super(Store, self).examine(source)
         if self.inven:
             source.display_line("It currently contains:")

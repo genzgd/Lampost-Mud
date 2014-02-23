@@ -23,10 +23,10 @@ class Social(RootDBO):
         mud_action(self.dbo_id)(self)
         self.broadcast_map = BroadcastMap(**self.b_map)
 
-    def __call__(self, source, target, **ignored):
+    def __call__(self, source, target, **_):
         source.broadcast(target=target, broadcast_map=self.broadcast_map)
 
 
 @mud_action('socials')
-def socials_action(**ignored):
+def socials_action(**_):
     return " ".join(sorted([social.dbo_id for social in socials]))

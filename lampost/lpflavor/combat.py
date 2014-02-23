@@ -155,7 +155,7 @@ class AttackSkill(BaseSkill):
         target.start_combat(source)
         super(AttackSkill, self).prepare_action(source, target, **kwargs)
 
-    def invoke(self, source, target_method, **ignored):
+    def invoke(self, source, target_method, **_):
         attack = Attack().from_skill(self, source)
         combat_log(source, attack)
         target_method(source, attack)
@@ -190,7 +190,7 @@ class DefenseSkill(BaseSkill):
     success_map = DBOTField({'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
     calc_damage_types = TemplateField([])
 
-    def invoke(self, source, **ignored):
+    def invoke(self, source, **_):
         source.defenses.add(self)
 
     def revoke(self, source):
@@ -219,11 +219,13 @@ class DefenseSkill(BaseSkill):
         return int((effect - cost) / max(self.prep_time, 1))
 
 
-@mud_action(('con', 'consider'), 'consider')
-def consider(target_method, source, target, **ignored):
+@mud_action(('con', 'consider'), 'considered')
+def consider(target_method, source, target, **_):
     target_con = target_method()
     source_con = source.considered()
     con_string = CON_LEVELS[consider_level(source_con, target_con) + CON_RANGE]
+    saved_last = source.last_opponent
     source.last_opponent = target
     source.status_change()
+    source.last_opponent = saved_last
     return "At first glance, {} looks {}.".format(target.name, con_string)
