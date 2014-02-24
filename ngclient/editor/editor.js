@@ -444,10 +444,16 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         }
         model = model || $scope.model;
         intercept('delConfirm', model).then(function () {
-          lmDialog.showConfirm("Delete " + $scope.objLabel,
-            "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?",
-            function () {
-              mainDelete(model);
+          lmRemote.request(baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function(holders) {
+            var extra = '';
+            if (holders.length > 0) {
+              extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
+            }
+            lmDialog.showConfirm("Delete " + $scope.objLabel,
+              "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?" + extra,
+              function () {
+                mainDelete(model);
+              });
             });
         });
       };

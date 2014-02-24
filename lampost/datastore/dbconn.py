@@ -52,11 +52,11 @@ class RedisStore():
         return default
 
     def load_cached(self, key_type, key):
-        return self._object_map.get(unicode('{0}:{1}'.format(key_type, key)))
+        return self._object_map.get(unicode('{}:{}'.format(key_type, key)))
 
     @logged
     def load_by_key(self, key_type, key):
-        dbo_key = unicode('{0}:{1}'.format(key_type, key))
+        dbo_key = unicode('{}:{}'.format(key_type, key))
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
@@ -117,11 +117,26 @@ class RedisStore():
             debug("object deleted: {}".format(key), self)
         self.evict_object(dbo)
 
+    def reload_object(self, key_type, key):
+        dbo = self.load_cached(key_type, key)
+        if not dbo:
+            return load_by_key(key_type, key)
+        json_str = self.redis.get(unicode('{}:{}'.format(key_type, key)))
+        if not json_str:
+            warn("Failed to find {} in database for reload".format(dbo_key))
+            return None
+        self.update_object(dbo, json_decode(json_str))
+        return dbo
+
     def evict_object(self, dbo):
-        try:
-            del self._object_map[dbo.dbo_key]
-        except KeyError:
-            warn("Removing object {} not previously cached".format(dbo.dbo_id))
+        self._object_map.pop(dbo.dbo_key, None)
+
+    def fetch_holders(self, key_type, dbo_id):
+        holder_keys = []
+        for holder_key in self.fetch_set_keys(self._holder_key(key_type, dbo_id)):
+            key_split = holder_key.split(':')
+            holder_keys.append((key_split[0], ':'.join(key_split[1:])))
+        return holder_keys
 
     def fetch_set_keys(self, set_key):
         return self.redis.smembers(set_key)
@@ -232,7 +247,7 @@ class RedisStore():
         ref_key = unicode("{}:refs".format(dbo_key))
         for key_type, refs in self.get_all_hash(ref_key).viewitems():
             for ref_id in refs:
-                self.delete_set_key(unicode("{}:{}:hldrs".format(key_type, ref_id)), dbo_key)
+                self.delete_set_key(self._holder_key(key_type, ref_id), dbo_key)
         self.delete_key(ref_key)
 
     def _set_new_refs(self, dbo, new_refs):
@@ -241,4 +256,7 @@ class RedisStore():
         for key_type, refs in new_refs.viewitems():
             self.set_db_hash(ref_key, key_type, refs)
             for ref_id in refs:
-                self.add_set_key(unicode("{}:{}:hldrs".format(key_type, ref_id)), dbo_key)
+                self.add_set_key(self._holder_key(key_type, ref_id), dbo_key)
+
+    def _holder_key(self, key_type, dbo_id):
+        return unicode("{}:{}:hldrs".format(key_type, dbo_id))

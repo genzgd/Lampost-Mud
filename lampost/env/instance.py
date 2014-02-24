@@ -86,5 +86,3 @@ class Entrance(Feature):
         else:
             destination = self.dest_room
         source.change_env(destination)
-
-

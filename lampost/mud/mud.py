@@ -86,15 +86,21 @@ class MudNature():
         if has_perm(player, 'supreme'):
             register("log", player.display_line)
 
+        room = None
         if hasattr(player, "room_id"):
             room = load_object(Room, player.room_id)
-        else:
+        if not room:
             room = load_object(Room, self.config_manager.start_room)
             if room:
-                player.room_id = player.env.dbo_id
+                player.room_id = room.dbo_id
                 save_object(player)
         if not room:
             room = Room('temp:start')
             room.title = "Temp Start Room"
             room.desc = "A Temporary Room when Start Room is Missing"
+            try:
+                del player.room_id
+                save_object(player)
+            except AttributeError:
+                pass
         player.change_env(room)

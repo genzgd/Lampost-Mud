@@ -43,11 +43,14 @@ class RoomResource(EditChildrenResource):
         self.players = [denizen for denizen in room.denizens if hasattr(denizen, 'is_player')]
         for player in self.players:
             player.change_env(safe_room)
+        room.clean_up()
 
     def post_update(self, room, session):
-        room.clean_up()
+        new_room = load_by_key(room.dbo_key_type, room.dbo_id)
+        if not new_room:
+            new_room = safe_room
         for player in self.players:
-            player.change_env(room)
+            player.change_env(new_room)
 
 
 class CreateExit(Resource):

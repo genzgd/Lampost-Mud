@@ -45,7 +45,7 @@ class Article(BaseItem, Scriptable):
 
     @property
     def name(self):
-        if self.quantity:
+        if self.quantity > 1:
             prefix = unicode(self.quantity)
             title = self.plural_title
         elif self.title.lower().startswith(('a ', 'an ')):
@@ -121,13 +121,13 @@ class Article(BaseItem, Scriptable):
 
 class ArticleReset(RootDBO):
     class_id = 'article_reset'
-    article_id = DBOField(None, 'article')
+    article_id = DBOField(None, 'article', True)
     reset_count = DBOField(1)
     reset_max = DBOField(1)
 
 
 class ArticleLoad(RootDBO):
     class_id = 'article_load'
-    article_id = DBOField(None, 'article')
+    article_id = DBOField(None, 'article', True)
     count = DBOField(1)
     load_type = DBOField('equip')

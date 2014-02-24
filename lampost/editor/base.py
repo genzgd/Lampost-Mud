@@ -41,11 +41,8 @@ class EditBaseResource(Resource):
         Resource.__init__(self)
         self.editor = editor
         self.obj_class = editor.obj_class
+        self.dbo_key_type = self.obj_class.dbo_key_type
         self.imm_level = editor.imm_level
-
-    @property
-    def cache_key(self):
-        return self.obj_class.dbo_key_type
 
 
 class EditListResource(EditBaseResource):
@@ -72,7 +69,16 @@ class EditDeleteResource(EditBaseResource):
             raise DataError('Gone: Object with key {} does not exist'.format(raw['dbo_id']))
         check_perm(session, del_obj)
         self.editor.pre_delete(del_obj, session)
+        holder_keys = fetch_holders(self.dbo_key_type, del_obj.dbo_id)
+        for key_type, dbo_id in holder_keys:
+            cached_holder = load_cached(key_type, dbo_id)
+            if cached_holder:
+                save_object(cached_holder)
         delete_object(del_obj)
+        for key_type, dbo_id in holder_keys:
+            reloaded = reload_object(key_type, dbo_id)
+            if reloaded:
+                publish_edit('update', reloaded, session, True)
         self.editor.post_delete(del_obj, session)
         publish_edit('delete', del_obj, session)
 
@@ -93,7 +99,4 @@ class EditUpdateResource(EditBaseResource):
 class EditTestDeleteResource(EditBaseResource):
     @request
     def render_POST(self, raw):
-        mobile = load_object(self.obj_class, raw['dbo_id'])
-        if not mobile:
-            raise DataError("GONE:  Object already deleted")
-        return list(fetch_set_keys(mobile.reset_key))
+        return ['{} - {}'.format(key_type, dbo_id) for key_type, dbo_id in fetch_holders(self.dbo_key_type, raw['dbo_id'])]
