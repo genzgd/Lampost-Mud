@@ -28,6 +28,7 @@ class Dispatcher:
         if not event_registrations:
             del self._registrations[registration.event_type]
         registration.owner = None
+        registration.callback = None
 
     def unregister_type(self, owner, event_type):
         for registration in self._owner_map[owner].copy():

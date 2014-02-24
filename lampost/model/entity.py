@@ -121,17 +121,16 @@ class Entity(BaseItem):
             old_env.entity_leaves(self, ex)
 
     def enter_env(self, new_env, ex=None):
-        new_instance = getattr(new_env, 'instance', None)
+        self.entry_msg.target = getattr(ex, 'from_desc', None)
+        new_env.entity_enters(self, ex)
+        new_instance = getattr(self.env, 'instance', None)
         if self.instance != new_instance:
             if self.instance:
                 self.instance.remove_entity(self)
             if new_instance:
                 new_instance.add_entity(self)
-        self.entry_msg.target = getattr(ex, 'from_desc', None)
-        new_env.entity_enters(self, ex)
-        self.env = new_env
         if not self.instance and self.env.room_id:
-            self.room_id = new_env.room_id
+            self.room_id = self.env.room_id
         self.env.examine(self)
 
     def broadcast(self, **kwargs):

@@ -1,5 +1,8 @@
+from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.editor.children import EditChildrenResource
+
+m_requires('perm', __name__)
 
 
 class ScriptResource(EditChildrenResource):

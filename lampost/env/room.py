@@ -59,9 +59,7 @@ class Exit(RootDBO):
         return load_by_key('room', self.destination)
 
     def examine(self, source, **_):
-        dest_room = self.dest_room
-        dest_room.garbage_time()
-        source.display_line('Exit: {0}  {1}'.format(self.direction.desc, dest_room.title), EXIT_DISPLAY)
+        source.display_line('Exit: {}  {}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
 
     def __call__(self, source, **_):
         if source.instance:
@@ -114,16 +112,19 @@ class Room(Scriptable):
     def glance(self, source, **_):
         return source.display_line(self.title, ROOM_DISPLAY)
 
-    def entity_enters(self, entity, ex):
-        self.garbage_time()
+    def entity_enters(self, entity, ex=None):
         try:
             entity.entry_msg.source = entity
             self.receive_broadcast(entity.entry_msg)
         except AttributeError:
             pass
+        entity.env = self
         self.denizens.append(entity)
         entity.pulse_stamp = current_pulse()
         tell(self.contents, "entity_enter_env", entity)
+
+    def enter_script(self, entity):
+        pass
 
     def entity_leaves(self, entity, ex):
         try:
@@ -174,7 +175,7 @@ class Room(Scriptable):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-    def garbage_time(self):
+    def on_loaded(self):
         if not self._garbage_pulse:
             self.reset()
             self._garbage_pulse = register_p(self.check_garbage, seconds=room_reset_time + 1)

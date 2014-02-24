@@ -39,6 +39,7 @@ def apply_script(host, script):
 class Scriptable(RootDBO):
 
     scripts = DBOField([], 'script')
+    script_vars = DBOField({})
 
     def on_loaded(self):
         for script in self.scripts:
