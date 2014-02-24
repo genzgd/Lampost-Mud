@@ -49,9 +49,10 @@ class RootDBO(object):
 
     @classmethod
     def load_ref(cls, dbo_repr, owner=None):
-        if cls.dbo_key_type:
-            return load_object(cls, dbo_repr)
-        return cls().hydrate(dbo_repr)
+        if dbo_repr:
+            if cls.dbo_key_type:
+                return load_object(cls, dbo_repr)
+            return cls().hydrate(dbo_repr)
 
     @classmethod
     def to_dto_repr(cls, value):
@@ -173,7 +174,7 @@ class DBOField(AutoField):
         if dbo_class_id:
             self.value_wrapper = value_wrapper(self.default)
             self.dbo_class_id = dbo_class_id
-            self.hydrate_value =  value_wrapper(self.default, False)(self.hydrate_dbo_value)
+            self.hydrate_value = value_wrapper(self.default, False)(self.hydrate_dbo_value)
             self.convert_save_value = value_wrapper(self.default)(save_repr)
             self.dto_value = value_wrapper(self.default)(self.dbo_dto_value)
         else:

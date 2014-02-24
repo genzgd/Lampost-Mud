@@ -13,6 +13,10 @@ from lampost.model.mobile import MobileTemplate
 
 m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager',  __name__)
 
+safe_room = Room('temp:safe')
+safe_room.title = "Safe Room"
+safe_room.desc = "A temporary safe room when room is being updated."
+
 
 class AreaResource(EditResource):
 
@@ -33,6 +37,17 @@ class RoomResource(EditChildrenResource):
 
     def post_delete(self, room, session):
         room_clean_up(room, session)
+
+    def pre_update(self, room, new_dto, session):
+        self._check_perm(room, session)
+        self.players = [denizen for denizen in room.denizens if hasattr(denizen, 'is_player')]
+        for player in self.players:
+            player.change_env(safe_room)
+
+    def post_update(self, room, session):
+        room.clean_up()
+        for player in self.players:
+            player.change_env(room)
 
 
 class CreateExit(Resource):
@@ -119,15 +134,13 @@ def find_area_room(room_id, session=None):
 
 
 def room_clean_up(room, session, area_delete=None):
-    safe_room = load_object(Room, config_manager.start_room)
-    if not safe_room:
-        safe_room = Room('temp:safe')
-        safe_room.title = "Safe Room"
-        safe_room.desc = "A temporary safe room when room deleted"
+    start_room = load_object(Room, config_manager.start_room)
+    if not start_room:
+        start_room = safe_room
     for denizen in room.denizens:
         if hasattr(denizen, 'is_player'):
             denizen.display_line('You were in a room that was destroyed by some unknown force')
-            denizen.change_env(safe_room)
+            denizen.change_env(start_room)
     for my_exit in room.exits:
         other_room = my_exit.dest_room
         if other_room and other_room.parent_id != area_delete:
