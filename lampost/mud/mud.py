@@ -8,7 +8,7 @@ from lampost.comm.channel import Channel
 
 
 room_module = import_module('lampost.env.room')
-area_module = import_module('lampost.model.area')
+__import__('lampost.model.area')
 __import__('lampost.mud.immortal')
 __import__('lampost.comm.chat')
 __import__('lampost.mud.inventory')
@@ -50,9 +50,8 @@ class MudNature():
                 player.diminish_soul(cmd)
 
     def _game_settings(self, game_settings):
-        area_module.reset_time = game_settings.get('area_reset', area_module.reset_time)
         room_module.default_room_size = game_settings.get('room_size', room_module.default_room_size)
-        room_module.room_garbage_time = game_settings.get('room_garbage_time', room_module.room_garbage_time)
+        room_module.room_reset_time = game_settings.get('room_reset_time', room_module.room_reset_time)
 
     def _player_connect(self, player, client_data):
         editors = []

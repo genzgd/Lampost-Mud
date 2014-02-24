@@ -1,25 +1,22 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import DBOField
 from lampost.env.room import Room
+from lampost.gameops.script import Scriptable
 
 
 m_requires('log', 'dispatcher', 'datastore',  __name__)
 
-reset_time = 180
 
-
-class Area(RootDBO):
+class Area(Scriptable):
     dbo_key_type = "area"
     dbo_set_key = "areas"
+    dbo_children_types = ['room', 'mobile', 'article', 'script']
 
     name = DBOField()
     desc = DBOField()
     next_room_id = DBOField(0)
     owner_id = DBOField()
     dbo_rev = DBOField(0)
-
-    def on_loaded(self):
-        register_p(self.reset, seconds=reset_time, randomize=reset_time)
 
     @property
     def room_keys(self):
@@ -55,10 +52,3 @@ class Area(RootDBO):
                 break
         self.next_room_id = next_id
         save_object(self)
-
-    def reset(self):
-        debug("{0} Area resetting".format(self.dbo_id))
-        for room_id in self.room_keys:
-            loaded = load_cached('room', room_id)
-            if loaded:
-                loaded.reset()

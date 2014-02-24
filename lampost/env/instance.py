@@ -61,7 +61,7 @@ class Entrance(Feature):
 
     def on_loaded(self):
         if self.direction:
-            self.verbs = (self.direction.key,), (self.direction.desc,)
+            self.verbs = (self.direction.obj_id,), (self.direction.desc,)
             self.target_class = [TargetClass.NO_ARGS]
         else:
             self.verbs = convert_verbs(self.verb)

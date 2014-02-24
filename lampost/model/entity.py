@@ -127,12 +127,12 @@ class Entity(BaseItem):
                 self.instance.remove_entity(self)
             if new_instance:
                 new_instance.add_entity(self)
-        if not self.instance and new_env.room_id:
-             self.room_id = new_env.room_id
-        self.env = new_env
-        new_env.examine(self)
         self.entry_msg.target = getattr(ex, 'from_desc', None)
-        self.env.entity_enters(self, ex)
+        new_env.entity_enters(self, ex)
+        self.env = new_env
+        if not self.instance and self.env.room_id:
+            self.room_id = new_env.room_id
+        self.env.examine(self)
 
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)

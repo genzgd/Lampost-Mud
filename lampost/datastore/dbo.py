@@ -43,6 +43,7 @@ class RootDBO(object):
     __metaclass__ = RootDBOMeta
     dbo_key_type = None
     dbo_parent_type = None
+    dbo_children_types = []
 
     dbo_indexes = ()
 

@@ -16,7 +16,7 @@ from lampost.mud.inventory import InvenContainer
 m_requires('log', 'dispatcher', 'datastore', __name__)
 
 default_room_size = 10
-room_garbage_time = 600
+room_reset_time = 600
 
 
 def tell(listeners, msg_type, *args):
@@ -59,7 +59,9 @@ class Exit(RootDBO):
         return load_by_key('room', self.destination)
 
     def examine(self, source, **_):
-        source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
+        dest_room = self.dest_room
+        dest_room.garbage_time()
+        source.display_line('Exit: {0}  {1}'.format(self.direction.desc, dest_room.title), EXIT_DISPLAY)
 
     def __call__(self, source, **_):
         if source.instance:
@@ -84,6 +86,8 @@ class Room(Scriptable):
     title = DBOTField()
 
     instance = None
+
+    _garbage_pulse = None
 
     def __init__(self, dbo_id=None):
         super(Room, self).__init__(dbo_id)
@@ -111,6 +115,7 @@ class Room(Scriptable):
         return source.display_line(self.title, ROOM_DISPLAY)
 
     def entity_enters(self, entity, ex):
+        self.garbage_time()
         try:
             entity.entry_msg.source = entity
             self.receive_broadcast(entity.entry_msg)
@@ -169,23 +174,20 @@ class Room(Scriptable):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-    def on_loaded(self):
-        self.reset()
-        self.garbage_time()
-
     def garbage_time(self):
-        register_once(self.check_garbage, seconds=room_garbage_time + 1)
+        if not self._garbage_pulse:
+            self.reset()
+            self._garbage_pulse = register_p(self.check_garbage, seconds=room_reset_time + 1)
 
     def check_garbage(self):
         if hasattr(self, 'dirty'):
             if not self.instance:
                 save_object(self)
             del self.dirty
-        stale_pulse = future_pulse(-room_garbage_time)
+        stale_pulse = future_pulse(-room_reset_time)
         for obj in self.contents:
             obj_pulse = getattr(obj, 'pulse_stamp', 0)
             if obj_pulse > stale_pulse or hasattr(obj, 'is_player'):
-                self.garbage_time()
                 return
         self.clean_up()
 
@@ -240,6 +242,8 @@ class Room(Scriptable):
         instance.enter_env(self)
 
     def clean_up(self):
+        if self._garbage_pulse:
+            del self._garbage_pulse
         detach_events(self)
         for mobile_list in self.mobiles.viewvalues():
             for mobile in mobile_list:

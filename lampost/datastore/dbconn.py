@@ -104,8 +104,11 @@ class RedisStore():
     def delete_object(self, dbo):
         key = dbo.dbo_key
         self.redis.delete(key)
+        self._clear_old_refs(dbo)
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)
+        for children_type in dbo.dbo_children_types:
+            self.delete_object_set(get_dbo_class(children_type), "{}_{}s:{}".format(dbo.dbo_key_type, children_type, dbo.dbo_id))
         for ix_name in dbo.dbo_indexes:
             ix_value = getattr(dbo, ix_name, None)
             if ix_value is not None and ix_value != '':

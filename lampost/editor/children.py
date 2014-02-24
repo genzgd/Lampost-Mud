@@ -14,7 +14,7 @@ class EditChildrenResource(EditResource):
         self.putChild('list', ChildrenListResource(self))
 
     def _check_perm(self, obj, session):
-        check_perm(session, find_parent(self.parent_type, obj))
+        check_perm(session, find_parent(obj, self.parent_type))
 
     def pre_delete(self, del_obj, session):
         self._check_perm(del_obj, session)
@@ -48,9 +48,10 @@ class ChildrenListLeaf(Resource):
         return [obj.dto_value for obj in load_object_set(self.obj_class, set_key)]
 
 
-def find_parent(parent_type, child):
+def find_parent(child, parent_type=None):
     try:
         dbo_id = child.dbo_id
+        parent_type = child.dbo_parent_type
     except AttributeError:
         dbo_id = child['dbo_id']
     parent = load_by_key(parent_type, dbo_id.split(':')[0])

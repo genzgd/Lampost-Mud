@@ -75,6 +75,3 @@ class FriendService(object):
 
 def friend_key(player_id):
     return 'friends:{}'.format(player_id)
-
-
-

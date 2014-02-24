@@ -16,12 +16,9 @@ m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'con
 
 class AreaResource(EditResource):
 
-    def post_delete(self, del_area, session):
-        for room in del_area.rooms.itervalues():
-            room_clean_up(room, session, del_area.dbo_id)
-        delete_object_set(Room, 'area_rooms:{}'.format(del_area.dbo_id))
-        delete_object_set(MobileTemplate, 'area_mobiles:{}'.format(del_area.dbo_id))
-        delete_object_set(ArticleTemplate, 'area_articles:{}'.format(del_area.dbo_id))
+    def pre_delete(self, del_obj, session):
+        for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
+            room_clean_up(room, session, del_obj.dbo_id)
 
 
 class RoomResource(EditChildrenResource):
@@ -44,7 +41,7 @@ class CreateExit(Resource):
         area, room = find_area_room(content.start_room, session)
         new_dir = Direction.ref_map[content.direction]
         if room.find_exit(new_dir):
-            raise DataError("Room already has " + new_dir.key + " exit.")
+            raise DataError("Room already has " + new_dir.dbo_id + " exit.")
         rev_dir = new_dir.rev_dir
         other_id = content.dest_id
         if content.is_new:
@@ -54,7 +51,7 @@ class CreateExit(Resource):
         else:
             other_area, other_room = find_area_room(other_id, session)
             if not content.one_way and other_room.find_exit(rev_dir):
-                raise DataError("Room " + other_id + " already has a " + rev_dir.key + " exit.")
+                raise DataError("Room " + other_id + " already has a " + rev_dir.obj_id + " exit.")
         this_exit = get_dbo_class('exit')()
         this_exit.direction = new_dir
         this_exit.destination = other_id
