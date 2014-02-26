@@ -131,7 +131,7 @@ class Entity(BaseItem):
                 new_instance.add_entity(self)
         if not self.instance and self.env.room_id:
             self.room_id = self.env.room_id
-        self.env.examine(self)
+        self.env.first_look(self)
 
     def broadcast(self, **kwargs):
         broadcast = Broadcast(**kwargs)

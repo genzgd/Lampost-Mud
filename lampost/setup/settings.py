@@ -10,11 +10,13 @@ SERVER_SETTINGS_DEFAULT = {
     'link_idle_refresh': {'desc': 'Time that a link will be refreshed by the server if no '
                                   'other activity (in seconds).', 'default': 45},
     'link_dead_prune': {'desc': 'Time before a link dead player will be automatically logged out '
-                                '(in seconds).', 'default': 120}
+                                '(in seconds).', 'default': 120},
+
 }
 
 GAME_SETTINGS_DEFAULT = {
+    'script_dir': {'desc': 'Local file directory for dynamic scripts', 'default':  'lampost_scripts'},
     'area_reset': {'desc': 'Area reset time (in seconds}.', 'default': 180},
-    'room_size': {'desc': 'Default room size.', 'default': 10}
+    'room_size': {'desc': 'Default room size.', 'default': 10},
 }
 

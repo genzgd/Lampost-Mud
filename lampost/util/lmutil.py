@@ -1,4 +1,5 @@
 import time
+import json
 
 pronouns = {'none': ['it', 'it', 'its', 'itself', 'its'],
             'male': ['he', 'him', 'his', 'himself', 'his'],
@@ -90,16 +91,28 @@ def patch_object(obj, prop, new_value):
                 new_value = int(new_value)
             elif isinstance(existing_value, long):
                 new_value = long(new_value)
+            elif isinstance(existing_value, float):
+                new_value = float(new_value)
             elif isinstance(existing_value, basestring):
                 pass
             else:
-                raise PatchError("Only int and string values can be patched")
+                raise PatchError("Only number and string values can be patched")
         except ValueError:
             raise PatchError("Existing value is not compatible with patch value")
     try:
         setattr(obj, prop, new_value)
     except:
         raise PatchError("Failed to set value.")
+
+
+def str_to_primitive(value):
+    if value == 'None':
+        return None
+    try:
+        return json.JSONDecoder().decode(value)
+    except ValueError:
+        pass
+    return json.JSONDecoder().decode('"{}"'.format(value))
 
 
 def args_print(**kwargs):

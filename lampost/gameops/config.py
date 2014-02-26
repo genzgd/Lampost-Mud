@@ -68,6 +68,7 @@ class Config(RootDBO):
 
     title = DBOField('Lampost (New Install)')
     description = DBOField('A fresh install of Lampost Mud')
+    script_dir = DBOField('lampost_scripts')
     auto_imm_level = DBOField(0)
     start_room = DBOField()
     default_displays = DBOField({})

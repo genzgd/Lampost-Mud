@@ -48,6 +48,7 @@ class BaseItem(TemplateInstance):
     title = DBOTField('')
     aliases = DBOTField([])
     sex = DBOTField('none')
+    flags = DBOField({})
     target_keys = TemplateField(set())
     self_providers = AutoField([])
 

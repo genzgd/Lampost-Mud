@@ -10,7 +10,7 @@ from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action
 from lampost.model.player import Player
-from lampost.util.lmutil import find_extra, patch_object, PatchError
+from lampost.util.lmutil import find_extra, patch_object, PatchError, str_to_primitive
 from lampost.gameops.display import TELL_TO_DISPLAY
 
 m_requires('session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
@@ -37,6 +37,36 @@ def timeit(source, command, **_):
     ms = (time.time() - start) * 1000
     source.display_line("Time: {} ms".format(round(ms, 1)))
 
+
+@imm_action('set flag', target_class='args', prep='on', obj_msg_class="flags", self_object=True)
+def add_flag(source, target, obj, **_):
+    try:
+        flag_id = target[0]
+    except IndexError:
+        raise ActionError("Flag id required.")
+    try:
+        flag_value = target[1]
+    except IndexError:
+        flag_value = 'None'
+    try:
+        flag_value = str_to_primitive(flag_value)
+    except ValueError:
+        raise ActionError("Cannot parse {}".flag_value)
+    obj.flags[flag_id] = flag_value
+    source.display_line("Flag {} set to {} on {}.".format(flag_id, flag_value, obj.name))
+
+
+@imm_action('clear flag', target_class='args', prep='from', obj_msg_class="flags", self_object=True)
+def add_flag(source, target, obj, **_):
+    try:
+        flag_id = target[0]
+    except IndexError:
+        raise ActionError("Flag id required.")
+    try:
+        old_value = obj.flags.pop(flag_id)
+    except KeyError:
+        raise ActionError("Flag {} not set.".format(flag_id))
+    source.display_line("Flag {} ({}) cleared {}.".format(flag_id, old_value, obj.name))
 
 @imm_action('goto')
 def goto(source, args, **_):
@@ -195,6 +225,13 @@ def describe(source, target, **_):
 def reset(source, **_):
     source.env.reset()
     return "Room reset"
+
+
+@imm_action('reload')
+def reload_room(source, **_):
+    if source.env.instance:
+        raise ActionError("Don't reload instanced rooms")
+    source.env.reload()
 
 
 @imm_action("log level", imm_level='supreme')

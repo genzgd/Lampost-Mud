@@ -13,14 +13,12 @@ from lampost.model.mobile import MobileTemplate
 
 m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager',  __name__)
 
-safe_room = Room('temp:safe')
-safe_room.title = "Safe Room"
-safe_room.desc = "A temporary safe room when room is being updated."
-
 
 class AreaResource(EditResource):
 
     def pre_delete(self, del_obj, session):
+        if del_obj.dbo_id == config_manager.root_area:
+            raise ActionError("Cannot delete root area.")
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, session, del_obj.dbo_id)
 
@@ -38,19 +36,8 @@ class RoomResource(EditChildrenResource):
     def post_delete(self, room, session):
         room_clean_up(room, session)
 
-    def pre_update(self, room, new_dto, session):
-        self._check_perm(room, session)
-        self.players = [denizen for denizen in room.denizens if hasattr(denizen, 'is_player')]
-        for player in self.players:
-            player.change_env(safe_room)
-        room.clean_up()
-
     def post_update(self, room, session):
-        new_room = load_by_key(room.dbo_key_type, room.dbo_id)
-        if not new_room:
-            new_room = safe_room
-        for player in self.players:
-            player.change_env(new_room)
+        room.reload()
 
 
 class CreateExit(Resource):

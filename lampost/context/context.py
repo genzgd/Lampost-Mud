@@ -12,6 +12,7 @@ from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.config import ConfigManager
 from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions
+from lampost.gameops.script import ScriptManager
 from lampost.util.lmlog import Log
 from lampost.mud.mud import MudNature
 from lampost.util.tools import Tools
@@ -43,6 +44,7 @@ class Context(object):
         EditUpdateService()
         AnyLoginService()
         MudNature(flavor)
+        ScriptManager()
         web_server = WebServer(int(port))
         context_post_init()
 

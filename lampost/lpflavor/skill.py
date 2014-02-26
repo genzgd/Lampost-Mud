@@ -104,7 +104,10 @@ def skills(source, target, **_):
 
 @imm_action("add skill", target_class="args", prep="to", obj_msg_class="skills", self_object=True)
 def add_skill_action(target, obj, **_):
-    skill_id = target[0]
+    try:
+        skill_id = target[0]
+    except IndexError:
+        raise ActionError("Skill id required")
     try:
         skill_level = int(target[1])
     except IndexError:

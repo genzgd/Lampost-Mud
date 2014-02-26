@@ -112,7 +112,7 @@ class Room(Scriptable):
     def glance(self, source, **_):
         return source.display_line(self.title, ROOM_DISPLAY)
 
-    def entity_enters(self, entity, ex=None):
+    def entity_enters(self, entity, from_ex):
         try:
             entity.entry_msg.source = entity
             self.receive_broadcast(entity.entry_msg)
@@ -122,9 +122,6 @@ class Room(Scriptable):
         self.denizens.append(entity)
         entity.pulse_stamp = current_pulse()
         tell(self.contents, "entity_enter_env", entity)
-
-    def enter_script(self, entity):
-        pass
 
     def entity_leaves(self, entity, ex):
         try:
@@ -152,8 +149,8 @@ class Room(Scriptable):
     def broadcast(self, **kwargs):
         self.receive_broadcast(Broadcast(**kwargs))
 
-    def social(self):
-        pass
+    def first_look(self, source):
+        return self.examine(source)
 
     def examine(self, source, **_):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
@@ -255,3 +252,19 @@ class Room(Scriptable):
                 obj.detach()
         if not getattr(self, 'template', None):
             evict_object(self)
+
+    def reload(self):
+        players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
+        for player in players:
+            player.change_env(safe_room)
+        self.clean_up()
+        evict_object(self)
+        new_room = load_by_key(self.dbo_key_type, self.dbo_id)
+        if new_room:
+            for player in players:
+                player.enter_env(self)
+
+
+safe_room = Room('temp:safe')
+safe_room.title = "Safe Room"
+safe_room.desc = "A temporary safe room when room is being updated."
