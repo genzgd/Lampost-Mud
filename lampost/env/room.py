@@ -150,7 +150,7 @@ class Room(Scriptable):
         self.receive_broadcast(Broadcast(**kwargs))
 
     def first_look(self, source):
-        return self.examine(source)
+        self.examine(source)
 
     def examine(self, source, **_):
         source.display_line(self.title, ROOM_TITLE_DISPLAY)
@@ -262,9 +262,10 @@ class Room(Scriptable):
         new_room = load_by_key(self.dbo_key_type, self.dbo_id)
         if new_room:
             for player in players:
-                player.enter_env(self)
+                player.enter_env(new_room)
 
 
 safe_room = Room('temp:safe')
 safe_room.title = "Safe Room"
 safe_room.desc = "A temporary safe room when room is being updated."
+safe_room.first_look = lambda source: None

@@ -1,7 +1,7 @@
 from importlib import import_module
 from lampost.env.movement import Direction
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
-from lampost.env.room import Room
+from lampost.env.room import Room, safe_room
 from lampost.mud.action import imm_actions
 from lampost.context.resource import requires, m_requires, register_module
 from lampost.comm.channel import Channel
@@ -38,6 +38,7 @@ class MudNature():
         register('player_connect', self._player_connect)
         register('player_baptise', self._baptise, priority=-100)
         register('imm_baptise', self._imm_baptise, priority=-100)
+        register('missing_env', self._start_env)
 
     def _imm_baptise(self, player):
         player.register_channel(self.imm_channel)
@@ -85,7 +86,9 @@ class MudNature():
 
         if has_perm(player, 'supreme'):
             register("log", player.display_line)
+        self._start_env(player)
 
+    def _start_env(self, player):
         room = None
         if hasattr(player, "room_id"):
             room = load_object(Room, player.room_id)
@@ -95,9 +98,7 @@ class MudNature():
                 player.room_id = room.dbo_id
                 save_object(player)
         if not room:
-            room = Room('temp:start')
-            room.title = "Temp Start Room"
-            room.desc = "A Temporary Room when Start Room is Missing"
+            room = safe_room
             try:
                 del player.room_id
                 save_object(player)

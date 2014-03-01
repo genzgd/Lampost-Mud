@@ -110,8 +110,11 @@ class Entity(BaseItem):
             source.display_line("Nothing")
 
     def change_env(self, new_env, ex=None):
-        self.leave_env(ex)
-        self.enter_env(new_env, ex)
+        if new_env:
+            self.leave_env(ex)
+            self.enter_env(new_env, ex)
+        else:
+            error("Entity {} changed to null environment", self.name)
 
     def leave_env(self, ex=None):
         if self.env:

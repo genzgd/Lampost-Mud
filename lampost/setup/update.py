@@ -55,3 +55,8 @@ def clean_perf(source, *_):
         if old_area:
             delete_object(old_area)
 
+
+def add_game_setting(source, setting, value):
+    config_manager.config.game_settings[setting] = value
+    config_manager.save_config()
+

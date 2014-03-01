@@ -55,14 +55,15 @@ class RedisStore():
         return self._object_map.get(unicode('{}:{}'.format(key_type, key)))
 
     @logged
-    def load_by_key(self, key_type, key):
+    def load_by_key(self, key_type, key, silent=False):
         dbo_key = unicode('{}:{}'.format(key_type, key))
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
         json_str = self.redis.get(dbo_key)
         if not json_str:
-            warn("Failed to find {} in database".format(dbo_key))
+            if not silent:
+                warn("Failed to find {} in database".format(dbo_key))
             return None
         dbo_dict = json_decode(json_str)
         dbo_cls = get_dbo_class(dbo_dict.get('sub_class_id', key_type))

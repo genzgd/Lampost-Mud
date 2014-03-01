@@ -3,6 +3,7 @@ import os
 from lampost.context.resource import m_requires, inject, provides
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.action import item_action
+from lampost.mud.action import imm_action
 from lampost.util.lmutil import Blank
 
 
@@ -18,8 +19,8 @@ def _post_init():
 
 def configure_scripts(settings):
     global root_area, exec_globals, script_dir
-    root_area = getattr(settings, 'root_area', None)
-    script_dir = getattr(settings,'script_dir', None)
+    root_area = settings.get('root_area', None)
+    script_dir = settings.get('script_dir', None)
     namespace = Blank()
 
     for dependency in ['log', 'datastore', 'dispatcher']:
@@ -32,16 +33,17 @@ def configure_scripts(settings):
 
 @provides('script_manager')
 class ScriptManager(object):
+
     def load_file_scripts(self):
         try:
             script_dirs = os.listdir(script_dir)
-        except (EnvironmentError, TypeError):
-            warn("Missing lampost_scripts directory")
+        except (EnvironmentError, TypeError) as exp:
+            warn("Missing lampost_scripts directory", __name__, exp)
             return
         for parent_name in script_dirs:
             if parent_name.startswith('_'):
                 continue
-            dir_name = 'lampost_scripts/{}'.format(parent_name)
+            dir_name = '{}/{}'.format(script_dir, parent_name)
             try:
                 script_names = os.listdir(dir_name)
             except EnvironmentError:
@@ -82,6 +84,9 @@ class ScriptManager(object):
         script = create_object(Script, {'from_file': True, 'approved': True, 'dbo_id': dbo_id})
         script.code = code
 
+    def delete_script(self, script):
+        script_cache.pop(script.dbo_id, None)
+
 
 def apply_script(host, script):
     script_globals = exec_globals.copy()
@@ -91,8 +96,8 @@ def apply_script(host, script):
     exec_locals = {}
     try:
         exec(script.code, script_globals, exec_locals)
-    except Exception:
-        warn("Error applying script {}".format(script.dbo_id), exp)
+    except BaseException:
+        warn("Error applying script {}".format(script.dbo_id), __name__, exp)
         return
     for name, binding in exec_locals.viewitems():
         if hasattr(binding, '__call__'):
@@ -109,26 +114,26 @@ def apply_script(host, script):
 
 def add_parent_globals(script_globals, host):
     if root_area:
-        add_globals(load_object(Script, '{}:root'.format(root_area)), script_globals)
-        if host.parent_id:
-            add_globals(load_object(Script, '{}:{}'.format(root_area, host.parent_id)), script_globals)
+
+        add_globals(load_by_key('script', '{}:root'.format(root_area), True), script_globals)
+        if getattr(host, 'dbo_parent_type', None):
+            add_globals(load_by_key('script', '{}:{}'.format(root_area, host.dbo_parent_type), True), script_globals)
 
 
 def add_globals(script, script_globals):
     if not script:
         return
-    if script.locals:
-        script_globals.update(script.locals)
+    if script.namespace:
+        script_globals.update(script.namespace)
         return
     if script.compile():
-        script.locals = {}
+        script.namespace = {}
         try:
-            exec(script.code, script_globals, script.locals)
-            script_globals.update(script.locals)
-        except Exception:
-            del script.locals
+            exec(script.code, script_globals, script.namespace)
+            script_globals.update(script.namespace)
+        except BaseException:
+            del script.namespace
             warn("Error applying global script {}".format(script.dbo_id), exp)
-
 
 
 class Script(RootDBO):
@@ -141,40 +146,74 @@ class Script(RootDBO):
     approved = DBOField(False)
     from_file = DBOField(False)
     strong_ref = DBOField(False)
-    file_name = DBOField("<dbo>")
+    file_error = DBOField()
+    compile_error = DBOField()
 
     code = None
-    locals = None
+    namespace = None
+    live_text = None
 
     @property
     def file_path(self):
-        return "{}:{}".format(script_dir, self.parent_id).replace(':', '/')
+        return "{}:{}.py".format(script_dir, self.dbo_id).replace(':', '/')
+
+    @property
+    def file_name(self):
+        if self.from_file:
+            return self.file_path
+        return "<dbo:{}>".format(self.dbo_id)
 
     def compile(self):
         if not self.code:
-            if self.from_file:
-                self.load_from_file()
-            if self.text:
+            if not self.live_text:
+                if self.from_file:
+                    self.load_from_file()
+                else:
+                    self.live_text = self.text
+            if self.live_text:
                 self._compile()
         return self.code
 
     def load_from_file(self):
+        if not self.title:
+            self.title = self.file_path
         try:
             with open(self.file_path) as script_file:
-                self.text = script_file.read()
-        except EnvironmentError:
-            warn("Failed to read script file {}".format(self.dbo_id))
+                self.live_text = script_file.read()
+                self.file_error = None
+        except EnvironmentError as exp:
+            warn("Failed to read script file {}".format(self.dbo_id), __name__, exp)
+            self.live_text = ''
+            self.file_error = exp.message
+            if self.code:
+                del self.code
+            save_object(self)
+
+    def write(self, new_text):
+        with open(self.file_path, 'w') as script_file:
+            script_file.write(new_text)
+
+    @property
+    def dto_value(self):
+        self.compile()
+        dto_value = super(Script, self).dto_value
+        del dto_value['text']
+        dto_value['live_text'] = self.live_text
+        return dto_value
 
     def _compile(self):
         try:
-            self.code = compile(self.text, self.file_name, 'exec')
-        except SyntaxError:
+            self.code = compile(self.live_text, self.file_name, 'exec')
+            self.compile_error = None
+            if self.strong_ref:
+                script_cache.self[dbo_id] = self
+        except SyntaxError as exp:
+            self.compile_error = exp.message
             log.error("Error compiling script {}".format(self.dbo_id))
             if self.code:
                 del self.code
-            return
-        if self.strong_ref:
-            script_cache.self[dbo_id] = self
+
+
 
 
 class Scriptable(RootDBO):
@@ -189,3 +228,8 @@ class Scriptable(RootDBO):
 
     def post_script(self):
         pass
+
+
+@imm_action('load_file_scripts', 'supreme')
+def load_file_scripts(**_):
+    script_manager.load_file_scripts()
