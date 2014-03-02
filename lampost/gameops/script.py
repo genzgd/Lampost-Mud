@@ -28,6 +28,7 @@ def configure_scripts(settings):
         delattr(namespace, dependency)
 
     exec_globals = namespace.__dict__
+    exec_globals['item_action'] = item_action
     script_manager.load_file_scripts()
 
 
@@ -62,6 +63,7 @@ class ScriptManager(object):
                 self.add_file_script(parent_name, script_name, script_text)
 
     def add_file_script(self, parent_name, script_name, text):
+        info("Loading script {}:{}".format(parent_name, script_name))
         if script_name.endswith('.py'):
             script_name = script_name[:-3]
         dbo_id = unicode("{}:{}".format(parent_name, script_name))
@@ -81,6 +83,7 @@ class ScriptManager(object):
         except SyntaxError:
             warn("Failed to compile file script {}".format(dbo_id))
             return
+        info("Creating script")
         script = create_object(Script, {'from_file': True, 'approved': True, 'dbo_id': dbo_id})
         script.code = code
 

@@ -239,6 +239,9 @@ class Room(Scriptable):
                         instance.equip_article(article)
         instance.enter_env(self)
 
+    def social(self):
+        pass
+
     def clean_up(self):
         if self._garbage_pulse:
             del self._garbage_pulse
