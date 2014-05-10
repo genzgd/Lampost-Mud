@@ -3,7 +3,7 @@ from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
 from lampost.comm.channel import ChannelService
 from lampost.comm.message import MessageService
-from lampost.context.resource import provides, context_post_init
+from lampost.context.resource import provides, context_post_init, register
 from lampost.client.server import WebServer
 from lampost.context.scripts import select_json
 from lampost.gameops.event import Dispatcher
@@ -29,7 +29,7 @@ class Context(object):
         Log(log_level, log_file).info('starting server with {}'.format(locals()))
         select_json()
         Tools()
-        RedisStore(db_host, int(db_port), int(db_num), db_pw)
+        register('datastore', RedisStore(db_host, int(db_port), int(db_num), db_pw), True)
         Dispatcher()
         Permissions()
         SessionManager()

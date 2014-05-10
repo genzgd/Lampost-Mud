@@ -71,6 +71,7 @@ class MudNature():
             editors.append('race')
             editors.append('attack')
             editors.append('defense')
+            editors.append('imports')
         if has_perm(player, 'supreme'):
             editors.append('config')
 

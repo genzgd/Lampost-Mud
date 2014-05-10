@@ -17,7 +17,7 @@ m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'con
 class AreaResource(EditResource):
 
     def pre_delete(self, del_obj, session):
-        if del_obj.dbo_id == config_manager.root_area:
+        if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
             raise ActionError("Cannot delete root area.")
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, session, del_obj.dbo_id)

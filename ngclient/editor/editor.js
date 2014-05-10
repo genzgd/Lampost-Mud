@@ -527,7 +527,8 @@ angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEd
       display: {label: "Display", url: "display"},
       race: {label: "Races", objLabel: "Race", url: "race"},
       attack: {label: "Attacks", objLabel: "Attack", url: "skill"},
-      defense: {label: "Defenses", objLabel: "Defense", url: "skill"}
+      defense: {label: "Defenses", objLabel: "Defense", url: "skill"},
+      imports: {label: "Imports"}
     };
 
     $scope.activateArea = function (areaId) {
