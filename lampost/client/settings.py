@@ -149,17 +149,16 @@ class TempPassword(Resource):
     @request
     def render_POST(self, content):
         user_id = get_index("ix:user:user_name", content.info.lower())
-        if user_id:
-            user_id = user_id.split(':')[1]
-        else:
+        if not user_id:
             player = load_object(Player, content.info.lower())
-            if not player:
-                raise DataError("Name Not Found.")
-            user_id = player.user_id
+            if player:
+                user_id = player.user_id
+            else:
+                raise DataError("Unknown name or account {}".format(content.info))
         user = load_object(User, user_id)
-        if not user or not user.email:
+        if not user.email:
             raise DataError("No Email On File For {}".format(content.info))
-        temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _unused in range(12))
+        temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(12))
         email_msg = "Your {} temporary password is {}.\nYou will be asked to change it after you log in."\
             .format(config_manager.name, temp_pw)
         user.password = make_hash(temp_pw)

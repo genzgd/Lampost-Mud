@@ -25,4 +25,4 @@ class Touchstone(Feature):
 
     def on_created(self):
         self.target_providers.append(self.inscription)
-        self.self_providers.append(self.inscription)
+        self.instance_providers.append(self.inscription)

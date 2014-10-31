@@ -99,7 +99,7 @@ def apply_script(host, script):
     exec_locals = {}
     try:
         exec(script.code, script_globals, exec_locals)
-    except BaseException:
+    except BaseException as exp:
         warn("Error applying script {}".format(script.dbo_id), __name__, exp)
         return
     for name, binding in exec_locals.viewitems():
@@ -110,14 +110,13 @@ def apply_script(host, script):
             bound_method = binding.__get__(host)
             setattr(host, name, bound_method)
             if hasattr(binding, 'verbs'):
-                host.self_providers.append(bound_method)
+                host.instance_providers.append(bound_method)
         else:
             setattr(host, name, binding)
 
 
 def add_parent_globals(script_globals, host):
     if root_area:
-
         add_globals(load_by_key('script', '{}:root'.format(root_area), True), script_globals)
         if getattr(host, 'dbo_parent_type', None):
             add_globals(load_by_key('script', '{}:{}'.format(root_area, host.dbo_parent_type), True), script_globals)
@@ -217,8 +216,6 @@ class Script(RootDBO):
                 del self.code
 
 
-
-
 class Scriptable(RootDBO):
     scripts = DBOField([], 'script')
     script_vars = DBOField({})
@@ -233,6 +230,15 @@ class Scriptable(RootDBO):
         pass
 
 
-@imm_action('load_file_scripts', 'supreme')
+@imm_action('load_file_scripts', imm_level='supreme')
 def load_file_scripts(**_):
     script_manager.load_file_scripts()
+
+
+@imm_action('scripts', 'scripts', 'admin')
+def show_scripts(source, target, **_):
+    if not target.scripts:
+        return "No scripts"
+    source.display_line("Scripts: ")
+    for script in target.scripts:
+        source.display_line("    {}".format(script.title))

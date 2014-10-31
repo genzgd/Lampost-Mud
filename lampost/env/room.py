@@ -4,6 +4,7 @@ import random
 
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
+from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.env.movement import Direction
 from lampost.gameops.script import Scriptable
@@ -82,6 +83,7 @@ class Room(Scriptable):
     article_resets = DBOTField([], 'article_reset')
     features = DBOTField([], 'feature')
     title = DBOTField()
+    instance_providers = AutoField([])
 
     instance = None
 
@@ -95,7 +97,7 @@ class Room(Scriptable):
 
     @property
     def action_providers(self):
-        return itertools.chain(self.features, self.exits, self.denizens, self.inven)
+        return itertools.chain(self.features, self.exits, self.denizens, self.inven, self.instance_providers)
 
     @property
     def room_id(self):
@@ -212,7 +214,7 @@ class Room(Scriptable):
                     instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max + 1)
                     instance.enter_env(self)
             else:
-                for unused in range(a_reset.reset_count - curr_count):
+                for _ in range(a_reset.reset_count - curr_count):
                     instance = template.create_instance(self)
                     instance.enter_env(self)
                 if a_reset.reset_count <= curr_count < a_reset.reset_max:

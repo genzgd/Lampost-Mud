@@ -289,14 +289,13 @@ angular.module('lampost').controller('ForgotNameCtrl', ['$scope', 'lmRemote', 'l
 }]);
 
 angular.module('lampost').controller('ForgotPasswordCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
-  $scope.showError = false;
   $scope.submitRequest = function () {
     lmRemote.request("settings/temp_password", {info: $scope.info}).then(function () {
       $scope.dismiss();
       lmDialog.showOk("Password Sent", "An email has been set to the address on file for " + $scope.info +
         " with a temporary password.");
-    }, function () {
-      $scope.showError = true;
+    }, function (error) {
+      $scope.showError = error.text
     })
   };
 }]);

@@ -50,7 +50,7 @@ class BaseItem(TemplateInstance):
     sex = DBOTField('none')
     flags = DBOField({})
     target_keys = TemplateField(set())
-    self_providers = AutoField([])
+    instance_providers = AutoField([])
 
     living = False
     env = None
@@ -67,7 +67,7 @@ class BaseItem(TemplateInstance):
 
     @property
     def action_providers(self):
-        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.self_providers)
+        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.instance_providers)
 
     def target_finder(self, entity, target_key):
         if target_key in self.target_keys:

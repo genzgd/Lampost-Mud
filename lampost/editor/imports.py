@@ -30,4 +30,4 @@ class SetDatabaseResource(Resource):
         db = RedisStore(content.db_host, content.db_port, content.db_num, content.db_pw)
         copy_dbs[session] = db
         del content.db_pw
-        return content
+        return content.__dict__
