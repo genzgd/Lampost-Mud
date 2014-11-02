@@ -1,8 +1,7 @@
 import cgi
 import inspect
 
-from twisted.web.resource import Resource, NoResource
-from twisted.web.server import NOT_DONE_YET
+from tornado.web import RequestHandler, asynchronous
 from lampost.datastore.exceptions import DataError
 
 from lampost.util.lmlog import logged
@@ -12,10 +11,60 @@ from lampost.util.lmutil import PermError, StateError, Blank
 m_requires('log', 'perm', 'session_manager', 'json_decode', 'json_encode',  __name__)
 
 
-def find_session_id(request):
-    session_headers = request.requestHeaders.getRawHeaders('X-Lampost-Session')
-    if session_headers:
-        return session_headers[0]
+class LinkError(Exception):
+    def __init__(self, error_code):
+        self.error_code = error_code
+
+
+class SessionHandler(RequestHandler):
+
+    def _find_session(self):
+        self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
+        if not self.session:
+            raise LinkError('session_not_found')
+
+    def _return(self, result):
+        if result:
+            self.set_header('Content-Type', 'application/json')
+            self.write(json_encode(result))
+
+        else:
+            self.set_status(204)
+        self.finish()
+
+    @logged
+    def prepare(self):
+        try:
+            self._find_session()
+            check_perm(self.session, self)
+        except LinkError as le:
+            self._return({'link_status': le.error_code})
+        except PermError:
+            self.set_status(status)(403, 'Permission denied')
+
+    @logged
+    def post(self, *args):
+        try:
+            self.raw = json_decode(self.request.body)
+        except Exception:
+            self.set_status(400, 'Unrecognized content')
+            return
+        try:
+            self.main(*args)
+            self._return(self.session.pull_output())
+            return
+        except LinkError as le:
+            self._return({'link_status': le.error_code})
+        except PermError:
+            self.set_status(403, 'Permission denied')
+        except DataError as de:
+            self.set_status(409, de.message)
+        except StateError as se:
+            self.status(400, se.message)
+        self.finish()
+
+    def main(self, *_):
+        pass
 
 
 def request(func):
@@ -52,65 +101,73 @@ def request(func):
     return wrapper
 
 
-class ConnectResource(Resource):
+class ConnectResource(RequestHandler):
+
     @logged
-    def render_POST(self, request):
-        content = Blank(**json_decode(request.content.getvalue()))
-        session_id = find_session_id(request)
+    def post(self):
+
+        session_id = self.request.headers.get('X-Lampost-Session')
         if session_id:
-            session = session_manager.reconnect_session(session_id, content.player_id)
+            content = json_decode(self.request.body)
+            session = session_manager.reconnect_session(session_id, content['player_id'])
         else:
             session = session_manager.start_session()
-        return json_encode(session.pull_output())
+        self.set_header("Content-Type", "application/json; charset=UTF-8")
+        self.write(json_encode(session.pull_output()))
 
 
-class LoginResource(Resource):
-    @request
-    def render_POST(self, content, session):
-        if session.user and hasattr(content, 'player_id'):
-            session_manager.start_player(session, content.player_id)
-        else:
-            session_manager.login(session, content.user_id, content.password)
-        return session.pull_output()
+class LoginResource(SessionHandler):
+
+    def main(self):
+        if self.session.user:
+            player_id = self.raw['player_id']
+            if player_id:
+                session_manager.start_player(self.session, player_id)
+                return
+        session_manager.login(self.session, self.raw['user_id'], self.raw['password'])
 
 
-class LinkResource(Resource):
+class LinkResource(RequestHandler):
     @logged
-    def render_POST(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        session = session_manager.get_session(find_session_id(request))
-        if not session:
-            return json_encode({'link_status': 'session_not_found'})
-        session.attach(request)
-        return NOT_DONE_YET
+    @asynchronous
+    def post(self):
+        self.set_header('Content-Type', 'application/json')
+        session_id = self.request.headers.get('X-Lampost-Session')
+        self.session = session_manager.get_session(session_id)
+        if self.session:
+            self.session.attach(self)
+        else:
+            self.write(json_encode({'link_status': 'session_not_found'}))
+            self.finish()
+
+    def on_connection_close(self):
+        if self.session:
+            self.session.link_failed()
 
 
-class ActionResource(Resource):
-    @request
-    def render_POST(self, content, session):
-        player = session.player
+class ActionResource(SessionHandler):
+
+    def main(self):
+        player = self.session.player
         if not player:
-            return {"link_status": "no_login"}
-        player.parse(cgi.escape(content.action).strip())
-        return session.pull_output()
+            raise LinkError("no_login")
+        player.parse(cgi.escape(self.raw['action'].strip()))
 
 
-class RegisterResource(Resource):
-    @request
-    def render_POST(self, content, session):
-        get_resource(content.service_id).register(session, getattr(content, 'data', None))
-        return session.pull_output()
+class RegisterResource(SessionHandler):
+
+    def main(self):
+        get_resource(self.raw['service_id']).register(self.session, getattr(self.raw, 'data', None))
 
 
-class UnregisterResource(Resource):
-    @request
-    def render_POST(self, content, session):
-        get_resource(content.service_id).unregister(session)
-        return session.pull_output()
+class UnregisterResource(SessionHandler):
+
+    def main(self):
+        get_resource(self.raw['service_id']).unregister(self.session)
 
 
-class LspServerResource(Resource):
-    IsLeaf = True
+class LspServerResource():
+
     documents = {}
 
     def add_html(self, path, content):
@@ -122,30 +179,24 @@ class LspServerResource(Resource):
     def _add_document(self, path, content, content_type):
         self.documents[path] = {'content': content, 'content_type': content_type}
 
-    class ChildResource(Resource):
-        IsLeaf = True
 
-        def __init__(self, document):
-            Resource.__init__(self)
-            self.document = document
+class LspHandler(RequestHandler):
 
-        def render_GET(self, request):
-            request.setHeader('Content-Type', self.document['content_type'])
-            return self.document['content']
+    def initialize(self, documents):
+        self.documents = documents
+
+    def get(self, lsp_id):
+        document = self.documents[lsp_id]
+        self.set_header("Content-Type", "{}; charset=UTF-8".format(document['content_type']))
+        self.write(document['content'])
+
+
+class RemoteLogResource(RequestHandler):
 
     @logged
-    def getChild(self, path, request):
-        try:
-            return self.ChildResource(self.documents[path])
-        except KeyError:
-            return NoResource()
+    def post(self):
+        warn(self.request.body, 'Remote')
+        self.set_status(204)
 
-
-class RemoteLogResource(Resource):
-    @logged
-    def render_POST(self, request):
-        warn(str(request.content.getvalue()), 'Remote')
-        request.setResponseCode(204)
-        return ''
 
 

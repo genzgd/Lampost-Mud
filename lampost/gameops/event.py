@@ -1,6 +1,6 @@
 from collections import defaultdict
 from random import randint
-from twisted.internet import task
+from tornado.ioloop import PeriodicCallback
 
 from lampost.context.resource import provides, m_requires
 
@@ -99,8 +99,8 @@ class Dispatcher:
             self.pulses_per_second = 1 / pulse_interval
             if hasattr(self, 'pulse_lc'):
                 self.pulse_lc.stop()
-            self.pulse_lc = task.LoopingCall(self._pulse)
-            self.pulse_lc.start(pulse_interval, False).addErrback(heartbeat_failed)
+            self.pulse_lc = PeriodicCallback(self._pulse, pulse_interval * 1000)
+            self.pulse_lc.start()
             info("Pulse Event heartbeat started at {} seconds".format(pulse_interval), self)
         except KeyError:
             pass
@@ -109,8 +109,8 @@ class Dispatcher:
             maintenance_interval = server_settings['maintenance_interval']
             if hasattr(self, 'maintenance_lc'):
                 self.maintenance_lc.stop()
-            self.maintenance_lc = task.LoopingCall(lambda: self.dispatch('maintenance'))
-            self.maintenance_lc.start(60 * maintenance_interval, False).addErrback(heartbeat_failed)
+            self.maintenance_lc = PeriodicCallback(lambda: self.dispatch('maintenance'), 60 * maintenance_interval * 1000)
+            self.maintenance_lc.start()
             info("Maintenance Event heartbeat started at {} minutes".format(maintenance_interval), self)
         except KeyError:
             pass

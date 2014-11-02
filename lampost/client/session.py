@@ -163,7 +163,6 @@ class UserSession(object):
         self.attach_time = datetime.now()
         self.ld_time = None
         self.request = request
-        self.request.notifyFinish().addErrback(self.link_failed)
 
     def append(self, data):
         if data and data not in self._output:
@@ -216,9 +215,9 @@ class UserSession(object):
             self._status = status
             self.append({'status': status})
 
-    def link_failed(self, error):
+    def link_failed(self):
         if self.player:
-            debug("Link failed for {} ".format(self.player.name, repr(error)), self)
+            debug("Link failed for {} ".format(self.player.name), self)
         self.ld_time = datetime.now()
         self.request = None
 
