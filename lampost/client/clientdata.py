@@ -1,22 +1,18 @@
-from twisted.web.resource import Resource
-from lampost.client.resources import request
+from lampost.client.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
 
-m_requires('log', 'datastore', __name__)
+m_requires('log', 'datastore', 'web_server', __name__)
 
 
-class ClientDataResource(Resource):
-    def __init__(self):
-        Resource.__init__(self)
-        self.putChild('new_char', NewCharacterData())
+def _post_init():
+    web_server.add(r'/client_data/new_char', NewCharacterData)
 
 
-class NewCharacterData(Resource):
-    @request
-    def render_POST(self):
-        char_data = {'races': {race.dbo_id: _race_dto(race) for race in load_object_set(PlayerRace)}}
-        return char_data
+class NewCharacterData(SessionHandler):
+
+    def post(self):
+        self._return({'races': {race.dbo_id: _race_dto(race) for race in load_object_set(PlayerRace)}})
 
 
 def _race_dto(race):

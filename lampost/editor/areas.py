@@ -1,5 +1,5 @@
 from twisted.web.resource import Resource
-from lampost.client.resources import request
+from lampost.client.handlers import request
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError

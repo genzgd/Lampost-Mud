@@ -1,39 +1,36 @@
-from twisted.web.resource import Resource
-from lampost.client.resources import request
 from lampost.context.resource import m_requires
+from lampost.client.handlers import SessionHandler
 
-m_requires('log', 'friend_service', 'message_service', 'user_manager', __name__)
-
-
-class MessagesResource(Resource):
-    def __init__(self):
-        Resource.__init__(self)
-        self.putChild("friend_response", FriendResponse())
-        self.putChild("delete", MessageDelete())
+m_requires('log', 'friend_service', 'message_service', 'web_server', 'user_manager', __name__)
 
 
-class FriendResponse(Resource):
-    @request
-    def render_POST(self, content, session):
-        source_id = content.source_id
-        player_id = content.player_id
+def _post_init():
+    web_server.add(r'/messages/friend_response', FriendResponse)
+    web_server.add(r'/messages/delete', MessageDelete)
+
+
+class FriendResponse(SessionHandler):
+
+    def main(self):
+        source_id = self.raw['source_id']
+        player_id = self.raw['player_id']
         friend_service.remove_request(source_id, player_id)
-        message_service.remove_message(player_id, content.msg_id)
-        if content.action == 'accept':
+        message_service.remove_message(player_id, self.raw['msg_id'])
+        if self.raw['action'] == 'accept':
             friend_service.add_friend(source_id, player_id)
             message_service.add_message("system", "{} has accepted your friend request.".format(user_manager.id_to_name(player_id)), source_id)
             message_service.add_message("system", "You have accepted {}'s friend request.".format(user_manager.id_to_name(source_id)), player_id)
-        elif content.action == 'block':
+        elif self.raw['action'] == 'block':
             message_service.block_messages(player_id, source_id)
         else:
-            message_service.add_message("system", "{} has declined your friend request.".format(user_manager.id_to_name(content.player_id)), source_id)
+            message_service.add_message("system", "{} has declined your friend request.".format(user_manager.id_to_name(player_id)), source_id)
             message_service.add_message("system", "You have declined {}'s friend request.".format(user_manager.id_to_name(source_id)), player_id)
 
 
-class MessageDelete(Resource):
-    @request
-    def render_POST(self, content, session):
-        message_service.remove_message(content.player_id, content.msg_id)
+class MessageDelete(SessionHandler):
+
+    def main(self):
+        message_service.remove_message(self.raw['player_id'], self.raw['msg_id'])
 
 
 

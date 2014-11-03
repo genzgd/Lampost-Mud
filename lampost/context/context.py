@@ -1,4 +1,7 @@
+from tornado.ioloop import IOLoop
+
 from lampost.client.services import PlayerListService, AnyLoginService, EditUpdateService
+
 from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
 from lampost.comm.channel import ChannelService
@@ -45,11 +48,13 @@ class Context(object):
         AnyLoginService()
         MudNature(flavor)
         ScriptManager()
-        web_server = WebServer(int(port))
+        web_server = WebServer()
         context_post_init()
 
         config_mgr.start_service()
-        web_server.start_service(server_interface)
+        web_server.start_service(int(port), server_interface)
+
+        IOLoop.instance().start()
 
     def set(self, key, value):
         self.properties[key] = value

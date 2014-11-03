@@ -1,14 +1,23 @@
 import cgi
-import inspect
 
 from tornado.web import RequestHandler, asynchronous
 from lampost.datastore.exceptions import DataError
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, get_resource
-from lampost.util.lmutil import PermError, StateError, Blank
+from lampost.util.lmutil import PermError, StateError
 
-m_requires('log', 'perm', 'session_manager', 'json_decode', 'json_encode',  __name__)
+m_requires('log', 'perm', 'session_manager', 'web_server', 'json_decode', 'json_encode',  __name__)
+
+
+def _post_init():
+    web_server.add(r'/connect', Connect)
+    web_server.add(r'/link', Link)
+    web_server.add(r'/login', Login)
+    web_server.add(r'/action', Action)
+    web_server.add(r'/register', Register)
+    web_server.add(r'/unregister', Unregister)
+    web_server.add(r'/remote_log', RemoteLog)
 
 
 class LinkError(Exception):
@@ -17,7 +26,6 @@ class LinkError(Exception):
 
 
 class SessionHandler(RequestHandler):
-
     def _find_session(self):
         self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
         if not self.session:
@@ -27,9 +35,12 @@ class SessionHandler(RequestHandler):
         if result:
             self.set_header('Content-Type', 'application/json')
             self.write(json_encode(result))
-
         else:
             self.set_status(204)
+        self.finish()
+
+    def _error(self, status, message):
+        self.set_status(status, message)
         self.finish()
 
     @logged
@@ -40,72 +51,44 @@ class SessionHandler(RequestHandler):
         except LinkError as le:
             self._return({'link_status': le.error_code})
         except PermError:
-            self.set_status(status)(403, 'Permission denied')
+            self._error(403, 'Permission denied')
 
     @logged
     def post(self, *args):
         try:
             self.raw = json_decode(self.request.body)
         except Exception:
-            self.set_status(400, 'Unrecognized content')
+            self._error(400, 'Unrecognized content')
             return
         try:
             self.main(*args)
-            self._return(self.session.pull_output())
-            return
+            if not self._finished:
+                self._return(self.session.pull_output())
         except LinkError as le:
             self._return({'link_status': le.error_code})
         except PermError:
-            self.set_status(403, 'Permission denied')
+            self._error(403, 'Permission denied')
         except DataError as de:
-            self.set_status(409, de.message)
+            self._error(409, de.message)
         except StateError as se:
-            self.status(400, se.message)
-        self.finish()
+            self._error(400, se.message)
 
     def main(self, *_):
         pass
 
 
-def request(func):
-    args = set(inspect.getargspec(func).args)
-
-    @logged
-    def wrapper(self, request):
-        session = session_manager.get_session(find_session_id(request))
-        if not session:
-            return json_encode({'link_status': 'session_not_found'})
-        check_perm(session, self)
-
-        raw = json_decode(request.content.getvalue())
-        content = Blank(**raw)
-        param_vars = vars()
-        params = {arg_name: param_vars[arg_name] for arg_name in args}
-
+class MethodHandler(SessionHandler):
+    def main(self, path):
         try:
-            result = func(**params)
-            if result is None:
-                request.setResponseCode(204)
-                return ''
-            request.setHeader('Content-Type', 'application/json')
-            return json_encode(result)
-        except PermError:
-            request.setResponseCode(403)
-            return "Permission Denied."
-        except DataError as de:
-            request.setResponseCode(409)
-            return str(de.message)
-        except StateError as se:
-            request.setResponseCode(400)
-            return str(se.message)
-    return wrapper
+            method = getattr(self, path)
+            self._return(method())
+        except AttributeError:
+            self._error(404, 'Not Found')
 
 
-class ConnectResource(RequestHandler):
-
+class Connect(RequestHandler):
     @logged
     def post(self):
-
         session_id = self.request.headers.get('X-Lampost-Session')
         if session_id:
             content = json_decode(self.request.body)
@@ -116,8 +99,7 @@ class ConnectResource(RequestHandler):
         self.write(json_encode(session.pull_output()))
 
 
-class LoginResource(SessionHandler):
-
+class Login(SessionHandler):
     def main(self):
         if self.session.user:
             player_id = self.raw['player_id']
@@ -127,7 +109,7 @@ class LoginResource(SessionHandler):
         session_manager.login(self.session, self.raw['user_id'], self.raw['password'])
 
 
-class LinkResource(RequestHandler):
+class Link(RequestHandler):
     @logged
     @asynchronous
     def post(self):
@@ -136,17 +118,16 @@ class LinkResource(RequestHandler):
         self.session = session_manager.get_session(session_id)
         if self.session:
             self.session.attach(self)
-        else:
-            self.write(json_encode({'link_status': 'session_not_found'}))
-            self.finish()
+            return
+        self.write(json_encode({'link_status': 'session_not_found'}))
+        self.finish()
 
     def on_connection_close(self):
         if self.session:
             self.session.link_failed()
 
 
-class ActionResource(SessionHandler):
-
+class Action(SessionHandler):
     def main(self):
         player = self.session.player
         if not player:
@@ -154,49 +135,18 @@ class ActionResource(SessionHandler):
         player.parse(cgi.escape(self.raw['action'].strip()))
 
 
-class RegisterResource(SessionHandler):
-
+class Register(SessionHandler):
     def main(self):
         get_resource(self.raw['service_id']).register(self.session, getattr(self.raw, 'data', None))
 
 
-class UnregisterResource(SessionHandler):
-
+class Unregister(SessionHandler):
     def main(self):
         get_resource(self.raw['service_id']).unregister(self.session)
 
 
-class LspServerResource():
-
-    documents = {}
-
-    def add_html(self, path, content):
-        self._add_document(path, content, 'text/html')
-
-    def add_js(self, path, content):
-        self._add_document(path, content, 'text/javascript')
-
-    def _add_document(self, path, content, content_type):
-        self.documents[path] = {'content': content, 'content_type': content_type}
-
-
-class LspHandler(RequestHandler):
-
-    def initialize(self, documents):
-        self.documents = documents
-
-    def get(self, lsp_id):
-        document = self.documents[lsp_id]
-        self.set_header("Content-Type", "{}; charset=UTF-8".format(document['content_type']))
-        self.write(document['content'])
-
-
-class RemoteLogResource(RequestHandler):
-
+class RemoteLog(RequestHandler):
     @logged
     def post(self):
         warn(self.request.body, 'Remote')
         self.set_status(204)
-
-
-
