@@ -4,25 +4,44 @@ from tornado.httpserver import HTTPServer
 from lampost.util.lmlog import logged
 from lampost.context.resource import provides, m_requires
 
-URL_EDITOR = "editor"
-URL_SETTINGS = "settings"
-
-
 m_requires("log", "dispatcher", __name__)
 
 
-class LspServer():
+@provides('web_server')
+class WebServer(object):
+    def __init__(self):
+        self.handlers = []
+        self._lsp_docs = {}
 
-    documents = {}
+    def lsp_html(self, path, content):
+        self._add_lsp(path, content, 'text/html')
 
-    def add_html(self, path, content):
-        self._add_document(path, content, 'text/html')
+    def lsp_js(self, path, content):
+        self._add_lsp(path, content, 'text/javascript')
 
-    def add_js(self, path, content):
-        self._add_document(path, content, 'text/javascript')
+    def _add_lsp(self, path, content, content_type):
+        self._lsp_docs[path] = {'content': content, 'content_type': content_type}
 
-    def _add_document(self, path, content, content_type):
-        self.documents[path] = {'content': content, 'content_type': content_type}
+    def _post_init(self):
+        dispatcher.register("config_js", self._update_config)
+
+    def _update_config(self, config_js):
+        self.lsp_js("config.js", config_js)
+
+    def add(self, regex, handler, **init_params):
+        self.handlers.append((regex, handler, init_params))
+
+    @logged
+    def start_service(self, port, interface):
+        application = Application([
+            (r"/", RedirectHandler, dict(url="/ngclient/lampost.html")),
+            (r"/ngclient/(.*)", StaticFileHandler, dict(path="ngclient")),
+            (r"/lsp/(.*)", LspHandler, dict(documents=self._lsp_docs))
+        ] + self.handlers)
+
+        info("Starting web server on port {}".format(port), self)
+        http_server = HTTPServer(application)
+        http_server.listen(port, interface)
 
 
 class LspHandler(RequestHandler):
@@ -34,33 +53,3 @@ class LspHandler(RequestHandler):
         self.set_header("Content-Type", "{}; charset=UTF-8".format(document['content_type']))
         self.write(document['content'])
 
-
-@provides('web_server')
-class WebServer(object):
-    def __init__(self):
-        self.handlers = []
-        self._lsp_server = LspServer()
-
-    def _post_init(self):
-        dispatcher.register("config_js", self._update_config)
-
-    def _update_config(self, config_js):
-        self._lsp_server.add_js("config.js", config_js)
-
-    def add(self, regex, handler, **init_params):
-        self.handlers.append((regex, handler, init_params))
-
-    @logged
-    def start_service(self, port, interface):
-        application = Application([
-            (r"/", RedirectHandler, dict(url="/ngclient/lampost.html")),
-            (r"/ngclient/(.*)", StaticFileHandler, dict(path="ngclient")),
-            (r"/lsp/(.*)", LspHandler, dict(documents=self._lsp_server.documents))
-        ] + self.handlers)
-
-        # self.putChild(URL_EDITOR, EditorResource())
-        # self.putChild(URL_SETTINGS, SettingsResource())
-
-        info("Starting web server on port {}".format(port), self)
-        http_server = HTTPServer(application)
-        http_server.listen(port, interface)

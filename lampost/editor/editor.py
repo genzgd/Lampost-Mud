@@ -1,7 +1,6 @@
 import copy
 
-from twisted.web.resource import Resource
-from lampost.client.handlers import request
+from lampost.client.handlers import MethodHandler
 from lampost.datastore.classes import get_sub_classes, get_dbo_class
 from lampost.context.resource import requires
 from lampost.editor.areas import AreaResource, RoomResource
@@ -21,8 +20,7 @@ from lampost.model.mobile import MobileTemplate
 from lampost.model.player import Player
 from lampost.model.race import PlayerRace
 
-
-class EditorResource(Resource):
+class Editor(MethodHandler):
     def __init__(self):
         Resource.__init__(self)
         self.putChild('area', AreaResource(Area))
