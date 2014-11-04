@@ -1,60 +1,49 @@
-from twisted.web.resource import Resource
-from lampost.client.handlers import request
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
-from lampost.editor.base import EditResource
-from lampost.editor.children import EditChildrenResource, find_parent
+from lampost.editor.editor import Editor, ChildrenEditor, find_parent
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.model.area import Area
-from lampost.model.article import ArticleTemplate
-from lampost.model.mobile import MobileTemplate
 
 m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager',  __name__)
 
 
-class AreaResource(EditResource):
+class AreaEditor(Editor):
+    def initialize(self):
+        super(AreaEditor, self).initialize(Area)
 
-    def pre_delete(self, del_obj, session):
+    def pre_delete(self, del_obj):
         if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
             raise ActionError("Cannot delete root area.")
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
-            room_clean_up(room, session, del_obj.dbo_id)
+            room_clean_up(room, self.session, del_obj.dbo_id)
 
 
-class RoomResource(EditChildrenResource):
-    def __init__(self):
-        EditChildrenResource.__init__(self, Room)
-        self.putChild('visit', RoomVisit())
-        self.putChild('create_exit', CreateExit())
-        self.putChild('delete_exit', DeleteExit())
+class RoomEditor(ChildrenEditor):
+    def initialize(self):
+        super(RoomEditor, self).initialize(Room)
 
-    def post_create(self, room, session):
-        add_room(find_parent(room), session)
+    def visit(self):
+        room = load_object(Room, self.raw['room_id'])
+        if not room:
+            raise DataError("ROOM_MISSING")
+        room.reset()
+        self.session.player.change_env(room)
 
-    def post_delete(self, room, session):
-        room_clean_up(room, session)
-
-    def post_update(self, room, session):
-        room.reload()
-
-
-class CreateExit(Resource):
-    @request
-    def render_POST(self, content, session):
-        area, room = find_area_room(content.start_room, session)
-        new_dir = Direction.ref_map[content.direction]
+    def create_exit(self):
+        area, room = find_area_room(self.raw['start_room'], self.session)
+        new_dir = Direction.ref_map[self.raw['direction']]
         if room.find_exit(new_dir):
             raise DataError("Room already has " + new_dir.dbo_id + " exit.")
         rev_dir = new_dir.rev_dir
-        other_id = content.dest_id
+        other_id = self.raw['dest_id']
         if content.is_new:
-            other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
+            other_room = create_object(Room, {'dbo_id': other_id, 'title': self.raw['dest_title'], 'dbo_rev': -1})
             publish_edit('create', other_room, session, True)
-            add_room(area,  session)
+            add_room(area, self.session)
         else:
-            other_area, other_room = find_area_room(other_id, session)
+            other_area, other_room = find_area_room(other_id, self.session)
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir.obj_id + " exit.")
         this_exit = get_dbo_class('exit')()
@@ -62,22 +51,19 @@ class CreateExit(Resource):
         this_exit.destination = other_id
         room.exits.append(this_exit)
         save_object(room)
-        publish_edit('update', room, session)
+        publish_edit('update', room, self.session)
         if not content.one_way:
             other_exit = get_dbo_class('exit')()
             other_exit.direction = rev_dir
             other_exit.destination = room.dbo_id
             other_room.exits.append(other_exit)
             save_object(other_room)
-            publish_edit('update', other_room, session, True)
+            publish_edit('update', other_room, self.session, True)
         return this_exit.dto_value
 
-
-class DeleteExit(Resource):
-    @request
-    def render_POST(self, content, session):
-        area, room = find_area_room(content.start_room, session)
-        direction = Direction.ref_map[content.dir]
+    def delete_exit(self):
+        area, room = find_area_room(self.raw['start_room'], self.session)
+        direction = Direction.ref_map[self.raw['dir']]
         local_exit = room.find_exit(direction)
         if not local_exit:
             raise DataError('Exit does not exist')
@@ -91,21 +77,21 @@ class DeleteExit(Resource):
                 other_room.exits.remove(other_exit)
                 if other_room.dbo_rev or other_room.exits:
                     save_object(other_room)
-                    publish_edit('update', other_room, session, True)
+                    publish_edit('update', other_room, self.session, True)
                 else:
                     delete_object(other_room)
                     room_clean_up(room, session)
-                    publish_edit('delete', other_room, session, True)
+                    publish_edit('delete', other_room, self.session, True)
 
 
-class RoomVisit(Resource):
-    @request
-    def render_POST(self, content, session):
-        room = load_object(Room, content.room_id)
-        if not room:
-            raise DataError("ROOM_MISSING")
-        room.reset()
-        session.player.change_env(room)
+    def post_create(self, room):
+        add_room(find_parent(room), self.session)
+
+    def post_delete(self, room):
+        room_clean_up(room, self.session)
+
+    def post_update(self, room):
+        room.reload()
 
 
 def add_room(area, session):

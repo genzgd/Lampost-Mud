@@ -185,7 +185,7 @@ class UserSession(object):
 
     def connect_user(self, user):
         self.user = user
-        self._activity_time = datetime.now()
+        self.activity_time = datetime.now()
 
     def connect_player(self, player):
         self.player = player

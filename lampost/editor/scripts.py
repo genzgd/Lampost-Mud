@@ -1,14 +1,18 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
-from lampost.editor.children import EditChildrenResource
+from lampost.editor.editor import ChildrenEditor
+from lampost.gameops.script import Script
 
 m_requires('perm', 'script_manager', __name__)
 
 
-class ScriptResource(EditChildrenResource):
+class ScriptEditor(ChildrenEditor):
+    def initialize(self):
+        super(ScriptEditor, self).initialize(Script)
 
-    def pre_update(self, script, new_script, session):
-        self._check_perm(script, session)
+    def pre_update(self, script):
+        self._check_perm(script)
+        new_script = self.raw
         if new_script['from_file'] and not script.from_file:
             raise DataError("File scripts must be initiated on the file system.")
         try:
@@ -26,10 +30,10 @@ class ScriptResource(EditChildrenResource):
         else:
             new_script['text'] = new_script['live_text']
 
-    def post_update(self, script, session):
+    def post_update(self, script):
         script.compile()
 
-    def post_delete(self, del_obj, session):
+    def post_delete(self, del_obj):
         script_manager.delete(del_obj)
 
 

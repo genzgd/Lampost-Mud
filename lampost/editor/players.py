@@ -1,20 +1,23 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
-from lampost.editor.base import EditResource
 from lampost.client.user import User
+from lampost.editor.editor import Editor
 
 m_requires('log', 'datastore', 'perm', 'user_manager', __name__)
 
 
-class PlayerResource(EditResource):
-    def pre_delete(self, player, session):
+class PlayerEditor(Editor):
+    def initialize(self):
+        super(PlayerEditor, self).initialize(Player)
+
+    def pre_delete(self, player):
         if player.imm_level >= perm_level('supreme'):
             raise DataError("Cannot delete root user.")
         if hasattr(player, 'session'):
             raise DataError("Player is logged in.")
-        check_player_perm(player, session)
+        check_player_perm(player, self.session)
 
-    def post_delete(self, player, session):
+    def post_delete(self, player):
         user_manager.remove_player_indexes(player.dbo_id)
         user = load_object(User, player.user_id)
         user.player_ids.remove(player.dbo_id)

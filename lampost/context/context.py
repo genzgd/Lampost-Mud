@@ -1,7 +1,8 @@
+import importlib
+
 from tornado.ioloop import IOLoop
 
 from lampost.client.services import PlayerListService, AnyLoginService, EditUpdateService
-
 from lampost.client.user import UserManager
 from lampost.client.email import EmailSender
 from lampost.comm.channel import ChannelService
@@ -48,6 +49,7 @@ class Context(object):
         AnyLoginService()
         MudNature(flavor)
         ScriptManager()
+        importlib.import_module('lampost.editor.service')
         web_server = WebServer()
         context_post_init()
 

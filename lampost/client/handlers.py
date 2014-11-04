@@ -5,7 +5,7 @@ from lampost.datastore.exceptions import DataError
 
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, get_resource
-from lampost.util.lmutil import PermError, StateError
+from lampost.util.lmutil import PermError, StateError, Blank
 
 m_requires('log', 'perm', 'session_manager', 'web_server', 'json_decode', 'json_encode',  __name__)
 
@@ -30,6 +30,9 @@ class SessionHandler(RequestHandler):
         self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
         if not self.session:
             raise LinkError('session_not_found')
+
+    def _content(self):
+        return Blank(**self.raw)
 
     def _return(self, result):
         if result:
@@ -78,10 +81,10 @@ class SessionHandler(RequestHandler):
 
 
 class MethodHandler(SessionHandler):
-    def main(self, path):
+    def main(self, path, *args):
         try:
             method = getattr(self, path)
-            self._return(method())
+            self._return(method(*args))
         except AttributeError:
             self._error(404, 'Not Found')
 
@@ -101,12 +104,12 @@ class Connect(RequestHandler):
 
 class Login(SessionHandler):
     def main(self):
+        content = self._content()
         if self.session.user:
-            player_id = self.raw['player_id']
-            if player_id:
-                session_manager.start_player(self.session, player_id)
+            if content.player_id:
+                session_manager.start_player(self.session, content.player_id)
                 return
-        session_manager.login(self.session, self.raw['user_id'], self.raw['password'])
+        session_manager.login(self.session, content.user_id, content.password)
 
 
 class Link(RequestHandler):

@@ -8,12 +8,12 @@ from lampost.comm.channel import Channel
 
 
 room_module = import_module('lampost.env.room')
-__import__('lampost.model.area')
-__import__('lampost.mud.immortal')
-__import__('lampost.comm.chat')
-__import__('lampost.mud.inventory')
-__import__('lampost.mud.socials')
-__import__('lampost.env.instance')
+import_module('lampost.model.area')
+import_module('lampost.mud.immortal')
+import_module('lampost.comm.chat')
+import_module('lampost.mud.inventory')
+import_module('lampost.mud.socials')
+import_module('lampost.env.instance')
 
 m_requires('log', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)
 

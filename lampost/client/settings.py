@@ -65,18 +65,15 @@ class Settings(MethodHandler):
         return response
 
     def create_player(self):
-        user_id = self.raw['user_id']
-        user = load_object(User, user_id)
+        content = self._content()
+        user = load_object(User, content.user_id)
         if not user:
-            raise DataError("User {0} does not exist".format(user_id))
-        raw_name = self.raw['player_name']
-        player_name = raw_name.lower()
-        if player_name != user.user_name and get_index("ix:user:user_name", player_name):
-            raise DataError(raw_name + " is in use.")
-        if object_exists('player', player_name):
-            raise DataError(raw_name + " is in use.")
+            raise DataError("User {0} does not exist".format(content.user_id))
+        player_name = content.player_name.lower()
+        if (player_name != user.user_name and get_index("ix:user:user_name", player_name)) or object_exists('player', player_name):
+            raise DataError(content.player_name.capitalize() + " is in use.")
         content.player_data['dbo_id'] = player_name
-        user_manager.attach_player(user, self.raw['player_data'])
+        user_manager.attach_player(user, content.player_data)
 
     def get_players(self):
         user = load_object(User, self.raw['user_id'])

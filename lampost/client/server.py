@@ -23,12 +23,9 @@ class WebServer(object):
         self._lsp_docs[path] = {'content': content, 'content_type': content_type}
 
     def _post_init(self):
-        dispatcher.register("config_js", self._update_config)
+        dispatcher.register("config_js", lambda config_js : self.lsp_js('config.js', config_js))
 
-    def _update_config(self, config_js):
-        self.lsp_js("config.js", config_js)
-
-    def add(self, regex, handler, **init_params):
+    def add(self, regex, handler, init_params=None):
         self.handlers.append((regex, handler, init_params))
 
     @logged
