@@ -26,7 +26,7 @@ class PlayerLP(Player, EntityLP):
         self.auto_fight = False
 
     def on_loaded(self):
-        for skill in self.skills.viewvalues():
+        for skill in self.skills.values():
             self.add_skill(skill)
 
     def check_logout(self):

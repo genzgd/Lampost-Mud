@@ -12,7 +12,7 @@ class Direction(RootDBO):
 
     @classmethod
     def find_dir(cls, name):
-        for key, value in cls.ref_map.iteritems():
+        for key, value in cls.ref_map.items():
             if name == key or name == value.desc:
                 return value
 

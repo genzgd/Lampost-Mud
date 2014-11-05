@@ -45,9 +45,9 @@ def help_action(source, args, **_):
     if not args:
         source.display_line('Available actions:')
         action_verbs = defaultdict(list)
-        for verb, action in _mud_actions.viewitems():
+        for verb, action in _mud_actions.items():
             action_verbs[action].append(" ".join(list(verb)))
-        verb_lists = ["/".join(verbs) for verbs in action_verbs.viewvalues()]
+        verb_lists = ["/".join(verbs) for verbs in action_verbs.values()]
         return source.display_line(", ".join(sorted(verb_lists)))
     action = _mud_actions.get(args, None)
     if not action:

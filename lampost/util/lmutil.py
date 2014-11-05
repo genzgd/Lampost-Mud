@@ -25,7 +25,7 @@ def plural(noun):
     return "{}s".format(noun)
 
 def dump(dump_dict):
-    return ["{0}: {1}".format(key, str(value)) for key, value in dump_dict.iteritems()]
+    return ["{0}: {1}".format(key, str(value)) for key, value in dump_dict.items()]
 
 
 def find_nth(haystack, needle, n):
@@ -89,11 +89,11 @@ def patch_object(obj, prop, new_value):
         try:
             if isinstance(existing_value, int):
                 new_value = int(new_value)
-            elif isinstance(existing_value, long):
-                new_value = long(new_value)
+            elif isinstance(existing_value, int):
+                new_value = int(new_value)
             elif isinstance(existing_value, float):
                 new_value = float(new_value)
-            elif isinstance(existing_value, basestring):
+            elif isinstance(existing_value, str):
                 pass
             else:
                 raise PatchError("Only number and string values can be patched")
@@ -116,4 +116,4 @@ def str_to_primitive(value):
 
 
 def args_print(**kwargs):
-    return ''.join(['{0}:{1} '.format(key, str(value)) for key, value in kwargs.iteritems()])
+    return ''.join(['{0}:{1} '.format(key, str(value)) for key, value in kwargs.items()])

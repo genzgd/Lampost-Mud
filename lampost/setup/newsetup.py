@@ -23,7 +23,7 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     user_manager = UserManager()
     config = load_object(Config, config_id)
     if config:
-        print "Error:  This instance is already set up"
+        print("Error:  This instance is already set up")
         return
 
     context_post_init()

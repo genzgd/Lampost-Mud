@@ -1,6 +1,17 @@
+import json
+
 from lampost.context.resource import m_requires, register
 
 m_requires("log", __name__)
+
+default_decoder = json.JSONDecoder().decode
+
+
+
+def _default_decode(value):
+    if isinstance(value, bytes):
+        return default_decoder(value.decode('utf-8'))
+    return default_decoder(value)
 
 
 def select_json():
@@ -11,7 +22,7 @@ def select_json():
         info("Selected ujson JSON library")
     except ImportError:
         json = __import__('json')
-        register('json_decode', json.JSONDecoder().decode)
+        register('json_decode', _default_decode)
         register('json_encode', json.JSONEncoder().encode)
         info("Defaulted to standard JSON library")
 

@@ -1,4 +1,4 @@
-from __future__ import division
+
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOTField
 from lampost.datastore.auto import RootAuto, TemplateField
@@ -20,7 +20,7 @@ WEAPON_TYPES = {'sword': {'damage': 'slash', 'delivery': 'melee'},
                 'spear': {'damage': 'pierce', 'delivery': 'ranged'},
                 'polearm': {'damage': 'pierce', 'delivery': 'melee'}}
 
-WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + WEAPON_TYPES.keys()
+WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + list(WEAPON_TYPES.keys())
 
 DAMAGE_TYPES = {'weapon': {'desc': 'Use weapon damage type'},
                 'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
@@ -34,7 +34,7 @@ DAMAGE_TYPES = {'weapon': {'desc': 'Use weapon damage type'},
                 'psych': {'desc': 'Mental/psychic damage'},
                 'spirit': {'desc': 'Spiritual damage'}}
 
-DAMAGE_CATEGORIES = {'any': {'desc': 'All possible damage types', 'types': [damage_type for damage_type in DAMAGE_TYPES.iterkeys()]},
+DAMAGE_CATEGORIES = {'any': {'desc': 'All possible damage types', 'types': [damage_type for damage_type in DAMAGE_TYPES.keys()]},
                      'physical': {'desc': 'All physical damage types', 'types': ['blunt', 'piece', 'slash']},
                      'elemental': {'desc': 'All elemental damage types', 'types': ['fire', 'shock', 'cold', 'acid', 'poison']}}
 
@@ -77,11 +77,11 @@ def validate_dam_type(ability, damage_type):
 
 def calc_consider(entity):
     try:
-        best_attack = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.template_id == 'attack'])
+        best_attack = max([skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'attack'])
     except ValueError:
         best_attack = 0
     try:
-        best_defense = max([skill.points_per_pulse(entity) for skill in entity.skills.itervalues() if skill.template_id == 'defense'])
+        best_defense = max([skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'defense'])
     except ValueError:
         best_defense = 0
     pool_levels = sum(getattr(entity, base_pool_id, 0) for pool_id, base_pool_id in POOL_LIST)

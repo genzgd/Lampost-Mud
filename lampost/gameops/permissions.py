@@ -11,7 +11,7 @@ class Permissions(object):
     def __init__(self):
         self.rev_levels = {}
         self.immortals = {}
-        for name, level in self.levels.iteritems():
+        for name, level in self.levels.items():
             self.rev_levels[level] = name
 
     def _post_init(self):

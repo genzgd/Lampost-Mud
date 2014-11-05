@@ -74,13 +74,13 @@ class EntityLP(Entity):
             raise ActionError('{} does not have that skill'.format(self.name))
 
     def check_costs(self, costs):
-        for pool, cost in costs.viewitems():
+        for pool, cost in costs.items():
             if getattr(self, pool, 0) < cost:
                 raise ActionError("Your condition prevents you from doing that.")
 
     def apply_costs(self, costs):
         self.check_costs(costs)
-        for pool, cost in costs.iteritems():
+        for pool, cost in costs.items():
             setattr(self, pool, getattr(self, pool) - cost)
         self.check_status()
 

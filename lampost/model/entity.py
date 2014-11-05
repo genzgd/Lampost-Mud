@@ -77,7 +77,7 @@ class Entity(BaseItem):
     @action_handler
     def process_action(self, action, act_args):
         response = action(**act_args)
-        if isinstance(response, basestring):
+        if isinstance(response, str):
             self.display_line(response)
         elif response:
             self.output(response)

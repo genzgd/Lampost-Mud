@@ -164,7 +164,7 @@ class Room(Scriptable):
                 my_exit.examine(source)
         else:
             source.display_line("No obvious exits", EXIT_DISPLAY)
-        tell(filter(lambda x: x != source, self.contents), 'glance', source)
+        tell([x for x in self.contents if x != source], 'glance', source)
 
     def short_exits(self):
         return ", ".join([ex.dir_desc for ex in self.exits])
@@ -248,7 +248,7 @@ class Room(Scriptable):
         if self._garbage_pulse:
             del self._garbage_pulse
         detach_events(self)
-        for mobile_list in self.mobiles.viewvalues():
+        for mobile_list in self.mobiles.values():
             for mobile in mobile_list:
                 if mobile.env != self:
                     mobile.enter_env(self)

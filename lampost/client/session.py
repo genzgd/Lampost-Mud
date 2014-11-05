@@ -59,7 +59,7 @@ class SessionManager(object):
         return session
 
     def login(self, session, user_name, password):
-        user_name = unicode(user_name).lower()
+        user_name = str(user_name).lower()
         result, user = self.user_manager.validate_user(user_name, password)
         if result != "ok":
             session.append({"login_failure": result})
@@ -116,14 +116,14 @@ class SessionManager(object):
         self._broadcast_status()
 
     def _get_next_id(self):
-        u_session_id = b64encode(str(urandom(16)))
+        u_session_id = b64encode(bytes(urandom(16))).decode()
         while self.get_session(u_session_id):
-            u_session_id = b64encode(str(urandom(16)))
+            u_session_id = b64encode(bytes(urandom(16))).decode()
         return u_session_id
 
     def _refresh_link_status(self):
         now = datetime.now()
-        for session_id, session in self.session_map.items():
+        for session_id, session in list(self.session_map.items()):
             if session.ld_time:
                 if now - session.ld_time > self.link_dead_prune:
                     if session.player:
@@ -139,7 +139,7 @@ class SessionManager(object):
 
     def _broadcast_status(self):
         now = datetime.now()
-        for session in self.player_session_map.itervalues():
+        for session in self.player_session_map.values():
             if session.player:
                 self.player_info_map[session.player.dbo_id] = session.player_info(now)
         dispatch('player_list', self.player_info_map)

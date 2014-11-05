@@ -29,7 +29,7 @@ def convert_areas(source):
 
 
 def add_display(source, display_key, display_desc, display_color):
-    display_desc = unicode.title(display_desc.replace('_', ' '))
+    display_desc = str.title(display_desc.replace('_', ' '))
     config_manager.config.default_displays[display_key] = {'desc': display_desc, 'color': display_color}
     config_manager.save_config()
 

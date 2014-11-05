@@ -12,7 +12,7 @@ def register(name, service, export_methods=False):
     _registered_modules.append(service)
     if export_methods:
         _methods[name] = {}
-        for attr, value in service.__class__.__dict__.iteritems():
+        for attr, value in service.__class__.__dict__.items():
             if hasattr(value, 'im_class'):
                 continue
             if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
@@ -85,6 +85,6 @@ def _priority_sort(module):
 
 def _inject(cls, name, service):
     setattr(cls, name, service)
-    for attr, value in _methods.get(name, {}).viewitems():
+    for attr, value in _methods.get(name, {}).items():
         if not getattr(cls, attr, None):
             setattr(cls, attr, value)

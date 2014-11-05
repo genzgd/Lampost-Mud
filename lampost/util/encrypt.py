@@ -1,6 +1,6 @@
 from os import urandom
 from base64 import b64encode, b64decode
-from itertools import izip
+
 from lampost.util.pdkdf2 import pbkdf2_bin
 
 SALT_LENGTH = 8
@@ -9,23 +9,20 @@ COST_FACTOR = 800
 
 
 def make_hash(password):
-    if isinstance(password, unicode):
-        password = password.encode('utf-8')
-    salt = b64encode(urandom(SALT_LENGTH))
+    salt = bytes(urandom(SALT_LENGTH))
+    password_hash = pbkdf2_bin(bytes(password, 'utf-8'), salt, COST_FACTOR, KEY_LENGTH)
     return '{}${}'.format(
-        salt,
-        b64encode(pbkdf2_bin(password, salt, COST_FACTOR, KEY_LENGTH)))
+        b64encode(salt).decode(),
+        b64encode(password_hash).decode())
 
 
 def check_password(password, full_hash):
-    if isinstance(password, unicode):
-        password = password.encode('utf-8')
-    salt, existing_hash = full_hash.split('$')
-    existing_hash = b64decode(existing_hash)
-    entered_hash = pbkdf2_bin(password, salt, COST_FACTOR, KEY_LENGTH)
+
+    salt, existing_hash = tuple(b64decode(bytes(element, 'ascii')) for element in full_hash.split('$'))
+    entered_hash = pbkdf2_bin(bytes(password, 'utf-8'), salt, COST_FACTOR, KEY_LENGTH)
     diff = 0
-    for char_a, char_b in izip(existing_hash, entered_hash):
-        diff |= ord(char_a) ^ ord(char_b)
+    for byte_a, byte_b in zip(existing_hash, entered_hash):
+        diff |= byte_a ^ byte_b
     return diff == 0
 
 

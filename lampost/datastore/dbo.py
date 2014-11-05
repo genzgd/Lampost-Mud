@@ -12,7 +12,7 @@ class RootDBOMeta(AutoMeta):
         cls._load_functions = []
         for base in bases:
             try:
-                cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.iteritems() if name not in new_attrs.keys()})
+                cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.items() if name not in list(new_attrs.keys())})
             except AttributeError:
                 pass
             cls._load_functions.extend(getattr(base, '_load_functions', []))
@@ -30,17 +30,16 @@ class RootDBOMeta(AutoMeta):
             set_dbo_class(cls.dbo_key_type, cls)
 
     def _update_dbo_fields(cls, new_attrs):
-        cls.dbo_fields.update({name: attr for name, attr in new_attrs.iteritems() if hasattr(attr, 'hydrate_value')})
+        cls.dbo_fields.update({name: attr for name, attr in new_attrs.items() if hasattr(attr, 'hydrate_value')})
 
     def add_dbo_fields(cls, new_fields):
         cls._meta_init_attrs(new_fields)
         cls._update_dbo_fields(new_fields)
-        for name, dbo_field in new_fields.iteritems():
+        for name, dbo_field in new_fields.items():
             setattr(cls, name, dbo_field)
 
 
-class RootDBO(object):
-    __metaclass__ = RootDBOMeta
+class RootDBO(object, metaclass=RootDBOMeta):
     dbo_key_type = None
     dbo_parent_type = None
     dbo_children_types = []
@@ -66,14 +65,14 @@ class RootDBO(object):
 
     def __init__(self, dbo_id=None):
         if dbo_id:
-            self.dbo_id = unicode(str(dbo_id).lower())
+            self.dbo_id = str(str(dbo_id).lower())
 
     def _on_loaded(self):
         for load_func in reversed(self._load_functions):
             load_func(self)
 
     def hydrate(self, dto):
-        for field, dbo_field in self.dbo_fields.viewitems():
+        for field, dbo_field in self.dbo_fields.items():
             if field in dto:
                 dbo_value = dbo_field.hydrate_value(dto[field], self)
                 setattr(self, field, dbo_value)
@@ -98,7 +97,7 @@ class RootDBO(object):
     @property
     def save_value(self):
         save_value = {}
-        for field, dbo_field in self.dbo_fields.viewitems():
+        for field, dbo_field in self.dbo_fields.items():
             try:
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
@@ -113,7 +112,7 @@ class RootDBO(object):
 
     @property
     def dbo_key(self):
-        return unicode(":".join([self.dbo_key_type, self.dbo_id]))
+        return str(":".join([self.dbo_key_type, self.dbo_id]))
 
     @property
     def parent_id(self):
@@ -128,7 +127,7 @@ class RootDBO(object):
 
     @property
     def dto_value(self):
-        dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.viewitems()}
+        dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
         dto_value['dbo_key_type'] = self.dbo_key_type
         return self.metafields(dto_value, ['dbo_id', 'sub_class_id', 'template_id'])
 
@@ -146,7 +145,7 @@ class RootDBO(object):
     def _describe(self, display, level):
 
         def append(value, key):
-            display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + unicode(value))
+            display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + str(value))
 
         if getattr(self, 'dbo_id', None):
             append(self.dbo_id, 'dbo_id')
@@ -156,7 +155,7 @@ class RootDBO(object):
             level *= 99
         if level > 3:
             return
-        for field, dbo_field in sorted(self.dbo_fields.viewitems(), key=lambda (field, value): field):
+        for field, dbo_field in sorted(self.dbo_fields.items(), key=lambda field_value: field_value[0]):
             value = getattr(self, field)
             if value:
                 wrapper = value_wrapper(value)
@@ -257,7 +256,7 @@ def list_wrapper(func):
 
 def dict_wrapper(func):
     def wrapper(*args):
-        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].viewitems()]
+        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].items()]
                 if value is not None}
 
     return wrapper

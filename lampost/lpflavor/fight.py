@@ -24,9 +24,9 @@ class Fight():
         self.opponents = {}
 
     def update_skills(self):
-        self.attacks = [attack for attack in self.me.skills.viewvalues() if getattr(attack, 'msg_class', None) == 'attacked']
+        self.attacks = [attack for attack in self.me.skills.values() if getattr(attack, 'msg_class', None) == 'attacked']
         self.attacks.sort(key=lambda x: x.points_per_pulse(self.me), reverse=True)
-        self.defenses = [defense for defense in self.me.skills.viewvalues() if defense.template_id == 'defense' and not defense.auto_start]
+        self.defenses = [defense for defense in self.me.skills.values() if defense.template_id == 'defense' and not defense.auto_start]
         self.consider = self.me.considered()
 
     def add(self, opponent):
@@ -45,7 +45,7 @@ class Fight():
             warn("Removing opponent not in fight")
 
     def end_all(self):
-        for opponent in self.opponents.viewkeys():
+        for opponent in self.opponents.keys():
             opponent.end_combat(self.me, True)
         self.opponents.clear()
         self.clear_hunt_timer()
@@ -66,7 +66,7 @@ class Fight():
 
     def select_action(self):
         self.clear_hunt_timer()
-        local_opponents = [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]
+        local_opponents = [opponent for opponent in list(self.opponents.keys()) if opponent.env == self.me.env]
         if local_opponents:
             local_opponents.sort(key=lambda opponent: opponent.health)
             self.select_attack(local_opponents[0])
@@ -94,12 +94,12 @@ class Fight():
 
     def try_chase(self):
         stale_pulse = future_pulse(-chase_time)
-        removed = [opponent for opponent, stats in self.opponents.viewitems() if stats.last_seen < stale_pulse]
+        removed = [opponent for opponent, stats in self.opponents.items() if stats.last_seen < stale_pulse]
         for opponent in removed:
             self.end(opponent, False)
         if not self.opponents:
             return
-        for stats in sorted(self.opponents.viewvalues(), key=lambda x: x.last_seen, reverse=True):
+        for stats in sorted(self.opponents.values(), key=lambda x: x.last_seen, reverse=True):
             if stats.con_level < 1 and stats.last_exit in self.me.env.action_providers:
                 try:
                     self.me.start_action(stats.last_exit, {'source': self.me})

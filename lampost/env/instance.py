@@ -35,7 +35,7 @@ class AreaInstance(object):
                 self.clear_rooms()
 
     def clear_rooms(self):
-        for room in self.rooms.viewvalues():
+        for room in self.rooms.values():
             room.clean_up()
 
     def get_room(self, room_id):

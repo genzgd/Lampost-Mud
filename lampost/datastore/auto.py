@@ -6,22 +6,22 @@ class AutoMeta(type):
         cls._meta_init_attrs(new_attrs)
 
     def _meta_init_attrs(cls, new_attrs):
-        for name, attr in new_attrs.viewitems():
+        for name, attr in new_attrs.items():
             try:
                 attr.meta_init(name)
             except AttributeError:
                 pass
 
 
-class RootAuto(object):
-    __metaclass__ = AutoMeta
+class RootAuto(object, metaclass=AutoMeta):
+    pass
 
 
 class AutoField(object):
 
     def __init__(self, default=None):
         self.default = default
-        if default is None or isinstance(default, (int, basestring, bool, tuple, float)):
+        if default is None or isinstance(default, (int, str, bool, tuple, float)):
             self._get_default = lambda instance: self.default
         else:
             self._get_default = self._complex_default

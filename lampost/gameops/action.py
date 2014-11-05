@@ -13,7 +13,7 @@ def convert_verbs(verbs):
     results = set()
 
     def add_verb(verb):
-        results.add(tuple([unicode(fragment) for fragment in verb.split(' ')]))
+        results.add(tuple([str(fragment) for fragment in verb.split(' ')]))
     try:
         add_verb(verbs)
     except AttributeError:
@@ -54,7 +54,7 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
             action.obj_target_class = TargetClass.DEFAULTS
         if obj_msg_class:
             action.obj_msg_class = obj_msg_class
-    for arg_name, value in kw_args.iteritems():
+    for arg_name, value in kw_args.items():
         setattr(action, arg_name, value)
     return action
 
@@ -66,7 +66,7 @@ def item_action(**kwargs):
         verbs = local_args.get('verbs', None)
         msg_class = local_args.get('msg_class', None)
         if not verbs:
-            verbs = func.func_name
+            verbs = func.__name__
         if not msg_class:
             msg_class = verbs
             func.self_action = True

@@ -46,7 +46,7 @@ class Article(BaseItem, Scriptable):
     @property
     def name(self):
         if self.quantity > 1:
-            prefix = unicode(self.quantity)
+            prefix = str(self.quantity)
             title = self.plural_title
         elif self.title.lower().startswith(('a ', 'an ')):
             prefix = ""

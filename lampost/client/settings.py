@@ -31,7 +31,7 @@ class Settings(MethodHandler):
         if get_index("ix:user:name", account_name) or object_exists('player', account_name):
             raise DataError("InUse: {}".format(account_name))
         user = user_manager.create_user(account_name, self.raw['password'], self.raw['email'].lower())
-        session.connect_user(user)
+        self.session.connect_user(user)
         return {'user_id': user.dbo_id}
 
     def update_account(self):

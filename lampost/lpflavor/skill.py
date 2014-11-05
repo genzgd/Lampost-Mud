@@ -20,7 +20,7 @@ def add_skill(skill_id, target, skill_level):
 
 
 def roll_calc(source, calc, skill_level=0):
-    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.viewitems())
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.items())
     roll = randint(0, 20)
     if roll == 0:
         roll = -5
@@ -30,7 +30,7 @@ def roll_calc(source, calc, skill_level=0):
 
 
 def avg_calc(source, calc, skill_level=0):
-    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.viewitems())
+    base_calc = sum(getattr(source, attr, 0) * calc_value for attr, calc_value in calc.items())
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
@@ -97,7 +97,7 @@ class BaseSkill(TemplateInstance):
 def skills(source, target, **_):
     source.display_line("{}'s Skills:".format(target.name))
 
-    for skill_id, skill in target.skills.iteritems():
+    for skill_id, skill in target.skills.items():
         source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.name, str(skill.skill_level)))
         source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 

@@ -14,7 +14,7 @@ m_requires('dispatcher', __name__)
 def gen_keys(target_id):
     if not target_id:
         return
-    target_tuple = tuple(unicode(target_id).lower().split(" "))
+    target_tuple = tuple(str(target_id).lower().split(" "))
     prefix_count = len(target_tuple) - 1
     target = target_tuple[prefix_count],
     for x in range(0, int(math.pow(2, prefix_count))):
@@ -35,13 +35,12 @@ def target_keys(item):
 class BaseItemMeta(TemplateMeta):
     def __init__(cls, class_name, bases, new_attrs):
         super(BaseItemMeta, cls).__init__(class_name, bases, new_attrs)
-        cls.class_providers = {func.func_name for func in new_attrs.viewvalues() if hasattr(func, 'verbs')}
+        cls.class_providers = {func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')}
         for base in bases:
             cls.class_providers.update(getattr(base, 'class_providers', ()))
 
 
-class BaseItem(TemplateInstance):
-    __metaclass__ = BaseItemMeta
+class BaseItem(TemplateInstance, metaclass=BaseItemMeta):
     class_id = 'base_item'
 
     desc = DBOTField('')

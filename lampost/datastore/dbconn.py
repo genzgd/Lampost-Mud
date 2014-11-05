@@ -51,11 +51,11 @@ class RedisStore():
         return default
 
     def load_cached(self, key_type, key):
-        return self._object_map.get(unicode('{}:{}'.format(key_type, key)))
+        return self._object_map.get(str('{}:{}'.format(key_type, key)))
 
     @logged
     def load_by_key(self, key_type, key, silent=False):
-        dbo_key = unicode('{}:{}'.format(key_type, key))
+        dbo_key = str('{}:{}'.format(key_type, key))
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
@@ -72,7 +72,7 @@ class RedisStore():
         return dbo
 
     def object_exists(self, obj_type, obj_id):
-        return self.redis.exists(unicode('{}:{}'.format(obj_type, obj_id)))
+        return self.redis.exists(str('{}:{}'.format(obj_type, obj_id)))
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key)
@@ -121,11 +121,11 @@ class RedisStore():
         dbo = self.load_cached(key_type, key)
         if not dbo:
             return load_by_key(key_type, key)
-        json_str = self.redis.get(unicode('{}:{}'.format(key_type, key)))
+        json_str = self.redis.get('{}:{}'.format(key_type, key))
         if not json_str:
             warn("Failed to find {} in database for reload".format(dbo_key))
             return None
-        self.update_object(dbo, json_decode(json_str))
+        self.update_object(dbo, json_decode(str(json_str)))
         return dbo
 
     def evict_object(self, dbo):
@@ -166,7 +166,7 @@ class RedisStore():
         return self.redis.hdel(index_name, key)
 
     def get_all_hash(self, index_name):
-        return {key: json_decode(value) for key, value in self.redis.hgetall(index_name).viewitems()}
+        return {key: json_decode(value) for key, value in self.redis.hgetall(index_name).items()}
 
     def set_db_hash(self, hash_id, hash_key, value):
         return self.redis.hset(hash_id, hash_key, json_encode(value))
@@ -178,7 +178,7 @@ class RedisStore():
         self.redis.hdel(hash_id, hash_key)
 
     def get_all_db_hash(self, hash_id):
-        return [json_decode(value) for value in self.redis.hgetall(hash_id).itervalues()]
+        return [json_decode(value) for value in self.redis.hgetall(hash_id).values()]
 
     def get_db_list(self, list_id, start=0, end=-1):
         return [json_decode(value) for value in self.redis.lrange(list_id, start, end)]
@@ -224,7 +224,7 @@ class RedisStore():
             if getattr(dbo, 'dbo_id', None) and not first:
                 return dbo.dbo_id
             save_value = {}
-            for field, dbo_field in dbo.dbo_fields.viewitems():
+            for field, dbo_field in dbo.dbo_fields.items():
                 try:
                     field_value = dbo.__dict__[field]
                 except KeyError:
@@ -244,19 +244,19 @@ class RedisStore():
 
     def _clear_old_refs(self, dbo):
         dbo_key = dbo.dbo_key
-        ref_key = unicode("{}:refs".format(dbo_key))
-        for key_type, refs in self.get_all_hash(ref_key).viewitems():
+        ref_key = str("{}:refs".format(dbo_key))
+        for key_type, refs in self.get_all_hash(ref_key).items():
             for ref_id in refs:
                 self.delete_set_key(self._holder_key(key_type, ref_id), dbo_key)
         self.delete_key(ref_key)
 
     def _set_new_refs(self, dbo, new_refs):
         dbo_key = dbo.dbo_key
-        ref_key = unicode("{}:refs".format(dbo_key))
-        for key_type, refs in new_refs.viewitems():
+        ref_key = str("{}:refs".format(dbo_key))
+        for key_type, refs in new_refs.items():
             self.set_db_hash(ref_key, key_type, refs)
             for ref_id in refs:
                 self.add_set_key(self._holder_key(key_type, ref_id), dbo_key)
 
     def _holder_key(self, key_type, dbo_id):
-        return unicode("{}:{}:hldrs".format(key_type, dbo_id))
+        return str("{}:{}:hldrs".format(key_type, dbo_id))

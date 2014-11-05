@@ -13,7 +13,7 @@ ATTR_MAP = {'con': {'name': 'Constitution', 'category': 'Brawn', 'hidden': False
             'gui': {'name': 'Guile', 'category': 'Bravado', 'hidden': False},
             'inq': {'name': 'Inquiry', 'category': 'Bravado', 'hidden': True}}
 
-ATTR_LIST = tuple(ATTR_MAP.iterkeys())
+ATTR_LIST = tuple(ATTR_MAP.keys())
 
 
 POOL_MAP = {'health': {'name': 'Health', 'desc': 'Physical well being resource',
@@ -25,7 +25,7 @@ POOL_MAP = {'health': {'name': 'Health', 'desc': 'Physical well being resource',
             'action': {'name': 'Action', 'desc': 'Action points pool',
                        'calc': [['con', 5],['bal', 5], ['wis', 3], ['agi', 2]]}}
 
-POOL_LIST = tuple([(key, 'base_{}'.format(key)) for key in POOL_MAP.iterkeys()])
+POOL_LIST = tuple([(key, 'base_{}'.format(key)) for key in POOL_MAP.keys()])
 
 
 def base_pools(entity):

@@ -1,4 +1,4 @@
-from lampost.context.resource import provides
+from lampost.context.resource import provides, register
 from lampost.context.scripts import select_json
 from lampost.datastore.dbconn import RedisStore
 from lampost.gameops.event import Dispatcher
@@ -13,7 +13,7 @@ class DbContext(object):
         Log(log_level, log_file)
         select_json()
         Dispatcher()
-        RedisStore(db_host, int(db_port), int(db_num), db_pw)
+        register('datastore', RedisStore(db_host, int(db_port), int(db_num), db_pw), True)
 
     def set(self, key, value):
         self.properties[key] = value

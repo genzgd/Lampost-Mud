@@ -76,7 +76,7 @@ class SessionHandler(RequestHandler):
         except StateError as se:
             self._error(400, se.message)
         except Exception as e:
-            self.error(500, e.message)
+            self._error(500, e.message)
 
 
     def main(self, *_):

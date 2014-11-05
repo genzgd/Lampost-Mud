@@ -43,7 +43,7 @@ class Log(object):
     def _log(self, log_level, log_msg, log_name, exception):
         if LOG_LEVELS[log_level] > self.level:
             return
-        if not isinstance(log_name, basestring):
+        if not isinstance(log_name, str):
             log_name = log_name.__class__.__name__
         log_entry = "{} {}: -{}- {}\n".format(log_level, datetime.now(), log_name, log_msg)
         self.output.write(log_entry)

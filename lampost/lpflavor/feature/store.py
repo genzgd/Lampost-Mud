@@ -1,4 +1,4 @@
-from __future__ import division
+
 from collections import deque
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
@@ -24,7 +24,7 @@ class BuybackTargets(object):
     absent_msg = "{target} is not available to buy back"
 
     def target_finder(self, entity, target_key, func):
-        return [buyback for buyback in func.im_self.buybacks if buyback.owner == entity.dbo_id and target_key in buyback.article.target_keys]
+        return [buyback for buyback in func.__self__.buybacks if buyback.owner == entity.dbo_id and target_key in buyback.article.target_keys]
 
 buyback_targets = [BuybackTargets()]
 

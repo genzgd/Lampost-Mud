@@ -24,7 +24,7 @@ def self_finder(self, entity, target_key, *_):
 
 
 def im_self_finder(self, entity, target_key, func):
-    return recursive_targets([func.im_self], target_key)
+    return recursive_targets([func.__self__], target_key)
 
 
 def action_finder(self, entity, target_key, action):

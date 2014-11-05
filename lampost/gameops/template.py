@@ -22,10 +22,10 @@ class TemplateMeta(RootDBOMeta):
 
         if template_id:
             template_cls = get_dbo_class(template_id)
-            template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.viewitems() if isinstance(dbo_field, TemplateField)})
+            template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
             template_cls.instance_cls = cls
         elif __debug__:
-            print 'debug: {} has no template_id'.format(class_name)
+            print('debug: {} has no template_id'.format(class_name))
 
 
 class Template(RootDBO):
@@ -42,9 +42,7 @@ class Template(RootDBO):
         pass
 
 
-class TemplateInstance(RootDBO):
-    __metaclass__ = TemplateMeta
-
+class TemplateInstance(RootDBO, metaclass=TemplateMeta):
     @classmethod
     def load_ref(cls, dbo_repr, owner=None):
         if hasattr(cls, 'template_id'):

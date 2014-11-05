@@ -28,7 +28,7 @@ def _post_init():
     PlayerRace.attr_list = ATTR_LIST
 
     PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in ATTR_LIST})
-    PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in POOL_MAP.viewkeys()})
+    PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in POOL_MAP.keys()})
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
@@ -40,7 +40,7 @@ def _post_init():
     context.set('weapon_types', WEAPON_TYPES)
     context.set('weapon_options', WEAPON_OPTIONS)
 
-    calc_map = {key: value['name'] for key, value in ATTR_MAP.iteritems()}
+    calc_map = {key: value['name'] for key, value in ATTR_MAP.items()}
     calc_map.update({'roll': "Dice roll adjust (20 sided)",
                      'skill': "Skill level adjust"})
     context.set('calc_map', calc_map)
@@ -55,7 +55,7 @@ def _post_init():
 
 def _player_create(player):
     race = load_object(PlayerRace, player.race)
-    for attr_name, start_value in race.base_attrs.iteritems():
+    for attr_name, start_value in race.base_attrs.items():
         setattr(player, attr_name, start_value)
         setattr(player, 'perm_{}'.format(attr_name), start_value)
     fill_pools(player)
@@ -64,8 +64,8 @@ def _player_create(player):
 def _player_baptise(player):
     race = load_object(PlayerRace, player.race)
     if race:
-        for skill_id, skill_status in race.default_skills.iteritems():
-            if not skill_id in player.skills.iterkeys():
+        for skill_id, skill_status in race.default_skills.items():
+            if not skill_id in iter(player.skills.keys()):
                 add_skill(skill_id, player, skill_status['skill_level'])
 
     base_pools(player)

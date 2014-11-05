@@ -35,7 +35,7 @@ def has_action(entity, action, verb):
 
 
 def entity_actions(entity, command):
-    words = unicode(command).lower().split()
+    words = str(command).lower().split()
     matches = []
     for verb_size in range(1, len(words) + 1):
         verb = tuple(words[:verb_size])
@@ -166,7 +166,7 @@ class Parse(object):
         if target_key:
             targets = find_targets(self._entity, target_key, target_class, action)
             try:
-                target = itertools.islice(targets, target_index, target_index + 1).next()
+                target = next(itertools.islice(targets, target_index, target_index + 1))
             except StopIteration:
                 return ABSENT_TARGET
         else:
@@ -182,7 +182,7 @@ class Parse(object):
         if match.target_method is None:
             return INVALID_TARGET
         if hasattr(match.action, 'self_action'):
-            if action.im_self == target:
+            if action.__self__ == target:
                 match.action = match.target_method
             else:
                 return INVALID_TARGET
@@ -200,7 +200,7 @@ class Parse(object):
         if obj_key:
             objects = find_targets(self._entity, obj_key, obj_target_class)
             try:
-                obj = itertools.islice(objects, obj_index, obj_index + 1).next()
+                obj = next(itertools.islice(objects, obj_index, obj_index + 1))
             except StopIteration:
                 return ABSENT_OBJECT
         else:

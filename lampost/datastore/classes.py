@@ -7,7 +7,7 @@ _subclass_registry = defaultdict(list)
 
 
 def set_dbo_class(class_id, dbo_class):
-    if isinstance(class_id, basestring):
+    if isinstance(class_id, str):
         _dbo_registry[class_id] = dbo_class
 
 

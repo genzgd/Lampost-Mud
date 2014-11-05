@@ -26,7 +26,7 @@ class MobileTemplateLP(MobileTemplate):
     def on_loaded(self):
         if self.archetype:
             arch = load_object(Archetype, self.archetype)
-            for attr_name, start_value in arch.base_attrs.iteritems():
+            for attr_name, start_value in arch.base_attrs.items():
                 setattr(instance_cls, attr_name, start_value)
             self.desc = arch.desc
         else:
@@ -36,7 +36,7 @@ class MobileTemplateLP(MobileTemplate):
 
     def config_instance(self, mobile, owner):
         mobile.skills = {}
-        for skill_id, skill_status in self.default_skills.iteritems():
+        for skill_id, skill_status in self.default_skills.items():
             skill_template = load_object(SkillTemplate, skill_id)
             if not skill_template:
                 warn("Skill {} not found.".format(skill_id))
@@ -69,7 +69,7 @@ class MobileLP(EntityLP):
             self._react_entity(entity)
 
     def _react_entity(self, entity):
-        if entity in self.fight.opponents.viewkeys():
+        if entity in self.fight.opponents.keys():
             self.fight.add(entity)
             self.check_fight()
         elif hasattr(entity, 'affinity') and entity.affinity in self.enemies:

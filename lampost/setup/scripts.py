@@ -27,7 +27,7 @@ def build_default_displays():
 
 
 def build_default_settings(settings, setting_type):
-    for setting_id, setting in settings.iteritems():
+    for setting_id, setting in settings.items():
         config_manager.update_setting(setting_id, setting['default'], setting_type)
     config_manager.save_config()
     default_key = ''.join([setting_type, '_settings_default'])
