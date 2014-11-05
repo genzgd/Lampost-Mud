@@ -1,4 +1,4 @@
-from lampost.client.handlers import MethodHandler
+from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
 
 
@@ -44,11 +44,11 @@ class Editor(MethodHandler):
         existing_obj = load_object(self.obj_class, self.raw['dbo_id'])
         if not existing_obj:
             raise DataError("GONE:  Object with key {} no longer exists.".format(self.raw['dbo.id']))
-        check_perm(session, existing_obj)
+        check_perm(self.session, existing_obj)
         self.pre_update(existing_obj)
         update_object(existing_obj, self.raw)
         self.post_update(existing_obj)
-        return publish_edit('update', existing_obj, session)
+        return publish_edit('update', existing_obj, self.session)
 
     def test_delete(self):
         return ['{} - {}'.format(key_type, dbo_id) for key_type, dbo_id in fetch_holders(self.dbo_key_type, self.raw['dbo_id'])]
@@ -72,14 +72,21 @@ class Editor(MethodHandler):
         pass
 
 
+class ChildList(SessionHandler):
+    def initialize(self, obj_class):
+        self.obj_class = obj_class
+        self.dbo_key_type = obj_class.dbo_key_type
+        self.parent_type = obj_class.dbo_parent_type
+
+    def main(self, parent_id):
+        set_key = '{}_{}s:{}'.format(self.parent_type, self.dbo_key_type, parent_id)
+        self._return([obj.dto_value for obj in load_object_set(self.obj_class, set_key)])
+
+
 class ChildrenEditor(Editor):
     def initialize(self, obj_class, imm_level='admin'):
         super(ChildrenEditor, self).initialize(obj_class, imm_level)
         self.parent_type = obj_class.dbo_parent_type
-
-    def list(self, parent_id):
-        set_key = '{}_{}s:{}'.format(self.parent_type, self.dbo_key_type, parent_id)
-        return [obj.dto_value for obj in load_object_set(self.obj_class, set_key)]
 
     def _check_perm(self, obj):
         check_perm(self.session, find_parent(obj, self.parent_type))
