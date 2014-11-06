@@ -1,7 +1,7 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires, register
 from lampost.gameops.action import make_action, ActionError, convert_verbs
-from lampost.util.lmutil import StateError
+from lampost.util.lmutil import ClientError
 
 m_requires('log', 'user_manager', 'session_manager', 'message_service', 'friend_service', 'dispatcher', __name__)
 _mud_actions = {}
@@ -67,7 +67,7 @@ def friend(source, target, **_):
         return "{} is already your friend.".format(target.name)
     try:
         friend_service.friend_request(source, target)
-    except StateError as exp:
+    except ClientError as exp:
         return exp.message
     return "Friend request sent"
 

@@ -1,6 +1,6 @@
 from lampost.client.user import User
 from lampost.context.resource import m_requires, provides
-from lampost.util.lmutil import StateError
+from lampost.util.lmutil import ClientError
 
 m_requires('datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm', 'config_manager', __name__)
 
@@ -19,7 +19,7 @@ class FriendService(object):
     def friend_request(self, source, target):
         req_key = ':'.join([source.dbo_id, target.dbo_id])
         if set_key_exists(_REQUEST_KEY, req_key):
-            raise StateError("You already have a friend request to {} outstanding.".format(target.name))
+            raise ClientError("You already have a friend request to {} outstanding.".format(target.name))
         dispatch('player_message', 'friend_req', {'friend_id': source.dbo_id, 'friend_name': source.name}, target.dbo_id, source.dbo_id)
         add_set_key(_REQUEST_KEY, req_key)
 

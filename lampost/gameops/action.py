@@ -2,7 +2,7 @@ import inspect
 
 from lampost.context.resource import m_requires
 from lampost.gameops.target import TargetClass, make_target_class
-from lampost.util.lmutil import PermError
+from lampost.util.lmutil import PermError, ClientError
 
 m_requires('log', __name__)
 
@@ -120,15 +120,11 @@ def action_handler(func):
     def wrapper(self, *args, **kwargs):
         try:
             func(self, *args, **kwargs)
-        except PermError:
-            self.display_line("You do not have permission to do that.")
-        except ActionError as action_error:
-            self.display_line(action_error.message, action_error.display)
-
+        except ClientError as client_error:
+            self.display_line(client_error.client_message, client_error.display)
     return wrapper
 
 
-class ActionError(Exception):
-    def __init__(self, message, display=None):
-        self.message = message
-        self.display = display
+class ActionError(ClientError):
+    pass
+

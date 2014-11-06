@@ -111,7 +111,7 @@ class EntityLP(Entity):
             else:
                 self._next_command = command
         else:
-            super(EntityLP, self).handle_parse_error(error, command)
+            super().handle_parse_error(error, command)
 
     @action_handler
     def _finish_action(self):

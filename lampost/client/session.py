@@ -6,6 +6,7 @@ from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
+from lampost.util.lmutil import ClientError
 
 m_requires('log', 'dispatcher', __name__)
 
@@ -98,7 +99,7 @@ class SessionManager(object):
 
     def _connect_session(self, session, player, text):
         if player.user_id != session.user.dbo_id:
-            raise StateError("Player user does not match session user")
+            raise ClientError("Player user does not match session user")
         self.player_session_map[player.dbo_id] = session
         session.connect_player(player)
         session.display_line({'text': text, 'display': SYSTEM_DISPLAY})

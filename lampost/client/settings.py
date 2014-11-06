@@ -7,7 +7,7 @@ from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
-from lampost.util.lmutil import StateError
+from lampost.util.lmutil import ClientError
 
 
 m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service', __name__)
@@ -42,7 +42,7 @@ class Settings(MethodHandler):
         if user_id:
             old_user = datastore.load_object(User, user_id)
             if not old_user:
-                raise StateError(user_id + " does not exist!")
+                raise ClientError(user_id + " does not exist!")
 
         if user_manager.check_name(update_dict['user_name'], old_user) != "ok":
             raise DataError("InUse: {}".format(update_dict['user_name']))
@@ -57,7 +57,7 @@ class Settings(MethodHandler):
     def delete_account(self):
         user = self.session.user
         if user.player_ids and not check_password(self.raw['password'], user.password):
-            raise StateError("Incorrect password.")
+            raise ClientError("Incorrect password.")
         response = self.session_manager.logout(self.session)
         user_manager.delete_user(user)
         return response
@@ -76,7 +76,7 @@ class Settings(MethodHandler):
     def get_players(self):
         user = load_object(User, self.raw['user_id'])
         if not user:
-            raise StateError("User {} does not exist".format(self.raw['user_id']))
+            raise ClientError("User {} does not exist".format(self.raw['user_id']))
         return player_list(user.player_ids)
 
     def delete_player(self):
@@ -85,7 +85,7 @@ class Settings(MethodHandler):
             raise DataError("Incorrect account password")
         player_id = self.raw['player_id']
         if not player_id in user.player_ids:
-            raise StateError("Player {} longer associated with user".format(player_id))
+            raise ClientError("Player {} longer associated with user".format(player_id))
         user_manager.delete_player(user, player_id)
         return player_list(user.player_ids)
 

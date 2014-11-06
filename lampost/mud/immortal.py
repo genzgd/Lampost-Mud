@@ -10,7 +10,7 @@ from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action
 from lampost.model.player import Player
-from lampost.util.lmutil import find_extra, patch_object, PatchError, str_to_primitive
+from lampost.util.lmutil import find_extra, patch_object, str_to_primitive
 from lampost.gameops.display import TELL_TO_DISPLAY
 
 m_requires('session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', __name__)
@@ -120,10 +120,7 @@ def patch(target, verb, args, command, **_):
         return "New value required"
     if new_value == "None":
         new_value = None
-    try:
-        patch_object(target, prop, new_value)
-    except PatchError as exp:
-        return exp.message
+    patch_object(target, prop, new_value)
     return "Object successfully patched"
 
 
@@ -149,11 +146,7 @@ def patch_db(verb, args, command, **_):
         obj = load_cached(obj_type, obj_id)
     if not obj:
         return "Object not found"
-    try:
-        patch_object(obj, prop, new_value)
-    except PatchError as exp:
-        return exp.message
-
+    patch_object(obj, prop, new_value)
     save_object(obj)
     return "Object " + key + " patched"
 

@@ -1,11 +1,9 @@
-import cgi
+import html
 
 from tornado.web import RequestHandler, asynchronous
 
-from lampost.datastore.exceptions import DataError
-from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, get_resource
-from lampost.util.lmutil import PermError, StateError, Blank
+from lampost.util.lmutil import ClientError, Blank
 
 m_requires('log', 'perm', 'session_manager', 'json_decode', 'json_encode',  __name__)
 
@@ -16,6 +14,15 @@ class LinkError(Exception):
 
 
 class SessionHandler(RequestHandler):
+    def _handle_request_exception(self, e):
+        if isinstance(e, LinkError):
+            self._return({'link_status': e.error_code})
+        elif isinstance(e, ClientError):
+            self._statusCode = e.http_status
+            self._return(e.client_message)
+        else:
+            super()._handle_request_exception(e)
+
     def _find_session(self):
         self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
         if not self.session:
@@ -32,42 +39,15 @@ class SessionHandler(RequestHandler):
             self.set_status(204)
         self.finish()
 
-    def _error(self, status, message):
-        self.set_status(status, message)
-        self.finish()
-
-    @logged
     def prepare(self):
-        try:
-            self._find_session()
-            check_perm(self.session, self)
-        except LinkError as le:
-            self._return({'link_status': le.error_code})
-        except PermError:
-            self._error(403, 'Permission denied')
+        self._find_session()
+        check_perm(self.session, self)
 
-    @logged
     def post(self, *args):
-        try:
-            self.raw = json_decode(self.request.body.decode())
-        except Exception:
-            self._error(400, 'Unrecognized content')
-            return
-        try:
-            self.main(*args)
-            if not self._finished:
-                self._return(self.session.pull_output())
-        except LinkError as le:
-            self._return({'link_status': le.error_code})
-        except PermError:
-            self._error(403, 'Permission denied')
-        except DataError as de:
-            self._error(409, de.message)
-        except StateError as se:
-            self._error(400, se.message)
-        except Exception as e:
-            self._error(500, str(e))
-
+        self.raw = json_decode(self.request.body.decode())
+        self.main(*args)
+        if not self._finished:
+            self._return(self.session.pull_output())
 
     def main(self, *_):
         pass
@@ -79,11 +59,10 @@ class MethodHandler(SessionHandler):
             method = getattr(self, path)
             self._return(method(*args))
         except AttributeError:
-            self._error(404, 'Not Found')
+            self.send_error(404)
 
 
 class Connect(RequestHandler):
-    @logged
     def post(self):
         session_id = self.request.headers.get('X-Lampost-Session')
         if session_id:
@@ -98,25 +77,22 @@ class Connect(RequestHandler):
 class Login(SessionHandler):
     def main(self):
         content = self._content()
-        if self.session.user:
-            if content.player_id:
-                session_manager.start_player(self.session, content.player_id)
-                return
-        session_manager.login(self.session, content.user_id, content.password)
+        if self.session.user and content.player_id:
+            session_manager.start_player(self.session, content.player_id)
+        else:
+            session_manager.login(self.session, content.user_id, content.password)
 
 
 class Link(RequestHandler):
-    @logged
     @asynchronous
     def post(self):
         self.set_header('Content-Type', 'application/json')
-        session_id = self.request.headers.get('X-Lampost-Session')
-        self.session = session_manager.get_session(session_id)
+        self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
         if self.session:
             self.session.attach(self)
-            return
-        self.write(json_encode({'link_status': 'session_not_found'}))
-        self.finish()
+        else:
+            self.write(json_encode({'link_status': 'session_not_found'}))
+            self.finish()
 
     def on_connection_close(self):
         if self.session:
@@ -128,7 +104,7 @@ class Action(SessionHandler):
         player = self.session.player
         if not player:
             raise LinkError("no_login")
-        player.parse(cgi.escape(self.raw['action'].strip()))
+        player.parse(html.escape(self.raw['action'].strip()))
 
 
 class Register(SessionHandler):
@@ -142,7 +118,6 @@ class Unregister(SessionHandler):
 
 
 class RemoteLog(RequestHandler):
-    @logged
     def post(self):
         warn(self.request.body, 'Remote')
         self.set_status(204)

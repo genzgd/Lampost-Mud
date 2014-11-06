@@ -1,6 +1,8 @@
-class DataError(Exception):
-    def __init__(self, message='Data Error'):
-        self.message = message
+from lampost.util.lmutil import ClientError
+
+
+class DataError(ClientError):
+    http_status = 409
 
 
 class ObjectExistsError(DataError):

@@ -65,18 +65,19 @@ class Blank(object):
         self.__dict__.update(kwargs)
 
 
-class PermError(Exception):
-    pass
+class ClientError(Exception):
+    http_status = 400
+
+    def __init__(self, message, display=None):
+        self.client_message = message
+        self.display = display
 
 
-class StateError(Exception):
-    def __init__(self, message):
-        self.message = message
+class PermError(ClientError):
+    http_status = 403
 
-
-class PatchError(Exception):
-    def __init__(self, message):
-        self.message = message
+    def __init__(self):
+        super("You do not have permission to do that")
 
 
 def cls_name(cls):
@@ -89,20 +90,18 @@ def patch_object(obj, prop, new_value):
         try:
             if isinstance(existing_value, int):
                 new_value = int(new_value)
-            elif isinstance(existing_value, int):
-                new_value = int(new_value)
             elif isinstance(existing_value, float):
                 new_value = float(new_value)
             elif isinstance(existing_value, str):
                 pass
             else:
-                raise PatchError("Only number and string values can be patched")
+                raise ClientError("Only number and string values can be patched")
         except ValueError:
-            raise PatchError("Existing value is not compatible with patch value")
+            raise ClientError("Existing value is not compatible with patch value")
     try:
         setattr(obj, prop, new_value)
     except:
-        raise PatchError("Failed to set value.")
+        raise ClientError("Failed to set value.")
 
 
 def str_to_primitive(value):

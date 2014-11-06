@@ -3,7 +3,7 @@ import itertools
 from lampost.context.resource import m_requires
 from lampost.gameops.action import find_actions
 from lampost.gameops.target import TargetClass
-from lampost.util.lmutil import find_extra
+from lampost.util.lmutil import find_extra, ClientError
 
 m_requires('log', 'mud_actions', __name__)
 
@@ -221,5 +221,5 @@ def parse_actions(entity, command):
     return Parse(entity, command).parse()
 
 
-class ParseError(Exception):
+class ParseError(ClientError):
     pass
