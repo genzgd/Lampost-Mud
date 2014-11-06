@@ -1,5 +1,7 @@
-from lampost.client.handlers import MethodHandler
-from lampost.context.resource import m_requires
+import copy
+from lampost.client.handlers import MethodHandler, SessionHandler
+from lampost.context.resource import m_requires, requires
+from lampost.datastore.classes import get_dbo_class, get_sub_classes
 
 m_requires('perm', 'datastore', 'config_manager', __name__)
 
@@ -27,3 +29,11 @@ class DisplayEditor(MethodHandler):
         check_perm(self.session, 'admin')
         config_manager.config.default_displays = self.raw['display']
         config_manager.save_config()
+
+
+@requires('context')
+class Properties(SessionHandler):
+    def main(self):
+        constants = copy.copy(self.context.properties)
+        constants['features'] = [get_dbo_class(feature_id)().dto_value for feature_id in get_sub_classes('feature')]
+        self._return(constants)

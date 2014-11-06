@@ -1,11 +1,7 @@
 from lampost.client.handlers import SessionHandler
 from lampost.context.resource import m_requires
 
-m_requires('log', 'channel_service', 'web_server', __name__)
-
-
-def _post_init():
-    web_server.add(r"/channel/(.*)", Channel)
+m_requires('channel_service',  __name__)
 
 
 class Channel(SessionHandler):

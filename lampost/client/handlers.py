@@ -1,23 +1,13 @@
 import cgi
 
 from tornado.web import RequestHandler, asynchronous
-from lampost.datastore.exceptions import DataError
 
+from lampost.datastore.exceptions import DataError
 from lampost.util.lmlog import logged
 from lampost.context.resource import m_requires, get_resource
 from lampost.util.lmutil import PermError, StateError, Blank
 
-m_requires('log', 'perm', 'session_manager', 'web_server', 'json_decode', 'json_encode',  __name__)
-
-
-def _post_init():
-    web_server.add(r'/connect', Connect)
-    web_server.add(r'/link', Link)
-    web_server.add(r'/login', Login)
-    web_server.add(r'/action', Action)
-    web_server.add(r'/register', Register)
-    web_server.add(r'/unregister', Unregister)
-    web_server.add(r'/remote_log', RemoteLog)
+m_requires('log', 'perm', 'session_manager', 'json_decode', 'json_encode',  __name__)
 
 
 class LinkError(Exception):
@@ -59,7 +49,7 @@ class SessionHandler(RequestHandler):
     @logged
     def post(self, *args):
         try:
-            self.raw = json_decode(self.request.body)
+            self.raw = json_decode(self.request.body.decode())
         except Exception:
             self._error(400, 'Unrecognized content')
             return
@@ -76,7 +66,7 @@ class SessionHandler(RequestHandler):
         except StateError as se:
             self._error(400, se.message)
         except Exception as e:
-            self._error(500, e.message)
+            self._error(500, str(e))
 
 
     def main(self, *_):
@@ -143,7 +133,7 @@ class Action(SessionHandler):
 
 class Register(SessionHandler):
     def main(self):
-        get_resource(self.raw['service_id']).register(self.session, getattr(self.raw, 'data', None))
+        get_resource(self.raw['service_id']).register(self.session, self.raw.get('data', None))
 
 
 class Unregister(SessionHandler):

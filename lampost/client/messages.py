@@ -1,12 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.client.handlers import SessionHandler
 
-m_requires('log', 'friend_service', 'message_service', 'web_server', 'user_manager', __name__)
-
-
-def _post_init():
-    web_server.add(r'/messages/friend_response', FriendResponse)
-    web_server.add(r'/messages/delete', MessageDelete)
+m_requires('log', 'friend_service', 'message_service', 'user_manager', __name__)
 
 
 class FriendResponse(SessionHandler):

@@ -1,5 +1,6 @@
 import random
 import string
+
 from lampost.client.handlers import MethodHandler
 from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
@@ -8,11 +9,8 @@ from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lmutil import StateError
 
-m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'web_server', 'friend_service', __name__)
 
-
-def _post_init():
-    web_server.add(r'/settings/(.*)', Settings)
+m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service', __name__)
 
 
 @requires('session_manager')

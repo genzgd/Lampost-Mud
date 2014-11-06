@@ -13,7 +13,7 @@ m_requires('log', 'json_encode', 'json_decode', __name__)
 
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
-        pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw)
+        pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw, decode_responses=True)
         self.redis = StrictRedis(connection_pool=pool)
         self._object_map = WeakValueDictionary()
 

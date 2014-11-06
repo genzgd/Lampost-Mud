@@ -13,27 +13,25 @@ m_requires('log', 'datastore', 'dispatcher', 'script_manager', __name__)
 script_cache = {}
 
 
-def _post_init():
-    register('game_settings', configure_scripts)
-
-
-def configure_scripts(settings):
-    global root_area, exec_globals, script_dir
-    root_area = settings.get('root_area', None)
-    script_dir = settings.get('script_dir', None)
-    namespace = Blank()
-
-    for dependency in ['log', 'datastore', 'dispatcher']:
-        inject(namespace, dependency)
-        delattr(namespace, dependency)
-
-    exec_globals = namespace.__dict__
-    exec_globals['item_action'] = item_action
-    script_manager.load_file_scripts()
-
-
 @provides('script_manager')
 class ScriptManager(object):
+
+    def _post_init(self):
+        register('game_settings', self.configure_scripts)
+
+    def configure_scripts(self, settings):
+        global root_area, exec_globals, script_dir
+        root_area = settings.get('root_area', None)
+        script_dir = settings.get('script_dir', None)
+        namespace = Blank()
+
+        for dependency in ['log', 'datastore', 'dispatcher']:
+            inject(namespace, dependency)
+            delattr(namespace, dependency)
+
+        exec_globals = namespace.__dict__
+        exec_globals['item_action'] = item_action
+        self.load_file_scripts()
 
     def load_file_scripts(self):
         try:

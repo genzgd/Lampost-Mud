@@ -2,11 +2,7 @@ from lampost.client.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
 
-m_requires('log', 'datastore', 'web_server', __name__)
-
-
-def _post_init():
-    web_server.add(r'/client_data/new_char', NewCharacterData)
+m_requires('log', 'datastore',  __name__)
 
 
 class NewCharacterData(SessionHandler):

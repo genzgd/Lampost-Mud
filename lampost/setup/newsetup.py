@@ -31,15 +31,14 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     config = Config(config_id)
     config_manager = ConfigManager(config_id)
     config_manager.config = config
-    config.root_area = root_area
     room_id = "{0}:0".format(root_area)
     config.start_room = room_id
+    config.game_settings['root_area'] = root_area
 
     config_manager.save_config()
     build_default_displays()
     build_default_settings(SERVER_SETTINGS_DEFAULT, 'server')
     build_default_settings(GAME_SETTINGS_DEFAULT, 'game')
-    config_manager.game_settings.root_area = root_area
     config_manager._dispatch_update()
 
     dispatch('first_time_setup')
@@ -54,7 +53,6 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     dispatch('first_room_setup', room)
     save_object(room)
     area.add_room()
-
 
     user = user_manager.create_user(imm_account, imm_password)
     player = {'dbo_id': imm_name, 'room_id': room_id,
