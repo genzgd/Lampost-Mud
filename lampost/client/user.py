@@ -39,7 +39,7 @@ class UserManager(object):
         return "ok", user
 
     def find_user(self, user_name):
-        user_name = str(user_name).lower()
+        user_name = user_name.lower()
         user_id = get_index("ix:user:user_name", user_name)
         if user_id:
             return load_object(User, user_id)
@@ -74,12 +74,12 @@ class UserManager(object):
 
     def create_user(self, user_name, password, email=""):
         user = {'dbo_id': db_counter('user_id'), 'user_name': user_name,
-                'email': email, 'password': make_hash(str(password)),
+                'email': email, 'password': make_hash(password),
                 'notifies': ['friendSound', 'friendDesktop']}
         return create_object(User, user)
 
     def check_name(self, account_name, old_user):
-        account_name = str(account_name).lower()
+        account_name = account_name.lower()
         if old_user:
             if account_name == old_user.user_name.lower():
                 return "ok"
@@ -129,12 +129,12 @@ class UserManager(object):
 
     def id_to_name(self, player_id):
         try:
-            return str(player_id.capitalize())
+            return player_id.capitalize()
         except AttributeError:
             pass
 
     def name_to_id(self, player_name):
-        return str(player_name.lower())
+        return player_name.lower()
 
     def remove_player_indexes(self, player_id):
         delete_index('ix:player:user', player_id)

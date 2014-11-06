@@ -66,7 +66,7 @@ class Fight():
 
     def select_action(self):
         self.clear_hunt_timer()
-        local_opponents = [opponent for opponent in list(self.opponents.keys()) if opponent.env == self.me.env]
+        local_opponents = [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]
         if local_opponents:
             local_opponents.sort(key=lambda opponent: opponent.health)
             self.select_attack(local_opponents[0])

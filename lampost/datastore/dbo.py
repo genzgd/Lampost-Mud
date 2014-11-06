@@ -65,7 +65,7 @@ class RootDBO(object, metaclass=RootDBOMeta):
 
     def __init__(self, dbo_id=None):
         if dbo_id:
-            self.dbo_id = str(str(dbo_id).lower())
+            self.dbo_id = str(dbo_id).lower()
 
     def _on_loaded(self):
         for load_func in reversed(self._load_functions):
@@ -112,7 +112,7 @@ class RootDBO(object, metaclass=RootDBOMeta):
 
     @property
     def dbo_key(self):
-        return str(":".join([self.dbo_key_type, self.dbo_id]))
+        return ":".join([self.dbo_key_type, self.dbo_id])
 
     @property
     def parent_id(self):

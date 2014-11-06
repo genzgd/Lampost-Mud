@@ -51,7 +51,7 @@ class ScriptManager(object):
             for script_name in script_names:
                 if script_name.startswith('_') or script_name.startswith('.'):
                     continue
-                file_name = str('{}/{}'.format(dir_name, script_name))
+                file_name = '{}/{}'.format(dir_name, script_name)
                 try:
                     with open(file_name) as script_file:
                         script_text = script_file.read()
@@ -64,7 +64,7 @@ class ScriptManager(object):
         info("Loading script {}:{}".format(parent_name, script_name))
         if script_name.endswith('.py'):
             script_name = script_name[:-3]
-        dbo_id = str("{}:{}".format(parent_name, script_name))
+        dbo_id = "{}:{}".format(parent_name, script_name)
         script = load_object(Script, dbo_id)
         if script:
             if script.from_file:

@@ -51,11 +51,11 @@ class RedisStore():
         return default
 
     def load_cached(self, key_type, key):
-        return self._object_map.get(str('{}:{}'.format(key_type, key)))
+        return self._object_map.get('{}:{}'.format(key_type, key))
 
     @logged
     def load_by_key(self, key_type, key, silent=False):
-        dbo_key = str('{}:{}'.format(key_type, key))
+        dbo_key = '{}:{}'.format(key_type, key)
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
@@ -72,7 +72,7 @@ class RedisStore():
         return dbo
 
     def object_exists(self, obj_type, obj_id):
-        return self.redis.exists(str('{}:{}'.format(obj_type, obj_id)))
+        return self.redis.exists('{}:{}'.format(obj_type, obj_id))
 
     def load_object(self, dbo_class, key):
         return self.load_by_key(dbo_class.dbo_key_type, key)
@@ -125,7 +125,7 @@ class RedisStore():
         if not json_str:
             warn("Failed to find {} in database for reload".format(dbo_key))
             return None
-        self.update_object(dbo, json_decode(str(json_str)))
+        self.update_object(dbo, json_decode(json_str))
         return dbo
 
     def evict_object(self, dbo):
@@ -244,7 +244,7 @@ class RedisStore():
 
     def _clear_old_refs(self, dbo):
         dbo_key = dbo.dbo_key
-        ref_key = str("{}:refs".format(dbo_key))
+        ref_key = "{}:refs".format(dbo_key)
         for key_type, refs in self.get_all_hash(ref_key).items():
             for ref_id in refs:
                 self.delete_set_key(self._holder_key(key_type, ref_id), dbo_key)
@@ -252,11 +252,11 @@ class RedisStore():
 
     def _set_new_refs(self, dbo, new_refs):
         dbo_key = dbo.dbo_key
-        ref_key = str("{}:refs".format(dbo_key))
+        ref_key = "{}:refs".format(dbo_key)
         for key_type, refs in new_refs.items():
             self.set_db_hash(ref_key, key_type, refs)
             for ref_id in refs:
                 self.add_set_key(self._holder_key(key_type, ref_id), dbo_key)
 
     def _holder_key(self, key_type, dbo_id):
-        return str("{}:{}:hldrs".format(key_type, dbo_id))
+        return "{}:{}:hldrs".format(key_type, dbo_id)

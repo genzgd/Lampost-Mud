@@ -35,7 +35,7 @@ def has_action(entity, action, verb):
 
 
 def entity_actions(entity, command):
-    words = str(command).lower().split()
+    words = command.lower().split()
     matches = []
     for verb_size in range(1, len(words) + 1):
         verb = tuple(words[:verb_size])

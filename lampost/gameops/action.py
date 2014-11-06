@@ -13,7 +13,7 @@ def convert_verbs(verbs):
     results = set()
 
     def add_verb(verb):
-        results.add(tuple([str(fragment) for fragment in verb.split(' ')]))
+        results.add(tuple(verb.split(' ')))
     try:
         add_verb(verbs)
     except AttributeError:

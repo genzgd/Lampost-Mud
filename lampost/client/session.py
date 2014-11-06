@@ -59,7 +59,7 @@ class SessionManager(object):
         return session
 
     def login(self, session, user_name, password):
-        user_name = str(user_name).lower()
+        user_name = user_name.lower()
         result, user = self.user_manager.validate_user(user_name, password)
         if result != "ok":
             session.append({"login_failure": result})

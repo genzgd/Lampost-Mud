@@ -14,7 +14,7 @@ m_requires('dispatcher', __name__)
 def gen_keys(target_id):
     if not target_id:
         return
-    target_tuple = tuple(str(target_id).lower().split(" "))
+    target_tuple = tuple(target_id.lower().split(" "))
     prefix_count = len(target_tuple) - 1
     target = target_tuple[prefix_count],
     for x in range(0, int(math.pow(2, prefix_count))):
