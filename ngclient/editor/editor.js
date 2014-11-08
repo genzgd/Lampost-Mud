@@ -606,6 +606,10 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
     var startConfig = null;
     lmEditor.prepare(this, $scope);
 
+    $scope.isnumber = function(value) {
+        return typeof(value) === 'number';
+    };
+
     $q.all([
         lmEditor.cache('area').then(function (areas) {
           $scope.areaList = areas;

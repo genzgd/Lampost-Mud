@@ -202,7 +202,7 @@ class UserSession():
             if idle < 60:
                 status = "Active"
             else:
-                status = "Idle: " + str(idle / 60) + "m"
+                status = "Idle: " + str(idle // 60) + "m"
         return {'status': status, 'name': self.player.name, 'loc': self.player.env.title}
 
     def display_line(self, display_line):

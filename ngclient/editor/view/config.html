@@ -51,8 +51,11 @@
               <tbody>
               <tr class="table-bordered" ng-repeat="(name, value) in model.game_settings" ng-init="default = defaults.game[name]">
                 <td title="{{default.desc}}" style="width: 65%;">{{name}}</td>
-                <td class="edit-cell" title="{{'Default: ' + default.default}}" style="width: 35%;"><input class="span12 edit-cell alias-row"
+
+                <td class="edit-cell" title="{{'Default: ' + default.default}}" style="width: 35%;"><input ng-if="isnumber(default.default)" class="span12 edit-cell alias-row"
                     type="number" ng-model="model.game_settings[name]" min="{{default.min}}" lm-step="default.step"/>
+                    <input ng-if="!isnumber(default.default)" class="span12 edit-cell alias-row"
+                    type="text" ng-model="model.game_settings[name]" min="{{default.min}}" lm-step="default.step"/>
                 </td>
               </tr>
               </tbody>
