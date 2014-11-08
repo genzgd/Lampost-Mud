@@ -1,10 +1,9 @@
-from lampost.client.handlers import SessionHandler
+from lampost.client.handlers import MethodHandler
 from lampost.context.resource import m_requires
 
-m_requires('channel_service',  __name__)
+m_requires('channel_service', __name__)
 
 
-class Channel(SessionHandler):
-    def main(self, channel_name):
-        return getattr(channel_service, channel_name)()
-
+class Channel(MethodHandler):
+    def gen_channels(self):
+        return channel_service.gen_channels()
