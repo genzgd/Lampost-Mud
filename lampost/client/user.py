@@ -1,9 +1,11 @@
+from base64 import b64decode
 import time
 
 from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
+from lampost.util.lmutil import ClientError
 
 m_requires('log', 'datastore', 'dispatcher', __name__)
 
@@ -33,10 +35,20 @@ class UserManager(object):
     def validate_user(self, user_name, password):
         user = self.find_user(user_name)
         if not user:
-            return "not_found", None
-        if not check_password(password, user.password):
-            return "not_found", None
-        return "ok", user
+            raise ClientError()
+        self.validate_password(user, password)
+        return user
+
+    def validate_password(self, user, password):
+        if check_password(user.password, password):
+            return
+        salt, old_password = user.password.split('$')
+        if check_password(b64decode(bytes(old_password, 'utf-8')), password, bytes(salt, 'utf-8')):
+            warn("Using old password for account {}".format(user.user_name))
+            #user.check_password = True
+            #save_object(user)
+        else:
+            raise ClientError("invalid_password")
 
     def find_user(self, user_name):
         user_name = user_name.lower()

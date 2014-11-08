@@ -6,7 +6,6 @@ from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
-from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lmutil import ClientError
 
 
@@ -56,8 +55,8 @@ class Settings(MethodHandler):
 
     def delete_account(self):
         user = self.session.user
-        if user.player_ids and not check_password(self.raw['password'], user.password):
-            raise ClientError("Incorrect password.")
+        if user.player_ids:
+            user_manager.validate_password(user, self.raw['password'])
         response = self.session_manager.logout(self.session)
         user_manager.delete_user(user)
         return response
@@ -81,8 +80,7 @@ class Settings(MethodHandler):
 
     def delete_player(self):
         user = self.session.user
-        if not check_password(self.raw['password'], user.password):
-            raise DataError("Incorrect account password")
+        user_manager.validate_password(user, self.raw['password'])
         player_id = self.raw['player_id']
         if not player_id in user.player_ids:
             raise ClientError("Player {} longer associated with user".format(player_id))

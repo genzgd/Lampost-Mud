@@ -18,8 +18,9 @@ class SessionHandler(RequestHandler):
         if isinstance(e, LinkError):
             self._return({'link_status': e.error_code})
         elif isinstance(e, ClientError):
-            self._statusCode = e.http_status
-            self._return(e.client_message)
+            self.set_status(e.http_status)
+            self.write(e.client_message)
+            self.finish()
         else:
             super()._handle_request_exception(e)
 
@@ -66,7 +67,7 @@ class Connect(RequestHandler):
     def post(self):
         session_id = self.request.headers.get('X-Lampost-Session')
         if session_id:
-            content = json_decode(self.request.body)
+            content = json_decode(self.request.body.decode())
             session = session_manager.reconnect_session(session_id, content['player_id'])
         else:
             session = session_manager.start_session()
@@ -96,7 +97,7 @@ class Link(RequestHandler):
 
     def on_connection_close(self):
         if self.session:
-            self.session.link_failed()
+            self.session.link_failed("Client Connection Close")
 
 
 class Action(SessionHandler):

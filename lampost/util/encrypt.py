@@ -16,20 +16,11 @@ def make_hash(password):
         b64encode(password_hash).decode())
 
 
-def check_password(password, full_hash):
-
-    salt, existing_hash = tuple(b64decode(bytes(element, 'ascii')) for element in full_hash.split('$'))
+def check_password(existing_hash, password, salt=None):
+    if isinstance(existing_hash, str):
+        salt, existing_hash = tuple(b64decode(bytes(element, 'utf-8')) for element in existing_hash.split('$'))
     entered_hash = pbkdf2_bin(bytes(password, 'utf-8'), salt, COST_FACTOR, KEY_LENGTH)
     diff = 0
     for byte_a, byte_b in zip(existing_hash, entered_hash):
         diff |= byte_a ^ byte_b
     return diff == 0
-
-
-
-
-
-
-
-
-

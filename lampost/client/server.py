@@ -7,6 +7,9 @@ from lampost.context.resource import provides, m_requires
 m_requires("log", "dispatcher", __name__)
 
 
+def app_log(handler):
+    pass
+
 @provides('web_server')
 class WebServer(object):
     def __init__(self):
@@ -34,7 +37,7 @@ class WebServer(object):
             (r"/", RedirectHandler, dict(url="/ngclient/lampost.html")),
             (r"/ngclient/(.*)", StaticFileHandler, dict(path="ngclient")),
             (r"/lsp/(.*)", LspHandler, dict(documents=self._lsp_docs))
-        ] + self.handlers)
+        ] + self.handlers, log_function=app_log)
 
         info("Starting web server on port {}".format(port), self)
         http_server = HTTPServer(application)

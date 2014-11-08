@@ -61,9 +61,10 @@ class SessionManager(object):
 
     def login(self, session, user_name, password):
         user_name = user_name.lower()
-        result, user = self.user_manager.validate_user(user_name, password)
-        if result != "ok":
-            session.append({"login_failure": result})
+        try:
+            user = self.user_manager.validate_user(user_name, password)
+        except ClientError as ce:
+            session.append({'login_failure'}, ce.client_message)
             return
         session.connect_user(user)
         if len(user.player_ids) == 1:
@@ -216,9 +217,9 @@ class UserSession(object):
             self._status = status
             self.append({'status': status})
 
-    def link_failed(self):
+    def link_failed(self, reason):
         if self.player:
-            debug("Link failed for {} ".format(self.player.name), self)
+            debug("Link failed for {}  [{}] ".format(self.player.name, reason), self)
         self.ld_time = datetime.now()
         self.request = None
 

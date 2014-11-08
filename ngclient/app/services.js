@@ -205,6 +205,11 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
       if (!connected) {
         return;
       }
+      if (status == 500) {
+          lmBus.dispatch("display", [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.  Don't mind the smoke, I'm sure someone is investigating."},
+              {display: 'system'}]);
+          return;
+      }
       connected = false;
       lmLog.log("Link stopped: " + status);
       $timeout(function () {

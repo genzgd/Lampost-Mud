@@ -68,7 +68,7 @@ class Blank(object):
 class ClientError(Exception):
     http_status = 400
 
-    def __init__(self, message, display=None):
+    def __init__(self, message="client_error", display=None):
         self.client_message = message
         self.display = display
 
@@ -77,7 +77,7 @@ class PermError(ClientError):
     http_status = 403
 
     def __init__(self):
-        super("You do not have permission to do that")
+        super().__init__("You do not have permission to do that")
 
 
 def cls_name(cls):

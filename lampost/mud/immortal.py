@@ -253,6 +253,8 @@ def promote(source, target, obj, **_):
 
 @imm_action('run update', imm_level='supreme')
 def run_update(source, args, **_):
+    if not args:
+        return "Update name required."
     try:
         return lampost.setup.update.__dict__[args[0]](source, *args[1:])
     except KeyError:
