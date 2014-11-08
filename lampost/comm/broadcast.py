@@ -49,7 +49,7 @@ def substitute(message, source=None, target=None, verb=None):
     return result
 
 
-class BroadcastMap(object):
+class BroadcastMap():
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             value = token_pattern.sub(r'{\1}', value)
@@ -65,7 +65,7 @@ class BroadcastMap(object):
                 raise KeyError
 
 
-class Broadcast(object):
+class Broadcast():
     def __init__(self, broadcast_map=None, source=None, target=None, display='default',
                  silent=False, verb=None, **kwargs):
         if broadcast_map:

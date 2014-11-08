@@ -34,7 +34,7 @@ def target_keys(item):
 
 class BaseItemMeta(TemplateMeta):
     def __init__(cls, class_name, bases, new_attrs):
-        super(BaseItemMeta, cls).__init__(class_name, bases, new_attrs)
+        super().__init__(class_name, bases, new_attrs)
         cls.class_providers = {func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')}
         for base in bases:
             cls.class_providers.update(getattr(base, 'class_providers', ()))
@@ -58,7 +58,7 @@ class BaseItem(TemplateInstance, metaclass=BaseItemMeta):
 
     def __init__(self, dbo_id=None):
         self.target_providers = []
-        super(BaseItem, self).__init__(dbo_id)
+        super().__init__(dbo_id)
 
     @property
     def name(self):

@@ -116,7 +116,7 @@ class Dispatcher:
             pass
 
 
-class Registration(object):
+class Registration():
     def __init__(self, event_type, callback, owner=None, priority=0):
         self.event_type = event_type
         self.callback = callback
@@ -129,7 +129,7 @@ class Registration(object):
 
 class PulseRegistration(Registration):
     def __init__(self, freq, callback, owner=None, priority=0, repeat=True):
-        super(PulseRegistration, self).__init__('pulse_i', callback, owner, priority)
+        super().__init__('pulse_i', callback, owner, priority)
         self.freq = freq
         self.repeat = repeat
 

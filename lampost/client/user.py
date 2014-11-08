@@ -27,7 +27,7 @@ class User(RootDBO):
 
 
 @provides('user_manager')
-class UserManager(object):
+class UserManager():
     def _post_init(self):
         register("user_connect", self._user_connect)
         register("player_connect", self._player_connect)

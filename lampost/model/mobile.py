@@ -21,7 +21,7 @@ class Mobile(Entity):
     template_id = 'mobile'
 
     def detach(self):
-        super(Mobile, self).detach()
+        super().detach()
         self.original_env.mobiles[self.template].remove(self)
 
 

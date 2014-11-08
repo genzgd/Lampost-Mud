@@ -9,7 +9,7 @@ m_requires('mud_actions', __name__)
 
 class SocialsEditor(Editor):
     def initialize(self):
-        super(SocialsEditor.self).initialize(Social)
+        super().initialize(Social)
 
     def preview(self):
         content = self._content()

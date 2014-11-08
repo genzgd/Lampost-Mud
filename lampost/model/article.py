@@ -67,7 +67,7 @@ class Article(BaseItem, Scriptable):
         return self.name.capitalize()
 
     def long_desc(self, observer=None):
-        long_desc = super(Article, self).long_desc(observer)
+        long_desc = super().long_desc(observer)
         if self.quantity:
             return "{} ({})".format(long_desc, self.quantity)
         return long_desc

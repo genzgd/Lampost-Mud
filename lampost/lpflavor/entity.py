@@ -38,14 +38,14 @@ class EntityLP(Entity):
     _refresher = {}
 
     def __init__(self, dbo_id=None):
-        super(EntityLP, self).__init__(dbo_id)
+        super().__init__(dbo_id)
         self.effects = set()
         self.defenses = set()
         self.equip_slots = {}
         self.fight = Fight(self)
 
     def baptise(self):
-        super(EntityLP, self).baptise()
+        super().baptise()
         for article in self.inven:
             if article.current_slot:
                 self._do_equip(article, article.current_slot)
@@ -101,7 +101,7 @@ class EntityLP(Entity):
             self._current_action = action, act_args, register_once(self._finish_action, prep_time, priority=priority)
             self._action_target = act_args.get('target', None)
         else:
-            super(EntityLP, self).process_action(action, act_args)
+            super().process_action(action, act_args)
         self.check_follow(action, act_args)
 
     def handle_parse_error(self, error, command):
@@ -119,14 +119,14 @@ class EntityLP(Entity):
         del self._current_action
         if self._action_target:
             del self._action_target
-        super(EntityLP, self).process_action(action, action_args)
+        super().process_action(action, action_args)
         if self._next_command:
             self.parse(self._next_command)
             del self._next_command
         self.check_fight()
 
     def entity_leave_env(self, entity, ex):
-        super(EntityLP, self).entity_leave_env(entity, ex)
+        super().entity_leave_env(entity, ex)
         if self._current_action and self._action_target == entity:
             self._cancel_actions()
 
@@ -271,7 +271,7 @@ class EntityLP(Entity):
 
     def die(self):
         self._death_effects()
-        super(EntityLP, self).die()
+        super().die()
 
     def _death_effects(self):
         self.status = 'dead'
@@ -287,11 +287,11 @@ class EntityLP(Entity):
         self._cancel_actions()
         if self._refresh_pulse:
             del self._refresh_pulse
-        super(EntityLP, self).detach()
+        super().detach()
 
     @property
     def display_status(self):
-        display_status = super(EntityLP, self).display_status
+        display_status = super().display_status
         for pool_id, base_pool_id in POOL_LIST:
             display_status[pool_id] = getattr(self, pool_id)
             display_status[base_pool_id] = getattr(self, base_pool_id)

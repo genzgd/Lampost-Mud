@@ -11,7 +11,7 @@ def app_log(handler):
     pass
 
 @provides('web_server')
-class WebServer(object):
+class WebServer():
     def __init__(self):
         self.handlers = []
         self._lsp_docs = {}

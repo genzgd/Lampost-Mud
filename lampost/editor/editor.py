@@ -85,7 +85,7 @@ class ChildList(SessionHandler):
 
 class ChildrenEditor(Editor):
     def initialize(self, obj_class, imm_level='admin'):
-        super(ChildrenEditor, self).initialize(obj_class, imm_level)
+        super().initialize(obj_class, imm_level)
         self.parent_type = obj_class.dbo_parent_type
 
     def _check_perm(self, obj):

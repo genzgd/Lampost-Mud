@@ -26,7 +26,7 @@ from lampost.util.tools import Tools
 
 
 @provides('context')
-class Context(object):
+class Context():
 
     def __init__(self, port=2500, db_host="localhost", db_port=6379, db_num=0, db_pw=None,
                  flavor='lpflavor', config_id='lampost', server_interface='127.0.0.1',

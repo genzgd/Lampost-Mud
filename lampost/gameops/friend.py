@@ -10,7 +10,7 @@ _ALL_EMAIL_KEY = "all_email_notifies"
 
 
 @provides('friend_service')
-class FriendService(object):
+class FriendService():
 
     def _post_init(self):
         register('player_login', self._check_friends)

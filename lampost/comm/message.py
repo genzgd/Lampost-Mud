@@ -5,7 +5,7 @@ from lampost.util.lmutil import timestamp
 m_requires('log', 'datastore', 'dispatcher', 'session_manager', 'user_manager', __name__)
 
 @provides('message_service')
-class MessageService(object):
+class MessageService():
 
     def _post_init(self):
         register("player_deleted", self._remove_player_messages)

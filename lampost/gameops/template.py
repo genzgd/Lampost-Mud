@@ -8,7 +8,7 @@ m_requires('log', 'datastore', __name__)
 
 class TemplateMeta(RootDBOMeta):
     def __init__(cls, class_name, bases, new_attrs):
-        super(TemplateMeta, cls).__init__(class_name, bases, new_attrs)
+        super().__init__(class_name, bases, new_attrs)
         try:
             template_id = cls.template_id
             cls.class_id = '{}_inst'.format(template_id)
@@ -66,4 +66,4 @@ class TemplateInstance(RootDBO, metaclass=TemplateMeta):
 
     @property
     def save_value(self):
-        return self.metafields(super(TemplateInstance, self).save_value, ['template_id'])
+        return self.metafields(super().save_value, ['template_id'])

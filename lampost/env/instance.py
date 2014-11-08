@@ -17,7 +17,7 @@ def next_instance():
     return AreaInstance(instance_id)
 
 
-class AreaInstance(object):
+class AreaInstance():
     def __init__(self, instance_id):
         self.instance_id = instance_id
         self.entities = set()

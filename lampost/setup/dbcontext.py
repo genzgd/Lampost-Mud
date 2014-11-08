@@ -6,7 +6,7 @@ from lampost.util.lmlog import Log
 
 
 @provides('context')
-class DbContext(object):
+class DbContext():
     def __init__(self, db_host="localhost", db_port=6379, db_num=0, db_pw=None, log_level="info", log_file=None):
         self.properties = {}
 

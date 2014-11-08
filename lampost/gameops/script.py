@@ -14,7 +14,7 @@ script_cache = {}
 
 
 @provides('script_manager')
-class ScriptManager(object):
+class ScriptManager():
 
     def _post_init(self):
         register('game_settings', self.configure_scripts)
@@ -196,7 +196,7 @@ class Script(RootDBO):
     @property
     def dto_value(self):
         self.compile()
-        dto_value = super(Script, self).dto_value
+        dto_value = super().dto_value
         del dto_value['text']
         dto_value['live_text'] = self.live_text
         return dto_value

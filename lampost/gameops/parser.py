@@ -48,7 +48,7 @@ def find_targets(entity, target_key, target_class, action=None):
     return itertools.chain.from_iterable([target_type.target_finder(entity, target_key, action) for target_type in target_class])
 
 
-class ActionMatch(object):
+class ActionMatch():
     target = None
     quantity = None
     prep = None
@@ -87,7 +87,7 @@ def capture_index(target_key):
     return 0, target_key
 
 
-class Parse(object):
+class Parse():
     def __init__(self, entity, command):
         matches = entity_actions(entity, command)
         matches = entity.filter_actions(matches)

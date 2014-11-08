@@ -22,4 +22,4 @@ class ExitLP(lampost.env.room.Exit):
 
     def __call__(self, source, **_):
         source.apply_costs(find_cost(source.env))
-        super(ExitLP, self).__call__(source)
+        super().__call__(source)

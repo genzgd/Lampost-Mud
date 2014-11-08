@@ -24,7 +24,7 @@ class Entity(BaseItem):
     exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
 
     def __init__(self, dbo_id=None):
-        super(Entity, self).__init__(dbo_id)
+        super().__init__(dbo_id)
         self.soul = defaultdict(set)
         self.inven_actions = defaultdict(set)
         self.followers = set()

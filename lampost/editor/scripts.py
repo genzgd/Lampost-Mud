@@ -8,7 +8,7 @@ m_requires('perm', 'script_manager', __name__)
 
 class ScriptEditor(ChildrenEditor):
     def initialize(self):
-        super(ScriptEditor, self).initialize(Script)
+        super().initialize(Script)
 
     def pre_update(self, script):
         self._check_perm(script)

@@ -10,7 +10,7 @@ from lampost.mud.inventory import InvenContainer
 m_requires('dispatcher', __name__)
 
 
-class Buyback(object):
+class Buyback():
     buyback = True
 
     def __init__(self, owner, article, price, pulse):
@@ -20,7 +20,7 @@ class Buyback(object):
         self.pulse = pulse
 
 
-class BuybackTargets(object):
+class BuybackTargets():
     absent_msg = "{target} is not available to buy back"
 
     def target_finder(self, entity, target_key, func):
@@ -96,7 +96,7 @@ class Store(Feature):
         source.broadcast(s=self_msg, e="{n) recovers {N}", target=article)
 
     def examine(self, source, **_):
-        super(Store, self).examine(source)
+        super().examine(source)
         if self.inven:
             source.display_line("It currently contains:")
             for article in self.inven:

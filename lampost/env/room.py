@@ -90,7 +90,7 @@ class Room(Scriptable):
     _garbage_pulse = None
 
     def __init__(self, dbo_id=None):
-        super(Room, self).__init__(dbo_id)
+        super().__init__(dbo_id)
         self.inven = InvenContainer()
         self.denizens = []
         self.mobiles = defaultdict(set)

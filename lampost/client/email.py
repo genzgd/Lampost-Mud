@@ -39,7 +39,7 @@ class EmailSender():
 class MessageSender(Thread):
 
     def __init__(self, wrappers):
-        super(MessageSender, self).__init__()
+        super().__init__()
         self.wrappers = wrappers
 
     def run(self):
@@ -67,7 +67,7 @@ class MessageSender(Thread):
         self.server.login(self.email_sender.email_address, self.email_sender.email_password)
 
 
-class EmailWrapper(object):
+class EmailWrapper():
     def __init__(self, addresses, message):
         self.addresses = addresses
         self.message = message

@@ -45,7 +45,7 @@ class MobileTemplateLP(MobileTemplate):
             skill.skill_level = skill_status['skill_level']
             mobile.add_skill(skill)
         fill_pools(mobile)
-        super(MobileTemplateLP, self).config_instance(mobile, owner)
+        super().config_instance(mobile, owner)
 
 
 class MobileLP(EntityLP):
@@ -60,11 +60,11 @@ class MobileLP(EntityLP):
         self._react_entity(entity)
 
     def entity_leave_env(self, entity, ex):
-        super(MobileLP, self).entity_leave_env(entity, ex)
+        super().entity_leave_env(entity, ex)
         self.fight.check_follow(entity, ex)
 
     def enter_env(self, new_env, ex=None):
-        super(MobileLP, self).enter_env(new_env, ex)
+        super().enter_env(new_env, ex)
         for entity in new_env.denizens:
             self._react_entity(entity)
 
@@ -76,6 +76,6 @@ class MobileLP(EntityLP):
             self.start_combat(entity)
 
     def detach(self):
-        super(MobileLP, self).detach()
+        super().detach()
         self.original_env.mobiles[self.template].remove(self)
 

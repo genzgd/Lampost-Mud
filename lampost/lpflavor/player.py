@@ -21,8 +21,7 @@ class PlayerLP(Player, EntityLP):
     can_die = True
 
     def __init__(self, dbo_id):
-        super(PlayerLP, self).__init__(dbo_id)
-        EntityLP.__init__(self)
+        super().__init__(dbo_id)
         self.auto_fight = False
 
     def on_loaded(self):

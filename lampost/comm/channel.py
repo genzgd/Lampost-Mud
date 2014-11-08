@@ -6,7 +6,7 @@ from lampost.util.lmutil import timestamp
 m_requires('dispatcher', 'datastore', 'channel_service', __name__)
 
 
-class Channel(object):
+class Channel():
     def __init__(self, verb):
         make_action(self, verb)
         self.id = verb
@@ -25,11 +25,11 @@ class Channel(object):
 class ChannelService(ClientService):
 
     def __init__(self):
-        super(ChannelService, self).__init__()
+        super().__init__()
         self.known_channels = []
 
     def _post_init(self):
-        super(ChannelService, self)._post_init()
+        super()._post_init()
         register('maintenance', self._prune_channels)
         register('session_connect', self._session_connect)
         register('player_connect', self._player_connect)

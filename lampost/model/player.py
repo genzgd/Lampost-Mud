@@ -21,14 +21,14 @@ class Player(RootDBO):
     can_die = True
 
     def __init__(self, dbo_id):
-        super(Player, self).__init__(dbo_id)
+        super().__init__(dbo_id)
         self.target_keys = {(self.dbo_id,)}
         self.last_tell = None
         self.active_channels = set()
 
     @property
     def dto_value(self):
-        dto_value = super(Player, self).dto_value
+        dto_value = super().dto_value
         dto_value['logged_in'] = "Yes" if hasattr(self, 'session') else "No"
         return dto_value
 
@@ -78,7 +78,7 @@ class Player(RootDBO):
         pass
 
     def detach(self):
-        super(Player, self).detach()
+        super().detach()
         for channel in self.active_channels.copy():
             self.unregister_channel(channel)
         self.session = None

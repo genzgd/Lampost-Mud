@@ -2,7 +2,7 @@ from lampost.context.resource import provides
 
 
 @provides('tools', True)
-class Tools(object):
+class Tools():
     def combat_log(self, source, message, target=None):
         if hasattr(source.env, 'combat_log'):
             try:

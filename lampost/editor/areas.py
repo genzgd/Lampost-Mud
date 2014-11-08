@@ -11,7 +11,7 @@ m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'con
 
 class AreaEditor(Editor):
     def initialize(self):
-        super(AreaEditor, self).initialize(Area)
+        super().initialize(Area)
 
     def pre_delete(self, del_obj):
         if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
@@ -22,7 +22,7 @@ class AreaEditor(Editor):
 
 class RoomEditor(ChildrenEditor):
     def initialize(self):
-        super(RoomEditor, self).initialize(Room)
+        super().initialize(Room)
 
     def visit(self):
         room = load_object(Room, self.raw['room_id'])
@@ -32,15 +32,16 @@ class RoomEditor(ChildrenEditor):
         self.session.player.change_env(room)
 
     def create_exit(self):
-        area, room = find_area_room(self.raw['start_room'], self.session)
-        new_dir = Direction.ref_map[self.raw['direction']]
+        content = self._content()
+        area, room = find_area_room(content.start_room, self.session)
+        new_dir = Direction.ref_map[content.direction]
         if room.find_exit(new_dir):
             raise DataError("Room already has " + new_dir.dbo_id + " exit.")
         rev_dir = new_dir.rev_dir
-        other_id = self.raw['dest_id']
+        other_id = content.dest_id
         if content.is_new:
-            other_room = create_object(Room, {'dbo_id': other_id, 'title': self.raw['dest_title'], 'dbo_rev': -1})
-            publish_edit('create', other_room, session, True)
+            other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
+            publish_edit('create', other_room, self.session, True)
             add_room(area, self.session)
         else:
             other_area, other_room = find_area_room(other_id, self.session)
@@ -62,8 +63,9 @@ class RoomEditor(ChildrenEditor):
         return this_exit.dto_value
 
     def delete_exit(self):
-        area, room = find_area_room(self.raw['start_room'], self.session)
-        direction = Direction.ref_map[self.raw['dir']]
+        content = self._content()
+        area, room = find_area_room(content.start_room, self.session)
+        direction = Direction.ref_map[content.dir]
         local_exit = room.find_exit(direction)
         if not local_exit:
             raise DataError('Exit does not exist')
@@ -80,7 +82,7 @@ class RoomEditor(ChildrenEditor):
                     publish_edit('update', other_room, self.session, True)
                 else:
                     delete_object(other_room)
-                    room_clean_up(room, session)
+                    room_clean_up(room, self.session)
                     publish_edit('delete', other_room, self.session, True)
 
 

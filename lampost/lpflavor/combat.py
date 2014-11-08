@@ -153,7 +153,7 @@ class AttackSkill(BaseSkill):
         self.validate(source, target, **kwargs)
         source.start_combat(target)
         target.start_combat(source)
-        super(AttackSkill, self).prepare_action(source, target, **kwargs)
+        super().prepare_action(source, target, **kwargs)
 
     def invoke(self, source, target_method, **_):
         attack = Attack().from_skill(self, source)

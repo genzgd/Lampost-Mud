@@ -7,7 +7,7 @@ m_requires('log', 'datastore', __name__)
 
 class RootDBOMeta(AutoMeta):
     def __init__(cls, class_name, bases, new_attrs):
-        super(RootDBOMeta, cls).__init__(class_name, bases, new_attrs)
+        super().__init__(class_name, bases, new_attrs)
         cls.dbo_fields = {}
         cls._load_functions = []
         for base in bases:
@@ -39,7 +39,7 @@ class RootDBOMeta(AutoMeta):
             setattr(cls, name, dbo_field)
 
 
-class RootDBO(object, metaclass=RootDBOMeta):
+class RootDBO(metaclass=RootDBOMeta):
     dbo_key_type = None
     dbo_parent_type = None
     dbo_children_types = []
@@ -169,7 +169,7 @@ class RootDBO(object, metaclass=RootDBOMeta):
 
 class DBOField(AutoField):
     def __init__(self, default=None, dbo_class_id=None, required=False):
-        super(DBOField, self).__init__(default)
+        super().__init__(default)
         self.required = required
         if dbo_class_id:
             self.value_wrapper = value_wrapper(self.default)

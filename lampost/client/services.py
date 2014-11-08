@@ -3,7 +3,7 @@ from lampost.context.resource import m_requires, provides
 m_requires('log', 'session_manager', 'dispatcher', 'perm', __name__)
 
 
-class ClientService(object):
+class ClientService():
     def __init__(self):
         self.sessions = set()
 
@@ -28,11 +28,11 @@ class ClientService(object):
 class PlayerListService(ClientService):
 
     def _post_init(self):
-        super(PlayerListService, self)._post_init()
+        super()._post_init()
         register('player_list', self._process_list)
 
     def register(self, session, data):
-        super(PlayerListService, self).register(session, data)
+        super().register(session, data)
         session.append({'player_list': session_manager.player_info_map})
 
     def _process_list(self, player_list):
@@ -43,7 +43,7 @@ class PlayerListService(ClientService):
 class AnyLoginService(ClientService):
 
     def _post_init(self):
-        super(AnyLoginService, self)._post_init()
+        super()._post_init()
         register('player_login', self._process_login)
 
     def _process_login(self, player):

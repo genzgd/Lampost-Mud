@@ -19,7 +19,7 @@ def logged(func):
 
 
 @provides('log', True)
-class Log(object):
+class Log():
 
     def __init__(self, log_level, file_name=None):
         if file_name:

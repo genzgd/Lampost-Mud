@@ -13,7 +13,7 @@ m_requires('log', 'dispatcher', __name__)
 
 @provides('session_manager')
 @requires('user_manager')
-class SessionManager(object):
+class SessionManager():
     def __init__(self):
         self.session_map = {}
         self.player_info_map = {}
@@ -148,7 +148,7 @@ class SessionManager(object):
 
 
 @requires('json_encode')
-class UserSession(object):
+class UserSession():
 
     def __init__(self):
         self._pulse_reg = None

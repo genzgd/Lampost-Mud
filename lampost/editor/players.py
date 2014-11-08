@@ -8,7 +8,7 @@ m_requires('log', 'datastore', 'perm', 'user_manager', __name__)
 
 class PlayerEditor(Editor):
     def initialize(self):
-        super(PlayerEditor, self).initialize(Player)
+        super().initialize(Player)
 
     def pre_delete(self, player):
         if player.imm_level >= perm_level('supreme'):

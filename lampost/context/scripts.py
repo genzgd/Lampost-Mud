@@ -16,7 +16,7 @@ def select_json():
         info("Defaulted to standard JSON library")
 
 
-class UJsonEncoder(object):
+class UJsonEncoder():
     def __init__(self, ujson_encode):
         self.ujson_encode = ujson_encode
 

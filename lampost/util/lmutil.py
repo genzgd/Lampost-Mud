@@ -60,7 +60,7 @@ def javascript_safe(value):
     return value
 
 
-class Blank(object):
+class Blank():
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 

@@ -5,7 +5,7 @@ m_requires('datastore', __name__)
 
 
 @provides('perm', True)
-class Permissions(object):
+class Permissions():
     levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0}
 
     def __init__(self):

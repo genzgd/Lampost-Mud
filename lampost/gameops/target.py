@@ -1,4 +1,4 @@
-class TargetClass(object):
+class TargetClass():
     def __init__(self, target_finder, absent_msg="`{target}' is not here."):
         self.target_finder = target_finder.__get__(self)
         self.absent_msg = absent_msg
