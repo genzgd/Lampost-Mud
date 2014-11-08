@@ -35,11 +35,11 @@ class SessionHandler(RequestHandler):
         return Blank(**self.raw)
 
     def _return(self, result):
-        if result:
+        if result is None:
+            self.set_status(204)
+        else:
             self.set_header('Content-Type', 'application/json')
             self.write(json_encode(result))
-        else:
-            self.set_status(204)
         self.finish()
 
     def prepare(self):

@@ -2,6 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.client.user import User
 from lampost.editor.editor import Editor
+from lampost.model.player import Player
 
 m_requires('log', 'datastore', 'perm', 'user_manager', __name__)
 
