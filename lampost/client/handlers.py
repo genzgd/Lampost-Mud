@@ -17,12 +17,14 @@ class SessionHandler(RequestHandler):
     def _handle_request_exception(self, e):
         if isinstance(e, LinkError):
             self._return({'link_status': e.error_code})
-        elif isinstance(e, ClientError):
+            return
+        if isinstance(e, ClientError):
             self.set_status(e.http_status)
             self.write(e.client_message)
-            self.finish()
         else:
-            super()._handle_request_exception(e)
+            self.set_status(500)
+            error("Handler Exception", self, e)
+        self.finish()
 
     def _find_session(self):
         self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
@@ -56,10 +58,10 @@ class SessionHandler(RequestHandler):
 
 class MethodHandler(SessionHandler):
     def main(self, path, *args):
-        try:
-            method = getattr(self, path)
+        method = getattr(self, path, None)
+        if method:
             self._return(method(*args))
-        except AttributeError:
+        else:
             self.send_error(404)
 
 

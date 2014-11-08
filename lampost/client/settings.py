@@ -97,7 +97,7 @@ class Settings(MethodHandler):
         user_id = get_index("ix:user:email", email)
         if not user_id:
             raise DataError("User Email Not Found")
-        user = load_object(User, user_id.split(":")[1])
+        user = load_object(User, user_id)
         email_msg = "Your {} account name is {}.\nThe players on this account are {}."\
             .format(config_manager.name, user.user_name,
                     ','.join([player_id.capitalize() for player_id in user.player_ids]))
