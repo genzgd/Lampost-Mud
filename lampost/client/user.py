@@ -45,8 +45,8 @@ class UserManager(object):
         salt, old_password = user.password.split('$')
         if check_password(b64decode(bytes(old_password, 'utf-8')), password, bytes(salt, 'utf-8')):
             warn("Using old password for account {}".format(user.user_name))
-            #user.check_password = True
-            #save_object(user)
+            user.password_reset = True
+            save_object(user)
         else:
             raise ClientError("invalid_password")
 

@@ -6,6 +6,7 @@ from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
+from lampost.util.encrypt import make_hash
 from lampost.util.lmutil import ClientError
 
 

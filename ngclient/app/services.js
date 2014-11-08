@@ -206,8 +206,8 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
         return;
       }
       if (status == 500) {
-          lmBus.dispatch("display", [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.  Don't mind the smoke, I'm sure someone is investigating."},
-              {display: 'system'}]);
+          lmBus.dispatch("display", {lines: [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.  Don't mind the smoke, I'm sure someone is investigating."},
+              {display: 'system'}]});
           return;
       }
       connected = false;
