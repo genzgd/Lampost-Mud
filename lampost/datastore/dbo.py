@@ -12,7 +12,7 @@ class RootDBOMeta(AutoMeta):
         cls._load_functions = []
         for base in bases:
             try:
-                cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.items() if name not in list(new_attrs.keys())})
+                cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.items() if name not in new_attrs.keys()})
             except AttributeError:
                 pass
             cls._load_functions.extend(getattr(base, '_load_functions', []))

@@ -21,8 +21,8 @@ class ScriptManager():
 
     def configure_scripts(self, settings):
         global root_area, exec_globals, script_dir
-        root_area = settings.get('root_area', None)
-        script_dir = settings.get('script_dir', None)
+        root_area = settings.get('root_area', 'immortal')
+        script_dir = settings.get('script_dir', 'lampost_scripts')
         namespace = Blank()
 
         for dependency in ['log', 'datastore', 'dispatcher']:
