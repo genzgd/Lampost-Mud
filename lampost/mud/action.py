@@ -68,7 +68,7 @@ def friend(source, target, **_):
     try:
         friend_service.friend_request(source, target)
     except ClientError as exp:
-        return exp.message
+        return str(exp)
     return "Friend request sent"
 
 

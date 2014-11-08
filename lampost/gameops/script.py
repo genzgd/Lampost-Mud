@@ -184,7 +184,7 @@ class Script(RootDBO):
         except EnvironmentError as exp:
             warn("Failed to read script file {}".format(self.dbo_id), __name__, exp)
             self.live_text = ''
-            self.file_error = exp.message
+            self.file_error = str(exp)
             if self.code:
                 del self.code
             save_object(self)
@@ -208,7 +208,7 @@ class Script(RootDBO):
             if self.strong_ref:
                 script_cache.self[dbo_id] = self
         except SyntaxError as exp:
-            self.compile_error = exp.message
+            self.compile_error = str(exp)
             log.error("Error compiling script {}".format(self.dbo_id))
             if self.code:
                 del self.code

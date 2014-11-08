@@ -68,8 +68,8 @@ class Blank():
 class ClientError(Exception):
     http_status = 400
 
-    def __init__(self, message="client_error", display=None):
-        self.client_message = message
+    def __init__(self, client_message="client_error", display=None):
+        self.client_message = client_message
         self.display = display
 
 

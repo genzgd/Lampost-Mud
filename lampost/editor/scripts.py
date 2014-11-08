@@ -34,7 +34,7 @@ class ScriptEditor(ChildrenEditor):
         script.compile()
 
     def post_delete(self, del_obj):
-        script_manager.delete(del_obj)
+        script_manager.delete_script(del_obj)
 
 
 

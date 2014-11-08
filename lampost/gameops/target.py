@@ -13,7 +13,7 @@ def recursive_targets(target_list, target_key):
 
 
 # noinspection PyUnreachableCode
-def null_generator(self, entity, target_key, *_):
+def null_generator(self, *_):
     return
     yield
 
@@ -74,7 +74,7 @@ TargetClass.ENV_LIVING = TargetClass(env_living_finder)
 TargetClass.ENV_ITEMS = TargetClass(env_items_finder)
 TargetClass.ACTION = TargetClass(action_finder)
 
-TargetClass.DEFAULTS = [TargetClass.SELF, TargetClass.EQUIP, TargetClass.EQUIP, TargetClass.INVEN, TargetClass.ENV, TargetClass.FEATURE,
+TargetClass.DEFAULTS = [TargetClass.SELF, TargetClass.EQUIP, TargetClass.INVEN, TargetClass.ENV, TargetClass.FEATURE,
                         TargetClass.ENV_LIVING, TargetClass.ENV_ITEMS]
 TargetClass.ARGS_ONLY = [TargetClass.ARGS]
 

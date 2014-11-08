@@ -1,4 +1,3 @@
-
 from collections import deque
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
@@ -92,6 +91,7 @@ class Store(Feature):
         article = target.article
         money = self._take_money(source, target.price)
         self_msg = ''.join(("You recover {N} for ", money.name, '.'))
+        self.buybacks.remove(target)
         article.enter_env(source)
         source.broadcast(s=self_msg, e="{n) recovers {N}", target=article)
 

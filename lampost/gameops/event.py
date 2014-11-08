@@ -120,7 +120,7 @@ class Registration():
     def __init__(self, event_type, callback, owner=None, priority=0):
         self.event_type = event_type
         self.callback = callback
-        self.owner = owner if owner else getattr(callback, 'im_self', self)
+        self.owner = owner if owner else getattr(callback, '__self__', self)
         self.priority = priority
 
     def cancel(self):
