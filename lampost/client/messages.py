@@ -25,7 +25,7 @@ class FriendResponse(SessionHandler):
 class MessageDelete(SessionHandler):
 
     def main(self):
-        message_service.remove_message(self.raw['player_id'], self.raw['msg_id'])
+        message_service.remove_message(**self.raw)
 
 
 

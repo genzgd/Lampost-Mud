@@ -23,7 +23,7 @@ def self_finder(self, entity, target_key, *_):
         yield entity
 
 
-def im_self_finder(self, entity, target_key, func):
+def func_owner_finder(self, entity, target_key, func):
     return recursive_targets([func.__self__], target_key)
 
 
@@ -65,7 +65,7 @@ TargetClass.NONE = TargetClass(null_generator)
 TargetClass.ARGS = TargetClass(null_generator)
 TargetClass.NO_ARGS = TargetClass(null_generator)
 TargetClass.SELF = TargetClass(self_finder)
-TargetClass.IM_SELF = TargetClass(im_self_finder)
+TargetClass.FUNC_OWNER = TargetClass(func_owner_finder)
 TargetClass.EQUIP = TargetClass(equip_finder, "You don't have `{target}' equipped")
 TargetClass.INVEN = TargetClass(inven_finder, "You don't have `{target}'")
 TargetClass.ENV = TargetClass(env_finder)

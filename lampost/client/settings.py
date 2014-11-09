@@ -44,8 +44,7 @@ class Settings(MethodHandler):
             if not old_user:
                 raise ClientError(user_id + " does not exist!")
 
-        if user_manager.check_name(update_dict['user_name'], old_user) != "ok":
-            raise DataError("InUse: {}".format(update_dict['user_name']))
+        user_manager.check_name(update_dict['user_name'], old_user)
         user = User(user_id)
         if update_dict['password']:
             update_dict['password'] = make_hash(update_dict['password'])

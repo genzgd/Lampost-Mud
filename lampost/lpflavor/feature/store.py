@@ -62,14 +62,14 @@ class Store(Feature):
             self.buybacks.appendleft(Buyback(source.dbo_id, target, offer.quantity, current_pulse()))
             self._start_buyback()
         else:
-            sell_msg = "You sell {N}."
+            sell_msg = "You deposit {N}."
             self.add_inven(target)
 
         source.check_drop(target, None)
         source.remove_inven(target)
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 
-    @item_action(target_class="im_self", msg_class="get")
+    @item_action(target_class="func_owner", msg_class="get")
     def buy(self, source, target, **_):
         if target not in self.inven:
             raise ActionError("That is not in the store.")
@@ -77,7 +77,7 @@ class Store(Feature):
             money = self._take_money(source, self._price(target))
             self_msg = ''.join(("You buy {N} for ", money.name, '.'))
         else:
-            self_msg = "You buy {N}."
+            self_msg = "You withdraw {N}."
         if getattr(target, 'store', None) == self:
             target = target.template.create_instance()
         else:

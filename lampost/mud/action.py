@@ -61,7 +61,7 @@ def friends(source, **_):
     return "Your friends are:<br/>&nbsp&nbsp{}".format(friend_list) if friend_list else "Alas, you are friendless."
 
 
-@mud_action('friend', 'player')
+@mud_action('friend', 'is_player')
 def friend(source, target, **_):
     if source == target or friend_service.is_friend(source.dbo_id, target.dbo_id):
         return "{} is already your friend.".format(target.name)

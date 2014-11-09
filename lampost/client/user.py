@@ -3,6 +3,7 @@ import time
 
 from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lmutil import ClientError
@@ -94,16 +95,12 @@ class UserManager():
         account_name = account_name.lower()
         if old_user:
             if account_name == old_user.user_name.lower():
-                return "ok"
+                return
             for player_id in old_user.player_ids:
                 if account_name == player_id.lower():
-                    return "ok"
-
-        if self.player_exists(account_name):
-            return "player_exists"
-        if get_index("ix:user:user_name", account_name):
-            return "user exists"
-        return "ok"
+                    return
+        if self.player_exists(account_name) or get_index("ix:user:user_name", account_name):
+            raise DataError("InUse: {}".format(account_name))
 
     def player_exists(self, player_id):
         return object_exists(Player.dbo_key_type, player_id)
@@ -121,9 +118,6 @@ class UserManager():
 
     def _player_connect(self, player, client_data):
         client_data.update({'name': player.name, 'privilege': player.imm_level})
-
-    def find_player(self, player_id):
-        return load_object(Player, player_id)
 
     def login_player(self, player):
         dispatch('player_baptise', player)
