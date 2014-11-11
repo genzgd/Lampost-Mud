@@ -15,7 +15,7 @@ from lampost.client.server import WebServer
 from lampost.context.scripts import select_json
 from lampost.gameops.event import Dispatcher
 from lampost.client.session import SessionManager
-from lampost.datastore.dbconn import RedisStore
+from lampost.datastore.redisstore import RedisStore
 from lampost.gameops.config import ConfigManager
 from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions

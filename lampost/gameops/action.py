@@ -1,12 +1,10 @@
 import inspect
 
+from lampost.gameops import target_gen
 from lampost.context.resource import m_requires
-from lampost.gameops.target import TargetClass, make_target_class
 from lampost.util.lmutil import PermError, ClientError
 
 m_requires('log', __name__)
-
-default_target_classes = ['self', 'equip', 'inven', 'env', 'features', 'env_living', 'env_items']
 
 
 def convert_verbs(verbs):
@@ -32,9 +30,9 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
         action.msg_class = msg_class
 
     if target_class:
-        action.target_class = make_target_class(target_class)
+        action.target_class = target_gen.make(target_class)
     elif not hasattr(action, 'target_class'):
-        action.target_class = TargetClass.DEFAULTS
+        action.target_class = target_gen.defaults
         try:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
         except TypeError:
@@ -42,16 +40,16 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
         target_args = len(args) - len([arg for arg in args if arg in {'self', 'source', 'command', 'args', 'verb'}])
         if not target_args:
             if not args or len(args) == 1 and args[0] == 'source':
-                action.target_class = TargetClass.NO_ARGS
+                action.target_class = 'no_args'
             else:
                 action.target_class = None
 
     if prep:
         action.prep = prep
         if obj_target_class:
-            action.obj_target_class = make_target_class(obj_target_class)
+            action.obj_target_class = target_gen.make(obj_target_class)
         elif not hasattr(action, 'obj_target_class'):
-            action.obj_target_class = TargetClass.DEFAULTS
+            action.obj_target_class = target_gen.defaults
         if obj_msg_class:
             action.obj_msg_class = obj_msg_class
     for arg_name, value in kw_args.items():

@@ -2,9 +2,9 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOTField
 from lampost.datastore.auto import RootAuto, TemplateField
+from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
-from lampost.gameops.target import TargetClass
 from lampost.lpflavor.attributes import POOL_LIST
 from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
@@ -125,7 +125,7 @@ class AttackTemplate(SkillTemplate):
 class AttackSkill(BaseSkill):
     template_id = 'attack'
 
-    target_class = [TargetClass.ENV_LIVING]
+    target_class = target_gen.make('env_living')
 
     display = COMBAT_DISPLAY
     msg_class = 'attacked'
@@ -181,7 +181,7 @@ class DefenseTemplate(SkillTemplate):
 class DefenseSkill(BaseSkill):
     template_id = 'defense'
 
-    target_class = [TargetClass.ENV_LIVING]
+    target_class = target_gen.make('env_living')
     damage_type = DBOTField(['physical'])
     delivery = DBOTField(['melee', 'ranged'])
     weapon_type = DBOTField('unused')

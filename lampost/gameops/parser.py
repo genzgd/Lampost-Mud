@@ -1,8 +1,8 @@
 import itertools
 
+from lampost.gameops import target_gen
 from lampost.context.resource import m_requires
 from lampost.gameops.action import find_actions
-from lampost.gameops.target import TargetClass
 from lampost.util.lmutil import find_extra, ClientError
 
 m_requires('log', 'mud_actions', __name__)
@@ -45,7 +45,7 @@ def entity_actions(entity, command):
 
 
 def find_targets(entity, target_key, target_class, action=None):
-    return itertools.chain.from_iterable([target_type.target_finder(entity, target_key, action) for target_type in target_class])
+    return itertools.chain.from_iterable([target_func(entity, target_key, action) for target_func in target_class])
 
 
 class ActionMatch():
@@ -122,7 +122,10 @@ class Parse():
                 if not reject_format['target']:
                     last_reason = MISSING_TARGET
                 elif last_reason == ABSENT_TARGET:
-                    last_reason = reject.action.target_class[0].absent_msg
+                    try:
+                        last_reason = reject.action.target_class[0].absent_msg
+                    except (IndexError, AttributeError):
+                        pass
         raise ParseError(last_reason.format(**reject_format))
 
     # noinspection PyArgumentList
@@ -141,7 +144,7 @@ class Parse():
         target_class, args = action.target_class, match.args
         if not target_class:
             return
-        if target_class == TargetClass.NO_ARGS:
+        if target_class == 'no_args':
             return EXTRA_WORDS if args else None
         target_key = args
         if hasattr(action, 'quantity'):
@@ -160,7 +163,7 @@ class Parse():
                 if not hasattr(action, 'self_object'):
                     return MISSING_PREP
         target_index, target_key = capture_index(target_key)
-        if TargetClass.ARGS in target_class:
+        if target_class == 'args':
             match.target = target_key
             return
         if target_key:
@@ -169,13 +172,12 @@ class Parse():
                 target = next(itertools.islice(targets, target_index, target_index + 1))
             except StopIteration:
                 return ABSENT_TARGET
+        elif hasattr(action, 'self_target'):
+            target = self._entity
+        elif target_gen.env in target_class:
+            target = self._entity.env
         else:
-            if hasattr(action, 'self_target'):
-                target = self._entity
-            elif TargetClass.ENV in target_class:
-                target = self._entity.env
-            else:
-                return MISSING_TARGET
+            return MISSING_TARGET
         if match.quantity and match.quantity > getattr(target, 'quantity', 0):
             return INSUFFICIENT_QUANTITY
         match.target_method = getattr(target, match.action.msg_class, None)
@@ -193,7 +195,7 @@ class Parse():
         obj_target_class, obj_key = getattr(match.action, 'obj_target_class', None), match.obj_key
         if not obj_target_class:
             return
-        if TargetClass.ARGS in obj_target_class:
+        if obj_target_class == 'args':
             match.obj = match.obj_key
             return
         obj_index, obj_key = capture_index(match.obj_key)
@@ -203,11 +205,10 @@ class Parse():
                 obj = next(itertools.islice(objects, obj_index, obj_index + 1))
             except StopIteration:
                 return ABSENT_OBJECT
+        elif hasattr(match.action, 'self_object'):
+            obj = self._entity
         else:
-            if hasattr(match.action, 'self_object'):
-                obj = self._entity
-            else:
-                return MISSING_TARGET
+            return MISSING_TARGET
 
         obj_msg_class = getattr(match.action, 'obj_msg_class', None)
         if obj_msg_class:

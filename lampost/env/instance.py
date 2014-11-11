@@ -1,10 +1,10 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
+from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, item_action
 from lampost.gameops.display import EXIT_DISPLAY
 from lampost.gameops.script import Script
-from lampost.gameops.target import TargetClass
 
 m_requires('datastore', __name__)
 
@@ -62,10 +62,10 @@ class Entrance(Feature):
     def on_loaded(self):
         if self.direction:
             self.verbs = (self.direction.obj_id,), (self.direction.desc,)
-            self.target_class = [TargetClass.NO_ARGS]
+            self.target_class = 'no_args'
         else:
             self.verbs = convert_verbs(self.verb)
-            self.target_class = [TargetClass.ACTION]
+            self.target_class = [target_gen.action]
         if not self.title and self.verb:
             self.title = self.verb
 
