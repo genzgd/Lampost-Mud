@@ -138,10 +138,7 @@ def unfollow(source, args,  **_):
         return "You aren't following anyone."
     if args and args[0].lower() != source.following.name.lower():
         return "You aren't following {}.".format(args[0])
-    source.display_line("You are no longer following {}".format(source.following.name))
-    source.following.display_line("{} is no longer following you.".format(source.name))
-    source.following.followers.remove(source)
-    del source.following
+    source.unfollow()
 
 @mud_action('abandon')
 def abandon(source, **_):

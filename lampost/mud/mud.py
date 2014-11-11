@@ -13,6 +13,7 @@ import_module('lampost.mud.immortal')
 import_module('lampost.comm.chat')
 import_module('lampost.mud.inventory')
 import_module('lampost.mud.socials')
+import_module('lampost.mud.group')
 import_module('lampost.env.instance')
 
 m_requires('log', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)

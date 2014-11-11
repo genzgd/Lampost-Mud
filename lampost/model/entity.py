@@ -100,6 +100,15 @@ class Entity(BaseItem):
         self.followers.add(source)
         source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
 
+    def unfollow(self):
+        following = getattr(self, 'following', None)
+        if following:
+            self.display_line("You are no longer following {}".format(following.name))
+            following.display_line("{} is no longer following you.".format(self.name))
+            following.followers.remove(self)
+            del self.following
+
+
     def examine(self, source, **_):
         super().examine(source, **_)
         source.display_line("{0} is carrying:".format(self.name))
@@ -174,9 +183,7 @@ class Entity(BaseItem):
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
-        if hasattr(self, 'following'):
-            self.following.display_line("{} is no longer following you.".format(self.name))
-            del self.following
+        self.unfollow()
         self.equip_slots.clear()
 
     def equip_article(self, article):

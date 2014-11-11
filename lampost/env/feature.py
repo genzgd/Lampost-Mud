@@ -16,16 +16,14 @@ class Feature(BaseItem, Scriptable):
     @classmethod
     def load_ref(cls, dbo_repr, owner=None):
         try:
-            feature_cls = get_dbo_class(dbo_repr['sub_class_id'])
+            feature_cls = dbo_repr['sub_class_id']
         except KeyError:
             error("Feature missing subclass id {} in room {}".format(dbo_repr, owner.dbo_id))
             return
-        feature = feature_cls()
+        feature = get_dbo_class(feature_cls)()
         feature.room = owner
         feature.hydrate(dbo_repr)
-        try:
+        if hasattr(feature, 'on_created'):
             feature.on_created()
-        except AttributeError:
-            pass
         return feature
 

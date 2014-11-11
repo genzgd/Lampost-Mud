@@ -25,6 +25,7 @@ class Player(RootDBO):
         self.target_keys = {(self.dbo_id,)}
         self.last_tell = None
         self.active_channels = set()
+        self.group = None
 
     @property
     def dto_value(self):
