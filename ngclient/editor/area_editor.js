@@ -147,6 +147,7 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
 
     this.preCreate = function (newModel) {
       newModel.dbo_id = $scope.areaId + ":" + newModel.id;
+      newModel.equip_slot = 'none';
     };
 
     this.delConfirm = function (delModel) {
@@ -172,8 +173,29 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
       newModel.weight = 1;
     };
 
-    this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
+    this.preCreate = function (article) {
+      article.dbo_id = $scope.selectedAreaId + ":" + article.id;
+      if (article.equip_slot == 'none') {
+        article.equip_slot = null;
+      }
+    };
+
+    this.preUpdate = function(article) {
+      if (article.equip_slot == 'none') {
+        article.equip_slot = null;
+      }
+    };
+
+    this.postUpdate = function(article) {
+       if (!article.equip_slot) {
+        article.equip_slot = 'none';
+      }
+    };
+
+    this.startEdit = function(article) {
+      if (!article.equip_slot) {
+        article.equip_slot = 'none';
+      }
     };
 
     $scope.editor.newEdit($scope.editor.editModel);

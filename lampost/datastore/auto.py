@@ -18,7 +18,6 @@ class RootAuto(metaclass=AutoMeta):
 
 
 class AutoField():
-
     def __init__(self, default=None):
         self.default = default
         if default is None or isinstance(default, (int, str, bool, tuple, float)):

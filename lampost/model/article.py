@@ -33,10 +33,8 @@ class Article(BaseItem, Scriptable):
     weight = DBOTField(0)
     value = DBOTField(0)
     divisible = DBOTField(False)
-    equip_slot = DBOTField('none')
     art_type = DBOTField('treasure')
     level = DBOTField(1)
-    current_slot = DBOField()
     quantity = DBOField()
     uses = DBOField()
     single_keys = TemplateField(set())
@@ -111,12 +109,6 @@ class Article(BaseItem, Scriptable):
             except IndexError:
                 pass
         new_env.add_inven(self)
-
-    def wear(self):
-        pass
-
-    def remove(self):
-        pass
 
 
 class ArticleReset(RootDBO):

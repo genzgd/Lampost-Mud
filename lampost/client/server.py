@@ -1,20 +1,20 @@
-from tornado.web import Application, StaticFileHandler, RedirectHandler, RequestHandler
+from tornado.web import Application, RequestHandler
 from tornado.httpserver import HTTPServer
 
-from lampost.util.lmlog import logged
-from lampost.context.resource import provides, m_requires
+from lampost.context.resource import m_requires, provides
 
-m_requires("log", "dispatcher", __name__)
-
-
-def app_log(handler):
-    pass
+m_requires('log', 'dispatcher', __name__)
 
 @provides('web_server')
 class WebServer():
     def __init__(self):
         self.handlers = []
         self._lsp_docs = {}
+
+    def app_log(self, handler):
+        if debug_enabled():
+            debug('{} {} {}'.format(handler.get_status(), handler._request_summary(),
+                                    1000.0 * handler.request.request_time()), self)
 
     def lsp_html(self, path, content):
         self._add_lsp(path, content, 'text/html')
@@ -26,18 +26,14 @@ class WebServer():
         self._lsp_docs[path] = {'content': content, 'content_type': content_type}
 
     def _post_init(self):
-        dispatcher.register("config_js", lambda config_js : self.lsp_js('config.js', config_js))
+        register("config_js", lambda config_js : self.lsp_js('config.js', config_js))
 
-    def add(self, regex, handler, init_params=None):
+    def add(self, regex, handler, **init_params):
         self.handlers.append((regex, handler, init_params))
 
-    @logged
     def start_service(self, port, interface):
-        application = Application([
-            (r"/", RedirectHandler, dict(url="/ngclient/lampost.html")),
-            (r"/ngclient/(.*)", StaticFileHandler, dict(path="ngclient")),
-            (r"/lsp/(.*)", LspHandler, dict(documents=self._lsp_docs))
-        ] + self.handlers, log_function=app_log)
+        self.add(r"/lsp/(.*)", LspHandler, documents=self._lsp_docs)
+        application = Application(self.handlers, log_function=self.app_log)
 
         info("Starting web server on port {}".format(port), self)
         http_server = HTTPServer(application)
@@ -49,7 +45,9 @@ class LspHandler(RequestHandler):
         self.documents = documents
 
     def get(self, lsp_id):
-        document = self.documents[lsp_id]
-        self.set_header("Content-Type", "{}; charset=UTF-8".format(document['content_type']))
-        self.write(document['content'])
-
+        try:
+            document = self.documents[lsp_id]
+            self.set_header("Content-Type", "{}; charset=UTF-8".format(document['content_type']))
+            self.write(document['content'])
+        except KeyError:
+            self.set_status(404)

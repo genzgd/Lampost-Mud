@@ -186,9 +186,6 @@ class Entity(BaseItem):
         self.unfollow()
         self.equip_slots.clear()
 
-    def equip_article(self, article):
-        pass
-
     @property
     def display_status(self):
         return {'status': self.status}

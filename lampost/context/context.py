@@ -1,6 +1,7 @@
 import importlib
 
 from tornado.ioloop import IOLoop
+from tornado.web import RedirectHandler, StaticFileHandler
 
 import lampost.client.web
 import lampost.editor.web
@@ -59,6 +60,8 @@ class Context():
         lampost.editor.web.add_endpoints(web_server)
 
         config_mgr.start_service()
+        web_server.add(r"/", RedirectHandler, url="/ngclient/lampost.html")
+        web_server.add(r"/ngclient/(.*)", StaticFileHandler, path="ngclient")
         web_server.start_service(int(port), server_interface)
 
         IOLoop.instance().start()

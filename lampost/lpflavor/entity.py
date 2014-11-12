@@ -183,8 +183,6 @@ class EntityLP(Entity):
         self.status_change()
 
     def equip_article(self, article):
-        if article.equip_slot == 'none':
-            raise ActionError('This is not something you can equip.')
         if article.art_type == 'weapon' and self.weapon:
             self.remove_article(self.weapon)
         equip_slot = self._find_slot(article.equip_slot)
