@@ -10,7 +10,7 @@ def self(entity, target_key, *_):
         yield entity
 
 
-def func_owner(target_key, func, *_):
+def func_owner(entity, target_key, func, *_):
     return recursive_targets([func.__self__], target_key)
 
 
