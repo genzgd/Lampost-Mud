@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires, provides
 
-m_requires('log', 'session_manager', 'dispatcher', 'perm', __name__)
+m_requires(__name__, 'log', 'session_manager', 'dispatcher', 'perm')
 
 
 class ClientService():

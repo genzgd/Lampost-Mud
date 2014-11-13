@@ -6,7 +6,7 @@ from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template, TemplateInstance
 from lampost.mud.action import mud_action, imm_action
 
-m_requires('log', 'datastore', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 
 def add_skill(skill_id, target, skill_level):

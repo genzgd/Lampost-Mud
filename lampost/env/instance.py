@@ -6,7 +6,7 @@ from lampost.gameops.action import convert_verbs, item_action
 from lampost.gameops.display import EXIT_DISPLAY
 from lampost.gameops.script import Script
 
-m_requires('datastore', __name__)
+m_requires(__name__, 'datastore')
 
 instance_id = 0
 

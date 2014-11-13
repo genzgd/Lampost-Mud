@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.gameops.action import ActionError
 from lampost.lpflavor.combat import consider_level
 
-m_requires('log', 'dispatcher', 'tools', __name__)
+m_requires(__name__, 'log', 'dispatcher', 'tools')
 
 chase_time = 120
 

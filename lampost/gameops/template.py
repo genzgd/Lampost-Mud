@@ -3,7 +3,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.auto import TemplateField
 from lampost.datastore.dbo import DBOField, RootDBO, RootDBOMeta
 
-m_requires('log', 'datastore', __name__)
+m_requires(__name__, 'log', 'datastore')
 
 
 class TemplateMeta(RootDBOMeta):

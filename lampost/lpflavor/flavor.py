@@ -10,7 +10,7 @@ from lampost.lpflavor.player import PlayerLP
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
 
-m_requires('context', 'dispatcher', 'datastore', 'perm', __name__)
+m_requires(__name__, 'context', 'dispatcher', 'datastore', 'perm')
 
 equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']

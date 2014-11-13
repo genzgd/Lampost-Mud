@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires, register
 
-m_requires("log", __name__)
+m_requires(__name__, 'log')
 
 
 def select_json():

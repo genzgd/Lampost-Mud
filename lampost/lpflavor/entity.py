@@ -5,7 +5,7 @@ from lampost.lpflavor.attributes import need_refresh, POOL_LIST
 from lampost.lpflavor.combat import calc_consider
 from lampost.model.entity import Entity
 
-m_requires('log', 'tools', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'tools', 'dispatcher')
 
 
 def _post_init():

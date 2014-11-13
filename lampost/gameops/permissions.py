@@ -1,7 +1,7 @@
 from lampost.context.resource import provides, m_requires
 from lampost.util.lmutil import PermError
 
-m_requires('datastore', __name__)
+m_requires(__name__, 'datastore')
 
 
 @provides('perm', True)

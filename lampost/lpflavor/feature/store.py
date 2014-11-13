@@ -6,7 +6,7 @@ from lampost.env.feature import Feature
 from lampost.gameops.action import item_action, ActionError
 from lampost.mud.inventory import InvenContainer
 
-m_requires('dispatcher', __name__)
+m_requires(__name__, 'dispatcher')
 
 
 class Buyback():

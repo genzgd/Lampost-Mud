@@ -8,7 +8,7 @@ from lampost.lpflavor.entity import EntityLP
 from lampost.model.player import Player
 
 
-m_requires('dispatcher', 'datastore', 'config_manager', __name__)
+m_requires(__name__, 'dispatcher', 'datastore', 'config_manager')
 
 
 class PlayerLP(Player, EntityLP):

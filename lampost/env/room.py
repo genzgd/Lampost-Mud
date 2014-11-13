@@ -14,7 +14,7 @@ from lampost.gameops.display import *
 from lampost.mud.inventory import InvenContainer
 
 
-m_requires('log', 'dispatcher', 'datastore', __name__)
+m_requires(__name__, 'log', 'dispatcher', 'datastore')
 
 default_room_size = 10
 room_reset_time = 600

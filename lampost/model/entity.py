@@ -9,7 +9,7 @@ from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.model.item import BaseItem
 from lampost.mud.inventory import InvenContainer
 
-m_requires('log', __name__)
+m_requires(__name__, 'log')
 
 
 class Entity(BaseItem):

@@ -2,7 +2,7 @@ from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
 
 
-m_requires('log', 'datastore', 'dispatcher', 'perm', 'edit_update_service',  __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'edit_update_service')
 
 
 class Editor(MethodHandler):

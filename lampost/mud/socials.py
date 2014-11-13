@@ -3,7 +3,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.mud.action import mud_action
 
-m_requires('datastore',  __name__)
+m_requires(__name__, 'datastore')
 
 
 def _post_init():

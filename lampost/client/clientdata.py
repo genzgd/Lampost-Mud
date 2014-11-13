@@ -2,7 +2,7 @@ from lampost.client.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
 
-m_requires('log', 'datastore',  __name__)
+m_requires(__name__, 'log', 'datastore')
 
 
 class NewCharacterData(SessionHandler):

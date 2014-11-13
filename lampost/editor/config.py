@@ -3,7 +3,7 @@ from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.classes import get_dbo_class, get_sub_classes
 
-m_requires('perm', 'datastore', 'config_manager', __name__)
+m_requires(__name__, 'perm', 'datastore', 'config_manager')
 
 
 class ConfigEditor(MethodHandler):

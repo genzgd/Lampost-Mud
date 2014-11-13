@@ -1,7 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 
-m_requires('log', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'dispatcher')
 
 
 class Player(RootDBO):

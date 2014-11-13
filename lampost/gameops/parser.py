@@ -5,7 +5,7 @@ from lampost.context.resource import m_requires
 from lampost.gameops.action import find_actions
 from lampost.util.lmutil import find_extra, ClientError
 
-m_requires('log', 'mud_actions', __name__)
+m_requires(__name__, 'log', 'mud_actions')
 
 MISSING_VERB = "Unrecognized command '{verb}'.  Perhaps you should try 'help'?"
 EXTRA_WORDS = "'{extra}' does not make sense with '{verb}'."

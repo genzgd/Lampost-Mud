@@ -2,7 +2,7 @@ from lampost.client.user import User
 from lampost.context.resource import m_requires, provides
 from lampost.util.lmutil import ClientError
 
-m_requires('datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm', 'config_manager', __name__)
+m_requires(__name__, 'datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm', 'config_manager')
 
 _REQUEST_KEY = "friend_requests"
 _FRIEND_EMAIL_KEY = "friend_email_notifies"

@@ -8,7 +8,7 @@ from lampost.context.resource import m_requires, requires, provides
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 from lampost.util.lmutil import ClientError
 
-m_requires('log', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'dispatcher')
 
 
 @provides('session_manager')

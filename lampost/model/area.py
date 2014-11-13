@@ -4,7 +4,7 @@ from lampost.env.room import Room
 from lampost.gameops.script import Scriptable
 
 
-m_requires('log', 'datastore',  __name__)
+m_requires(__name__, 'log', 'datastore')
 
 
 class Area(Scriptable):

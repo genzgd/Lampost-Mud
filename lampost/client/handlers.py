@@ -5,7 +5,7 @@ from tornado.web import RequestHandler, asynchronous
 from lampost.context.resource import m_requires, get_resource
 from lampost.util.lmutil import ClientError, Blank
 
-m_requires('log', 'perm', 'session_manager', 'json_decode', 'json_encode',  __name__)
+m_requires(__name__, 'log', 'perm', 'session_manager', 'json_decode', 'json_encode')
 
 
 class LinkError(Exception):

@@ -7,7 +7,7 @@ from lampost.mud.action import imm_action
 from lampost.util.lmutil import Blank
 
 
-m_requires('log', 'datastore', 'dispatcher', 'script_manager', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'script_manager')
 
 
 script_cache = {}

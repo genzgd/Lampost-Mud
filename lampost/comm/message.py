@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires, provides
 from lampost.gameops.action import ActionError
 from lampost.util.lmutil import timestamp
 
-m_requires('log', 'datastore', 'dispatcher', 'session_manager', 'user_manager', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'session_manager', 'user_manager')
 
 @provides('message_service')
 class MessageService():

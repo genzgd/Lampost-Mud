@@ -6,7 +6,7 @@ from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.model.area import Area
 
-m_requires('datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager',  __name__)
+m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager')
 
 
 class AreaEditor(Editor):

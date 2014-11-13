@@ -10,7 +10,7 @@ from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
 from lampost.util.lmutil import args_print
 
-m_requires('log', 'tools', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'tools', 'dispatcher')
 
 WEAPON_TYPES = {'sword': {'damage': 'slash', 'delivery': 'melee'},
                 'axe': {'damage': 'slash', 'delivery': 'melee'},

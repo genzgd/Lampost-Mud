@@ -3,7 +3,7 @@ from lampost.lpflavor.feature.touchstone import Touchstone
 from lampost.model.race import PlayerRace
 from lampost.setup.scripts import build_default_settings
 
-m_requires('datastore', __name__)
+m_requires(__name__, 'datastore')
 
 GAME_SETTINGS = {'refresh_interval': {'desc': 'Time between entity refreshes (in pulses).',
                                       'default': 12},

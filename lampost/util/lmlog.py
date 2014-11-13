@@ -4,7 +4,7 @@ from sys import stdout
 from datetime import datetime
 from lampost.context.resource import m_requires, provides, get_resource
 
-m_requires('dispatcher', __name__)
+m_requires(__name__, 'dispatcher')
 
 FATAL = 0
 ERROR = 10

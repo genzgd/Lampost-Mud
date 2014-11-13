@@ -16,7 +16,7 @@ import_module('lampost.mud.socials')
 import_module('lampost.mud.group')
 import_module('lampost.env.instance')
 
-m_requires('log', 'datastore', 'dispatcher', 'mud_actions', 'perm', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'mud_actions', 'perm')
 
 
 @requires('context', 'config_manager')

@@ -1,7 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.client.handlers import SessionHandler
 
-m_requires('log', 'friend_service', 'message_service', 'user_manager', __name__)
+m_requires(__name__, 'log', 'friend_service', 'message_service', 'user_manager')
 
 
 class FriendResponse(SessionHandler):

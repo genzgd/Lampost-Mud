@@ -3,7 +3,7 @@ from threading import Thread
 
 from lampost.context.resource import provides, requires, m_requires
 
-m_requires('log', __name__)
+m_requires(__name__, 'log')
 
 
 @provides('email_sender')

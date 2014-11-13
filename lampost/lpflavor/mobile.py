@@ -8,7 +8,7 @@ from lampost.lpflavor.skill import SkillTemplate
 from lampost.model.mobile import Mobile, MobileTemplate
 from lampost.model.race import base_attr_value
 
-m_requires('log', 'context', 'datastore', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 
 affinities = {'player': {'enemies': ['monster']},
               'neutral': {'enemies': []},

@@ -1,7 +1,7 @@
 from lampost.client.handlers import MethodHandler
 from lampost.context.resource import m_requires
 
-m_requires('channel_service', __name__)
+m_requires(__name__, 'channel_service')
 
 
 class Channel(MethodHandler):

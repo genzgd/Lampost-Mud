@@ -2,7 +2,7 @@ from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.util.lmutil import javascript_safe
 
-m_requires('log', 'datastore', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 
 @provides('config_manager')

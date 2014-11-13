@@ -3,7 +3,7 @@ from lampost.gameops.action import make_action
 from lampost.context.resource import m_requires, provides
 from lampost.util.lmutil import timestamp
 
-m_requires('dispatcher', 'datastore', 'channel_service', __name__)
+m_requires(__name__, 'dispatcher', 'datastore', 'channel_service')
 
 
 class Channel():

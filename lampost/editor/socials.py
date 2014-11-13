@@ -4,7 +4,7 @@ from lampost.editor.editor import Editor
 from lampost.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 from lampost.mud.socials import Social
 
-m_requires('mud_actions', __name__)
+m_requires(__name__, 'mud_actions')
 
 
 class SocialsEditor(Editor):

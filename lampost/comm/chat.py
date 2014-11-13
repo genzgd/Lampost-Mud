@@ -3,7 +3,7 @@ from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.mud.action import mud_action
 
-m_requires('session_manager', __name__)
+m_requires(__name__, 'session_manager')
 
 
 @mud_action(('t', 'tell'))

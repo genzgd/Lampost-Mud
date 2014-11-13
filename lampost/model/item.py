@@ -8,7 +8,7 @@ from lampost.gameops.action import item_action
 from lampost.gameops.display import TELL_TO_DISPLAY
 from lampost.gameops.template import TemplateInstance, TemplateMeta
 
-m_requires('dispatcher', __name__)
+m_requires(__name__, 'dispatcher', 'log')
 
 
 def gen_keys(target_id):
@@ -17,9 +17,9 @@ def gen_keys(target_id):
     target_tuple = tuple(target_id.lower().split(" "))
     prefix_count = len(target_tuple) - 1
     target = target_tuple[prefix_count],
-    for x in range(0, int(math.pow(2, prefix_count))):
+    for x in range(int(math.pow(2, prefix_count))):
         next_prefix = []
-        for y in range(0, prefix_count):
+        for y in range(prefix_count):
             if int(math.pow(2, y)) & x:
                 next_prefix.append(target_tuple[y])
         yield tuple(next_prefix) + target

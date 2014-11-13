@@ -8,7 +8,7 @@ from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lmutil import ClientError
 
-m_requires('log', 'datastore', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 
 class User(RootDBO):

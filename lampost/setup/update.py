@@ -6,7 +6,7 @@ from lampost.model.area import Area
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 
-m_requires('log', 'datastore', 'dispatcher', 'config_manager', __name__)
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'config_manager')
 
 
 def convert_areas(source):

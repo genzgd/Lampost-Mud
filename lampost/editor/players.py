@@ -4,7 +4,7 @@ from lampost.client.user import User
 from lampost.editor.editor import Editor
 from lampost.model.player import Player
 
-m_requires('log', 'datastore', 'perm', 'user_manager', __name__)
+m_requires(__name__, 'log', 'datastore', 'perm', 'user_manager')
 
 
 class PlayerEditor(Editor):

@@ -1,7 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.display import *
 
-m_requires('datastore', 'config_manager', __name__)
+m_requires(__name__, 'datastore', 'config_manager')
 
 
 def build_default_displays():

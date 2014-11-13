@@ -3,7 +3,7 @@ from lampost.datastore.exceptions import DataError
 from lampost.editor.editor import ChildrenEditor
 from lampost.gameops.script import Script
 
-m_requires('perm', 'script_manager', __name__)
+m_requires(__name__, 'perm', 'script_manager')
 
 
 class ScriptEditor(ChildrenEditor):

@@ -10,7 +10,7 @@ from lampost.util.encrypt import make_hash
 from lampost.util.lmutil import ClientError
 
 
-m_requires('datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service', __name__)
+m_requires(__name__, 'datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service')
 
 
 @requires('session_manager')

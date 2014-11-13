@@ -2,7 +2,7 @@ from lampost.datastore.classes import set_dbo_class, get_dbo_class, add_sub_clas
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoMeta, TemplateField, AutoField
 
-m_requires('log', 'datastore', __name__)
+m_requires(__name__, 'log', 'datastore')
 
 
 class RootDBOMeta(AutoMeta):

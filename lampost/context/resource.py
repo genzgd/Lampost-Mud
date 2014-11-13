@@ -57,9 +57,9 @@ def requires(*resources):
     return wrapper
 
 
-def m_requires(*resources):
-    module = sys.modules[resources[-1]]
-    for name in resources[:-1]:
+def m_requires(module_name, *resources):
+    module = sys.modules[module_name]
+    for name in resources:
         inject(module, name)
     _registered_modules.append(module)
 

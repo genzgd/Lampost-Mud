@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires
 
-m_requires('log', 'datastore', 'json_decode', __name__)
+m_requires(__name__, 'log', 'datastore', 'json_decode')
 
 
 def build_indexes(dbo_cls):

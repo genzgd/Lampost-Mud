@@ -4,7 +4,7 @@ from lampost.datastore.dbo import DBOField
 from lampost.gameops.script import Scriptable
 from lampost.model.item import BaseItem
 
-m_requires('log', __name__)
+m_requires(__name__, 'log')
 
 
 class Feature(BaseItem, Scriptable):

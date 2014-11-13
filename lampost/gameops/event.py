@@ -4,7 +4,7 @@ from tornado.ioloop import PeriodicCallback
 
 from lampost.context.resource import provides, m_requires
 
-m_requires("log", "datastore", __name__)
+m_requires(__name__, "log", "datastore")
 
 
 @provides('dispatcher', True)

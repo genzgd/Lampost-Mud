@@ -2,7 +2,7 @@ from lampost.client.handlers import MethodHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.redisstore import RedisStore
 
-m_requires('log', 'perm', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'perm', 'dispatcher')
 
 copy_dbs = {}
 

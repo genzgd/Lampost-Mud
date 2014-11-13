@@ -4,7 +4,7 @@ from lampost.gameops import target_gen
 from lampost.context.resource import m_requires
 from lampost.util.lmutil import PermError, ClientError
 
-m_requires('log', __name__)
+m_requires(__name__, 'log')
 
 
 def convert_verbs(verbs):

@@ -3,7 +3,7 @@ from tornado.httpserver import HTTPServer
 
 from lampost.context.resource import m_requires, provides
 
-m_requires('log', 'dispatcher', __name__)
+m_requires(__name__, 'log', 'dispatcher')
 
 @provides('web_server')
 class WebServer():
