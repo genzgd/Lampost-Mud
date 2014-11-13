@@ -45,7 +45,7 @@ def entity_actions(entity, command):
 
 
 def find_targets(entity, target_key, target_class, action=None):
-    return itertools.chain.from_iterable([target_func(entity, target_key, action) for target_func in target_class])
+    return itertools.chain.from_iterable([target_func(target_key, entity, action) for target_func in target_class])
 
 
 class ActionMatch():

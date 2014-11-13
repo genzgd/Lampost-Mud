@@ -1,3 +1,7 @@
+from lampost.context.resource import m_requires
+
+m_requires(__name__, 'session_manager')
+
 def recursive_targets(target_list, target_key):
     for target in target_list:
         if target_key in getattr(target, 'target_keys', ()):
@@ -5,30 +9,30 @@ def recursive_targets(target_list, target_key):
         for target in recursive_targets(getattr(target, 'target_providers', ()), target_key):
             yield target
 
-def self(entity, target_key, *_):
+def self(target_key, entity, *_):
     if target_key == ('self',) or target_key in entity.target_keys:
         yield entity
 
 
-def func_owner(entity, target_key, func, *_):
-    return recursive_targets([func.__self__], target_key)
+def func_owner(target_key, entity, action, *_):
+    return recursive_targets([action.__self__], target_key)
 
 
-def action(entity, target_key, action):
+def action(target_key, entity, action):
     return recursive_targets([action], target_key)
 
 
-def equip(entity, target_key, *_):
+def equip(target_key, entity, *_):
     return recursive_targets([equip for equip in entity.inven if equip.current_slot], target_key)
 equip.absent_msg = "You don't have `{target}' equipped"
 
 
-def inven(entity, target_key, *_):
+def inven(target_key, entity, *_):
     return recursive_targets([equip for equip in entity.inven if not equip.current_slot], target_key)
 inven.absent_msg = "You don't have `{target}'"
 
 
-def env(entity, target_key, *_):
+def env(target_key, entity, *_):
     if not target_key:
         yield entity.env
     for extra in entity.env.extras:
@@ -38,19 +42,24 @@ def env(entity, target_key, *_):
             yield target
 
 
-def feature(entity, target_key, *_):
+def feature(target_key, entity, *_):
     return recursive_targets([feature for feature in entity.env.features], target_key)
 
 
-def env_living(entity, target_key, *_):
+def env_living(target_key, entity, *_):
     return recursive_targets([living for living in entity.env.denizens],  target_key)
 
 
-def env_items(entity, target_key, *_):
+def env_items(target_key, entity, *_):
     return recursive_targets([item for item in entity.env.inven], target_key)
 
 
 defaults = [self, equip, inven, env, feature, env_living, env_items]
+
+def logged_in(target_key, *_):
+    session = session_manager.player_session(" ".join(target_key))
+    if session:
+        yield session_player
 
 def make(target_class):
     try:

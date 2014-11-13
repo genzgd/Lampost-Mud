@@ -7,22 +7,43 @@ m_requires(__name__, 'dispatcher')
 class Group():
     def __init__(self, leader):
         self.leader = leader
-        self.members = [leader]
-        self.invites = invites
+        self.members = set(leader)
+        self.invites = set()
+
 
 
 
 @mud_action('group', target_class='logged_in')
 def invite(source, target):
     if target.group:
-        return "{} is already in a group.".format(target.name)
+        if target in target.group.members:
+            return "{} is already in a group.".format(target.name)
+        return "{} is considering a different group invitation."
+    if not source.group:
+        source.group = Group(source)
+    source.group.invites.add(target)
+    target.display_line("{} has invited you to join a group.  Please 'accept' or 'decline' the invitation.")
+    target.group = source.group
 
 
-
-@mud_action('accept', target_class='no_args')
+@mud_action('accept')
 def accept_group(source):
     if not source.group:
-        return "You haven't been invited to a group"
+        return "You haven't been invited to a group."
+    source.group.invites.remove(source)
+    join_msg = "{} has joined the group".format(source.name)
+    for member in source.group.members:
+        member.display_line(join_msg)
+    source.group.members.add(source)
+    source.display_line("You have joined {}'s group".format(source.group.leader))
+
+
+@mud_action('decline')
+def decline_group(source):
+    source.group.invites.remove(source)
+    source.group.leader.display_line("{} has declined your group invitation".format(source.name))
+    del source.group
+
 
 
 
