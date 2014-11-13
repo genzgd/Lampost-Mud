@@ -11,10 +11,10 @@ class Group():
         self.invites = set()
 
 
-
-
 @mud_action('group', target_class='logged_in')
-def invite(source, target):
+def invite(source, target, **_):
+    if target == source:
+        return "Not really necessary.  You're pretty much stuck with yourself anyway."
     if target.group:
         if target in target.group.members:
             return "{} is already in a group.".format(target.name)
@@ -27,7 +27,7 @@ def invite(source, target):
 
 
 @mud_action('accept')
-def accept_group(source):
+def accept_group(source, **_):
     if not source.group:
         return "You haven't been invited to a group."
     source.group.invites.remove(source)
@@ -39,7 +39,7 @@ def accept_group(source):
 
 
 @mud_action('decline')
-def decline_group(source):
+def decline_group(source, **_):
     source.group.invites.remove(source)
     source.group.leader.display_line("{} has declined your group invitation".format(source.name))
     del source.group

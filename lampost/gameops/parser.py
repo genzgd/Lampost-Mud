@@ -141,16 +141,16 @@ class Parse():
     @match_filter
     def parse_targets(self, match):
         action = match.action
-        target_class, args = action.target_class, match.args
+        target_class = getattr(action, 'target_class', None)
         if not target_class:
             return
         if target_class == 'no_args':
-            return EXTRA_WORDS if args else None
-        target_key = args
+            return EXTRA_WORDS if match.args else None
+        target_key = match.args
         if hasattr(action, 'quantity'):
             try:
-                match.quantity = int(args[0])
-                target_key = args[1:]
+                match.quantity = int(match.args[0])
+                target_key = match.args[1:]
             except ValueError:
                 pass
         match.prep = getattr(action, 'prep', None)
@@ -180,19 +180,16 @@ class Parse():
             return MISSING_TARGET
         if match.quantity and match.quantity > getattr(target, 'quantity', 0):
             return INSUFFICIENT_QUANTITY
-        match.target_method = getattr(target, match.action.msg_class, None)
-        if match.target_method is None:
-            return INVALID_TARGET
-        if hasattr(match.action, 'self_action'):
-            if action.__self__ == target:
-                match.action = match.target_method
-            else:
+        msg_class = getattr(match.action, 'msg_class', None)
+        if msg_class:
+            match.target_method = getattr(target, msg_class, None)
+            if match.target_method is None:
                 return INVALID_TARGET
         match.target = target
 
     @match_filter
     def parse_objects(self, match):
-        obj_target_class, obj_key = getattr(match.action, 'obj_target_class', None), match.obj_key
+        obj_target_class = getattr(match.action, 'obj_target_class', None)
         if not obj_target_class:
             return
         if obj_target_class == 'args':

@@ -18,7 +18,7 @@ class Touchstone(Feature):
     aliases = DBOField(["obelisk"])
     inscription = DBOField(inscription, 'readable')
 
-    @item_action(target_class="feature")
+    @item_action(target_class="func_owner")
     def touch(self, source, **_):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
         source.touchstone = self.room.dbo_id

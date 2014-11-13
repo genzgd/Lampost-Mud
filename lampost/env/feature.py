@@ -26,4 +26,3 @@ class Feature(BaseItem, Scriptable):
         if hasattr(feature, 'on_created'):
             feature.on_created()
         return feature
-

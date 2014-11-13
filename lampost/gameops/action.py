@@ -32,17 +32,15 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
     if target_class:
         action.target_class = target_gen.make(target_class)
     elif not hasattr(action, 'target_class'):
-        action.target_class = target_gen.defaults
         try:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action)
         except TypeError:
             args, var_args, var_kwargs, defaults = inspect.getargspec(action.__call__)
         target_args = len(args) - len([arg for arg in args if arg in {'self', 'source', 'command', 'args', 'verb'}])
-        if not target_args:
-            if not args or len(args) == 1 and args[0] == 'source':
-                action.target_class = 'no_args'
-            else:
-                action.target_class = None
+        if target_args:
+            action.target_class = target_gen.defaults
+        elif not args or len(args) == 1 and args[0] == 'source':
+            action.target_class = 'no_args'
 
     if prep:
         action.prep = prep
@@ -58,19 +56,13 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
 
 
 def item_action(**kwargs):
-    local_args = kwargs
 
     def decorator(func):
-        verbs = local_args.get('verbs', None)
-        msg_class = local_args.get('msg_class', None)
-        if not verbs:
-            verbs = func.__name__
-        if not msg_class:
-            msg_class = verbs
-            func.self_action = True
-        local_args['verbs'] = verbs
-        local_args['msg_class'] = msg_class
-        make_action(func, **local_args)
+        if 'verbs' not in kwargs:
+            kwargs['verbs'] = func.__name__
+        if 'target_class' not in kwargs:
+            kwargs['target_class'] = 'func_owner'
+        make_action(func, **kwargs)
         return func
     return decorator
 

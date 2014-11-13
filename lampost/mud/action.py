@@ -124,7 +124,7 @@ def unblock(source, args, **_):
     return "You are not blocking messages from {}".format(block_id)
 
 
-@mud_action('follow', msg_class='follow')
+@mud_action('follow', 'follow')
 def follow(source, target, target_method, **_):
     if hasattr(source, 'following'):
         return "You are already following {}.".format(source.following.name)

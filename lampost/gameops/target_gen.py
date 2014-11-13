@@ -2,12 +2,14 @@ from lampost.context.resource import m_requires
 
 m_requires(__name__, 'session_manager')
 
+
 def recursive_targets(target_list, target_key):
     for target in target_list:
         if target_key in getattr(target, 'target_keys', ()):
             yield target
-        for target in recursive_targets(getattr(target, 'target_providers', ()), target_key):
-            yield target
+        for sub_target in recursive_targets(getattr(target, 'target_providers', ()), target_key):
+            yield sub_target
+
 
 def self(target_key, entity, *_):
     if target_key == ('self',) or target_key in entity.target_keys:
@@ -56,13 +58,17 @@ def env_items(target_key, entity, *_):
 
 defaults = [self, equip, inven, env, feature, env_living, env_items]
 
+
 def logged_in(target_key, *_):
     session = session_manager.player_session(" ".join(target_key))
     if session:
-        yield session_player
+        yield session.player
+
 
 def make(target_class):
     try:
         return [globals()[t_class] for t_class in target_class.split(' ')]
     except (AttributeError, KeyError):
-        return target_class
+        if hasattr(target_class, '__iter__'):
+            return target_class
+        return [target_class]

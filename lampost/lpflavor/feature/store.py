@@ -10,8 +10,6 @@ m_requires(__name__, 'dispatcher')
 
 
 class Buyback():
-    buyback = True
-
     def __init__(self, owner, article, price, pulse):
         self.owner = owner
         self.article = article
@@ -19,13 +17,11 @@ class Buyback():
         self.pulse = pulse
 
 
-class BuybackTargets():
-    absent_msg = "{target} is not available to buy back"
-
-    def target_finder(self, entity, target_key, func):
-        return [buyback for buyback in func.__self__.buybacks if buyback.owner == entity.dbo_id and target_key in buyback.article.target_keys]
-
-buyback_targets = [BuybackTargets()]
+def buyback_gen(target_key, entity, action):
+    for buyback in action.__self__.buybacks:
+        if buyback.owner == entity.dbo_id and target_key in buyback.article.target_keys:
+            yield buyback
+buyback_gen.abs_msg = "{target} is not available to buy back"
 
 
 class Store(Feature):
@@ -69,7 +65,7 @@ class Store(Feature):
         source.remove_inven(target)
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 
-    @item_action(target_class="func_owner", msg_class="get")
+    @item_action()
     def buy(self, source, target, **_):
         if target not in self.inven:
             raise ActionError("That is not in the store.")
@@ -86,7 +82,7 @@ class Store(Feature):
         target.enter_env(source)
         source.broadcast(s=self_msg,e="{n} buys {N}.", target=target)
 
-    @item_action(verbs=("buy back",), msg_class="buyback", target_class=buyback_targets)
+    @item_action(verbs=("buy back",), target_class=buyback_gen)
     def buyback(self, source, target, **_):
         article = target.article
         money = self._take_money(source, target.price)
