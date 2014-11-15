@@ -4,7 +4,7 @@ import itertools
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField, AutoField
-from lampost.gameops.action import item_action
+from lampost.gameops.action import obj_action
 from lampost.gameops.display import TELL_TO_DISPLAY
 from lampost.gameops.template import TemplateInstance, TemplateMeta
 
@@ -109,6 +109,6 @@ class Readable(BaseItem):
 
     text = DBOField('')
 
-    @item_action()
+    @obj_action()
     def read(self, source, **_):
         source.display_line(self.text, TELL_TO_DISPLAY)

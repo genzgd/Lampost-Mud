@@ -219,5 +219,10 @@ def parse_actions(entity, command):
     return Parse(entity, command).parse()
 
 
+def parse_chat(verb, command):
+    verb_ix = command.lower().index(" ".join(verb))
+    return command[verb_ix:].strip()
+
+
 class ParseError(ClientError):
     pass

@@ -13,10 +13,6 @@ class AutoMeta(type):
                 pass
 
 
-class RootAuto(metaclass=AutoMeta):
-    pass
-
-
 class AutoField():
     def __init__(self, default=None):
         self.default = default

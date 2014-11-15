@@ -205,9 +205,10 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
       if (!connected) {
         return;
       }
-      if (status == 500) {
-          lmBus.dispatch("display", {lines: [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.  Don't mind the smoke, I'm sure someone is investigating."},
-              {display: 'system'}]});
+      if (status >= 500) {
+          lmBus.dispatch("display", {lines: [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room."},  {display: 'combat'},
+              {text:"Don't mind the smoke, I'm sure someone is investigating."}, {display: 'combat'}
+             ]});
           return;
       }
       connected = false;
@@ -414,12 +415,13 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
     lmBus.register("window_closing", onWindowClosing);
 
 
-    function ReconnectCtrl($scope, $timeout) {
+    function ReconnectCtrl($scope, $timeout, lmDialog) {
       var tickPromise;
       var time = 16;
       lmBus.register("link_status", function () {
         $scope.dismiss();
         $timeout.cancel(tickPromise);
+        lmDialog.forceEnable();
       }, $scope);
 
       $scope.reconnectNow = function () {
@@ -440,7 +442,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
       }
     }
 
-    ReconnectCtrl.$inject = ['$scope', '$timeout'];
+    ReconnectCtrl.$inject = ['$scope', '$timeout', 'lmDialog'];
 
   }]);
 
@@ -576,6 +578,8 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
     this.close = function (dialogId) {
       closeDialog(dialogId);
     };
+
+    this.forceEnable = enableUI;
 
     this.removeAll = function () {
       for (var dialogId in dialogMap) {

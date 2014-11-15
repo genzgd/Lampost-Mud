@@ -3,7 +3,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
-from lampost.gameops.action import item_action, ActionError
+from lampost.gameops.action import obj_action, ActionError
 from lampost.mud.inventory import InvenContainer
 
 m_requires(__name__, 'dispatcher')
@@ -44,7 +44,7 @@ class Store(Feature):
     def _offer(self,article):
         return (article.value // self.currency.value * (100 - self.discount)) // 100
 
-    @item_action(target_class="inven", msg_class="drop")
+    @obj_action(target_class="inven", msg_class="drop")
     def sell(self, source, target, quantity=None, **_):
         if quantity or target.quantity:
             raise ActionError("You can't sell that kind of item.")
@@ -65,7 +65,7 @@ class Store(Feature):
         source.remove_inven(target)
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 
-    @item_action()
+    @obj_action()
     def buy(self, source, target, **_):
         if target not in self.inven:
             raise ActionError("That is not in the store.")
@@ -82,7 +82,7 @@ class Store(Feature):
         target.enter_env(source)
         source.broadcast(s=self_msg,e="{n} buys {N}.", target=target)
 
-    @item_action(verbs=("buy back",), target_class=buyback_gen)
+    @obj_action(verbs=("buy back",), target_class=buyback_gen)
     def buyback(self, source, target, **_):
         article = target.article
         money = self._take_money(source, target.price)

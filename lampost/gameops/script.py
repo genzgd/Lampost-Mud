@@ -2,7 +2,7 @@ import os
 
 from lampost.context.resource import m_requires, inject, provides
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.gameops.action import item_action
+from lampost.gameops.action import obj_action
 from lampost.mud.action import imm_action
 from lampost.util.lmutil import Blank
 
@@ -30,7 +30,7 @@ class ScriptManager():
             delattr(namespace, dependency)
 
         exec_globals = namespace.__dict__
-        exec_globals['item_action'] = item_action
+        exec_globals['item_action'] = obj_action
         self.load_file_scripts()
 
     def load_file_scripts(self):

@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops import target_gen
-from lampost.gameops.action import convert_verbs, item_action
+from lampost.gameops.action import convert_verbs, obj_action
 from lampost.gameops.display import EXIT_DISPLAY
 from lampost.gameops.script import Script
 

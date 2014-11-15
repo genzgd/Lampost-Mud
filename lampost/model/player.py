@@ -25,7 +25,6 @@ class Player(RootDBO):
         self.target_keys = {(self.dbo_id,)}
         self.last_tell = None
         self.active_channels = set()
-        self.group = None
 
     @property
     def dto_value(self):
@@ -51,12 +50,8 @@ class Player(RootDBO):
         source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))
 
     def display_line(self, text, display='default'):
-        if not text:
-            return
-        try:
+        if text and hasattr(self, session):
             self.session.display_line({'text': text, 'display': display})
-        except AttributeError:
-            pass
 
     def output(self, output):
         self.session.append(output)

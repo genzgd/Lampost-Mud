@@ -54,8 +54,6 @@ class Entity(BaseItem):
         pass
 
     def parse(self, command):
-        if command[0] == '\'':
-            command = 'say {}'.format(command[1:])
         try:
             action, act_args = parse_actions(self, command)
             act_args['command'] = command
@@ -107,7 +105,6 @@ class Entity(BaseItem):
             following.display_line("{} is no longer following you.".format(self.name))
             following.followers.remove(self)
             del self.following
-
 
     def examine(self, source, **_):
         super().examine(source, **_)

@@ -55,7 +55,7 @@ def make_action(action, verbs=None, msg_class=None, target_class=None, prep=None
     return action
 
 
-def item_action(**kwargs):
+def obj_action(**kwargs):
 
     def decorator(func):
         if 'verbs' not in kwargs:
@@ -117,4 +117,17 @@ def action_handler(func):
 
 class ActionError(ClientError):
     pass
+
+
+class ActionMeta(type):
+    def __init__(cls, class_name, bases, new_attrs):
+        cls.class_providers = {func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')}
+        for base in bases:
+            cls.class_providers.update(getattr(base, 'class_providers', ()))
+
+
+class ActionProvider(metaclass=ActionMeta):
+    @property
+    def action_providers(self):
+        return (getattr(self, func_name) for func_name in self.class_providers)
 
