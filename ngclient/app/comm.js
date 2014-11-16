@@ -7,9 +7,6 @@ angular.module('lampost').service('lmComm', ['lmBus', 'lmData', 'lmRemote', 'lmD
     lmBus.register('login', checkAllLogins);
     lmBus.register('logout', function() {
         checkAllLogins();
-        lmRemote.asyncRequest('channel/gen_channels').then(function(gen_channels) {
-            lmBus.dispatch("gen_channels", gen_channels);
-        });
     });
     lmBus.register('notifies_updated', checkAllLogins);
 

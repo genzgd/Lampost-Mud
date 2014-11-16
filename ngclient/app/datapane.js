@@ -93,7 +93,7 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout',
         $scope.playerList = lmData.playerList;
       }
     }, $scope);
-    lmBus.register("channels", sortChannels, $scope);
+    lmBus.register("sort_channels", sortChannels, $scope);
     lmBus.register("channel", function (msg) {
       lmData.adjustLine(msg, msg.id + "_channel");
       $scope.channelMessages.unshift(msg);

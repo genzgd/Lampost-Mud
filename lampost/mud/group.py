@@ -37,6 +37,7 @@ class Group():
                 self.leader = self.members[0]
                 self.msg("{} is now the leader of the group.".format(self.leader_name))
         else:
+            self.channel.disconnect()
             detach_events(self)
 
     def _player_connect(self, player, *_):

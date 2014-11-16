@@ -27,7 +27,7 @@ class MudNature():
         register_module(self)
 
     def _post_init(self):
-        self.shout_channel = Channel("shout")
+        self.shout_channel = Channel("shout", general=True)
         self.imm_channel = Channel("imm")
 
         self.context.set('article_load_types', ['equip', 'default'])
@@ -57,14 +57,12 @@ class MudNature():
 
     def _player_connect(self, player, client_data):
         editors = []
-        channels = ['shout_channel']
         if has_perm(player, 'creator'):
             editors.append('area')
             editors.append('room')
             editors.append('mobile')
             editors.append('article')
             editors.append('script')
-            channels.append('imm_channel')
         if has_perm(player, 'admin'):
             editors.append('players')
             editors.append('social')
@@ -77,8 +75,6 @@ class MudNature():
             editors.append('config')
 
         client_data['editors'] = editors
-        client_data['avail_channels'] = channels
-        client_data['active_channels'] = [channel.id for channel in player.active_channels]
 
     def _baptise(self, player):
         player.baptise()

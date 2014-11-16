@@ -60,18 +60,6 @@ class Player(RootDBO):
         if self.session:
             self.session.append(output)
 
-    def register_channel(self, channel):
-        self.active_channels.add(channel)
-        self.enhance_soul(channel)
-
-    def unregister_channel(self, channel):
-        try:
-            self.active_channels.remove(channel)
-            self.diminish_soul(channel)
-        except ValueError:
-            warn("Removing channel {} not in list".format(channel.display), self)
-
-
     def receive_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)
 
@@ -80,6 +68,4 @@ class Player(RootDBO):
 
     def detach(self):
         super().detach()
-        for channel in self.active_channels.copy():
-            self.unregister_channel(channel)
         self.session = None

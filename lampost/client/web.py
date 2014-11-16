@@ -1,4 +1,3 @@
-from lampost.client.channel import Channel
 from lampost.client.clientdata import NewCharacterData
 from lampost.client.handlers import Connect, Link, Login, Action, Register, Unregister, RemoteLog
 from lampost.client.messages import FriendResponse, MessageDelete
@@ -15,7 +14,6 @@ def add_endpoints(web_server):
     web_server.add(r'/unregister', Unregister)
     web_server.add(r'/remote_log', RemoteLog)
 
-    web_server.add(r"/channel/(.*)", Channel)
     web_server.add(r'/client_data/new_char', NewCharacterData)
 
     web_server.add(r'/messages/friend_response', FriendResponse)

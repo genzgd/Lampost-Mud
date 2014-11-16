@@ -1,15 +1,17 @@
 from tornado.web import Application, RequestHandler
 from tornado.httpserver import HTTPServer
 
-from lampost.context.resource import m_requires, provides
+from lampost.context.resource import m_requires, register_module
+
 
 m_requires(__name__, 'log', 'dispatcher')
 
-@provides('web_server')
+
 class WebServer():
     def __init__(self):
         self.handlers = []
         self._lsp_docs = {}
+        register_module(self)
 
     def app_log(self, handler):
         if debug_enabled():

@@ -108,6 +108,7 @@ class SessionManager():
     def logout(self, session):
         player = session.player
         if player:
+            dispatch('player_logout', player)
             player.last_logout = int(time.time())
             self.user_manager.logout_player(player)
             session.player = None

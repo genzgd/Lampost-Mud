@@ -174,16 +174,18 @@ class Entity(BaseItem):
         self.status = 'dead'
         self.detach()
 
-    def detach(self):
+    def detach(self, owner=None):
         super().detach()
         if self.instance:
             self.instance.remove_entity(self)
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
-        for item in itertools.chain(self.inven, self.soul.items()):
+        for item in itertools.chain(self.inven, self.soul.values()):
             if hasattr(item, 'detach'):
                 item.detach()
+            if hasattr(item, 'disconnect'):
+                item.disconnect(self)
         self.unfollow()
         self.equip_slots.clear()
 
