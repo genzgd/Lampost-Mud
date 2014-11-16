@@ -1,4 +1,5 @@
 from collections import defaultdict
+import itertools
 from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 
@@ -180,6 +181,9 @@ class Entity(BaseItem):
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
+        for item in itertools.chain(self.inven, self.soul.items()):
+            if hasattr(item, 'detach'):
+                item.detach()
         self.unfollow()
         self.equip_slots.clear()
 

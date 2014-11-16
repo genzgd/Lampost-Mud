@@ -25,12 +25,12 @@ def action(target_key, entity, action):
 
 
 def equip(target_key, entity, *_):
-    return recursive_targets([equip for equip in entity.inven if equip.current_slot], target_key)
+    return recursive_targets([equip for equip in entity.inven if getattr(equip, 'current_slot', None)], target_key)
 equip.absent_msg = "You don't have `{target}' equipped"
 
 
 def inven(target_key, entity, *_):
-    return recursive_targets([equip for equip in entity.inven if not equip.current_slot], target_key)
+    return recursive_targets([equip for equip in entity.inven if not getattr(equip, 'current_slot', None)], target_key)
 inven.absent_msg = "You don't have `{target}'"
 
 

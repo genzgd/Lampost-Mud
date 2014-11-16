@@ -131,6 +131,7 @@ class Store(Feature):
             while last.pulse < stale_pulse:
                 self.add_inven(self.buybacks.pop().article)
                 last = self.buybacks[-1]
+            self.pulse_stamp = current_pulse()
         except IndexError:
             unregister(self.buyback_reg)
             self.buyback_reg = None

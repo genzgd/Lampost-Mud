@@ -7,9 +7,9 @@ m_requires(__name__, 'dispatcher', 'datastore', 'channel_service')
 
 
 class Channel():
-    def __init__(self, verb):
+    def __init__(self, verb, id=None):
         make_action(self, verb)
-        self.id = verb
+        self.id = "{}_{}".format(verb, id) if id else verb
         self.display = "{}_display".format(verb)
         channel_service.known_channels.append(self.id)
 
@@ -17,8 +17,10 @@ class Channel():
         space_ix = command.find(" ")
         if space_ix == -1:
             return source.display_line("Say what?")
-        text = source.name + ":" + command[space_ix:]
-        channel_service.dispatch_message(self.id, text)
+        self.send_msg(source.name + ":" + command[space_ix:])
+
+    def send_msg(self, msg):
+        channel_service.dispatch_message(self.id, msg)
 
 
 @provides('channel_service')

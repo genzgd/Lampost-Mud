@@ -1,4 +1,5 @@
 from lampost.context.resource import m_requires
+from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import RootDBO, DBOField
 
 m_requires(__name__, 'log', 'dispatcher')
@@ -16,6 +17,7 @@ class Player(RootDBO):
     age = DBOField(0)
     room_id = DBOField()
     home_room = DBOField()
+    group = AutoField()
 
     is_player = True
     can_die = True
@@ -25,11 +27,12 @@ class Player(RootDBO):
         self.target_keys = {(self.dbo_id,)}
         self.last_tell = None
         self.active_channels = set()
+        self.session = None
 
     @property
     def dto_value(self):
         dto_value = super().dto_value
-        dto_value['logged_in'] = "Yes" if hasattr(self, 'session') else "No"
+        dto_value['logged_in'] = "Yes" if self.session else "No"
         return dto_value
 
     @property
@@ -50,11 +53,12 @@ class Player(RootDBO):
         source.display_line("{0}, {1}".format(self.name, self.title or "An Immortal" if self.imm_level else "A Player"))
 
     def display_line(self, text, display='default'):
-        if text and hasattr(self, session):
+        if text and self.session:
             self.session.display_line({'text': text, 'display': display})
 
     def output(self, output):
-        self.session.append(output)
+        if self.session:
+            self.session.append(output)
 
     def register_channel(self, channel):
         self.active_channels.add(channel)
@@ -66,6 +70,7 @@ class Player(RootDBO):
             self.diminish_soul(channel)
         except ValueError:
             warn("Removing channel {} not in list".format(channel.display), self)
+
 
     def receive_broadcast(self, broadcast):
         self.display_line(broadcast.translate(self), broadcast.display)

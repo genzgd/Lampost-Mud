@@ -8,7 +8,6 @@ EXIT_DISPLAY = 'exit'
 TELL_FROM_DISPLAY = 'tell_from'
 TELL_TO_DISPLAY = 'tell_to'
 SAY_DISPLAY = 'say'
-GROUP_DISPLAY = 'group'
 
 COMBAT_DISPLAY = 'combat'
 
