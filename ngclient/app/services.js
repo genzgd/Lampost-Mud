@@ -57,7 +57,7 @@ angular.module('lampost_svc').service('lmBus', ['lmLog', function (lmLog) {
   this.unregister = function (registration) {
     var registrations = registry[registration.event_type];
     if (!registrations) {
-      lmLog.log("Unregistering event for " + event_type + " that was never registered");
+      lmLog.log("Unregistering event for " + registration.event_type + " that was never registered");
       return;
     }
     var found = false;
@@ -418,7 +418,7 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
     function ReconnectCtrl($scope, $timeout, lmDialog) {
       var tickPromise;
       var time = 16;
-      lmBus.register("link_status", function () {
+      lmBus.register("link_status", function (link_status) {
         if (link_status == 'cancel') {
             return;
         }
