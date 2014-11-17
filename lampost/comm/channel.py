@@ -25,11 +25,19 @@ class Channel():
     def send_msg(self, msg):
         channel_service.dispatch_message(self.id, msg)
 
-    def disconnect(self, player):
+    def disband(self):
         channel_service.unregister_channel(self.id)
 
+    def unsubscribe(self, player):
+        player.diminish_soul(self)
+        player.active_channels.remove(self.id)
+        if player.session:
+            channel_service.unsubscribe(player.session, self.id)
 
-
+    def subscribe(self, player):
+        player.enhance_soul(self)
+        player.active_channels.add(self.id)
+        channel_service.subscribe(player.session, self.id)
 
 
 @provides('channel_service')
@@ -56,9 +64,9 @@ class ChannelService(ClientService):
             self.general_channels.add(channel_id)
 
     def unregister_channel(self, channel_id):
-        remove_set_key(ALL_CHANNELS, channel_id)
-        self.all_channels.pop(channel_id, None)
-        self.general_channels.pop(channel_id, None)
+        delete_set_key(ALL_CHANNELS, channel_id)
+        self.all_channels.discard(channel_id)
+        self.general_channels.discard(channel_id)
 
     def dispatch_message(self, channel_id, text):
         message = {'id': channel_id, 'text': text}
@@ -93,7 +101,7 @@ class ChannelService(ClientService):
                 self.subscribe(player.session, channel_id)
         for channel_id in player.session.channel_ids.copy():
             if channel_id not in new_channels:
-                self.unsubscribe(session, channel_id)
+                self.unsubscribe(player.session, channel_id)
 
     def _player_logout(self, player, *_):
         self._session_connect(player.session)

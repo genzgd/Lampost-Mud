@@ -42,7 +42,6 @@ class MudNature():
         register('missing_env', self._start_env)
 
     def _imm_baptise(self, player):
-        player.register_channel(self.imm_channel)
         player.can_die = False
         player.immortal = True
         for cmd in imm_actions:
@@ -80,7 +79,6 @@ class MudNature():
         player.baptise()
         if player.imm_level:
             dispatch("imm_baptise", player)
-        player.register_channel(self.shout_channel)
 
         if has_perm(player, 'supreme'):
             register("log", player.display_line)

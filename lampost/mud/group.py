@@ -9,43 +9,57 @@ m_requires(__name__, 'dispatcher')
 
 class Group():
     def __init__(self, leader):
+        leader.group = self
         self.leader = leader
-        self.members = [leader]
+        self.members = []
         self.invites = set()
         self.channel = Channel('gchat', current_pulse())
-        self.join(leader)
         dispatcher.register('player_connect', self._player_connect)
 
     def join(self, member):
         member.group = self
-        member.register_channel(self.channel)
+        if not self.members:
+            self.members.append(self.leader)
+            self.channel.subscribe(self.leader)
         self.msg("{} has joined the group".format(member.name))
+        self.channel.subscribe(member)
         self.members.append(member)
         GroupTag(self, member)
 
     def decline(self, member):
-        self.msg("{} has declined your group invitation.".format(member.name))
-        member.display_line("You decline {}'s invitation.".format(self.leader.name))
+        self.leader.display_line("{} has declined your group invitation.".format(member.name))
         self.invites.remove(member)
+        self._check_empty()
 
     def leave(self, member):
-        member.group = None
+        self.member.group = None
+        self.channel.unsubscribe(member)
         self.msg("{} has left the group.".format(member.name))
         self.members.remove(member)
-        if self.members:
-            if member == self.leader:
-                self.leader = self.members[0]
-                self.msg("{} is now the leader of the group.".format(self.leader_name))
+        if len(self.members) > 1 and member == self.leader:
+            self.leader = self.members[0]
+            self.msg("{} is now the leader of the group.".format(self.leader_name))
         else:
-            self.channel.disconnect()
-            detach_events(self)
+            self._check_empty()
+
+    def msg(self, msg):
+        self.channel.send_msg(msg)
+
+    def _check_empty(self):
+        if self.invites:
+            return
+        if len(self.members) == 1:
+            last_member = self.members[0]
+            last_member.group = None
+            self.channel.unsubscribe(last_member)
+        self.leader.group = None
+        self.channel.disband()
+        detach_events(self)
 
     def _player_connect(self, player, *_):
         if player in self.members:
             self.msg("{} has reconnected.".format(player.name))
 
-    def msg(self, msg):
-        self.channel.send_msg(msg)
 
 
 class GroupTag(ActionProvider):
@@ -88,10 +102,15 @@ class Invitation(BaseItem):
         detach_events(self)
 
     @obj_action(self_target=True)
-    def decline(self, **_):
+    def decline(self,  **_):
+        self.invitee.display_line("You decline {}'s invitation.".format(self.group.leader.name))
         self.group.decline(self.invitee)
+        self.detach()
+
+    def detach(self):
+
         self.invitee.remove_inven(self)
-        detach_events(self)
+        super().detach()
 
 
 @mud_action('group', target_class='logged_in')
@@ -99,6 +118,9 @@ def invite(source, target, **_):
     if target == source:
         return "Not really necessary.  You're pretty much stuck with yourself anyway."
     if target.group:
+        if target.group == source.group:
+            return "{} is already in your group!"
+        target.display_line("{} attempted to invite you to a different group.".format(source.name))
         return "{} is already in a group.".format(target.name)
     if source.group:
         if target in source.group.invites:
