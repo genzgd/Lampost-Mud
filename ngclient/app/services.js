@@ -419,10 +419,13 @@ angular.module('lampost_svc').service('lmRemote', ['$timeout', '$http', '$q', 'l
       var tickPromise;
       var time = 16;
       lmBus.register("link_status", function () {
+        if (link_status == 'cancel') {
+            return;
+        }
         $scope.dismiss();
         $timeout.cancel(tickPromise);
-        lmDialog.forceEnable();
-      }, $scope);
+        lmBus.unregister("link_status");
+      }, $scope, -500);
 
       $scope.reconnectNow = function () {
         time = 1;

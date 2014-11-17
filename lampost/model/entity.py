@@ -184,8 +184,8 @@ class Entity(BaseItem):
         for item in itertools.chain(self.inven, self.soul.values()):
             if hasattr(item, 'detach'):
                 item.detach()
-            if hasattr(item, 'disconnect'):
-                item.disconnect(self)
+            if hasattr(item, 'detach_shared'):
+                item.detach_shared(self)
         self.unfollow()
         self.equip_slots.clear()
 

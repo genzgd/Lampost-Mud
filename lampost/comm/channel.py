@@ -11,6 +11,8 @@ GENERAL_CHANNELS = 'general_channels'
 
 class Channel():
     def __init__(self, channel_type, instance_id=None, general=False):
+        if instance_id == 'next':
+            instance_id = db_counter('channel')
         make_action(self, channel_type)
         self.id = "{}_{}".format(channel_type, instance_id) if instance_id else channel_type
         self.display = "{}_display".format(channel_type)
@@ -28,16 +30,16 @@ class Channel():
     def disband(self):
         channel_service.unregister_channel(self.id)
 
-    def unsubscribe(self, player):
+    def remove_sub(self, player):
         player.diminish_soul(self)
         player.active_channels.remove(self.id)
         if player.session:
-            channel_service.unsubscribe(player.session, self.id)
+            channel_service.remove_sub(player.session, self.id)
 
-    def subscribe(self, player):
+    def add_sub(self, player):
         player.enhance_soul(self)
         player.active_channels.add(self.id)
-        channel_service.subscribe(player.session, self.id)
+        channel_service.add_sub(player.session, self.id)
 
 
 @provides('channel_service')
@@ -76,11 +78,11 @@ class ChannelService(ClientService):
                 session.append({'channel': message})
         add_db_list(channel_key(channel_id), {'text': text, 'timestamp': message['timestamp']})
 
-    def subscribe(self, session, channel_id):
+    def add_sub(self, session, channel_id):
         session.channel_ids.add(channel_id)
         session.append({'channel_subscribe': {'id': channel_id, 'messages': get_db_list(channel_key(channel_id))}})
 
-    def unsubscribe(self, session, channel_id):
+    def remove_sub(self, session, channel_id):
         session.channel_ids.remove(channel_id)
         session.append({'channel_unsubscribe': channel_id})
 
@@ -90,18 +92,17 @@ class ChannelService(ClientService):
             session.channel_ids = set()
         for channel_id in session.channel_ids.copy():
             if channel_id not in self.general_channels:
-                self.unsubscribe(session, channel_id)
+                self.remove_sub(session, channel_id)
         for channel_id in self.general_channels:
-            self.subscribe(session, channel_id)
+            self.add_sub(session, channel_id)
 
     def _player_connect(self, player, *_):
-        new_channels = {channel.id for channel in player.active_channels}
-        for channel_id in new_channels:
+        for channel_id in player.active_channels:
             if channel_id not in player.session.channel_ids:
-                self.subscribe(player.session, channel_id)
+                self.add_sub(player.session, channel_id)
         for channel_id in player.session.channel_ids.copy():
-            if channel_id not in new_channels:
-                self.unsubscribe(player.session, channel_id)
+            if channel_id not in player.active_channels:
+                self.remove_sub(player.session, channel_id)
 
     def _player_logout(self, player, *_):
         self._session_connect(player.session)

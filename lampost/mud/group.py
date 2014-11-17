@@ -7,40 +7,49 @@ from lampost.mud.action import mud_action
 m_requires(__name__, 'dispatcher')
 
 
-class Group():
+class Group(ActionProvider):
+    target_keys = set(gen_keys('group'))
+
     def __init__(self, leader):
         leader.group = self
         self.leader = leader
         self.members = []
         self.invites = set()
-        self.channel = Channel('gchat', current_pulse())
+        self.channel = Channel('gchat', 'next')
         dispatcher.register('player_connect', self._player_connect)
 
     def join(self, member):
-        member.group = self
         if not self.members:
-            self.members.append(self.leader)
-            self.channel.subscribe(self.leader)
+            self._add_member(self.leader)
         self.msg("{} has joined the group".format(member.name))
-        self.channel.subscribe(member)
+        self._add_member(member)
+
+    def _add_member(self, member):
+        member.group = self
+        self.channel.add_sub(member)
         self.members.append(member)
-        GroupTag(self, member)
+        member.enhance_soul(self)
 
     def decline(self, member):
         self.leader.display_line("{} has declined your group invitation.".format(member.name))
         self.invites.remove(member)
         self._check_empty()
 
-    def leave(self, member):
-        self.member.group = None
-        self.channel.unsubscribe(member)
-        self.msg("{} has left the group.".format(member.name))
-        self.members.remove(member)
-        if len(self.members) > 1 and member == self.leader:
+    @obj_action()
+    def leave(self, source, **_):
+        self._remove_member(source)
+        if len(self.members) > 1 and source == self.leader:
             self.leader = self.members[0]
             self.msg("{} is now the leader of the group.".format(self.leader_name))
         else:
             self._check_empty()
+
+    def _remove_member(self, member):
+        self.msg("{} has left the group.".format(source.name))
+        member.group = None
+        member.diminish_soul(self)
+        self.channel.remove_sub(member)
+        self.members.remove(member)
 
     def msg(self, msg):
         self.channel.send_msg(msg)
@@ -49,10 +58,7 @@ class Group():
         if self.invites:
             return
         if len(self.members) == 1:
-            last_member = self.members[0]
-            last_member.group = None
-            self.channel.unsubscribe(last_member)
-        self.leader.group = None
+            _remove_member(self.members[0])
         self.channel.disband()
         detach_events(self)
 
@@ -60,23 +66,8 @@ class Group():
         if player in self.members:
             self.msg("{} has reconnected.".format(player.name))
 
-
-
-class GroupTag(ActionProvider):
-    def __init__(self, group, member):
-        self.group = group
-        self.member = member
-        self.member.enhance_soul(self)
-
-    @obj_action(verbs='leave', self_target=True)
-    def detach(self, **_):
-        self.group.leave(self.member)
-        self.member.diminish_soul(self)
-        detach_events(self)
-
-    @obj_action(self_target=True)
-    def group(self, **_):
-        pass
+    def detach_shared(self, member):
+        self.leave(member)
 
 
 class Invitation(BaseItem):
@@ -96,7 +87,7 @@ class Invitation(BaseItem):
 
     @obj_action(self_target=True)
     def accept(self, source, **_):
-        source.display_line("You have joined {}'s group.".format(self.group.leader))
+        source.display_line("You have joined {}'s group.".format(self.group.leader.name))
         self.group.join(self.invitee)
         source.remove_inven(self)
         detach_events(self)
@@ -108,7 +99,6 @@ class Invitation(BaseItem):
         self.detach()
 
     def detach(self):
-
         self.invitee.remove_inven(self)
         super().detach()
 
