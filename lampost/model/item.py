@@ -6,7 +6,8 @@ from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField, AutoField
 from lampost.gameops.action import obj_action
 from lampost.gameops.display import TELL_TO_DISPLAY
-from lampost.gameops.template import TemplateInstance, TemplateMeta
+from lampost.gameops.template import TemplateInstance
+
 
 m_requires(__name__, 'dispatcher', 'log')
 
@@ -32,15 +33,7 @@ def target_keys(item):
     return target_keys
 
 
-class BaseItemMeta(TemplateMeta):
-    def __init__(cls, class_name, bases, new_attrs):
-        super().__init__(class_name, bases, new_attrs)
-        cls.class_providers = {func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')}
-        for base in bases:
-            cls.class_providers.update(getattr(base, 'class_providers', ()))
-
-
-class BaseItem(TemplateInstance, metaclass=BaseItemMeta):
+class BaseItem(TemplateInstance):
     class_id = 'base_item'
 
     desc = DBOTField('')

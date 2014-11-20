@@ -1,8 +1,9 @@
 import inspect
+from lampost.datastore.meta import CommonMeta
 
 from lampost.gameops import target_gen
 from lampost.context.resource import m_requires
-from lampost.util.lmutil import PermError, ClientError
+from lampost.util.lmutil import ClientError
 
 m_requires(__name__, 'log')
 
@@ -121,14 +122,7 @@ class ActionError(ClientError):
     pass
 
 
-class ActionMeta(type):
-    def __init__(cls, class_name, bases, new_attrs):
-        cls.class_providers = {func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')}
-        for base in bases:
-            cls.class_providers.update(getattr(base, 'class_providers', ()))
-
-
-class ActionProvider(metaclass=ActionMeta):
+class ActionProvider(metaclass=CommonMeta):
     @property
     def action_providers(self):
         return (getattr(self, func_name) for func_name in self.class_providers)

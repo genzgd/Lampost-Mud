@@ -1,45 +1,12 @@
-from lampost.datastore.classes import set_dbo_class, get_dbo_class, add_sub_class
+from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
-from lampost.datastore.auto import AutoMeta, TemplateField, AutoField
+from lampost.datastore.auto import TemplateField, AutoField
+from lampost.datastore.meta import CommonMeta
 
 m_requires(__name__, 'log', 'datastore')
 
 
-class RootDBOMeta(AutoMeta):
-    def __init__(cls, class_name, bases, new_attrs):
-        super().__init__(class_name, bases, new_attrs)
-        cls.dbo_fields = {}
-        cls._load_functions = []
-        for base in bases:
-            try:
-                cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.items() if name not in new_attrs.keys()})
-            except AttributeError:
-                pass
-            cls._load_functions.extend(getattr(base, '_load_functions', []))
-        cls._update_dbo_fields(new_attrs)
-        try:
-            cls._load_functions.append(new_attrs['on_loaded'])
-        except KeyError:
-            pass
-        if 'class_id' in new_attrs:
-            set_dbo_class(cls.class_id, cls)
-        elif 'sub_class_id' in new_attrs:
-            set_dbo_class(cls.sub_class_id, cls)
-            add_sub_class(cls)
-        elif cls.dbo_key_type:
-            set_dbo_class(cls.dbo_key_type, cls)
-
-    def _update_dbo_fields(cls, new_attrs):
-        cls.dbo_fields.update({name: attr for name, attr in new_attrs.items() if hasattr(attr, 'hydrate_value')})
-
-    def add_dbo_fields(cls, new_fields):
-        cls._meta_init_attrs(new_fields)
-        cls._update_dbo_fields(new_fields)
-        for name, dbo_field in new_fields.items():
-            setattr(cls, name, dbo_field)
-
-
-class RootDBO(metaclass=RootDBOMeta):
+class RootDBO(metaclass=CommonMeta):
     dbo_key_type = None
     dbo_parent_type = None
     dbo_children_types = []
@@ -68,7 +35,7 @@ class RootDBO(metaclass=RootDBOMeta):
             self.dbo_id = str(dbo_id).lower()
 
     def _on_loaded(self):
-        for load_func in reversed(self._load_functions):
+        for load_func in reversed(self.load_funcs):
             load_func(self)
 
     def hydrate(self, dto):
