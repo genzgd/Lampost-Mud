@@ -1,12 +1,16 @@
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops.action import obj_action
-from lampost.model.item import Readable
+from lampost.model.item import Readable, BaseItem
 
 
-inscription = Readable()
+class Inscription(BaseItem, Readable):
+    class_id = 'inscription'
+
+inscription = Inscription()
 inscription.title = "Archaic Inscription"
 inscription.text = "Herewith wilt thou be bound"
+inscription.desc = "An inscription written in the flowery letters of a time long past."
 inscription._on_loaded()
 
 
@@ -16,7 +20,7 @@ class Touchstone(Feature):
     title = DBOField('Touchstone')
     desc = DBOField("An unadorned marble obelisk about five feet high.  There is an inscription in an archaic script on one side.")
     aliases = DBOField(["obelisk"])
-    inscription = DBOField(inscription, 'readable')
+    inscription = DBOField(inscription, 'inscription')
 
     @obj_action(target_class="func_owner")
     def touch(self, source, **_):

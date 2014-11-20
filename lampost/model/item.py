@@ -4,6 +4,7 @@ import itertools
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField, AutoField
+from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
 from lampost.gameops.display import TELL_TO_DISPLAY
 from lampost.gameops.template import TemplateInstance
@@ -97,8 +98,8 @@ class BaseItem(TemplateInstance):
             self.target_keys = target_keys(self)
 
 
-class Readable(BaseItem):
-    class_id = 'readable'
+class Readable(metaclass=CommonMeta):
+    mixin_id = 'readable'
 
     text = DBOField('')
 

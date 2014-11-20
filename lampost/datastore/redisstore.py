@@ -2,7 +2,7 @@ from collections import defaultdict
 from weakref import WeakValueDictionary
 from redis import ConnectionPool
 from redis.client import StrictRedis
-from lampost.datastore.classes import get_dbo_class
+from lampost.datastore.classes import get_dbo_class, get_mixed_class
 from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 
 from lampost.util.lmlog import logged
@@ -65,8 +65,8 @@ class RedisStore():
                 warn("Failed to find {} in database".format(dbo_key))
             return None
         dbo_dict = json_decode(json_str)
-        dbo_cls = get_dbo_class(dbo_dict.get('sub_class_id', key_type))
-        dbo = dbo_cls(key)
+        dbo_class = get_mixed_class(dbo_dict.get('sub_class_id', key_type), dbo_dict.get('mixins'))
+        dbo = dbo_class(key)
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
         return dbo
