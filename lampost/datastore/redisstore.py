@@ -5,7 +5,7 @@ from redis.client import StrictRedis
 from lampost.datastore.classes import get_dbo_class, get_mixed_class
 from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 
-from lampost.util.lmlog import logged
+from lampost.util.log import logged
 from lampost.context.resource import provides, m_requires
 
 m_requires(__name__, 'log', 'json_encode', 'json_decode')

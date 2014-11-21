@@ -1,6 +1,9 @@
 import itertools
+import logging
 from lampost.datastore.auto import TemplateField
 from lampost.datastore.classes import set_dbo_class, add_sub_class, get_dbo_class, set_mixin
+
+logger = logging.getLogger(__name__)
 
 
 class CommonMeta(type):
@@ -43,12 +46,17 @@ class CommonMeta(type):
         cls.load_funcs = []
         cls.class_providers = set()
         for base in bases:
-            cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.items()})
+            cls.dbo_fields.update()
             cls.load_funcs.extend(base.load_funcs)
             cls.class_providers.update(base.class_providers)
 
     def _update_dbo_fields(cls, new_attrs):
-        cls.dbo_fields.update({name: attr for name, attr in new_attrs.items() if hasattr(attr, 'hydrate_value')})
+        for name, attr in new_attrs.items():
+            if hasattr(attr, 'hydrate_value'):
+                if name in cls.dbo_fields.keys():
+                    logger.warn("Overriding existing dbo field {} in class {}", name, cls.__name__)
+                else:
+                    cls.dbo_fields[name] = attr
 
         load_func = new_attrs.get('on_loaded')
         if load_func:
@@ -58,6 +66,7 @@ class CommonMeta(type):
         if not hasattr(cls, 'template_id'):
             return
         cls.class_id = '{}_inst'.format(cls.template_id)
+        logger.info("Initializing template class {} for id {}", cls.__name__, cls.template_id)
         set_dbo_class(cls.class_id, cls)
         template_cls = get_dbo_class(cls.template_id)
         template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})

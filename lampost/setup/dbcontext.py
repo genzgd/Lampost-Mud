@@ -2,7 +2,7 @@ from lampost.context.resource import provides, register
 from lampost.context.scripts import select_json
 from lampost.datastore.redisstore import RedisStore
 from lampost.gameops.event import Dispatcher
-from lampost.util.lmlog import Log
+from lampost.util.log import Log
 
 
 @provides('context')
