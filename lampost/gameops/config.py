@@ -17,7 +17,7 @@ class ConfigManager():
         if self.config:
             self._dispatch_update()
         else:
-            error("No configuration found", self)
+            error("No configuration found")
 
     def _dispatch_update(self):
         dispatch('server_settings', self.config.server_settings)

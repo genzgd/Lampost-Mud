@@ -21,7 +21,7 @@ from lampost.gameops.config import ConfigManager
 from lampost.gameops.friend import FriendService
 from lampost.gameops.permissions import Permissions
 from lampost.gameops.script import ScriptManager
-from lampost.util.lmlog import Log
+from lampost.util.lmlog import LogFactory
 from lampost.mud.mud import MudNature
 from lampost.util.tools import Tools
 
@@ -34,7 +34,8 @@ class Context():
                  log_level="info", log_file=None):
 
         self.properties = {}
-        Log(log_level, log_file).info('starting server with {}'.format(locals()))
+        log = LogFactory(log_level, log_file).factory(self)
+        log.info('starting server with {}'.format(locals()))
         select_json()
         Tools()
         register('datastore', RedisStore(db_host, int(db_port), int(db_num), db_pw), True)

@@ -101,7 +101,7 @@ class Dispatcher:
                 self.pulse_lc.stop()
             self.pulse_lc = PeriodicCallback(self._pulse, pulse_interval * 1000)
             self.pulse_lc.start()
-            info("Pulse Event heartbeat started at {} seconds".format(pulse_interval), self)
+            info("Pulse Event heartbeat started at {} seconds", pulse_interval)
         except KeyError:
             pass
 
@@ -111,7 +111,7 @@ class Dispatcher:
                 self.maintenance_lc.stop()
             self.maintenance_lc = PeriodicCallback(lambda: self.dispatch('maintenance'), 60 * maintenance_interval * 1000)
             self.maintenance_lc.start()
-            info("Maintenance Event heartbeat started at {} minutes".format(maintenance_interval), self)
+            info("Maintenance Event heartbeat started at {} minutes", maintenance_interval)
         except KeyError:
             pass
 

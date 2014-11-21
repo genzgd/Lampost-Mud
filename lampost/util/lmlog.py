@@ -1,18 +1,35 @@
-import traceback
+import logging
+import inspect
+from logging import LogRecord, Logger
 
-from sys import stdout
-from datetime import datetime
-from lampost.context.resource import m_requires, provides, get_resource
+from lampost.context.resource import provides
 
-m_requires(__name__, 'dispatcher')
 
-FATAL = 0
-ERROR = 10
-WARN = 20
-INFO = 30
-DEBUG = 40
+class LogFmtRecord(LogRecord):
+    def getMessage(self):
+        msg = self.msg
+        if self.args:
+            if isinstance(self.args, dict):
+                msg = msg.format(self.args)
+            else:
+                msg = msg.format(*self.args)
+        return msg
 
-level_names = {globals().get(name): name for name in ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG']}
+
+class LoggerFmt(Logger):
+    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
+        rv = LogFmtRecord(name, level, fn, lno, msg, args, exc_info, func, sinfo)
+        if extra is not None:
+            for key in extra:
+                if (key in ["message", "asctime"]) or (key in rv.__dict__):
+                    raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+                rv.__dict__[key] = extra[key]
+        return rv
+
+
+logging.setLoggerClass(LoggerFmt)
+log_format = '{asctime} {levelname} {message}'
+root_logger = logging.getLogger('root')
 
 
 def logged(func):
@@ -20,63 +37,33 @@ def logged(func):
         try:
             return func(*args, **kwargs)
         except Exception as error:
-            get_resource("log").error("Unhandled exception", func, error)
+            root_logger.exception("Unhandled exception", func.__name__, error)
     return wrapper
 
 
-@provides('log', True)
-class Log():
+@provides('log')
+class LogFactory():
+    def __init__(self, init_level='TESTME', filename=None):
+        log_level = getattr(logging, init_level.upper(), None)
+        if not isinstance(log_level, int):
+            root_logger.warn("Invalid log level {init_level} specified", init_level=initlevel)
+            log_level = logging.WARN
+        logging.basicConfig(level=log_level, style='{', filename=filename, format=log_format)
 
-    def __init__(self, log_level, file_name=None):
-        if file_name:
-            self.output = open(file_name, 'w')
-        else:
-            self.output = stdout
-        self.level_desc = "Not set"
-        self._set_level(log_level)
+    def factory(self, consumer):
+        if not inspect.ismodule(consumer):
+            consumer = consumer.__class__
+        logger = logging.getLogger(consumer.__name__)
+        consumer.fatal = logger.fatal
+        consumer.error = logger.error
+        consumer.warn = logger.warn
+        consumer.info = logger.info
+        consumer.debug = logger.debug
+        consumer.debug_enabled = lambda: logger.getEffectiveLevel() <= logging.DEBUG
+        return logger
 
-    def _set_level(self, log_level):
-        log_level = log_level.upper()
-        if globals().get(log_level, None):
-            self.level = globals().get(log_level)
-            self.debug("Log level set to {}".format(log_level))
-            self.level_desc = log_level
-        else:
-            self.level = INFO
-            self.level_desc = "info"
-            self.warn("Invalid log level {}".format(log_level))
 
-    def _log(self, log_level, log_msg, log_name, exception):
-        if self.level < log_level:
-            return
-        if not isinstance(log_name, str):
-            log_name = log_name.__class__.__name__
-        log_entry = "{} {}: -{}- {}\n".format(level_names[log_level], datetime.now(), log_name, log_msg)
-        self.output.write(log_entry)
-        if exception:
-            self.output.write(traceback.format_exc())
-        self.output.flush()
-        try:
-            dispatch("log", log_entry)
-        except NameError:
-            pass
-        return log_msg
 
-    def debug_enabled(self):
-        return self.level >= DEBUG
 
-    def fatal(self, log_msg, log_name="root", exception=None):
-        self._log(FATAL, log_msg, log_name, exception)
 
-    def error(self, log_msg, log_name="root", exception=None):
-        self._log(ERROR, log_msg, log_name, exception)
-
-    def warn(self, log_msg, log_name="root", exception=None):
-        self._log(WARN, log_msg, log_name, exception)
-
-    def info(self, log_msg, log_name="root", exception=None):
-        self._log(INFO, log_msg, log_name, exception)
-
-    def debug(self, log_msg, log_name="root", exception=None):
-        self._log(DEBUG, log_msg, log_name, exception)
 

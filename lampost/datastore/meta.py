@@ -52,7 +52,6 @@ class CommonMeta(type):
 
         load_func = new_attrs.get('on_loaded')
         if load_func:
-            cls.load_funcs = cls.load_funcs.copy()
             cls.load_funcs.append(load_func)
 
     def _template_init(cls):

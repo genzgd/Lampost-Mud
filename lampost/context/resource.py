@@ -13,8 +13,6 @@ def register(name, service, export_methods=False):
     if export_methods:
         _methods[name] = {}
         for attr, value in service.__class__.__dict__.items():
-            if hasattr(value, 'im_class'):
-                continue
             if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
                 _methods[name][attr] = value.__get__(service, service.__class__)
     for cls in _consumer_map.get(name, []):
@@ -84,7 +82,10 @@ def _priority_sort(module):
 
 
 def _inject(cls, name, service):
-    setattr(cls, name, service)
+    if hasattr(service, 'factory'):
+        setattr(cls, name, service.factory(cls))
+    else:
+        setattr(cls, name, service)
     for attr, value in _methods.get(name, {}).items():
         if not getattr(cls, attr, None):
             setattr(cls, attr, value)

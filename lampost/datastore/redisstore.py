@@ -38,7 +38,7 @@ class RedisStore():
             self._update_indexes(dbo)
         self.redis.set(dbo.dbo_key, json_encode(self._save_root(dbo)))
         if __debug__:
-            debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""), self)
+            debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""))
         self._object_map[dbo.dbo_key] = dbo
 
     def save_raw(self, key, raw):
@@ -114,7 +114,7 @@ class RedisStore():
             if ix_value is not None and ix_value != '':
                 self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
         if __debug__:
-            debug("object deleted: {}".format(key), self)
+            debug("object deleted: {}".format(key))
         self.evict_object(dbo)
 
     def reload_object(self, key_type, key):
