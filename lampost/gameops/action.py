@@ -88,7 +88,7 @@ def remove_action(action_set, action):
             if not verb_set:
                 del action_set[verb]
         else:
-            debug("Trying to remove non-existent action {}".format(verb))
+            debug("Trying to remove non-existent action {}", verb)
     for sub_action in getattr(action, 'action_providers', ()):
         remove_action(action_set, sub_action)
 

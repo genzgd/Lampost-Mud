@@ -30,7 +30,7 @@ class EmailSender():
             if user.email:
                 wrappers.append(EmailWrapper(user.email, "\From: {}\nTo: {}\nSubject:{}\n\n{}".format(self.email_name, user.user_name, subject, text)))
             else:
-                log.warn("User {} has no email address".format(user.user_name))
+                warn("User {} has no email address", user.user_name)
         MessageSender(wrappers).start()
         return "Email Sent"
 
@@ -51,14 +51,14 @@ class MessageSender(Thread):
     def _send_message(self, addresses, message):
         try:
             self.server.sendmail(self.email_sender.email_address, addresses, message)
-        except SMTPHeloError as exp:
-            error("Helo error sending email")
+        except SMTPHeloError:
+            exception("Helo error sending email")
         except SMTPRecipientsRefused:
             warn("Failed to send email to {}".format(addresses))
         except SMTPSenderRefused:
-            error("Sender refused for email")
+            warn("Sender refused for email")
         except SMTPDataError as exp:
-            error("Unexpected Data error sending email")
+            exception("Unexpected Data error sending email")
 
     def _open_server(self):
         self.server = SMTP("smtp.gmail.com", 587)

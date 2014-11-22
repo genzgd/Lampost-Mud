@@ -68,6 +68,7 @@ def add_flag(source, target, obj, **_):
         raise ActionError("Flag {} not set.".format(flag_id))
     source.display_line("Flag {} ({}) cleared {}.".format(flag_id, old_value, obj.name))
 
+
 @imm_action('goto')
 def goto(source, args, **_):
     if not args:
@@ -103,8 +104,8 @@ def summon(source, args, **_):
     source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=player)
 
 
-@imm_action('debug', 'supreme')
-def debug(**_):
+@imm_action('trace', imm_level='supreme')
+def start_trace(**_):
     pdb.set_trace()
 
 

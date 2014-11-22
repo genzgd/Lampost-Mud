@@ -195,7 +195,7 @@ class Room(Scriptable):
         for m_reset in self.mobile_resets:
             template = m_reset.mobile_id
             if not template:
-                error("Missing template for mobile reset roomId: {0}  mobileId: {1}".format(self.dbo_id, m_reset.mobile_id))
+                error("Missing template for mobile reset roomId: {}  mobileId: {}", self.dbo_id, m_reset.mobile_id)
                 continue
             curr_count = len(self.mobiles[template])
             for unused in range(m_reset.reset_count - curr_count):
@@ -205,7 +205,7 @@ class Room(Scriptable):
         for a_reset in self.article_resets:
             template = a_reset.article_id
             if not template:
-                error('Invalid article in reset roomId: {0}  articleId: {1}'.format(self.dbo_id, a_reset.article_id))
+                error('Invalid article in reset roomId: {}  articleId: {}', self.dbo_id, a_reset.article_id)
                 continue
             curr_count = len([entity for entity in self.inven if getattr(entity, 'template', None) == template])
             if template.divisible:
@@ -227,7 +227,7 @@ class Room(Scriptable):
             article_template = article_load.article_id
             if not template:
                 error(
-                    "Invalid article load for roomId: {0}, mobileId: {1}, articleId: {2}".format(self.dbo_id, template.mobile_id, article_template.article_id))
+                    "Invalid article load for roomId: {}, mobileId: {}, articleId: {}", self.dbo_id, template.mobile_id, article_template.article_id)
                 continue
             if article_template.divisible:
                 article = article_template.create_instance()

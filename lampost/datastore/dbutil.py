@@ -15,5 +15,5 @@ def build_indexes(dbo_cls):
                 if ix_value is not None and ix_value != '':
                     set_index('ix:{}:{}'.format(dbo_cls.dbo_key_type, ix_name), ix_value, dbo_id)
         except (ValueError, TypeError):
-            warn("Missing dbo object {} from set key {}".format(dbo_id, dbo_cls.dbo_set_key, self))
+            warn("Missing dbo object {} from set key {}", dbo_id, dbo_cls.dbo_set_key)
 

@@ -59,8 +59,8 @@ class Dispatcher:
         for registration in sorted_events:
             try:
                 registration.callback(*args, **kwargs)
-            except Exception as dispatch_error:
-                error("Dispatch Error", 'Dispatcher', dispatch_error)
+            except Exception:
+                exception("Dispatch Error")
 
     def detach_events(self, owner):
         if owner in self._owner_map:
@@ -73,8 +73,8 @@ class Dispatcher:
             if reg.freq:
                 try:
                     reg.callback()
-                except Exception as pulse_error:
-                    error('Pulse Error', 'Dispatcher', pulse_error)
+                except Exception:
+                    exception('Pulse Error')
                 if reg.repeat:
                     self._add_pulse(self._pulse_count, reg)
         del self._pulse_map[self._pulse_count]
@@ -138,4 +138,4 @@ class PulseRegistration(Registration):
 
 
 def heartbeat_failed(failure):
-    error(failure.getTraceback(), "Dispatcher")
+    error(failure.getTraceback())

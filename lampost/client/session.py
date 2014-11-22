@@ -220,7 +220,7 @@ class UserSession():
 
     def link_failed(self, reason):
         if self.player:
-            debug("Link failed for {}  [{}] ".format(self.player.name, reason))
+            debug("Link failed for {}  [{}] ", self.player.name, reason)
         self.ld_time = datetime.now()
         self.request = None
 

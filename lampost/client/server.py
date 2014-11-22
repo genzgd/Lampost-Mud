@@ -15,8 +15,8 @@ class WebServer():
 
     def app_log(self, handler):
         if debug_enabled():
-            debug('{} {} {}'.format(handler.get_status(), handler._request_summary(),
-                                    1000.0 * handler.request.request_time()))
+            debug('{} {} {}',handler.get_status(), handler._request_summary(),
+                  1000.0 * handler.request.request_time())
 
     def lsp_html(self, path, content):
         self._add_lsp(path, content, 'text/html')
@@ -37,7 +37,7 @@ class WebServer():
         self.add(r"/lsp/(.*)", LspHandler, documents=self._lsp_docs)
         application = Application(self.handlers, log_function=self.app_log)
 
-        info("Starting web server on port {}".format(port))
+        info("Starting web server on port {}", port)
         http_server = HTTPServer(application)
         http_server.listen(port, interface)
 

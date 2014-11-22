@@ -12,7 +12,7 @@ m_requires(__name__, 'log', 'datastore', 'dispatcher')
 def add_skill(skill_id, target, skill_level):
     skill_template = load_object(SkillTemplate, skill_id)
     if not skill_template:
-        warn("Skill {} not found.".format(skill_id))
+        warn("Skill {} not found.", skill_id)
         raise ActionError("Skill not found")
     skill_instance = skill_template.create_instance(target)
     skill_instance.skill_level = skill_level

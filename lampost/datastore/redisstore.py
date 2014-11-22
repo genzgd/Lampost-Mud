@@ -37,8 +37,7 @@ class RedisStore():
         if dbo.dbo_indexes:
             self._update_indexes(dbo)
         self.redis.set(dbo.dbo_key, json_encode(self._save_root(dbo)))
-        if __debug__:
-            debug("db object {} {}saved".format(dbo.dbo_key, "auto" if autosave else ""))
+        debug("db object {} {}saved", dbo.dbo_key, "auto" if autosave else "")
         self._object_map[dbo.dbo_key] = dbo
 
     def save_raw(self, key, raw):
@@ -62,7 +61,7 @@ class RedisStore():
         json_str = self.redis.get(dbo_key)
         if not json_str:
             if not silent:
-                warn("Failed to find {} in database".format(dbo_key))
+                warn("Failed to find {} in database", dbo_key)
             return None
         dbo_dict = json_decode(json_str)
         dbo_class = get_mixed_class(dbo_dict.get('sub_class_id', key_type), dbo_dict.get('mixins'))
@@ -86,7 +85,7 @@ class RedisStore():
             if obj:
                 results.append(obj)
             else:
-                warn("Removing missing object from set {}".format(set_key))
+                warn("Removing missing object from set {}", set_key)
                 self.delete_set_key(set_key, dbo_id)
         return results
 
@@ -113,8 +112,7 @@ class RedisStore():
             ix_value = getattr(dbo, ix_name, None)
             if ix_value is not None and ix_value != '':
                 self.delete_index('ix:{}:{}'.format(dbo.dbo_key_type, ix_name), ix_value)
-        if __debug__:
-            debug("object deleted: {}".format(key))
+        debug("object deleted: {}", key)
         self.evict_object(dbo)
 
     def reload_object(self, key_type, key):
@@ -123,7 +121,7 @@ class RedisStore():
             return load_by_key(key_type, key)
         json_str = self.redis.get('{}:{}'.format(key_type, key))
         if not json_str:
-            warn("Failed to find {} in database for reload".format(dbo_key))
+            warn("Failed to find {} in database for reload", dbo_key)
             return None
         self.update_object(dbo, json_decode(json_str))
         return dbo

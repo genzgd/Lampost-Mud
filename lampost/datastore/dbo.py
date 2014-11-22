@@ -50,7 +50,7 @@ class RootDBO(metaclass=CommonMeta):
                 except AttributeError:
                     pass
             if not dbo_value and dbo_field.required:
-                warn("Missing required field {} in object {}".format(field, dto))
+                warn("Missing required field {} in object {}", field, dto)
                 return None
         self._on_loaded()
         return self

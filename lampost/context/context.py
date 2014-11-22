@@ -32,8 +32,7 @@ class Context():
                  log_level="info", log_file=None):
 
         self.properties = {}
-        log = LogFactory(log_level, log_file).factory(self)
-        log.info('Starting server with {}'.format(locals()))
+        log = LogFactory(log_level, log_file).factory(self).info('Starting server with {}', locals())
         select_json()
         Tools()
         register('datastore', RedisStore(db_host, int(db_port), int(db_num), db_pw), True)

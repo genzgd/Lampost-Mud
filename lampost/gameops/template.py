@@ -26,10 +26,10 @@ class TemplateInstance(RootDBO):
                 template = load_by_key(cls.template_id, dbo_repr['template_id'])
                 instance = template.create_instance(owner)
             except KeyError:
-                warn("Missing template_id loading template {}".format(dbo_repr))
+                warn("Missing template_id loading template {}", dbo_repr)
                 return None
             except AttributeError:
-                warn("Missing database template loading template {}".format(dbo_repr))
+                warn("Missing database template loading template {}", dbo_repr)
                 return None
         else:
             instance = cls()

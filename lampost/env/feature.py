@@ -18,7 +18,7 @@ class Feature(BaseItem, Scriptable):
         try:
             feature_cls = dbo_repr['sub_class_id']
         except KeyError:
-            error("Feature missing subclass id {} in room {}".format(dbo_repr, owner.dbo_id))
+            error("Feature missing subclass id {} in room {}", dbo_repr, owner.dbo_id)
             return
         feature = get_dbo_class(feature_cls)()
         feature.room = owner

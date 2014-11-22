@@ -36,8 +36,8 @@ class ScriptManager():
     def load_file_scripts(self):
         try:
             script_dirs = os.listdir(script_dir)
-        except (EnvironmentError, TypeError) as exp:
-            warn("Missing lampost_scripts directory", __name__, exp)
+        except (EnvironmentError, TypeError):
+            warn("Missing lampost_scripts directory {}", script_dir)
             return
         for parent_name in script_dirs:
             if parent_name.startswith('_'):
@@ -46,7 +46,7 @@ class ScriptManager():
             try:
                 script_names = os.listdir(dir_name)
             except EnvironmentError:
-                warn("Invalid directory {} in scripts directory".format(dir_name))
+                warn("Invalid directory {} in scripts directory", dir_name)
                 continue
             for script_name in script_names:
                 if script_name.startswith('_') or script_name.startswith('.'):
@@ -56,12 +56,12 @@ class ScriptManager():
                     with open(file_name) as script_file:
                         script_text = script_file.read()
                 except EnvironmentError:
-                    warn("Failed to read script file {}".format(file_name))
+                    warn("Failed to read script file {}", file_name)
                     continue
                 self.add_file_script(parent_name, script_name, script_text)
 
     def add_file_script(self, parent_name, script_name, text):
-        info("Loading script {}:{}".format(parent_name, script_name))
+        info("Loading script {}:{}", parent_name, script_name)
         if script_name.endswith('.py'):
             script_name = script_name[:-3]
         dbo_id = "{}:{}".format(parent_name, script_name)
@@ -79,7 +79,7 @@ class ScriptManager():
         try:
             code = compile(text, dbo_id, 'exec')
         except SyntaxError:
-            warn("Failed to compile file script {}".format(dbo_id))
+            warn("Failed to compile file script {}", dbo_id, exc_info=True)
             return
         info("Creating script")
         script = create_object(Script, {'from_file': True, 'approved': True, 'dbo_id': dbo_id})
@@ -97,7 +97,7 @@ def apply_script(host, script):
     exec_locals = {}
     try:
         exec(script.code, script_globals, exec_locals)
-    except BaseException as exp:
+    except Exception:
         warn("Error applying script {}".format(script.dbo_id), __name__, exp)
         return
     for name, binding in exec_locals.items():
@@ -133,7 +133,7 @@ def add_globals(script, script_globals):
             script_globals.update(script.namespace)
         except BaseException:
             del script.namespace
-            warn("Error applying global script {}".format(script.dbo_id), exp)
+            warn("Error applying global script {}", script.dbo_id, exc_info=True)
 
 
 class Script(RootDBO):
@@ -182,7 +182,7 @@ class Script(RootDBO):
                 self.live_text = script_file.read()
                 self.file_error = None
         except EnvironmentError as exp:
-            warn("Failed to read script file {}".format(self.dbo_id), __name__, exp)
+            warn("Failed to read script file {}", self.dbo_id)
             self.live_text = ''
             self.file_error = str(exp)
             if self.code:
@@ -209,7 +209,7 @@ class Script(RootDBO):
                 script_cache.self[dbo_id] = self
         except SyntaxError as exp:
             self.compile_error = str(exp)
-            log.error("Error compiling script {}".format(self.dbo_id))
+            error("Error compiling script {}", self.dbo_id)
             if self.code:
                 del self.code
 

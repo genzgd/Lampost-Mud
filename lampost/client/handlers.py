@@ -23,7 +23,7 @@ class SessionHandler(RequestHandler):
             self.write(e.client_message)
         else:
             self.set_status(500)
-            error("Handler Exception", self, e)
+            exception("Handler Exception", e)
         self.finish()
 
     def _find_session(self):

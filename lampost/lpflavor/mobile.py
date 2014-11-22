@@ -39,7 +39,7 @@ class MobileTemplateLP(MobileTemplate):
         for skill_id, skill_status in self.default_skills.items():
             skill_template = load_object(SkillTemplate, skill_id)
             if not skill_template:
-                warn("Skill {} not found.".format(skill_id))
+                warn("Skill {} not found.", skill_id)
                 continue
             skill = skill_template.create_instance(mobile)
             skill.skill_level = skill_status['skill_level']

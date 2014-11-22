@@ -15,7 +15,7 @@ def mud_action(verbs, msg_class=None, **kwargs):
         action = make_action(func, msg_class=msg_class, **kwargs)
         for verb in convert_verbs(verbs):
             if verb in _mud_actions:
-                error("Adding mud action for {}".format(verb))
+                error("Adding mud action for existing verb {}", verb)
             else:
                 _mud_actions[verb] = action
     return dec_wrapper

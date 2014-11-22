@@ -22,5 +22,6 @@ class LogFactory():
         consumer.warn = logger.warn
         consumer.info = logger.info
         consumer.debug = logger.debug
+        consumer.exception = logger.exception
         consumer.debug_enabled = lambda: logger.getEffectiveLevel() <= logging.DEBUG
         return logger
