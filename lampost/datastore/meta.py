@@ -16,7 +16,7 @@ class CommonMeta(type):
         cls._meta_init_attrs(new_attrs)
         cls._combine_base_fields(bases)
         cls._update_dbo_fields(new_attrs)
-        cls._template_init(new_attrs)
+        cls._template_init()
         cls._update_actions(new_attrs)
         if 'class_id' in new_attrs:
             set_dbo_class(cls.class_id, cls)
@@ -53,28 +53,27 @@ class CommonMeta(type):
     def _update_dbo_fields(cls, new_attrs):
         for name, attr in new_attrs.items():
             if hasattr(attr, 'hydrate_value'):
-                if name in cls.dbo_fields.keys():
-                    log.info("Overriding existing dbo field {} in class {}", name, cls.__name__)
-                else:
+                old_attr = cls.dbo_fields.get(name)
+                if old_attr != attr:
+                    if old_attr:
+                        log.info("Overriding attr {} of class {}", name, cls.__name__)
                     cls.dbo_fields[name] = attr
-
         load_func = new_attrs.get('on_loaded')
         if load_func:
             cls.load_funcs.append(load_func)
 
-    def _template_init(cls, new_attrs):
-        template_id = new_attrs.get('template_id')
-        if not template_id:
+    def _template_init(cls):
+        if not hasattr(cls, 'template_id'):
             return
-        cls.class_id = '{}_inst'.format(template_id)
+        cls.class_id = '{}_inst'.format(cls.template_id)
         old_class = check_dbo_class(cls.class_id)
         if old_class:
-            log.info("Override existing instance class {} with {} for id", old_class.__name__, cls.__name__, template_id)
+            log.info("Overriding existing instance class {} with {} for template {}", old_class.__name__, cls.__name__, cls.template_id)
         else:
-            log.info("Initializing instance class {} for id {}", cls.__name__, template_id)
+            log.info("Initializing instance class {} for template {}", cls.__name__, cls.template_id)
         set_dbo_class(cls.class_id, cls)
-        template_cls = get_dbo_class(template_id)
-        template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in new_attrs.items() if isinstance(dbo_field, TemplateField)})
+        template_cls = get_dbo_class(cls.template_id)
+        template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
         template_cls.instance_cls = cls
 
     def _update_actions(cls, new_attrs):
