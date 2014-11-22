@@ -1,7 +1,5 @@
-import gc
 from lampost.context.resource import m_requires
 from lampost.env.room import Room
-from lampost.lpflavor.combat import AttackTemplate, DefenseTemplate
 from lampost.model.area import Area
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate

@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import RootDBO
 
 
 class Direction(RootDBO):

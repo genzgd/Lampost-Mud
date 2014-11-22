@@ -8,8 +8,6 @@ from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.env.movement import Direction
 from lampost.gameops.script import Scriptable
-from lampost.model.mobile import MobileTemplate
-from lampost.model.article import ArticleTemplate
 from lampost.gameops.display import *
 from lampost.mud.inventory import InvenContainer
 

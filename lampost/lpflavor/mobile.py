@@ -5,7 +5,7 @@ from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
 from lampost.lpflavor.skill import SkillTemplate
-from lampost.model.mobile import Mobile, MobileTemplate
+from lampost.model.mobile import MobileTemplate
 from lampost.model.race import base_attr_value
 
 m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')

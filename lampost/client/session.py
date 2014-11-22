@@ -5,7 +5,7 @@ from os import urandom
 from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
-from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
+from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.util.lmutil import ClientError
 
 m_requires(__name__, 'log', 'dispatcher')
@@ -248,4 +248,3 @@ class UserSession():
     @property
     def privilege(self):
         return self.player.imm_level if self.player else 0
-

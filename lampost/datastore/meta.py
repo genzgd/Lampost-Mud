@@ -1,4 +1,3 @@
-import itertools
 import logging
 from lampost.datastore.auto import TemplateField
 from lampost.datastore.classes import set_dbo_class, add_sub_class, get_dbo_class, set_mixin, check_dbo_class
