@@ -147,7 +147,6 @@ angular.module('lampost_editor').controller('ArticleListCtrl', ['$q', '$scope', 
 
     this.preCreate = function (newModel) {
       newModel.dbo_id = $scope.areaId + ":" + newModel.id;
-      newModel.equip_slot = 'none';
     };
 
     this.delConfirm = function (delModel) {
@@ -167,6 +166,12 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
   function ($q, $scope, lmEditor) {
 
     lmEditor.prepare(this, $scope);
+    $scope.equip_slots = angular.copy($scope.constants.equip_slots);
+    $scope.equip_slots.unshift('[none]');
+
+    $scope.syncSlot = function() {
+        $scope.model.equip_slot = $scope.equipSlot == '[none]' ? null : $scope.equipSlot;
+    };
 
     this.newDialog = function (newModel) {
       newModel.level = 1;
@@ -175,27 +180,10 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$q', '$scope'
 
     this.preCreate = function (article) {
       article.dbo_id = $scope.selectedAreaId + ":" + article.id;
-      if (article.equip_slot == 'none') {
-        article.equip_slot = null;
-      }
-    };
-
-    this.preUpdate = function(article) {
-      if (article.equip_slot == 'none') {
-        article.equip_slot = null;
-      }
-    };
-
-    this.postUpdate = function(article) {
-       if (!article.equip_slot) {
-        article.equip_slot = 'none';
-      }
     };
 
     this.startEdit = function(article) {
-      if (!article.equip_slot) {
-        article.equip_slot = 'none';
-      }
+       $scope.equipSlot = article.equip_slot ? article.equip_slot : '[none]';
     };
 
     $scope.editor.newEdit($scope.editor.editModel);

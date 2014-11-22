@@ -1,4 +1,5 @@
 from importlib import import_module
+
 from lampost.datastore.dbo import DBOField
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
@@ -6,13 +7,13 @@ from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, WEAPON_TYPES
 from lampost.lpflavor.skill import add_skill
 from lampost.lpflavor.player import PlayerLP
-
 from lampost.context.resource import m_requires
 from lampost.model.race import PlayerRace
 
+
 m_requires(__name__, 'context', 'dispatcher', 'datastore', 'perm')
 
-equip_slots = ['none', 'finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
+equip_slots = ['finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
 
 equip_types = ['armor', 'shield', 'weapon', 'treasure']

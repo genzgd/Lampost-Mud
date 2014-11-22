@@ -64,7 +64,7 @@
           </div>
           <div class="span4">
             <label>Equip Slot</label>
-            <select class="span10" ng-model="model.equip_slot" ng-options="slot for slot in constants.equip_slots" required>
+            <select class="span10" ng-change="syncSlot()" ng-model="equipSlot" ng-options="slot for slot in equip_slots" required>
             </select>
           </div>
            <div class="span4">
