@@ -1,4 +1,6 @@
+import inspect
 import logging
+
 from logging import LogRecord, Logger
 
 
@@ -26,8 +28,14 @@ class LoggerFmt(Logger):
 
 logging.setLoggerClass(LoggerFmt)
 log_format = '{asctime: <20}  {levelname: <8} {name: <26}  {message}'
-logging.basicConfig(level=logging.INFO, style="{", format=log_format)
-root_logger = logging.getLogger('root')
+root_logger = None
+
+
+def init_config(init_level='info', filename=None):
+    global root_logger
+    log_level = getattr(logging, init_level.upper())
+    logging.basicConfig(level=log_level, style="{", format=log_format, filename=filename)
+    root_logger = logging.getLogger('root')
 
 
 def logged(func):
@@ -37,6 +45,22 @@ def logged(func):
         except Exception as error:
             root_logger.exception("Unhandled exception", func.__name__, error)
     return wrapper
+
+
+class LogFactory():
+
+    def factory(self, consumer):
+        if not inspect.ismodule(consumer):
+            consumer = consumer.__class__
+        logger = logging.getLogger(consumer.__name__)
+        consumer.fatal = logger.fatal
+        consumer.error = logger.error
+        consumer.warn = logger.warn
+        consumer.info = logger.info
+        consumer.debug = logger.debug
+        consumer.exception = logger.exception
+        consumer.debug_enabled = lambda: logger.getEffectiveLevel() <= logging.DEBUG
+        return logger
 
 
 

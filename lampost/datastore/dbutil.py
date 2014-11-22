@@ -16,4 +16,3 @@ def build_indexes(dbo_cls):
                     set_index('ix:{}:{}'.format(dbo_cls.dbo_key_type, ix_name), ix_value, dbo_id)
         except (ValueError, TypeError):
             warn("Missing dbo object {} from set key {}", dbo_id, dbo_cls.dbo_set_key)
-

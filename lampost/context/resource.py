@@ -19,7 +19,7 @@ def register(name, service, export_methods=False):
         _inject(cls, name, service)
     if _consumer_map.get(name, None):
         del _consumer_map[name]
-
+    return service
 
 def register_module(module):
     _registered_modules.append(module)

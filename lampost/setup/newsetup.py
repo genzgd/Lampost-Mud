@@ -10,30 +10,38 @@ from lampost.setup.dbcontext import DbContext
 from lampost.setup.scripts import build_default_displays, build_default_settings
 from lampost.setup.settings import SERVER_SETTINGS_DEFAULT, GAME_SETTINGS_DEFAULT
 
-m_requires(__name__, 'datastore', 'dispatcher', 'perm')
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm')
 
 
-def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='lpflavor', config_id='lampost', imm_name='root', imm_account='root',
-              imm_password="password", root_area="immortal"):
-    DbContext(db_host=db_host, db_num=db_num, db_port=db_port, db_pw=db_pw)
+def new_setup(args):
+    DbContext(args)
+
+    if args.flush:
+        db_num = datastore.pool.connection_kwargs['db']
+        if db_num == args.db_num:
+            warn("Flushing database {}", db_num)
+            datastore.redis.flushdb()
+        else:
+            print("Error:  DB Numbers do not match")
+            return
 
     Permissions()
     ChannelService()
-    MudNature(flavor)
+    MudNature(args.flavor)
     user_manager = UserManager()
-    config = load_object(Config, config_id)
+    config = load_object(Config, args.config_id)
     if config:
         print("Error:  This instance is already set up")
         return
 
     context_post_init()
 
-    config = Config(config_id)
-    config_manager = ConfigManager(config_id)
+    config = Config(args.config_id)
+    config_manager = ConfigManager(args.config_id)
     config_manager.config = config
-    room_id = "{0}:0".format(root_area)
+    room_id = "{0}:0".format(args.root_area)
     config.start_room = room_id
-    config.game_settings['root_area'] = root_area
+    config.game_settings['root_area'] = args.root_area
 
     config_manager.save_config()
     build_default_displays()
@@ -43,10 +51,10 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
 
     dispatch('first_time_setup')
 
-    imm_name = imm_name.lower()
+    imm_name = args.imm_name.lower()
     imm_level = perm_level('supreme')
 
-    area = create_object(Area, {'dbo_id': root_area, 'name': root_area, 'owner_id': imm_name})
+    area = create_object(Area, {'dbo_id': args.root_area, 'name': args.root_area, 'owner_id': args.imm_name})
 
     room = create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room",
                                 'desc': "A brand new start room for immortals."})
@@ -54,19 +62,10 @@ def new_setup(db_host="localhost", db_port=6379, db_num=0, db_pw=None, flavor='l
     save_object(room)
     area.add_room()
 
-    user = user_manager.create_user(imm_account, imm_password)
-    player = {'dbo_id': imm_name, 'room_id': room_id,
+    user = user_manager.create_user(args.imm_account, args.imm_password)
+    player = {'dbo_id': args.imm_name, 'room_id': room_id,
               'home_room': room_id, 'imm_level': imm_level}
 
     user_manager.attach_player(user, player)
 
     set_index('immortals', imm_name, imm_level)
-
-
-
-
-
-
-
-
-

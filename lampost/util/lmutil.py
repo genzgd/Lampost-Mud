@@ -80,10 +80,6 @@ class PermError(ClientError):
         super().__init__("You do not have permission to do that")
 
 
-def cls_name(cls):
-    return ".".join([cls.__module__, cls.__name__])
-
-
 def patch_object(obj, prop, new_value):
     existing_value = getattr(obj, prop, None)
     if existing_value is not None:
