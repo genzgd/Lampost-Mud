@@ -1,6 +1,0 @@
-Lampost-Mud is a Python based server and HTML/JavaScript client for multiuser virtual worlds.  It is in its very early stages.
-The authors are working toward a Diku style MUD as the first full fledged Lampost-Mud application.
-
-Lampost is built on the twisted server library, the Redis key-value store, and Google's angular.js javascript framework.
-
-Lampost is covered by the MIT license, a copy of which is included in this source tree.
