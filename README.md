@@ -3,6 +3,17 @@
 Lampost is a multi-user virtual world building platform inspired by the thriving community of multi-user dungeons (MUDs) of the 1990s.
  
 
+### Quickstart
+
+* Install Python 3.2.5+
+* Install redis-py 2.10.3+ and Tornado 4.0.2+ using pip
+* Install Redis 2.4+ 
+* Start Redis with the redis-server scripts
+* Clone this Github repository
+* Run create_lp_db.py --imm_name YOUR_SUPERUSER_PLAYER_NAME
+* Run lampost.py
+* Point your browser at <http://localhost:2500>
+
 ### Lampost Components
 
 #### Application Server
@@ -58,6 +69,10 @@ The Lampost web server is built on the [Tornado](http://www.tornadoweb.org) web 
 Lampost uses [Redis](http://redis.io) as its primary, high performance key/value datastore.  Lampost is currently compatible with
 Redis 2.4 and later versions.  Lampost requires the awesome [redis-py](https://github.com/andymccurdy/redis-py) library for
 Redis connectivity.
+
+
+
+
 
 ### Roadmap and Contributing
 
