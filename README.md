@@ -8,7 +8,7 @@ Lampost is a multi-user virtual world building platform inspired by the thriving
 * Install Python 3.2.5+
 * Install redis-py 2.10.3+ and Tornado 4.0.2+ using pip
 * Install Redis 2.4+ 
-* Start Redis with the redis-server scripts
+* Start Redis with the redis-server script
 * Clone this Github repository
 * Run create_lp_db.py --imm_name YOUR_SUPERUSER_PLAYER_NAME
 * Run lampost.py
@@ -29,7 +29,8 @@ Lampost Game Engine, as well as underlying support for Lampost sessions and clie
 #### Game Editor
 
 The Lampost editor is a full featured administrative web client, also built on angular.js.  The editor allows building
-traditional MUD environments in minutes, with real time creation items, mobiles, rooms, areas (both shared and instanced).
+traditional MUD environments in minutes, with real time creation of items, mobiles, rooms, areas (both shared and instanced)
+and user scripts.
    
    
 ### Feature Highlights
