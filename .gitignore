@@ -3,4 +3,5 @@
 src_ext
 data
 ngclient/local_lib
+ngclient/fonts
 ngclient/test.html

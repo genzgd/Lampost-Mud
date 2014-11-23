@@ -1,55 +1,62 @@
 <div class="container-fluid" ng-style="gameHeight" ng-controller="GameCtrl">
-  <div class="row-fluid main-display">
-    <div ng-switch="actionPane" class="span6 v-full">
+  <div class="row main-display">
+    <div ng-switch="actionPane" class="col-md-6 v-full">
       <div ng-switch-when="login" ng-controller="LoginCtrl">
-        <div class="row-fluid">
-          <div class="span6">
+        <div class="row">
+          <div class="col-md-6">
             <h4>Welcome to {{siteTitle}}</h4>
           </div>
-          <div class="offset2 span3">
-            <div style="padding-bottom: 6px;"><em>New Here?</em></div>
-            <button ng-click="newAccountDialog()" class="btn btn-primary btn-small">Create An Account</button>
+          <div class="col-lg-offset-2 col-md-3">
+            <div style="padding-bottom: 6px;"><em>New Here?</em>
+            </div>
+            <button ng-click="newAccountDialog()" class="btn btn-primary btn-sm">Create An Account</button>
           </div>
         </div>
-        <div class="row-fluid">
-          <div class="span6">
+        <div class="row">
+          <div class="col-md-6">
             <p ng-bind-html="siteDescription"></p>
           </div>
-          <form class="span4 well form-padding" ng-submit="login()" name="loginForm">
+          <form class="col-md-4 well form-padding" ng-submit="login()" name="loginForm">
             <label>Player or Account Name:</label>
-            <input class="span11" style="margin-bottom: 0;" type="text" ng-change="loginError = false" ng-model="userId" pref-focus required/>
-            <div class="forgot-link offset3" ng-click="forgotName()">Forgot your account name?</div>
+            <input class="col-md-11" style="margin-bottom: 0;"
+                   type="text" ng-change="loginError = false" ng-model="userId" pref-focus="pref-focus"
+                   required="required"/>
+
+            <div class="forgot-link col-lg-offset-3" ng-click="forgotName()">Forgot your account name?</div>
             <label>Account Password:</label>
-            <input class="span11" style="margin-bottom: 0;" type="password" ng-change="loginError = false" ng-model="password" required/>
-            <div class="forgot-link offset3" ng-click="forgotPassword()">Forgot your password?</div>
+            <input class="col-md-11" style="margin-bottom: 0;"
+                   type="password" ng-change="loginError = false" ng-model="password" required="required" />
+
+            <div class="forgot-link col-lg-offset-3" ng-click="forgotPassword()">Forgot your password?</div>
             <div class="alert alert-error" ng-show="loginError">
               <button type="button" class="close" ng-click="loginError = false">×</button>
               Invalid user name or password
             </div>
-            <button class="btn btn-small btn-primary" style="margin-top: 4px" type="submit">Enter {{siteTitle}}</button>
+            <button class="btn btn-sm btn-primary"
+                    style="margin-top: 4px;" type="submit">Enter {{siteTitle}}
+            </button>
           </form>
         </div>
       </div>
-      <div ng-switch-default ng-controller="ActionCtrl" class="v-full">
-        <div id="displayPane" scroll-bottom="update" class="telnet span12" >
+      <div ng-switch-default="ng-switch-default" ng-controller="ActionCtrl"
+           class="v-full">
+        <div id="displayPane" scroll-bottom="update" class="telnet col-md-12">
           <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.text"></div>
         </div>
         <div class="telnet-input">
-          <textarea ng-model="action" enter-key="sendAction()" spellcheck="false" history pref-focus></textarea>
+          <textarea ng-model="action" enter-key="sendAction()" spellcheck="false"
+                    history="history" pref-focus="pref-focus"></textarea>
         </div>
       </div>
-
     </div>
-    <div class="span6 v-full">
-      <div class="row-fluid" ng-show="toolbar">
-        <div class="btn-toolbar span10" >
-          <button class="btn" ng-repeat="button in toolbar" ng-click="button.click()">{{button.label}}</button>
+    <div class="col-md-6 v-full">
+      <div class="row" ng-show="toolbar">
+        <div class="btn-toolbar col-md-10">
+          <button class="btn btn-default" ng-repeat="button in toolbar" ng-click="button.click()">{{button.label}}
+          </button>
         </div>
       </div>
-
-      <div class="row-fluid v-full" ng-include="'view/data_tabs.html'">
-
-      </div>
+      <div class="row v-full" ng-include="'view/data_tabs.html'"></div>
     </div>
   </div>
 </div>
