@@ -103,7 +103,7 @@ class Settings(MethodHandler):
         email_sender.send_targeted_email('Account/Player Names', email_msg, [user])
 
     def temp_password(self):
-        info = self.raw['index'].lower()
+        info = self.raw['info'].lower()
         user_id = get_index("ix:user:user_name", info)
         if not user_id:
             player = load_object(Player, info)
