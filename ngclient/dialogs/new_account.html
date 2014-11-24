@@ -1,71 +1,76 @@
 <div class="modal">
-  <form ng-submit="createAccount()"></form>
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
-        <h4>Create New Account</h4>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-5">
-            <label>Account Name</label>
-            <input class="form-control input-sm col-md-11" type="text" ng-model="accountName"
-                   ng-change="accountChange()" required="required"/>
+      <form ng-submit="createAccount()">
+
+        <div class="modal-header">
+          <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+          <h4>Create New Account</h4>
+        </div>
+        <div class="modal-body container-fluid">
+          <div class="row">
+            <div class="col-md-5">
+              <label>Account Name</label>
+              <input class="form-control input-sm col-md-11" type="text" ng-model="accountName"
+                     ng-change="accountChange()" required="required"/>
+            </div>
+            <div class="col-md-7">
+              <p>
+                <small>The name associated with your account. Once you reach a certain level, multiple players may be
+                  associated with your account.
+                </small>
+              </p>
+            </div>
           </div>
-          <div class="col-md-7">
-            <p>
-              <small>The name associated with your account. Once you reach a certain level, multiple players may be
-                associated with your account.
-              </small>
-            </p>
+          <div class="row" style="margin-top: 10px;">
+            <div class="col-md-5">
+              <label>Email</label>
+              <input class="form-control input-sm col-md-11" type="email" ng-model="email" name="email"
+                  />
+            </div>
+            <div class="col-md-7">
+              <p>
+                <small>Your email is not required, but it is highly recommended to allow you to reset your password or
+                  for
+                  other administrative messages.
+                </small>
+              </p>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 10px;">
+            <div class="col-md-5">
+              <div class="form-group">
+                <label for="accountPassword">Account Password:</label>
+                <input id="accountPassword"class="form-control input-sm col-md-11" type="password" ng-model="password"
+                       required="required"/>
+                <label for="confirmPassword">Confirm Password:</label>
+                <input id="confirmPassword" class="form-control input-sm col-md-11" type="password" ng-model="passwordCopy"
+                       required="required"/>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <p>
+                <small>We're not picky about passwords (yet). Be lazy at your own risk.</small>
+              </p>
+              <p>
+                <small>Your password is stored in encrypted format, so we can't tell you what it is. And we'll never ask
+                  you for it.
+                </small>
+              </p>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 10px;">
+              <div class="alert alert-danger" ng-show="errorText">
+                <button type="button" class="close" ng-click="errorText = null">×</button>
+                {{errorText}}
+              </div>
           </div>
         </div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="col-md-5">
-            <label>Email</label>
-            <input class="form-control input-sm col-md-11" type="email" ng-model="email" name="email"
-                />
-          </div>
-          <div class="col-md-7">
-            <p>
-              <small>Your email is not required, but it is highly recommended to allow you to reset your password or for
-                other administrative messages.
-              </small>
-            </p>
-          </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Create Account</button>
+          <button ng-click="dismiss()" class="btn btn-default">Cancel</button>
         </div>
-        <div class="row" style="margin-top: 10px;">
-          <div class="col-md-5">
-            <label>Account Password</label>
-            <input class="form-control input-sm col-md-11" type="password" ng-model="password"
-                   required="required"/>
-            <label>Confirm Password</label>
-            <input class="form-control input-sm col-md-11" type="password" ng-model="passwordCopy"
-                   required="required"/>
-          </div>
-          <div class="col-md-7">
-            <p>
-              <small>We're not picky about passwords (yet). Be lazy at your own risk.</small>
-            </p>
-            <p>
-              <small>Your password is stored in encrypted format, so we can't tell you what it is. And we'll never ask
-                you for it.
-              </small>
-            </p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="alert alert-error" ng-show="errorText">
-            <button type="button" class="close" ng-click="errorText = null">×</button>
-            {{errorText}}
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-success">Create Account</button>
-        <button ng-click="dismiss()" class="btn btn-default">Cancel</button>
-      </div>
+      </form>
     </div>
   </div>
 </div>

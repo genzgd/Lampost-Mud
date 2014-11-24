@@ -1,54 +1,71 @@
-<div class="modal medium" ng-show="ready">
-  <div class="modal-header">
-    <button type="button" class="close" ng-click="tryCancel()">×</button>
-    <h4>Create New Character</h4>
-  </div>
-  <form ng-submit="createCharacter()">
-    <div class="modal-body">
-      <div class="row-fluid">
-        <div class="span4">
-          <h6>Character Name</h6>
-          <input title="Your player's name. This is the name other players will know you by in the game. No spaces are permitted.  Use common sense. Players with inappropriate names will be deleted."
-              class="span11" type="text" ng-model="playerName" ng-change="errorText = null" required/>
-          <h6>Sex</h6>
-          <select class="input-small" ng-model="playerData.sex" required>
-            <option value>Select...</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-          </select>
-          <h6>Size</h6>
-          <select class="input-small" ng-model="playerData.size" required>
-            <option value>Select...</option>
-            <option value="medium">Medium</option>
-            <option value="small">Small</option>
-            <option value="large">Large</option>
-          </select>
+<div class="modal">
+
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form ng-submit="createCharacter()">
+        <div class="modal-header">
+          <button type="button" class="close" ng-click="tryCancel()">×</button>
+          <h4>Create New Character</h4>
         </div>
-        <div class="span8" ng-switch="activeScreen">
-          <div ng-switch-when="race">
-            <div class="form-horizontal">
-              <h6>Character Race</h6>
-              <select class="input-large" ng-model="playerData.race" ng-options="race_id as race.name for (race_id, race) in races" required>
-                <option value>Select...</option>
-              </select>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="playerName">Character Name</label>
+                <input id="playerName"
+                       title="Your player's name. This is the name other players will know you by in the game. No spaces are permitted.  Use common sense. Players with inappropriate names will be deleted."
+                       class="form-control input-sm col-md-11" type="text" ng-model="playerName"
+                       ng-change="errorText = null"
+                       required="required"/>
+              </div>
+              <div class="form-group">
+                <label for="sexInput">Sex</label>
+                <select id="sexInput" class="form-control input-sm" ng-model="playerData.sex" required="required">
+                  <option value="">Select...</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="sizeInput">Size</label>
+                <select id="sizeInput" class="form-control input-sm" ng-model="playerData.size" required="required">
+                  <option value="">Select...</option>
+                  <option value="medium">Medium</option>
+                  <option value="small">Small</option>
+                  <option value="large">Large</option>
+                </select>
+              </div>
             </div>
-            <div ng-show="playerData.race">
-              <br/>
-              <p>{{races[playerData.race].desc}}</p>
+            <div class="col-md-8" ng-switch="activeScreen">
+              <div ng-switch-when="race">
+                <div class="form-group col-md-8">
+                  <label for="playerRace">Character Race</label>
+                  <select id="playerRace" class="form-control input-sm" ng-model="playerData.race"
+                          ng-options="race_id as race.name for (race_id, race) in races"
+                          required="required">
+                    <option value="">Select...</option>
+                  </select>
+                </div>
+                <div ng-show="playerData.race">
+                  <br/>
+
+                  <p>{{races[playerData.race].desc}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="alert alert-error" ng-show="errorText">
+              <button type="button" class="close" ng-click="errorText = null">×</button>
+              {{errorText}}
             </div>
           </div>
         </div>
-      </div>
-      <div class="row-fluid">
-        <div class="alert alert-error" ng-show="errorText">
-          <button type="button" class="close" ng-click="errorText = null">×</button>
-          {{errorText}}
+        <div class="modal-footer">
+          <button class="btn btn-success">Create Character</button>
+          <button ng-click="tryCancel()" class="btn btn-default">Cancel</button>
         </div>
-      </div>
+      </form>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-success">Create Character</button>
-      <button ng-click="tryCancel()" class="btn">Cancel</button>
-    </div>
-  </form>
+  </div>
 </div>
