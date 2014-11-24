@@ -134,13 +134,11 @@ angular.module('lampost').controller('NavCtrl', ['$rootScope', '$scope', '$locat
       this.class = function () {
         return this.active() ? "active" : "";
       };
-      this.iconClass = function () {
-        return this.icon + " icon-white" + (this.active() ? "" : " icon-gray");
-      };
+
     }
 
-    var baseLinks = [new Link("game", "Mud", "icon-leaf", 0)];
-    var settingsLink = new Link("settings", "Settings", "icon-user", 50);
+    var baseLinks = [new Link("game", "Mud", "fa fa-tree", 0)];
+    var settingsLink = new Link("settings", "Settings", "fa fa-sliders", 50);
 
     function validatePath() {
       $scope.welcome = 'Please Log In';
