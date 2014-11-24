@@ -1,20 +1,31 @@
 <div class="modal">
-    <div class="modal-header">
-        <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
-        <h4>Forgot Account or Player Name</h4>
-    </div>
+  <div class="modal-dialog">
     <form ng-submit="submitRequest()">
-      <div class="modal-body">
-        <label>Enter your email address and we will send an email with your account and player names.</label>
-        <input class="input-large" type="text" ng-model="info" ng-change="showError = false" required />
-      </div>
-       <div class="alert alert-error" ng-show="showError">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+          <h4>Forgot Account or Player Name</h4>
+        </div>
+        <div class="modal-body">
+          <div class="well">
+            Enter your email address below and we will send an email with your account and
+            player names.
+          </div>
+          <div class="form-group">
+            <label for="forgotAccount">Email Address:</label>
+            <input id="forgotAccount" class="form-control input-sm" type="text" ng-model="info"
+                   ng-change="showError = false" required="required"/>
+          </div>
+        </div>
+        <div class="alert alert-danger" ng-show="showError">
           <button type="button" class="close" ng-click="showError = false">×</button>
           No account associated with this email address.
         </div>
-      <div class="modal-footer">
+        <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Request Names</button>
-          <button class="btn" ng-click="dismiss()">Cancel</button>
+          <button class="btn btn-default" ng-click="dismiss()">Cancel</button>
+        </div>
       </div>
     </form>
+  </div>
 </div>

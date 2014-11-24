@@ -9,7 +9,7 @@
           <div class="col-lg-offset-2 col-md-3">
             <div style="padding-bottom: 6px;"><em>New Here?</em>
             </div>
-            <button ng-click="newAccountDialog()" class="btn btn-primary btn-sm">Create An Account</button>
+            <button type="button" ng-click="newAccountDialog()" class="btn btn-primary btn-sm">Create An Account</button>
           </div>
         </div>
         <div class="row">
@@ -17,18 +17,21 @@
             <p ng-bind-html="siteDescription"></p>
           </div>
           <form class="col-md-4 well form-padding" ng-submit="login()" name="loginForm">
-            <label>Player or Account Name:</label>
-            <input class="col-md-11" style="margin-bottom: 0;"
-                   type="text" ng-change="loginError = false" ng-model="userId" pref-focus="pref-focus"
-                   required="required"/>
+            <div class="form-group">
+              <label for="userIdInput">Player or Account Name:</label>
+              <input class="form-control input-sm" id="userIdInput"
+                     type="text" ng-change="loginError = false" ng-model="userId" pref-focus="pref-focus"
+                     required/>
+              <div class="forgot-link col-md-offset-3" style="margin-top: 3px;" ng-click="forgotName()">Forgot your account name?</div>
+            </div>
+            <div class="form-group">
+              <label for="passwordInput">Account Password:</label>
+              <input id="passwordInput" class="form-control input-sm"
+                     type="password" ng-change="loginError = false" ng-model="password" required/>
 
-            <div class="forgot-link col-lg-offset-3" ng-click="forgotName()">Forgot your account name?</div>
-            <label>Account Password:</label>
-            <input class="col-md-11" style="margin-bottom: 0;"
-                   type="password" ng-change="loginError = false" ng-model="password" required="required" />
-
-            <div class="forgot-link col-lg-offset-3" ng-click="forgotPassword()">Forgot your password?</div>
-            <div class="alert alert-error" ng-show="loginError">
+              <div class="forgot-link col-lg-offset-3" style="margin-top: 3px;" ng-click="forgotPassword()">Forgot your password?</div>
+            </div>
+            <div class="alert alert-danger" ng-show="loginError">
               <button type="button" class="close" ng-click="loginError = false">×</button>
               Invalid user name or password
             </div>
@@ -40,7 +43,7 @@
       </div>
       <div ng-switch-default="ng-switch-default" ng-controller="ActionCtrl"
            class="v-full">
-        <div id="displayPane" scroll-bottom="update" class="telnet col-md-12">
+        <div id="displayPane" scroll-bottom="update" class="telnet">
           <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.text"></div>
         </div>
         <div class="telnet-input">
