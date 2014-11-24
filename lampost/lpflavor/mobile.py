@@ -55,6 +55,7 @@ class MobileLP(EntityLP):
     level = DBOTField(1)
     affinity = DBOTField('neutral')
     enemies = TemplateField('enemies')
+    guard_msg = DBOField("{source} stops you from moving {exit}.")
 
     def entity_enter_env(self, entity):
         self._react_entity(entity)

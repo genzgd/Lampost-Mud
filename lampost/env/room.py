@@ -61,6 +61,10 @@ class Exit(RootDBO):
         source.display_line('Exit: {}  {}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
 
     def __call__(self, source, **_):
+        source.env.allow_leave(source, self)
+        self._move_user(source)
+
+    def _move_user(self, source):
         if source.instance:
             destination = source.instance.get_room(self.destination)
         else:
@@ -176,6 +180,10 @@ class Room(Scriptable):
         if not self._garbage_pulse:
             self.reset()
             self._garbage_pulse = register_p(self.check_garbage, seconds=room_reset_time + 1)
+
+    def allow_leave(self, *args):
+        pass
+
 
     def check_garbage(self):
         if hasattr(self, 'dirty'):

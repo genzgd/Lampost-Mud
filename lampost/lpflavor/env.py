@@ -1,4 +1,6 @@
+from lampost.datastore.dbo import DBOField
 import lampost.env.room
+from lampost.gameops.action import ActionError
 
 exit_cost_map = {}
 
@@ -17,9 +19,16 @@ class ExitLP(lampost.env.room.Exit):
     class_id = 'exit'
     prep_time = 1
 
+    guarded = DBOField(True)
+    door_key = DBOField()
+
     def prepare_action(self, source, **_):
+        if self.guarded:
+            guards = [guard for guard in source.env.denizens if guard.affinity != source.affinity]
+            if guards:
+                raise ActionError(guards[0].guard_msg.format(source=guards[0].name, exit=self.direction.desc))
         source.display_line("You head {}.".format(self.direction.desc))
 
-    def __call__(self, source, **_):
+    def _move_user(self, source):
         source.apply_costs(find_cost(source.env))
-        super().__call__(source)
+        super()._move_user(source)
