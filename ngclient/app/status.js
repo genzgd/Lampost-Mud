@@ -27,11 +27,11 @@ angular.module('lampost').controller('StatusTabCtrl', ['$scope', 'lmData', 'lmBu
         var perc = Math.ceil(100 * rawStats[key] / rawStats['base_' + key]).toString();
         stats.style =  {width: perc.toString() + '%'};
         if (perc < 20) {
-          stats.class = 'progress-danger';
+          stats.class = 'progress-bar-danger';
         } else if (perc < 50) {
-          stats.class = 'progress-warning';
+          stats.class = 'progress-bar-warning';
         } else {
-          stats.class = 'progress-success';
+          stats.class = 'progress-bar-success';
         }
       });
     }

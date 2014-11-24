@@ -1,17 +1,25 @@
 <div class="modal">
-    <div class="modal-header">
-        <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
-        <h3>{{title}}</h3>
-    </div>
+  <div class="modal-dialog">
     <form ng-submit="doSubmit()">
-      <div class="modal-body">
-        <label>{{prompt}}</label>
-        <input type="password" ng-model="promptValue" ng-show="inputType == 'password'" autofocus/>
-        <input type="text" ng-model="promptValue" ng-show="inputType == 'text'" autofocus/>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Submit</button>
-        <button class="btn" ng-click="dismiss()">Cancel</button>
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" ng-click="dismiss()" ng-show="!hideClose">×</button>
+          <h3>{{title}}</h3>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="control-label">{{prompt}}</label>
+            <input class="form-control input-sm" type="password" ng-model="promptValue" ng-show="inputType == 'password'"
+                   autofocus="autofocus"/>
+            <input class="form-control input-sm" type="text" ng-model="promptValue" ng-show="inputType == 'text'"
+                   autofocus="autofocus"/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <button class="btn btn-default" ng-click="dismiss()">Cancel</button>
+        </div>
       </div>
     </form>
+  </div>
 </div>

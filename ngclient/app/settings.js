@@ -1,16 +1,16 @@
 angular.module('lampost').controller('SettingsCtrl', ['$scope', 'lmRemote', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmDialog, lmBus) {
 
-    $scope.headings = [{id:"account", label:"Account", class:"active"},
-        {id:"characters", label:"Characters", class:""},
-        {id:"display", label:"Text Display", class:""},
-        {id:"notify", label:"Notifications", class:""}];
+    $scope.headings = [{id:"account", label:"Account", class:"btn-primary"},
+        {id:"characters", label:"Characters", class:"btn-default"},
+        {id:"display", label:"Text Display", class:"btn-default"},
+        {id:"notify", label:"Notifications", class:"btn-default"}];
     $scope.headingId = "account";
     $scope.click = function (headingId) {
         $scope.headingId = headingId;
         for (var i = 0; i < $scope.headings.length; i++) {
             var heading = $scope.headings[i];
-            heading.class = headingId == heading.id ? "active" : "";
+            heading.class = headingId == heading.id ? "btn-primary" : "btn-default";
         }
     };
 

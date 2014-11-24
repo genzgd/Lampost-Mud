@@ -1,24 +1,22 @@
-<div class="row-fluid" ng-controller="StatusTabCtrl">
-  <div class="span5">
-    <div ng-repeat="statId in statsList" ng-init="stat = stats[statId]">
+<div class="row" ng-controller="StatusTabCtrl">
+  <div class="col-md-5">
+    <div ng-repeat="statId in statsList" ng-init="stat = stats[statId]"><span
+        style="width: 60px; padding: 3px; margin-right: 2px; float: left;"><b>{{stat.label}}</b></span>
 
-      <span style="width: 60px; padding: 3px; margin-right: 2px; float: left;"><b>{{stat.label}}</b></span>
-
-      <div class="progress progress-striped" ng-class="stat.class">
-        <div class="bar" ng-style="stat.style"></div>
+      <div class="progress progress-striped">
+        <div class="progress-bar" ng-class="stat.class" ng-style="stat.style"></div>
       </div>
     </div>
     <div ng-show="opponent">
       <div class="spacer"></div>
-       <div class="spacer text-center"><h5>{{opponent.name}}</h5></div>
+      <div class="spacer text-center">
+        <h5>{{opponent.name}}</h5>
+      </div>
+      <div ng-repeat="statId in statsList" ng-init="stat = oppStats[statId]"><span
+          style="width: 60px; padding: 3px; margin-right: 2px; float: left;"><b>{{stat.label}}</b></span>
 
-
-      <div ng-repeat="statId in statsList" ng-init="stat = oppStats[statId]">
-
-        <span style="width: 60px; padding: 3px; margin-right: 2px; float: left;"><b>{{stat.label}}</b></span>
-
-        <div class="progress progress-striped" ng-class="stat.class">
-          <div class="bar" ng-style="stat.style"></div>
+        <div class="progress progress-striped">
+          <div class="progress-bar" ng-class="stat.class" ng-style="stat.style"></div>
         </div>
       </div>
     </div>
