@@ -1,3 +1,4 @@
+from tornado.web import RequestHandler
 from lampost.editor.areas import AreaEditor, RoomEditor
 from lampost.editor.config import ConfigEditor, DisplayEditor, Properties
 from lampost.editor.editor import ChildrenEditor, Editor, ChildList
@@ -31,3 +32,9 @@ def add_endpoints(web_server):
     web_server.add(r'/editor/script/list/(.*)', ChildList, obj_class=Script)
     web_server.add(r'/editor/script/(.*)', ScriptEditor)
     web_server.add(r'/editor/imports/(.*)', ImportsEditor)
+
+
+class EditConnect(RequestHandler):
+    def post(self):
+        pass
+

@@ -30,17 +30,23 @@ class SessionManager():
         self.link_idle_refresh = timedelta(seconds=server_settings.get('link_idle_refresh', 45))
 
     def get_session(self, session_id):
-        return self.session_map.get(session_id, None)
+        return self.session_map.get(session_id)
 
     def player_session(self, player_id):
-        return self.player_session_map.get(player_id, None)
+        return self.player_session_map.get(player_id)
 
     def start_session(self):
         session_id = self._get_next_id()
-        session = UserSession()
+        session = PlayerSession()
         self.session_map[session_id] = session
         session.append({'connect': session_id})
         dispatch('session_connect', session)
+        return session
+
+    def start_edit_session(self):
+        session_id = self._get_next_id()
+        session = UserSession()
+        self.session_map[session_id] = session
         return session
 
     def reconnect_session(self, session_id, player_id):
@@ -155,9 +161,8 @@ class UserSession():
         self._pulse_reg = None
         self.attach_time = datetime.now()
         self.request = None
-        self.player = None
         self.ld_time = None
-        self.user = None
+        self.player = None
         self._reset()
 
     def attach(self, request):
@@ -185,6 +190,43 @@ class UserSession():
             self._pulse_reg = None
         self._reset()
         return output
+
+    def link_failed(self, reason):
+        if self.player:
+            debug("Link failed for {}  [{}] ", self.player.name, reason)
+        self.ld_time = datetime.now()
+        self.request = None
+
+    def disconnect(self):
+        detach_events(self)
+
+    def _push_output(self):
+        if self.request:
+            self._output.append({'link_status': "good"})
+            self._push(self._output)
+            unregister(self._pulse_reg)
+            self._pulse_reg = None
+            self._reset()
+
+    def _reset(self):
+        self._lines = []
+        self._output = []
+        self._status = None
+
+    def _push(self, output):
+        self.request.write(self.json_encode(output))
+        self.request.finish()
+        self.request = None
+
+    @property
+    def privilege(self):
+        return self.player.imm_level if self.player else 0
+
+
+class PlayerSession(UserSession):
+    def __init__(self):
+        super().__init__()
+        self.user = None
 
     def connect_user(self, user):
         self.user = user
@@ -218,33 +260,3 @@ class UserSession():
             self._status = status
             self.append({'status': status})
 
-    def link_failed(self, reason):
-        if self.player:
-            debug("Link failed for {}  [{}] ", self.player.name, reason)
-        self.ld_time = datetime.now()
-        self.request = None
-
-    def disconnect(self):
-        detach_events(self)
-
-    def _push_output(self):
-        if self.request:
-            self._output.append({'link_status': "good"})
-            self._push(self._output)
-            unregister(self._pulse_reg)
-            self._pulse_reg = None
-            self._reset()
-
-    def _reset(self):
-        self._lines = []
-        self._output = []
-        self._status = None
-
-    def _push(self, output):
-        self.request.write(self.json_encode(output))
-        self.request.finish()
-        self.request = None
-
-    @property
-    def privilege(self):
-        return self.player.imm_level if self.player else 0

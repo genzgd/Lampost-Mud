@@ -1,10 +1,10 @@
 angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout',
   'lmBus', 'lmData', 'lmRemote', 'lmUtil', function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
 
-    var tabInfo = [{id: 'status', label: 'Status', include: 'view/status_tab.html'},
-      {id: 'playerList', label: 'Player List', include: 'view/player_list_tab.html'},
-      {id: 'channel', label: 'Channel', include: "view/channel_tab.html"},
-      {id: 'messages', label: 'Messages', include: "view/messages_tab.html"}
+    var tabInfo = [{id: 'status', label: 'Status', include: 'mud/view/status_tab.html'},
+      {id: 'playerList', label: 'Player List', include: 'mud/view/player_list_tab.html'},
+      {id: 'channel', label: 'Channel', include: "mud/view/channel_tab.html"},
+      {id: 'messages', label: 'Messages', include: "mud/view/messages_tab.html"}
     ];
 
     var tabMap = {};

@@ -1,10 +1,10 @@
-angular.module('lampost', ['lampost_dir', 'lampost_svc', 'ngRoute', 'ngSanitize']);
+angular.module('lampost', ['lampost_dir', 'lampost_svc', 'lampost_util', 'ngRoute', 'ngSanitize']);
 
 angular.module('lampost').config(['$routeProvider', '$locationProvider', function (
   $routeProvider, $locationProvider) {
   $routeProvider.
-    when('/game', {templateUrl: 'view/main.html'}).
-    when('/settings', {templateUrl: 'view/settings.html'}).
+    when('/game', {templateUrl: 'mud/view/main.html'}).
+    when('/settings', {templateUrl: 'mud/view/settings.html'}).
     otherwise({redirectTo: '/game'});
   $locationProvider.hashPrefix('!');
 }]);

@@ -55,8 +55,8 @@ class Context():
         lampost.editor.web.add_endpoints(web_server)
 
         config_mgr.start_service()
-        web_server.add(r"/", RedirectHandler, url="/ngclient/lampost.html")
-        web_server.add(r"/ngclient/(.*)", StaticFileHandler, path="ngclient")
+        web_server.add(r"/", RedirectHandler, url="/webclient/lampost.html")
+        web_server.add(r"/webclient/(.*)", StaticFileHandler, path="webclient")
         web_server.start_service(args.port, args.server_interface)
 
         IOLoop.instance().start()
