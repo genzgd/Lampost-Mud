@@ -10,12 +10,10 @@ angular.module('lampost_mud').config(['$routeProvider', '$locationProvider', fun
 }]);
 
 
-// Using here so they get instantiated.
+// Using services here so they get instantiated.  Many depend on event listeners only
 //noinspection JSUnusedLocalSymbols
 angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'lpStorage', 'lmData', 'lmDialog', 'lmComm',
   function ($rootScope, $timeout, lmBus, lmRemote, lpStorage, lmData, lmDialog, lmComm) {
-
-    window.name = "lampost_main_" + new Date().getTime();
 
     window.onbeforeunload = function () {
       window.windowClosing = true;
@@ -32,7 +30,6 @@ angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote'
       lmRemote.connect('game_connect');
     }
 
-
   }]);
 
 angular.module('lampost_mud').service('lmApp', ['$timeout', 'lmBus', 'lmData', 'lmDialog',
@@ -48,19 +45,6 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lmBus', 'lmData', '
 
     lmBus.register("password_reset", function () {
       lmDialog.show({templateUrl: 'dialogs/password_reset.html', controller: 'PasswordResetCtrl', noEscape: true});
-    });
-
-    lmBus.register("start_room_edit", function (roomId) {
-      if (!lmData.editorWindow || lmData.editorWindow.closed) {
-        launchEditor(roomId);
-      } else {
-        lmData.editorWindow.blur();
-        $timeout(function() {
-          window.open("", lmData.editorWindow.name);
-          lmData.editorWindow.focus();
-          lmData.editorWindow.editLampostRoom(roomId);
-        }, 20);
-      }
     });
 
     lmBus.register('server_error', function() {

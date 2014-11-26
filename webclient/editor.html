@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lampost Mud</title>
+  <title>Lampost Editor</title>
   <link rel="stylesheet" href="local_lib/bootstrap.css">
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link href="css/lampost.css" rel="stylesheet">
@@ -11,7 +11,7 @@
 </head>
 
 <body ng-cloak>
-<nav ng-controller="NavCtrl" id="lm-navbar" class="navbar" role="navigation">
+<nav ng-controller="EditorNavController" id="lm-navbar" class="navbar" role="navigation">
   <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
@@ -23,38 +23,60 @@
       </button>
       <a class="navbar-brand" href="#">Lampost Editor</a>
     </div>
-     <div class="collapse navbar-collapse" id="lampost-navbar-collapse">
-      <ul class="nav navbar-nav">
+    <div class="collapse navbar-collapse" id="lampost-navbar-collapse">
+      <ul class="nav navbar-text">
         <li ng-repeat="link in links | orderBy:'priority'" ng-class="link.class()">
-        <a ng-href ng-click="changeLocation(link.name)">{{link.label}} <i ng-class="link.icon"></i></a>
+          <a ng-href ng-click="changeLocation(link.name)">{{link.label}} <i ng-class="link.icon"></i></a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right active">
         <li><p class="navbar-text">{{welcome}}</p></li>
         <li ng-if="loggedIn"><a ng-href ng-click="logout()">Logout <i class="fa fa-external-link"></i></a></li>
-        <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost" target="_blank"><i class="fa fa-list-alt"></i></a></li>
-        <li><a title="Lampost On Github" href="https://github.com/genzgd/Lampost-Mud" target="_blank"><i class="fa fa-github"></i></a></li>
+        <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost"
+               target="_blank"><i class="fa fa-list-alt"></i></a></li>
+        <li><a title="Lampost On Github" href="https://github.com/genzgd/Lampost-Mud" target="_blank"><i
+            class="fa fa-github"></i></a></li>
       </ul>
     </div>
   </div>
 </nav>
-<div class="v-full" ng-controller="EditorCtrl" ng-switch="loaded">
-  <div ng-switch-when="true" class="row-fluid wrapper">
-    <div class="tabbable tabs-left span12 wrapper">
-      <ul class="nav nav-tabs">
-        <li alt-text="editor.parent" ng-repeat="editor in editors" ng-class="tabClass(editor)">
-          <a ng-click="click(editor)">{{editor.label}}</a></li>
-      </ul>
-
-      <div class="tab-content wrapper">
-        <div style="height: 100%; overflow-y: hidden" ng-repeat="editor in editors" ng-show="currentEditor == editor"
-             class="tab-pane active" ng-include="editorInclude(editor)">
-        </div>
+<div class="container-fluid" ng-controller="EditorAppController">
+  <div class="row" ng-if="!loggedIn">
+    <div class="col-md-6 col-xs-4">
+      <div class="alert alert-info">Welcome to the <strong>{{siteTitle}}</strong> editor. Please log in with your
+        immortal character or account name.
       </div>
     </div>
+    <div class="col-md-4 col-xs-6 well well-sm">
+      <form ng-submit="login()">
+        <div class="form-group">
+          <label for="userIdInput">Player or Account Name:</label>
+          <input class="form-control input-sm" id="userIdInput"
+                 type="text" ng-change="loginError = false" ng-model="userId" pref-focus="pref-focus"
+                 required/>
+        </div>
+        <div class="form-group">
+          <label for="passwordInput">Account Password:</label>
+          <input id="passwordInput" class="form-control input-sm"
+                 type="password" ng-change="loginError = false" ng-model="password" required/>
+        </div>
+        <div class="alert alert-danger" ng-show="loginError">
+          <button type="button" class="close" ng-click="loginError = false">×</button>
+          Invalid user name or password
+        </div>
+        <div class="form-group pull-right">
+          <button class="btn btn-sm btn-primary" type="submit">Enter Editor
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
-  <div ng-switch-default>Loading Data From Server</div>
 </div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.js"></script>
+
 <script src="common/js/directives.js"></script>
 <script src="common/js/dialog.js"></script>
 <script src="common/js/util.js"></script>
@@ -71,8 +93,10 @@
 <script src="editor/js/display_editor.js"></script>
 <script src="editor/js/feature_editors.js"></script>
 <script src="editor/js/imports_editor.js"></script>
-
 <script src="editor/js/skills_editor.js"></script>
+
 <script src="common/lib/spectrum.js"></script>
+
+<script src="../lsp/config.js"></script>
 </body>
 </html>

@@ -5,6 +5,8 @@ angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
   var sessions;
   var sessionKey = 'playerSessions';
   var lastKey = 'lastPlayer';
+  var immKey = 'activeImm';
+  var immSession;
 
   function readSessions() {
     var value = localStorage.getItem(sessionKey);
@@ -21,13 +23,17 @@ angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
     }
   }
 
-  function invalidateTimestamp() {
+  function onLogout() {
     readSessions();
     if (sessions.hasOwnProperty(playerId)) {
       delete sessions[playerId];
       writeSessions();
     }
     playerId = null;
+    if (immSession) {
+      localStorage.removeItem(immKey);
+      immSession = null;
+    }
   }
 
   function updateTimestamp() {
@@ -70,10 +76,14 @@ angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
 
   lmBus.register("login", function (data) {
     playerId = data.name.toLowerCase();
+    if (data.imm_level) {
+      immSession = {immName: data.imm_name, sessionId: sessionId};
+      localStorage.setItem(immKey, JSON.stringify(immSession));
+    }
     updateTimestamp();
   });
 
-  lmBus.register("logout", invalidateTimestamp);
+  lmBus.register("logout", onLogout);
 
   lmBus.register("window_closing", function () {
     if (playerId) {

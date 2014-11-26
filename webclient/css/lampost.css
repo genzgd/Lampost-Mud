@@ -41,12 +41,6 @@ html, body {
 }
 
 
-#powered-link {
-    padding-top: 17px;
-    font-style: italic;
-    font-size: 11px;
-}
-
 .forgot-link {
   cursor: pointer;
   font-style: italic;

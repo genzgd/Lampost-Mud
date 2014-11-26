@@ -1,6 +1,3 @@
-
-
-
 angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus', 'lmRemote', 'lmDialog', 'lmUtil',
   function ($q, $timeout, lmBus, lmRemote, lmDialog, lmUtil) {
 
@@ -463,12 +460,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
 angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEditor', 'lmRemote', 'lmBus',
   function ($q, $scope, lmEditor, lmRemote, lmBus) {
 
-    var playerId = name.split('_')[1];
-    var editorList = jQuery.parseJSON(localStorage.getItem('lm_editors_' + playerId));
-    if (!editorList) {
-      alert("No Editor List Found");
-      window.close();
-    }
+    var editorList = [];
 
     function editById(dbo_id) {
       var areaId = dbo_id.split(':')[0];
