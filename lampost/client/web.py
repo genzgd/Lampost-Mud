@@ -1,12 +1,12 @@
 from lampost.client.clientdata import NewCharacterData
-from lampost.client.handlers import Connect, Link, Login, Action, Register, Unregister, RemoteLog
+from lampost.client.handlers import GameConnect, Link, Login, Action, Register, Unregister, RemoteLog
 from lampost.client.messages import FriendResponse, MessageDelete
 from lampost.client.settings import Settings
 
 
 def add_endpoints(web_server):
 
-    web_server.add(r'/connect', Connect)
+    web_server.add(r'/game_connect', GameConnect)
     web_server.add(r'/link', Link)
     web_server.add(r'/login', Login)
     web_server.add(r'/action', Action)

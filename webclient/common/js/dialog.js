@@ -134,7 +134,7 @@ angular.module('lampost_dlg', []).service('lmDialog', ['$rootScope', '$compile',
     };
 
     this.showAlert = function(options, noEscape) {
-      showDialog({templateUrl: 'dialogs/alert.html',
+      showDialog({templateUrl: 'common/dialogs/alert.html',
         scope: angular.extend($rootScope.$new(), options),
         controller: AlertCtrl, noEscape: noEscape});
     };
@@ -163,7 +163,7 @@ angular.module('lampost_dlg', []).service('lmDialog', ['$rootScope', '$compile',
         scope.submit.call(scope, scope.promptValue);
         scope.dismiss();
       };
-      showDialog({templateUrl: 'dialogs/prompt.html', scope: scope,
+      showDialog({templateUrl: 'common/dialogs/prompt.html', scope: scope,
         noEscape: true});
     };
 

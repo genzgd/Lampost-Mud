@@ -27,9 +27,9 @@ angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote'
 
     var lastSession = lpStorage.lastSession();
     if (lastSession) {
-      lmRemote.connect(lastSession.sessionId, {player_id: lastSession.playerId});
+      lmRemote.connect('game_connect', lastSession.sessionId, {player_id: lastSession.playerId});
     } else {
-      lmRemote.connect();
+      lmRemote.connect('game_connect');
     }
 
 
@@ -40,9 +40,9 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lmBus', 'lmData', '
 
     lmBus.register("user_login", function () {
       if (lmData.playerIds.length == 0) {
-        lmDialog.show({templateUrl: "dialogs/new_character.html", controller: "NewCharacterCtrl"});
+        lmDialog.show({templateUrl: 'mud/dialogs/new_character.html', controller: 'NewCharacterCtrl'});
       } else {
-        lmDialog.show({templateUrl: "dialogs/select_character.html", controller: "SelectCharacterCtrl"});
+        lmDialog.show({templateUrl: 'mud/select_character.html', controller: "SelectCharacterCtrl"});
       }
     });
 
@@ -181,15 +181,15 @@ angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lmDialog', 'lm
     };
 
     $scope.newAccountDialog = function () {
-      lmDialog.show({templateUrl: "dialogs/new_account.html", controller: "NewAccountCtrl"});
+      lmDialog.show({templateUrl: "mud/dialogs/new_account.html", controller: "NewAccountCtrl"});
     };
 
     $scope.forgotName = function () {
-      lmDialog.show({templateUrl: "dialogs/forgot_name.html", controller: "ForgotNameCtrl"})
+      lmDialog.show({templateUrl: "mud/dialogs/forgot_name.html", controller: "ForgotNameCtrl"})
     };
 
     $scope.forgotPassword = function () {
-      lmDialog.show({templateUrl: "dialogs/forgot_password.html", controller: "ForgotPasswordCtrl"})
+      lmDialog.show({templateUrl: "mud/dialogs/forgot_password.html", controller: "ForgotPasswordCtrl"})
     };
 
     lmBus.register("login_failure", function () {
@@ -223,7 +223,7 @@ angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout'
           lmData.userId = response.user_id;
           $scope.dismiss();
           $timeout(function () {
-            lmDialog.show({templateUrl: "dialogs/new_character.html", controller: "NewCharacterCtrl", noEscape: true});
+            lmDialog.show({templateUrl: "mud/dialogs/new_character.html", controller: "NewCharacterCtrl", noEscape: true});
           })
         }, function (error) {
           $scope.errorText = "Account name " + error.text + " is in use.";

@@ -2,6 +2,7 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
   function ($timeout, $http, $q, lmLog, lmBus, lmDialog) {
 
     var sessionId = '';
+    var connectEndpoint = '';
     var connected = false;
     var loadingTemplate;
     var waitCount = 0;
@@ -94,7 +95,7 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
           service.registered = false;
         });
         lmBus.dispatch("logout", "invalid_session");
-        serverRequest("connect");
+        serverRequest(connectEndpoint);
       } else if (status == "no_login") {
         lmBus.dispatch("logout", "invalid_session");
       } else if (status == "cancel") {
@@ -111,7 +112,7 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
 
     function reconnect() {
       if (!sessionId) {
-        serverRequest("connect");
+        serverRequest(endpoint);
       } else {
         serverRequest("link");
       }
@@ -142,11 +143,12 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
       }
     }
 
-    this.connect = function(oldSessionId, data) {
+    this.connect = function(endpoint, oldSessionId, data) {
       if (oldSessionId) {
         sessionId = oldSessionId;
       }
-      serverRequest('connect', data);
+      connectEndpoint = endpoint;
+      serverRequest(endpoint, data);
     };
 
     this.request = function (resource, args) {

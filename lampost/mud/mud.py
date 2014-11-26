@@ -36,7 +36,6 @@ class MudNature():
         self.context.set('directions', Direction.ordered)
 
         register('game_settings', self._game_settings)
-        register('player_connect', self._player_connect)
         register('player_baptise', self._baptise, priority=-100)
         register('imm_baptise', self._imm_baptise, priority=-100)
         register('missing_env', self._start_env)
@@ -55,35 +54,11 @@ class MudNature():
         room_module.default_room_size = game_settings.get('room_size', room_module.default_room_size)
         room_module.room_reset_time = game_settings.get('room_reset_time', room_module.room_reset_time)
 
-    def _player_connect(self, player, client_data):
-        editors = []
-        if has_perm(player, 'creator'):
-            editors.append('area')
-            editors.append('room')
-            editors.append('mobile')
-            editors.append('article')
-            editors.append('script')
-        if has_perm(player, 'admin'):
-            editors.append('players')
-            editors.append('social')
-            editors.append('display')
-            editors.append('race')
-            editors.append('attack')
-            editors.append('defense')
-            editors.append('imports')
-        if has_perm(player, 'supreme'):
-            editors.append('config')
-
-        client_data['editors'] = editors
-
     def _baptise(self, player):
         player.baptise()
         self.shout_channel.add_sub(player)
         if player.imm_level:
             dispatch("imm_baptise", player)
-
-        if has_perm(player, 'supreme'):
-            register("log", player.display_line)
         self._start_env(player)
 
     def _start_env(self, player):

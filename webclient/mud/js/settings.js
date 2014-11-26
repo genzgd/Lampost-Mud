@@ -88,7 +88,7 @@ angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData
     lmBus.register('players_updated', loadCharacters, $scope);
 
     $scope.addCharacter = function() {
-        lmDialog.show({templateUrl:"dialogs/new_character.html", controller:"NewCharacterCtrl"});
+        lmDialog.show({templateUrl:"mud/dialogs/new_character.html", controller:"NewCharacterCtrl"});
     };
 
     loadCharacters();
@@ -138,7 +138,7 @@ angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout'
 angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', function($scope, $timeout, lmBus, lmData, lmRemote) {
 
     $scope.showSuccess = false;
-    $scope.hasPlayerEditor = lmData.editors.indexOf('players') > -1;
+    $scope.isImm = lmData.immLevel;
     $scope.notifies = {friendSound: false, friendDesktop: false, friendEmail:false, allSound: false, allDesktop: false, allEmail: false};
     angular.forEach(lmData.notifies, function(value) {
         $scope.notifies[value] = true;

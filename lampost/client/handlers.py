@@ -65,7 +65,7 @@ class MethodHandler(SessionHandler):
             self.send_error(404)
 
 
-class Connect(RequestHandler):
+class GameConnect(RequestHandler):
     def post(self):
         session_id = self.request.headers.get('X-Lampost-Session')
         if session_id:

@@ -16,20 +16,14 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
 
     function clear() {
 
-        if (self.editorWindow && !self.editorWindow.closed) {
-            self.editorWindow.close();
-            delete self.editorWindow;
-        }
-
         self.display = [];
         self.userId = 0;
         self.playerIds = [];
-        self.editors = [];
         self.playerId = 0;
         self.playerList = {};
+        self.immLevel = null;
         self.history = [];
         self.historyIx = 0;
-        self.editorWindow = null;
         self.userDisplays = {};
         self.notifies = [];
         self.validTabs = ['channel', 'playerList'];
@@ -100,16 +94,15 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
 
     lmBus.register("login", function (data) {
         setUser(data);
-        self.editors = data.editors;
         self.playerIds = data.player_ids;
         self.playerName = data.name;
         self.userDisplays = data.displays;
+        self.immLevel = data.imm_level;
         self.playerId = self.playerName.toLocaleLowerCase();
         self.validTabs = ['status', 'channel', 'messages', 'playerList'];
         self.messages = data.messages;
 
         lmUtil.intSort(self.messages, 'msg_id');
-        localStorage.setItem("lm_editors_" + self.playerId, JSON.stringify(self.editors));
     }, null, -100);
 
     lmBus.register("user_login", setUser, null, -100);

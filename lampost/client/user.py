@@ -112,6 +112,12 @@ class UserManager():
         return max(imm_levels)
 
     def _user_connect(self, user, client_data):
+        for player_id in user.player_ids:
+            player = load_object(Player, player_id)
+            if player.imm_level:
+                client_data['imm_player'] = player_id
+                client_data['imm_level'] = player.imm_level
+
         client_data.update({'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
                             'password_reset': user.password_reset, 'notifies': user.notifies})
 
