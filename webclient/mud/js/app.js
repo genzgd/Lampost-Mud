@@ -1,6 +1,6 @@
-angular.module('lampost', ['lampost_dir', 'lampost_svc', 'lampost_util', 'ngRoute', 'ngSanitize']);
+angular.module('lampost_mud', ['lampost_dir', 'lampost_dlg', 'lampost_util', 'lampost_remote', 'ngRoute', 'ngSanitize']);
 
-angular.module('lampost').config(['$routeProvider', '$locationProvider', function (
+angular.module('lampost_mud').config(['$routeProvider', '$locationProvider', function (
   $routeProvider, $locationProvider) {
   $routeProvider.
     when('/game', {templateUrl: 'mud/view/main.html'}).
@@ -12,8 +12,8 @@ angular.module('lampost').config(['$routeProvider', '$locationProvider', functio
 
 // Using here so they get instantiated.
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'lmData', 'lmDialog', 'lmComm',
-  function ($rootScope, $timeout, lmBus, lmRemote, lmData, lmDialog, lmComm) {
+angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'lpStorage', 'lmData', 'lmDialog', 'lmComm',
+  function ($rootScope, $timeout, lmBus, lmRemote, lpStorage, lmData, lmDialog, lmComm) {
 
     window.name = "lampost_main_" + new Date().getTime();
 
@@ -22,33 +22,20 @@ angular.module('lampost').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'l
       lmBus.dispatch("window_closing");
     };
 
-    window.onunload = function () {
-      if (lmData.editorWindow && !lmData.editorWindow.closed) {
-        lmData.editorWindow.close();
-      }
-    };
-
-    jQuery('body').on('editor_closing', function () {
-      $timeout(function () {
-        lmRemote.unregisterService('edit_update_service');
-      }, 20);
-    });
-
-    jQuery('body').on('editor_opened', function () {
-      $timeout(function () {
-        lmRemote.registerService('edit_update_service');
-      }, 20);
-    });
-
     $rootScope.siteTitle = lampost_config.title;
     $('title').text(lampost_config.title);
 
-    lmRemote.connect();
+    var lastSession = lpStorage.lastSession();
+    if (lastSession) {
+      lmRemote.connect(lastSession.sessionId, {player_id: lastSession.playerId});
+    } else {
+      lmRemote.connect();
+    }
 
 
   }]);
 
-angular.module('lampost').service('lmApp', ['$timeout', 'lmBus', 'lmData', 'lmDialog',
+angular.module('lampost_mud').service('lmApp', ['$timeout', 'lmBus', 'lmData', 'lmDialog',
   function ($timeout, lmBus, lmData, lmDialog) {
 
     lmBus.register("user_login", function () {
@@ -76,38 +63,16 @@ angular.module('lampost').service('lmApp', ['$timeout', 'lmBus', 'lmData', 'lmDi
       }
     });
 
-    lmBus.register("edit_update", function (updateEvent) {
-      if (lmData.editorWindow && !lmData.editorWindow.closed) {
-        lmData.editorWindow.editUpdate(updateEvent);
-      }
+    lmBus.register('server_error', function() {
+      lmBus.dispatch("display", {lines: [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.", display: 'combat'},
+              {text:"Don't mind the smoke, I'm sure someone is investigating.", display: 'combat'}
+             ]});
     });
 
-    this.launchEditor = launchEditor;
-
-    function launchEditor(roomId) {
-      if (lmData.editorWindow && lmData.editorWindow.closed) {
-        delete lmData.editorWindow;
-      }
-      if (lmData.editorWindow) {
-        lmData.editorWindow.focus();
-      } else {
-        if (roomId) {
-          localStorage.setItem("editor_room_id", roomId);
-        }
-        var editorWidth = 800;
-        var editorHeight = 600;
-        if (window.screen) {
-          editorWidth = window.screen.availWidth * .8;
-          editorHeight = window.screen.availHeight * .8;
-        }
-        lmData.editorWindow = open('editor.html', 'editor_' + lmData.playerId,
-          'width=' + editorWidth + ',height=' + editorHeight);
-      }
-    }
   }]);
 
 
-angular.module('lampost').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil', 'lmDialog',
+angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil', 'lmDialog',
   function ($rootScope, $scope, $location, lmBus, lmData, lmUtil, lmDialog) {
 
     $(window).on("resize", function () {
@@ -178,11 +143,10 @@ angular.module('lampost').controller('NavCtrl', ['$rootScope', '$scope', '$locat
   }]);
 
 
-angular.module('lampost').controller('GameCtrl', ['$scope', 'lmApp', 'lmBus', 'lmData', 'lmDialog',
+angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lmBus', 'lmData', 'lmDialog',
   function ($scope, lmApp, lmBus, lmData, lmDialog) {
 
-    $scope.toolbar = [];
-    update();
+     update();
 
     lmBus.register("login", function () {
       update();
@@ -197,23 +161,16 @@ angular.module('lampost').controller('GameCtrl', ['$scope', 'lmApp', 'lmBus', 'l
     }, $scope);
 
     function update() {
-      $scope.toolbar = [];
       if (lmData.playerId) {
         $scope.actionPane = "action";
-        if (lmData.editors.length) {
-          $scope.toolbar.push({label: 'Editor', click: function () {
-            lmApp.launchEditor();
-          }});
-        }
       } else {
         $scope.actionPane = "login";
-      }
-    }
+      }    }
 
   }]);
 
 
-angular.module('lampost').controller('LoginCtrl', ['$scope', 'lmDialog', 'lmBus',
+angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lmDialog', 'lmBus',
   function ($scope, lmDialog, lmBus) {
 
     $scope.loginError = false;
@@ -241,7 +198,7 @@ angular.module('lampost').controller('LoginCtrl', ['$scope', 'lmDialog', 'lmBus'
 
   }]);
 
-angular.module('lampost').controller('NewAccountCtrl', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmData',
+angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmData',
   function ($scope, $timeout, lmRemote, lmDialog, lmData) {
 
     $scope.accountName = "";
@@ -274,7 +231,7 @@ angular.module('lampost').controller('NewAccountCtrl', ['$scope', '$timeout', 'l
     }
   }]);
 
-angular.module('lampost').controller('ForgotNameCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
+angular.module('lampost_mud').controller('ForgotNameCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
   $scope.showError = false;
   $scope.submitRequest = function () {
     lmRemote.request("settings/send_name", {info: $scope.info}).then(function () {
@@ -286,7 +243,7 @@ angular.module('lampost').controller('ForgotNameCtrl', ['$scope', 'lmRemote', 'l
   };
 }]);
 
-angular.module('lampost').controller('ForgotPasswordCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
+angular.module('lampost_mud').controller('ForgotPasswordCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
   $scope.submitRequest = function () {
     lmRemote.request("settings/temp_password", {info: $scope.info}).then(function () {
       $scope.dismiss();
@@ -298,7 +255,7 @@ angular.module('lampost').controller('ForgotPasswordCtrl', ['$scope', 'lmRemote'
   };
 }]);
 
-angular.module('lampost').controller('PasswordResetCtrl', ['$scope', 'lmRemote', function ($scope, lmRemote) {
+angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lmRemote', function ($scope, lmRemote) {
   $scope.errorText = null;
   $scope.password = '';
   $scope.passwordCopy = '';
@@ -312,7 +269,7 @@ angular.module('lampost').controller('PasswordResetCtrl', ['$scope', 'lmRemote',
   }
 }]);
 
-angular.module('lampost').controller('ActionCtrl', ['$scope', 'lmBus', 'lmData', function ($scope, lmBus, lmData) {
+angular.module('lampost_mud').controller('ActionCtrl', ['$scope', 'lmBus', 'lmData', function ($scope, lmBus, lmData) {
   var curAction;
   $scope.update = 0;
   $scope.action = "";

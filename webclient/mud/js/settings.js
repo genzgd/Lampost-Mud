@@ -1,4 +1,4 @@
-angular.module('lampost').controller('SettingsCtrl', ['$scope', 'lmRemote', 'lmDialog', 'lmBus',
+angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', 'lmRemote', 'lmDialog', 'lmBus',
     function ($scope, lmRemote, lmDialog, lmBus) {
 
     $scope.headings = [{id:"account", label:"Account", class:"btn-primary"},
@@ -26,7 +26,7 @@ angular.module('lampost').controller('SettingsCtrl', ['$scope', 'lmRemote', 'lmD
     };
 }]);
 
-angular.module('lampost').controller('AccountFormCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote',
+angular.module('lampost_mud').controller('AccountFormCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote',
     function ($scope, $timeout, lmData, lmRemote) {
     $scope.nameInUse = false;
     $scope.emailInUse = false;
@@ -64,7 +64,7 @@ angular.module('lampost').controller('AccountFormCtrl', ['$scope', '$timeout', '
 
 }]);
 
-angular.module('lampost').controller('CharactersTabCtrl', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
+angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
     function($scope, lmData, lmRemote, lmBus, lmDialog) {
 
     $scope.players = [];
@@ -102,7 +102,7 @@ angular.module('lampost').controller('CharactersTabCtrl', ['$scope', 'lmData', '
 }]);
 
 
-angular.module('lampost').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote', function($scope, $timeout, lmData, lmRemote) {
+angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote', function($scope, $timeout, lmData, lmRemote) {
 
     $scope.selectors = [];
     $scope.showSuccess = false;
@@ -135,7 +135,7 @@ angular.module('lampost').controller('DisplayTabCtrl', ['$scope', '$timeout', 'l
 
 }]);
 
-angular.module('lampost').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', function($scope, $timeout, lmBus, lmData, lmRemote) {
+angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', function($scope, $timeout, lmBus, lmData, lmRemote) {
 
     $scope.showSuccess = false;
     $scope.hasPlayerEditor = lmData.editors.indexOf('players') > -1;

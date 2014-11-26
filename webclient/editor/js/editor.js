@@ -3,16 +3,6 @@ angular.module('lampost_editor', ['lampost_svc', 'lampost_dir', 'ngSanitize']);
 angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemote', 'lmBus',
   function ($timeout, lmUtil, lmEditor, lmRemote, lmBus) {
 
-    var playerId = name.split('_')[1];
-    var sessionId = localStorage.getItem('lm_session_' + playerId);
-    if (!sessionId) {
-      alert("No Editor Session Found");
-      window.close();
-    }
-
-    lmRemote.childSession(sessionId);
-    window.opener.jQuery('body').trigger('editor_opened');
-
     window.onbeforeunload = function () {
       var handlers = [];
       lmBus.dispatch('editorClosing', handlers);
@@ -27,12 +17,6 @@ angular.module('lampost_editor').run(['$timeout', 'lmUtil', 'lmEditor', 'lmRemot
       if (window.opener && window.opener.jQuery) {
         window.opener.jQuery('body').trigger('editor_closing');
       }
-    };
-
-    window.editUpdate = lmEditor.editUpdate;
-
-    window.editLampostRoom = function (dbo_id) {
-      lmBus.dispatch('edit_by_id', dbo_id);
     };
 
   }]);
@@ -51,6 +35,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
     };
 
     remoteCache.constants = {ref: 0, url: 'constants', sort: angular.noop};
+
 
     function cacheEntry(key) {
       var keyParts = key.split(':');
@@ -148,6 +133,22 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return display;
     }
 
+    lmBus.register('edit_update', function (event) {
+      var outside = !event.local;
+      switch (event.edit_type) {
+        case 'update':
+          updateModel(event.model, outside);
+          break;
+        case 'create':
+          insertModel(event.model, outside);
+          break;
+        case 'delete':
+          deleteModel(event.model, outside);
+          break;
+      }
+    });
+
+
     this.invalidate = function (key) {
       deleteEntry(key)
     };
@@ -203,20 +204,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return entry.promise;
     };
 
-    this.editUpdate = function (event) {
-      var outside = !event.local;
-      switch (event.edit_type) {
-        case 'update':
-          updateModel(event.model, outside);
-          break;
-        case 'create':
-          insertModel(event.model, outside);
-          break;
-        case 'delete':
-          deleteModel(event.model, outside);
-          break;
-      }
-    };
 
     this.prepare = function (controller, $scope) {
 

@@ -118,7 +118,7 @@ angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
 }]);
 
 
-angular.module('lampost_svc').service('lmUtil', [function () {
+angular.module('lampost_util').service('lmUtil', [function () {
   this.stringSort = function (array, field) {
     array.sort(function (a, b) {
       var aField = a[field].toLowerCase();

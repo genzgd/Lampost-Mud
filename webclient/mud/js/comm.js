@@ -1,4 +1,4 @@
-angular.module('lampost').service('lmComm', ['lmBus', 'lmData', 'lmRemote', 'lmDialog', function (lmBus, lmData, lmRemote, lmDialog) {
+angular.module('lampost_mud').service('lmComm', ['lmBus', 'lmData', 'lmRemote', 'lmDialog', function (lmBus, lmData, lmRemote, lmDialog) {
 
     var self = this;
     var allLogins = false;

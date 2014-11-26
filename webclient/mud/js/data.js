@@ -1,4 +1,4 @@
-angular.module('lampost').service('lmData', ['lmBus', 'lmUtil', function (lmBus, lmUtil) {
+angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lmBus, lmUtil) {
 
     var maxLines = 1000;
     var self = this;

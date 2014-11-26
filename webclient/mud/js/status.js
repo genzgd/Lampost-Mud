@@ -1,4 +1,4 @@
-angular.module('lampost').controller('StatusTabCtrl', ['$scope', 'lmData', 'lmBus',
+angular.module('lampost_mud').controller('StatusTabCtrl', ['$scope', 'lmData', 'lmBus',
   function($scope, lmData, lmBus) {
 
     $scope.statsList = ['health', 'mental', 'stamina', 'action'];

@@ -1,4 +1,4 @@
-angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout',
+angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
   'lmBus', 'lmData', 'lmRemote', 'lmUtil', function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
 
     var tabInfo = [{id: 'status', label: 'Status', include: 'mud/view/status_tab.html'},
@@ -127,7 +127,7 @@ angular.module('lampost').controller('DataTabsCtrl', ['$scope', '$timeout',
     })
   }]);
 
-angular.module('lampost').controller('FriendReqCtrl', ['$scope', 'lmData', 'lmRemote', function ($scope, lmData, lmRemote) {
+angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lmData', 'lmRemote', function ($scope, lmData, lmRemote) {
   $scope.respond = function (response) {
     lmRemote.asyncRequest("messages/friend_response", {action: response, player_id: lmData.playerId,
       source_id: $scope.msg.content.friend_id, msg_id: $scope.msg.msg_id}).then(function () {

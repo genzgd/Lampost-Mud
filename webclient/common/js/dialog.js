@@ -1,4 +1,4 @@
-angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
+angular.module('lampost_dlg', []).service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
   function ($rootScope, $compile, $controller, $templateCache, $timeout, $http) {
 
     var dialogMap = {};
@@ -188,4 +188,4 @@ angular.module('lampost_svc').service('lmDialog', ['$rootScope', '$compile', '$c
       }
     }
 
-  }])
+  }]);

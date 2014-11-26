@@ -22,7 +22,6 @@ class User(RootDBO):
     email = DBOField('')
 
     player_ids = DBOField([])
-    toolbar = DBOField([])
     displays = DBOField({})
     notifies = DBOField([])
 
