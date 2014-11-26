@@ -17,12 +17,17 @@ angular.module('lampost_editor').run(['$timeout', '$rootScope', 'lmUtil', 'lmEdi
     };
 
     $rootScope.siteTitle = lampost_config.title;
-    var immSession = localStorage.getItem('activeImm');
-    if (immSession) {
-      immSession = JSON.parse(immSession);
-      lmRemote.connect('edit_connect', immSession.sessionId, immSession);
+    var previousSession = sessionStorage.getItem('editSessionId');
+    if (previousSession) {
+      lmRemote.connect('editor/edit_connect', previousSession);
     } else {
-      lmRemote.connect('edit_connect');
+      var gameSession = localStorage.getItem('activeImm');
+      if (gameSession) {
+        gameSession = JSON.parse(gameSession);
+        lmRemote.connect('editor/edit_connect', null, gameSession);
+      } else {
+        lmRemote.connect('editor/edit_connect');
+      }
     }
 
   }]);

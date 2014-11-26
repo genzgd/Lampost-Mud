@@ -21,7 +21,7 @@ angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote'
     };
 
     $rootScope.siteTitle = lampost_config.title;
-    $('title').text(lampost_config.title);
+    jQuery('title').text(lampost_config.title);
 
     var lastSession = lpStorage.lastSession();
     if (lastSession) {
@@ -255,39 +255,55 @@ angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lmRemo
   }
 }]);
 
-angular.module('lampost_mud').controller('ActionCtrl', ['$scope', 'lmBus', 'lmData', function ($scope, lmBus, lmData) {
+angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lmBus', 'lmData',
+  function ($scope, $timeout, lmBus, lmData) {
   var curAction;
+
   $scope.update = 0;
-  $scope.action = "";
   $scope.display = lmData.display;
+
+  function updateAction(action) {
+    $scope.action = action;
+    $timeout(function () {
+      lmBus.dispatch('user_activity')
+    }, 150);
+  }
+
   lmBus.register("display_update", function () {
     $scope.display = lmData.display;
     $scope.update++;
   }, $scope);
+
+  $scope.actionFocus = function() {
+    lmBus.dispatch('user_activity');
+  };
+
   $scope.sendAction = function () {
     if ($scope.action) {
       lmBus.dispatch("server_request", "action", {action: $scope.action});
       lmData.history.push($scope.action);
       lmData.historyIx = lmData.history.length;
-      $scope.action = "";
+      updateAction('');
     }
   };
+
   $scope.historyUp = function () {
     if (lmData.historyIx > 0) {
       if (lmData.historyIx == lmData.history.length) {
         curAction = this.action;
       }
       lmData.historyIx--;
-      this.action = lmData.history[lmData.historyIx];
+      updateAction(lmData.history[lmData.historyIx]);
     }
   };
+
   $scope.historyDown = function () {
     if (lmData.historyIx < lmData.history.length) {
       lmData.historyIx++;
       if (lmData.historyIx == lmData.history.length) {
-        this.action = curAction;
+        updateAction(curAction);
       } else {
-        this.action = lmData.history[lmData.historyIx];
+        updateAction(lmData.history[lmData.historyIx]);
       }
     }
   }

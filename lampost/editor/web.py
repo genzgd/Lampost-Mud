@@ -1,10 +1,10 @@
-from tornado.web import RequestHandler
 from lampost.editor.areas import AreaEditor, RoomEditor
 from lampost.editor.config import ConfigEditor, DisplayEditor, Properties
 from lampost.editor.editor import ChildrenEditor, Editor, ChildList
 from lampost.editor.imports import ImportsEditor
 from lampost.editor.players import PlayerEditor
 from lampost.editor.scripts import ScriptEditor
+from lampost.editor.session import EditConnect
 from lampost.editor.socials import SocialsEditor
 from lampost.env.room import Room
 from lampost.gameops.script import Script
@@ -15,6 +15,7 @@ from lampost.model.race import PlayerRace
 
 
 def add_endpoints(web_server):
+    web_server.add(r'/editor/edit_connect', EditConnect)
     web_server.add(r'/editor/constants', Properties)
     web_server.add(r'/editor/area/(.*)', AreaEditor)
     web_server.add(r'/editor/room/list/(.*)', ChildList, obj_class=Room)
@@ -32,9 +33,4 @@ def add_endpoints(web_server):
     web_server.add(r'/editor/script/list/(.*)', ChildList, obj_class=Script)
     web_server.add(r'/editor/script/(.*)', ScriptEditor)
     web_server.add(r'/editor/imports/(.*)', ImportsEditor)
-
-
-class EditConnect(RequestHandler):
-    def post(self):
-        pass
 

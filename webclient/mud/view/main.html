@@ -47,7 +47,7 @@
           <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.text"></div>
         </div>
         <div class="telnet-input">
-          <textarea ng-model="action" enter-key="sendAction()" spellcheck="false"
+          <textarea ng-focus="actionFocus()" ng-model="action" enter-key="sendAction()" spellcheck="false"
                     history="history" pref-focus="pref-focus"></textarea>
         </div>
       </div>

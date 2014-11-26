@@ -77,7 +77,7 @@ angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
   lmBus.register("login", function (data) {
     playerId = data.name.toLowerCase();
     if (data.imm_level) {
-      immSession = {immName: data.imm_name, sessionId: sessionId};
+      immSession = {immName: data.imm_name, gameSessionId: sessionId};
       localStorage.setItem(immKey, JSON.stringify(immSession));
     }
     updateTimestamp();

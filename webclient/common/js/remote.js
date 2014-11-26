@@ -18,7 +18,7 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
       return $http({method: 'POST',
         url: resourceRoot + resource,
         data: data || {},
-        headers: {'X-Lampost-Session': sessionId}}).success(lmBus.dispatchMap).error(linkFailure);
+        headers: sessionId ? {'X-Lampost-Session': sessionId} : null}).success(lmBus.dispatchMap).error(linkFailure);
     }
 
     function resourceRequest(resource, data) {
@@ -202,7 +202,6 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
         }
         $scope.dismiss();
         $timeout.cancel(tickPromise);
-        lmBus.unregister("link_status");
       }, $scope, -500);
 
       $scope.reconnectNow = function () {
