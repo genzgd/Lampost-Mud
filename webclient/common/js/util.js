@@ -13,7 +13,7 @@ angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
   var registry = {};
 
   function applyCallback(callback, args, scope) {
-    if (!scope || (scope.$root.$$phase === '$apply' || scope.$root.$$phase === '$digest')) {
+    if (!scope || (scope.$$phase === '$apply' || scope.$$phase === '$digest')) {
       callback.apply(this, args);
     } else {
       scope.$apply(function () {
@@ -24,7 +24,9 @@ angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
 
   function dispatchMap(eventMap) {
     for (var key in eventMap) {
-      self.dispatch(key, eventMap[key]);
+      if (eventMap.hasOwnProperty(key)) {
+        self.dispatch(key, eventMap[key]);
+      }
     }
   }
 

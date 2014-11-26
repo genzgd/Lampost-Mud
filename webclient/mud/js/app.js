@@ -109,6 +109,7 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
       $scope.welcome = 'Please Log In';
       $scope.loggedIn = false;
       $scope.links = baseLinks.slice();
+      $scope.immLevel = 0;
       for (var i = 0; i < $scope.links.length; i++) {
         if ($scope.links[i].active()) {
           return;
@@ -130,6 +131,7 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
       $scope.links.push(settingsLink);
       $scope.welcome = 'Welcome ' + lmData.playerName;
       $scope.loggedIn = true;
+      $scope.immLevel = lmData.immLevel;
     }, $scope);
 
     lmBus.register("logout", function (reason) {

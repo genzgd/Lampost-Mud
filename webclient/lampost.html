@@ -17,6 +17,9 @@
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
               data-target="#lampost-navbar-collapse">
         <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="#">{{siteTitle}}</a>
     </div>
@@ -25,10 +28,11 @@
         <li ng-repeat="link in links | orderBy:'priority'" ng-class="link.class()">
         <a ng-href ng-click="changeLocation(link.name)">{{link.label}} <i ng-class="link.icon"></i></a>
         </li>
+        <li ng-if="immLevel"><a title="Lampost Editor" href="editor.html" target="_blank">Editor <i class="fa fa-pencil"></i></a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right active">
         <li><p class="navbar-text">{{welcome}}</p></li>
-        <li ng-if="loggedIn"><a ng-click="logout()">Logout <i class="fa fa-external-link"></i></a></li>
+        <li ng-if="loggedIn"><a ng-href ng-click="logout()">Logout <i class="fa fa-external-link"></i></a></li>
         <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost" target="_blank"><i class="fa fa-list-alt"></i></a></li>
         <li><a title="Lampost On Github" href="https://github.com/genzgd/Lampost-Mud" target="_blank"><i class="fa fa-github"></i></a></li>
       </ul>
@@ -38,7 +42,7 @@
 <div ng-view ng-style="gameHeight"></div>
 <div ng-include="'mud/sound/sound_list.html'"></div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular-route.js"></script>
@@ -56,7 +60,7 @@
 <script src="mud/js/status.js"></script>
 <script src="mud/js/storage.js"></script>
 <script src="mud/js/comm.js"></script>
-<script src="mud/lib/spectrum.js"></script>
+<script src="common/lib/spectrum.js"></script>
 
 <script src="../lsp/config.js"></script>
 </body>

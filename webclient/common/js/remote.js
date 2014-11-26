@@ -46,7 +46,7 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
           deferred.resolve(data);
         }).error(function (data, status) {
           checkWait && checkWait();
-          if (status === 409) {
+          if (status === 409 || status === 400) {
             var errorResult = {id: 'Error', raw: data, text: data};
             var colon_ix = data.indexOf(':');
             if (colon_ix > 0) {
