@@ -270,7 +270,6 @@ angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'l
   }
 
   lmBus.register("display_update", function () {
-    $scope.display = lmData.display;
     $scope.update++;
   }, $scope);
 

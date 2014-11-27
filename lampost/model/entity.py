@@ -55,6 +55,10 @@ class Entity(BaseItem):
         pass
 
     def parse(self, command):
+        if command.startswith("'"):
+            command = 'say ' + command[1:].strip()
+        elif command.startswith(':'):
+            command = 'emote ' + command[1:].strip()
         try:
             action, act_args = parse_actions(self, command)
             act_args['command'] = command

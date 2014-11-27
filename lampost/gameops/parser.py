@@ -220,7 +220,8 @@ def parse_actions(entity, command):
 
 
 def parse_chat(verb, command):
-    verb_ix = command.lower().index(" ".join(verb))
+    verb_str = " ".join(verb)
+    verb_ix = command.lower().index(verb_str) + len(verb_str)
     return command[verb_ix:].strip()
 
 

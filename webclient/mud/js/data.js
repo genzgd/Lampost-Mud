@@ -44,7 +44,7 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
     }
     unreadCount += lines.length;
     jQuery('title').text('[' + unreadCount + '] ' + title);
-    lmBus.dispatch("display_update", display);
+    lmBus.dispatch("display_update");
   }
 
   function channelSubscribe(channel) {
@@ -58,8 +58,8 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
   }
 
   function updateChannel(channelMessage) {
-    displayLine({text: channelMessage.text, display: channelMessage.id + "_channel"});
     self.channels[channelMessage.id].push(channelMessage);
+    updateDisplay({lines: [{text: channelMessage.text, display: channelMessage.id + "_channel"}]});
   }
 
   function setUser(data) {

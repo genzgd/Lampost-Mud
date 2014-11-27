@@ -107,7 +107,7 @@ class Action(SessionHandler):
         player = self.session.player
         if not player:
             raise LinkError("no_login")
-        player.parse(html.escape(self.raw['action'].strip()))
+        player.parse(html.escape(self.raw['action'].strip(), False))
 
 
 class Register(SessionHandler):

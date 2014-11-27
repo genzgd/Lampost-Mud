@@ -26,12 +26,12 @@ def action(target_key, entity, action):
 
 def equip(target_key, entity, *_):
     return recursive_targets([equip for equip in entity.inven if getattr(equip, 'current_slot', None)], target_key)
-equip.absent_msg = "You don't have `{target}' equipped"
+equip.absent_msg = "You don't have `{target}' equipped."
 
 
 def inven(target_key, entity, *_):
     return recursive_targets([equip for equip in entity.inven if not getattr(equip, 'current_slot', None)], target_key)
-inven.absent_msg = "You don't have `{target}'"
+inven.absent_msg = "You don't have `{target}'."
 
 
 def env(target_key, entity, *_):
@@ -63,6 +63,7 @@ def logged_in(target_key, *_):
     session = session_manager.player_session(" ".join(target_key))
     if session:
         yield session.player
+logged_in.absent_msg = "That player is not logged in."
 
 
 def make(target_class):
