@@ -104,8 +104,8 @@ class ChannelService(ClientService):
             if channel_id not in player.active_channels:
                 self.remove_sub(player.session, channel_id)
 
-    def _player_logout(self, player, *_):
-        self._session_connect(player.session)
+    def _player_logout(self, session):
+        self._session_connect(session)
 
     def _prune_channels(self):
         for channel_id in self.all_channels:

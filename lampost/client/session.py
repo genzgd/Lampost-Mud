@@ -21,6 +21,7 @@ class SessionManager():
 
     def _post_init(self):
         register('server_settings', self._update_settings)
+        register('player_logout', self._player_logout)
 
     def _update_settings(self, server_settings):
         register_p(self._refresh_link_status, seconds=server_settings.get('refresh_link_interval', 5))
@@ -37,7 +38,7 @@ class SessionManager():
 
     def start_session(self):
         session_id = self._get_next_id()
-        session = PlayerSession()
+        session = GameSession()
         self.session_map[session_id] = session
         session.append({'connect': session_id})
         dispatch('session_connect', session)
@@ -45,7 +46,7 @@ class SessionManager():
 
     def start_edit_session(self):
         session_id = self._get_next_id()
-        session = UserSession()
+        session = ClientSession()
         self.session_map[session_id] = session
         return session_id, session
 
@@ -111,17 +112,17 @@ class SessionManager():
         session.connect_player(player)
         session.display_line({'text': text, 'display': SYSTEM_DISPLAY})
 
-    def logout(self, session):
-        player = session.player
-        if player:
-            dispatch('player_logout', player)
-            player.last_logout = int(time.time())
-            self.user_manager.logout_player(player)
-            session.player = None
-            del self.player_info_map[player.dbo_id]
-            del self.player_session_map[player.dbo_id]
-        session.append({'logout': 'logout'})
+    def _player_logout(self, session):
         session.user = None
+        player = session.player
+        if not player:
+            return
+        player.last_logout = int(time.time())
+        self.user_manager.logout_player(player)
+        session.player = None
+        del self.player_info_map[player.dbo_id]
+        del self.player_session_map[player.dbo_id]
+        session.append({'logout': 'logout'})
         self._broadcast_status()
 
     def _get_next_id(self):
@@ -135,10 +136,7 @@ class SessionManager():
         for session_id, session in list(self.session_map.items()):
             if session.ld_time:
                 if now - session.ld_time > self.link_dead_prune:
-                    if session.player:
-                        self.logout(session)
                     del self.session_map[session_id]
-                    dispatch('session_disconnect', session)
                     session.disconnect()
             elif session.request:
                 if now - session.attach_time >= self.link_idle_refresh:
@@ -155,25 +153,29 @@ class SessionManager():
 
 
 @requires('json_encode')
-class UserSession():
-
+class ClientSession():
     def __init__(self):
         self._pulse_reg = None
         self.attach_time = datetime.now()
         self.request = None
         self.ld_time = None
-        self.player = None
         self._reset()
 
     def attach(self, request):
         if self.request:
-            self._push({'link_status': 'cancel'})
-        self.attach_time = datetime.now()
-        self.ld_time = None
+            self.reattach(request)
+        else:
+            self.attach_time = datetime.now()
+            self.ld_time = None
+            self.request = request
+
+    def reattach(self, request):
+        self._push({'link_status': 'cancel'})
         self.request = request
+        self._push({'link_status': 'good'})
 
     def append(self, data):
-        if data and data not in self._output:
+        if data:
             self._output.append(data)
         if not self._pulse_reg:
             self._pulse_reg = register("pulse", self._push_output)
@@ -192,12 +194,12 @@ class UserSession():
         return output
 
     def link_failed(self, reason):
-        if self.player:
-            debug("Link failed for {}  [{}] ", self.player.name, reason)
+        debug("Link failed {}", reason)
         self.ld_time = datetime.now()
         self.request = None
 
     def disconnect(self):
+        dispatch('session_disconnect', self)
         detach_events(self)
 
     def _push_output(self):
@@ -218,15 +220,12 @@ class UserSession():
         self.request.finish()
         self.request = None
 
-    @property
-    def privilege(self):
-        return self.player.imm_level if self.player else 0
 
-
-class PlayerSession(UserSession):
+class GameSession(ClientSession):
     def __init__(self):
         super().__init__()
         self.user = None
+        self.player = None
 
     def connect_user(self, user):
         self.user = user
@@ -259,4 +258,8 @@ class PlayerSession(UserSession):
         except AttributeError:
             self._status = status
             self.append({'status': status})
+
+    def disconnect(self):
+        dispatch('player_logout', self)
+        super().disconnect()
 

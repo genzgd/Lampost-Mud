@@ -57,9 +57,8 @@ class Settings(MethodHandler):
         user = self.session.user
         if user.player_ids:
             user_manager.validate_password(user, self.raw['password'])
-        response = self.session_manager.logout(self.session)
+        dispatch('player_logout', self.session)
         user_manager.delete_user(user)
-        return response
 
     def create_player(self):
         content = self._content()

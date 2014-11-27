@@ -32,7 +32,7 @@ def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
 @mud_action(('quit', 'log out'))
 def quit_action(source, **_):
     source.check_logout()
-    session_manager.logout(source.session)
+    dispatch('player_logout', source.session)
 
 
 @mud_action(("look", "l", "exa", "examine", "look at"), "examine")

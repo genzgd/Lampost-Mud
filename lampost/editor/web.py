@@ -4,7 +4,7 @@ from lampost.editor.editor import ChildrenEditor, Editor, ChildList
 from lampost.editor.imports import ImportsEditor
 from lampost.editor.players import PlayerEditor
 from lampost.editor.scripts import ScriptEditor
-from lampost.editor.session import EditConnect
+from lampost.editor.session import EditConnect, EditLogin, EditLogout
 from lampost.editor.socials import SocialsEditor
 from lampost.env.room import Room
 from lampost.gameops.script import Script
@@ -16,6 +16,8 @@ from lampost.model.race import PlayerRace
 
 def add_endpoints(web_server):
     web_server.add(r'/editor/edit_connect', EditConnect)
+    web_server.add(r'/editor/edit_login', EditLogin)
+    web_server.add(r'/editor/edit_logout', EditLogout)
     web_server.add(r'/editor/constants', Properties)
     web_server.add(r'/editor/area/(.*)', AreaEditor)
     web_server.add(r'/editor/room/list/(.*)', ChildList, obj_class=Room)

@@ -14,9 +14,12 @@ html, body {
     line-height: 36px;
 }
 
-.navbar-inverse .navbar-text {
+.navbar-text {
     margin-top: 6px;
     margin-bottom: 6px;
+}
+
+.navbar-inverse .navbar-text  {
     color: aquamarine;
 }
 

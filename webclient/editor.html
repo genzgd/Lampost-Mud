@@ -8,6 +8,11 @@
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link href="css/lampost.css" rel="stylesheet">
   <link href="css/spectrum.css" rel="stylesheet">
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.js"></script>
+
 </head>
 
 <body ng-cloak>
@@ -31,7 +36,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right active">
         <li><p class="navbar-text">{{welcome}}</p></li>
-        <li ng-if="loggedIn"><a ng-href ng-click="logout()">Logout <i class="fa fa-external-link"></i></a></li>
+        <li ng-if="appState == 'loggedIn'"><a ng-href ng-click="editorLogout()">Logout <i class="fa fa-external-link"></i></a></li>
         <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost"
                target="_blank"><i class="fa fa-list-alt"></i></a></li>
         <li><a title="Lampost On Github" href="https://github.com/genzgd/Lampost-Mud" target="_blank"><i
@@ -40,25 +45,30 @@
     </div>
   </div>
 </nav>
-<div class="container-fluid" ng-controller="EditorAppController">
-  <div class="row" ng-if="!loggedIn">
+<div class="container-fluid" ng-controller="EditorAppController" ng-switch="appState">
+  <div class="row" ng-switch-when="connecting">
+    <div class="col-md-offset-4 col-md-4 text-center">
+      <div class="well well-sm">Connecting to Lampost Server</div>
+    </div>
+  </div>
+  <div class="row" ng-switch-when="connected">
     <div class="col-md-6 col-xs-4">
       <div class="alert alert-info">Welcome to the <strong>{{siteTitle}}</strong> editor. Please log in with your
         immortal character or account name.
       </div>
     </div>
     <div class="col-md-4 col-xs-6 well well-sm">
-      <form ng-submit="login()">
+      <form ng-submit="editorLogin()">
         <div class="form-group">
           <label for="userIdInput">Player or Account Name:</label>
           <input class="form-control input-sm" id="userIdInput"
-                 type="text" ng-change="loginError = false" ng-model="userId" pref-focus="pref-focus"
+                 type="text" ng-change="loginError = false" ng-model="login.userId" pref-focus="pref-focus"
                  required/>
         </div>
         <div class="form-group">
           <label for="passwordInput">Account Password:</label>
           <input id="passwordInput" class="form-control input-sm"
-                 type="password" ng-change="loginError = false" ng-model="password" required/>
+                 type="password" ng-change="loginError = false" ng-model="login.password" required/>
         </div>
         <div class="alert alert-danger" ng-show="loginError">
           <button type="button" class="close" ng-click="loginError = false">×</button>
@@ -71,11 +81,12 @@
       </form>
     </div>
   </div>
+  <div class="row" ng-switch-when="loggedIn">
+    Logged in with {{playerName}}
+  </div>
 </div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.js"></script>
+<script src="common/lib/spectrum.js"></script>
 
 <script src="common/js/directives.js"></script>
 <script src="common/js/dialog.js"></script>
@@ -94,8 +105,6 @@
 <script src="editor/js/feature_editors.js"></script>
 <script src="editor/js/imports_editor.js"></script>
 <script src="editor/js/skills_editor.js"></script>
-
-<script src="common/lib/spectrum.js"></script>
 
 <script src="../lsp/config.js"></script>
 </body>
