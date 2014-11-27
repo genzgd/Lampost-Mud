@@ -47,7 +47,7 @@ class SessionManager():
         session_id = self._get_next_id()
         session = UserSession()
         self.session_map[session_id] = session
-        return session
+        return session_id, session
 
     def reconnect_session(self, session_id, player_id):
         session = self.get_session(session_id)

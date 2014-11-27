@@ -32,10 +32,12 @@ angular.module('lampost_editor').run(['$timeout', '$rootScope', 'lmUtil', 'lmEdi
 
   }]);
 
-angular.module('lampost_editor').controller('EditorNavController', ['$scope', 'lmBus', function($scope, lmBus) {
+angular.module('lampost_editor').controller('EditorNavController', ['$rootScope', '$scope', 'lmBus',
+  function($rootScope, $scope, lmBus) {
 
   lmBus.register('editor_login', function(data) {
-
+    $rootScope.loggedIn = true;
+    $rootScope.playerName = data.playerName;
   });
 }]);
 
