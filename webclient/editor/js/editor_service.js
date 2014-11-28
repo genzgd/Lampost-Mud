@@ -13,7 +13,8 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
 
     var contextMap = {};
 
-    this.init = function () {
+    this.init = function (data) {
+      this.playerId = data.playerId;
       return lpCache.cache('constants').then(function (constants) {
         this.constants = constants;
       });
@@ -29,7 +30,6 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
 
     this.registerContext('none', {label: 'Get Started'});
     this.registerContext('room');
-    this.registerContext('area');
 
     this.deleteModel = function (context, model, error) {
       lmRemote.request(context.baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function (holders) {
@@ -192,6 +192,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
         reset(type);
         $scope.saveLabel = "Create";
         activeModel.can_write = true;
+        activeModel.owner_id = lpEditor.playerId;
         intercept('create', activeModel);
       }
 

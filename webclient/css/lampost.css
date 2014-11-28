@@ -47,6 +47,14 @@ html, body {
     overflow: hidden;
 }
 
+.form-control[disabled],
+.form-control[readonly],
+fieldset[disabled] .form-control {
+  cursor: not-allowed;
+  background-color: #f8f8f8;
+  opacity: 1;
+}
+
 .btn-panel,
 .btn-group-panel > .btn {
   padding: 2px 5px;

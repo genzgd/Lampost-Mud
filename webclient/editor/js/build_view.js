@@ -1,16 +1,22 @@
 
-angular.module('lampost_editor').controller('BuildViewController', ['$scope', 'lmBus', 'lpEditor',
-  function($scope, lmBus, lpEditor) {
+angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor', function(lmBus, lpEditor) {
+
+  lpEditor.registerContext('area', {create: function(model) {
+    model.next_room_id = 1;
+  }});
+
+
+}]);
+
+angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lmBus', 'lpBuildService', 'lpEditor',
+  function($scope, lmBus, lpBuildService, lpEditor) {
 
     var editArea = null;
-    var selectArea = null;
-    var mainEditor = null;
 
     $scope.activeArea = function() {
       return editArea ? editArea.name : '-NOT SET-';
     };
 
-    $scope.mainBuildInclude = 'editor/view/no-editor.html';
 
     $scope.newEditor = function(editorId, event) {
       if (event) {

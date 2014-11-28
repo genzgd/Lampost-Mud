@@ -34,8 +34,8 @@ angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus',
 
   }]);
 
-angular.module('lampost_editor').controller('EditorNavController', ['$rootScope', '$scope', 'lmBus', 'lpEditor',
-  function ($rootScope, $scope, lmBus, lpEditor) {
+angular.module('lampost_editor').controller('EditorNavController', ['$q', '$rootScope', '$scope', 'lmBus', 'lpEditor',
+  function ($q, $rootScope, $scope, lmBus, lpEditor) {
 
     var editNav = [
       {id: 'build', label: 'Build', icon: 'fa-cubes'},
@@ -60,14 +60,16 @@ angular.module('lampost_editor').controller('EditorNavController', ['$rootScope'
           link.active = '';
         }
       }
-      lpEditor.init().then(function () {
-        lmBus.dispatch('editorChanging');
+
+      var handlers = [];
+      lmBus.dispatch('editorClosing', handlers);
+      $q.all(handlers).then(function () {
         $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
       })
     };
 
-    lmBus.register('connect', function (sess) {
-      sessionId = sess;
+    lmBus.register('connect', function (data) {
+      sessionId = data;
       $rootScope.appState = 'connected';
       $scope.welcome = 'Please log in.';
     });
@@ -87,10 +89,12 @@ angular.module('lampost_editor').controller('EditorNavController', ['$rootScope'
           $scope.links.push(link);
         }
       }
-      if ($scope.links.length) {
-        $scope.changeNav($scope.links[0].id);
-      }
 
+      lpEditor.init(data).then(function () {
+        if ($scope.links.length) {
+          $scope.changeNav($scope.links[0].id);
+        }
+      });
     });
 
     lmBus.register('editor_logout', function () {
@@ -104,6 +108,7 @@ angular.module('lampost_editor').controller('EditorNavController', ['$rootScope'
       lmBus.dispatch('server_request', 'editor/edit_logout');
     }
   }]);
+
 
 angular.module('lampost_editor').controller('EditLoginController', ['$scope', 'lmBus',
   function ($scope, lmBus) {

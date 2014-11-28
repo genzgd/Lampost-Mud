@@ -17,7 +17,7 @@ def editor_login(session):
         edit_perms.extend(['players', 'mud'])
     if has_perm(player, 'supreme'):
         edit_perms.extend(['config'])
-    session.append({'editor_login': {'edit_perms': edit_perms, 'playerId:': player.dbo_id, 'playerName': player.name}})
+    session.append({'editor_login': {'edit_perms': edit_perms, 'playerId': player.dbo_id, 'playerName': player.name}})
     edit_update_service.register(session)
 
 
