@@ -28,7 +28,6 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
       return contextMap[contextId];
     };
 
-    this.registerContext('none', {label: 'Get Started'});
     this.registerContext('room');
 
     this.deleteModel = function (context, model, error) {
@@ -70,38 +69,30 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
   function ($q, $scope, lmBus, lmRemote, lmDialog, lpCache, lpEditor) {
 
     var activeModel = {};
-    var originalModel;
+    var originalModel = {};
     var context;
     var baseUrl;
     var parentId;
 
-    function display(model) {
-      var display = model.name || model.title;
-      if (display) {
-        display += ' (' + model.dbo_id + ')';
-      } else {
-        display = model.dbo_id;
-      }
-      return display;
+    lpEditor.registerContext('none', {label: 'Get Started'});
+
+    function display() {
+      return activeModel.name || activeModel.title || activeModel.dbo_id;
     }
 
-    function init(type) {
+    function init(type, orig) {
       context = lpEditor.getContext(type);
       baseUrl = context.baseUrl;
       parentId = context.parentId;
+      originalModel = orig;
+      angular.copy(originalModel, activeModel);
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
       $scope.detailTemplate = context.include;
     }
 
-    function reset(type) {
-      init(type);
-      originalModel = null;
-      angular.copy({}, activeModel);
-    }
-
-    function resetNone() {
-      reset('none');
+    function reset() {
+      init('none', {});
     }
 
     function intercept(interceptor, args) {
@@ -117,7 +108,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     function saveModel() {
       return intercept('preUpdate', activeModel).then(function () {
-        if (originalModel) {
+        if (originalModel.dbo_id) {
           return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
         }
         return lmRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
@@ -125,13 +116,13 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }
 
     function onCreated(created) {
+      $scope.isDirty = false;
       lpCache.insertModel(created);
-      originalModel = created;
-      angular.copy(originalModel, activeModel);
+      existingEdit(created);
     }
 
     function onSaved(updated) {
-      editScope.isDirty = false;
+      $scope.isDirty = false;
       lpCache.updateModel(updated);
       return intercept('postUpdate', activeModel);
     }
@@ -144,8 +135,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     function onOverwrite() {
       var deferred = $q.defer();
       lmDialog.showAlert({title: "Unsaved Changes ",
-        body: "You have unsaved changes to <b>" + display(activeModel) +
-          "</b>.  Save your changes, discard your changes, or continue editing <b>" + display($scope.model) + "</b>?",
+        body: "You have unsaved changes to <b>" + display() +
+          "</b>.  Save your changes, discard your changes, or continue editing <b>" + display() + "</b>?",
         buttons: [
           {label: "Save Changes", class: "btn-default", dismiss: true, click: function () {
             deferred.resolve(saveModel())
@@ -154,6 +145,19 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
           {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
         ]}, true);
       return deferred.promise;
+    }
+
+    function existingEdit(model) {
+      function se() {
+        init(model.dbo_key_type, model);
+        $scope.saveLabel = "Save";
+      }
+
+      if ($scope.isDirty) {
+        onOverwrite().then(se);
+      } else {
+        se();
+      }
     }
 
     lmBus.register('modelUpdate', function (updatedModel, outside) {
@@ -176,7 +180,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
         if (outside) {
           lmDialog.showOk("Outside Delete", "This object has been deleted by another user.");
         }
-        resetNone();
+        reset();
       }
     }, $scope);
 
@@ -188,27 +192,27 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     lmBus.register('newEdit', function (type) {
 
-      function startNew() {
-        reset(type);
+      function sn() {
+        init(type, {can_write: true, owner_id: lpEditor.playerId});
         $scope.saveLabel = "Create";
-        activeModel.can_write = true;
-        activeModel.owner_id = lpEditor.playerId;
         intercept('create', activeModel);
       }
 
       if ($scope.isDirty) {
-        onOverwrite().then(startNew);
+        onOverwrite().then(sn);
       } else {
-        startNew();
+        sn();
       }
     }, $scope);
+
+    lmBus.register('existingEdit', existingEdit);
 
     $scope.constants = lpEditor.constants;
     $scope.model = activeModel;
     $scope.saveModel = saveModel;
 
     $scope.$watch('model', function () {
-      $scope.isDirty = originalModel && !angular.equals(originalModel, activeModel);
+      $scope.isDirty = !angular.equals(originalModel, activeModel);
     }, true);
 
     $scope.revertModel = function () {
@@ -222,6 +226,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       });
     };
 
+    $scope.modelName = display;
+
     $scope.deleteAlias = function (index) {
       activeModel.aliases.splice(index, 1);
     };
@@ -231,15 +237,15 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
         event.preventDefault();
         event.stopPropagation();
       }
-      if (originalModel) {
+      if (originalModel.dbo_id) {
         lpEditor.deleteModel(context, originalModel, dataError);
       } else {
         lmDialog.confirm("Delete " + context.objLabel,
-            "Are you sure you want to abandon this new " + context.objLabel + "?").then(resetNone);
+            "Are you sure you want to abandon this new " + context.objLabel + "?").then(reset);
       }
     };
 
-    resetNone();
+    reset();
   }
 ]);
 
