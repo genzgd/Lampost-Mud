@@ -1,0 +1,15 @@
+<div class="col-md-9" ng-controller="MainEditorCtrl">
+  <form id="mainEditForm" ng-submit="saveModel()" >
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        {{editorLabel}}
+        <button ng-if="model.can_write" class="btn btn-primary btn-panel pull-right">{{saveLabel}} <i class="fa fa-floppy-o"></i></button>
+
+      </div>
+      <fieldset class="panel-body" ng-disabled="!model.can_write">
+        <lm-outside-edit></lm-outside-edit>
+        <div ng-include="detailTemplate" ></div>
+      </fieldset>
+    </div>
+  </form>
+</div>

@@ -4,7 +4,8 @@ from lampost.context.resource import m_requires
 from lampost.model.player import Player
 from lampost.util.lmutil import ClientError
 
-m_requires(__name__, 'log', 'session_manager', 'user_manager', 'datastore', 'json_decode', 'json_encode', 'perm')
+m_requires(__name__, 'log', 'session_manager', 'user_manager', 'datastore',
+           'json_decode', 'json_encode', 'perm', 'edit_update_service')
 
 
 def editor_login(session):
@@ -17,6 +18,7 @@ def editor_login(session):
     if has_perm(player, 'supreme'):
         edit_perms.extend(['config'])
     session.append({'editor_login': {'edit_perms': edit_perms, 'playerId:': player.dbo_id, 'playerName': player.name}})
+    edit_update_service.register(session)
 
 
 class EditConnect(RequestHandler):

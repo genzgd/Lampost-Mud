@@ -36,9 +36,9 @@ class Editor(MethodHandler):
         for key_type, dbo_id in holder_keys:
             reloaded = reload_object(key_type, dbo_id)
             if reloaded:
-                publish_edit('update', reloaded, session, True)
+                publish_edit('update', reloaded, self.session, True)
         self.post_delete(del_obj)
-        publish_edit('delete', del_obj, session)
+        publish_edit('delete', del_obj, self.session)
 
     def update(self):
         existing_obj = load_object(self.obj_class, self.raw['dbo_id'])

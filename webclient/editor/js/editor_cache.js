@@ -37,59 +37,12 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       })
     }
 
-    function updateModel(model, outside) {
-      var entry = remoteCache[cacheKey(model)];
-      if (entry) {
-        var cacheModel = entry.map[model.dbo_id];
-        if (cacheModel) {
-          angular.copy(model, cacheModel);
-          lmBus.dispatch('modelUpdate', cacheModel, outside);
-        }
-      }
-    }
-
-    function insertModel(model, outside) {
-      var entry = remoteCache[cacheKey(model)];
-      if (entry && !entry.promise) {
-        if (entry.map[model.dbo_id]) {
-          updateModel(model, outside);
-        } else {
-          entry.data.push(model);
-          entry.sort(entry.data);
-          entry.map[model.dbo_id] = model;
-          lmBus.dispatch('modelCreate', entry.data, model, outside);
-        }
-      }
-    }
-
     function deleteEntry(key) {
       var heapIx = cacheHeap.indexOf(key);
       if (heapIx > -1) {
         cacheHeap.splice(headIx, 1);
       }
       delete remoteCache[key];
-    }
-
-    function deleteModel(model, outside) {
-      var entry = remoteCache[cacheKey(model)];
-      if (entry && !entry.promise) {
-        var cacheModel = entry.map[model.dbo_id];
-        if (cacheModel) {
-          entry.data.splice(entry.data.indexOf(cacheModel), 1);
-          delete entry.map[model.dbo_id];
-          lmBus.dispatch('modelDelete', entry.data, model, outside);
-        }
-      }
-      var deleted = [];
-      angular.forEach(remoteCache, function (entry, key) {
-        var keyParts = key.split(':');
-        if (keyParts[1] === model.dbo_id) {
-          deleted.push(key);
-        }
-      });
-      angular.forEach(deleted, function (key) {
-        deleteEntry(key);
-      });
     }
 
     lmBus.register('edit_update', function (event) {
@@ -133,6 +86,54 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
         }
       }
     };
+
+    this.updateModel = function(model, outside) {
+      var entry = remoteCache[cacheKey(model)];
+      if (entry) {
+        var cacheModel = entry.map[model.dbo_id];
+        if (cacheModel) {
+          angular.copy(model, cacheModel);
+          lmBus.dispatch('modelUpdate', cacheModel, outside);
+        }
+      }
+    };
+
+    this.insertModel = function(model, outside) {
+      var entry = remoteCache[cacheKey(model)];
+      if (entry && !entry.promise) {
+        if (entry.map[model.dbo_id]) {
+          updateModel(model, outside);
+        } else {
+          entry.data.push(model);
+          entry.sort(entry.data);
+          entry.map[model.dbo_id] = model;
+          lmBus.dispatch('modelCreate', entry.data, model, outside);
+        }
+      }
+    };
+
+    this.deleteModel = function(model, outside) {
+      var entry = remoteCache[cacheKey(model)];
+      if (entry && !entry.promise) {
+        var cacheModel = entry.map[model.dbo_id];
+        if (cacheModel) {
+          entry.data.splice(entry.data.indexOf(cacheModel), 1);
+          delete entry.map[model.dbo_id];
+          lmBus.dispatch('modelDelete', entry.data, model, outside);
+        }
+      }
+      var deleted = [];
+      angular.forEach(remoteCache, function (entry, key) {
+        var keyParts = key.split(':');
+        if (keyParts[1] === model.dbo_id) {
+          deleted.push(key);
+        }
+      });
+      angular.forEach(deleted, function (key) {
+        deleteEntry(key);
+      });
+    };
+
 
     this.cache = function (key) {
       var entry = remoteCache[key] || cacheEntry(key);

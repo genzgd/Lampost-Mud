@@ -45,6 +45,7 @@ angular.module('lampost_editor').controller('EditorNavController', ['$rootScope'
     ];
 
     var activeNav = '';
+    var sessionId;
 
     $scope.changeNav = function (newNav) {
       if (newNav == activeNav) {
@@ -59,19 +60,21 @@ angular.module('lampost_editor').controller('EditorNavController', ['$rootScope'
           link.active = '';
         }
       }
-      lmBus.dispatch('editorChanging');
-      $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
+      lpEditor.init().then(function () {
+        lmBus.dispatch('editorChanging');
+        $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
+      })
     };
 
-    lmBus.register('connect', function () {
-      lpEditor.init().then(function () {
-        $rootScope.appState = 'connected';
-        $scope.welcome = 'Please log in.';
-      })
+    lmBus.register('connect', function (sess) {
+      sessionId = sess;
+      $rootScope.appState = 'connected';
+      $scope.welcome = 'Please log in.';
     });
 
     lmBus.register('editor_login', function (data) {
       activeNav = '';
+      sessionStorage.setItem('editSessionId', sessionId);
       $rootScope.appState = 'loggedIn';
       $rootScope.playerName = data.playerName;
       $scope.welcome = "Immortal " + data.playerName;
@@ -91,6 +94,7 @@ angular.module('lampost_editor').controller('EditorNavController', ['$rootScope'
     });
 
     lmBus.register('editor_logout', function () {
+      sessionStorage.removeItem('editSessionId');
       $rootScope.appState = 'connected';
       $scope.welcome = 'Please Log In';
       $scope.links = [];

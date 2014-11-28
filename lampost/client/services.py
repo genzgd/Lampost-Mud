@@ -10,7 +10,7 @@ class ClientService():
     def _post_init(self):
         register('session_disconnect', self.unregister)
 
-    def register(self, session, data):
+    def register(self, session, data=None):
         self.sessions.add(session)
 
     def unregister(self, session):

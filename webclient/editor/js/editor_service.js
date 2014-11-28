@@ -8,43 +8,43 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
       this.label = this.label || lmUtil.capitalize(id);
       this.baseUrl = 'editor/' + this.url + '/';
       this.objLabel = this.objLabel || this.label;
+      this.include = this.include || 'editor/view/' + id + '.html';
     }
 
     var contextMap = {};
 
-    this.init = function() {
-      return lpCache('constants').then(function (constants) {
+    this.init = function () {
+      return lpCache.cache('constants').then(function (constants) {
         this.constants = constants;
       });
     };
 
     this.registerContext = function (contextId, context) {
-      contextMap[contextId] = new EditContext(context);
+      contextMap[contextId] = new EditContext(contextId, context);
     };
 
     this.getContext = function (contextId) {
       return contextMap[contextId];
     };
 
-    this.registerContext('none', {label: 'No Object Selected'});
+    this.registerContext('none', {label: 'Get Started'});
     this.registerContext('room');
     this.registerContext('area');
 
-    this.deleteModel = function (dbo_id, error) {
-       var context = contextMap[dbo_id.split(':')[0]];
-       lmRemote.request(context.baseUrl + 'test_delete', {dbo_id: dbo_id}).then(function (holders) {
-          var extra = '';
-          if (holders.length > 0) {
-            extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
-          }
-          lmDialog.showConfirm("Delete " + context.objLabel,
-              "Are you certain you want to delete " + context.objLabel + " " + dbo_id + "?" + extra,
-            function () {
-              lmRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
-                deleteModel(model);
-              }, error);
-            });
-        });
+    this.deleteModel = function (context, model, error) {
+      lmRemote.request(context.baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function (holders) {
+        var extra = '';
+        if (holders.length > 0) {
+          extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
+        }
+        lmDialog.showConfirm("Delete " + context.objLabel,
+            "Are you certain you want to delete " + context.objLabel + " " + model.dbo_id + "?" + extra,
+          function () {
+            lmRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
+              lpCache.deleteModel(model);
+            }, error);
+          });
+      });
     };
 
 
@@ -66,7 +66,7 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
   }]);
 
 
-angular.module('lampost_editor').controller('mainEditorController', ['$q', '$scope', 'lmBus', 'lmRemote', 'lmDialog', 'lpCache', 'lpEditor',
+angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', 'lmBus', 'lmRemote', 'lmDialog', 'lpCache', 'lpEditor',
   function ($q, $scope, lmBus, lmRemote, lmDialog, lpCache, lpEditor) {
 
     var activeModel = {};
@@ -76,12 +76,7 @@ angular.module('lampost_editor').controller('mainEditorController', ['$q', '$sco
     var parentId;
 
     function display(model) {
-      var display;
-      if (model.name) {
-        display = model.name;
-      } else if (model.title) {
-        display = model.title;
-      }
+      var display = model.name || model.title;
       if (display) {
         display += ' (' + model.dbo_id + ')';
       } else {
@@ -96,12 +91,17 @@ angular.module('lampost_editor').controller('mainEditorController', ['$q', '$sco
       parentId = context.parentId;
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
+      $scope.detailTemplate = context.include;
     }
 
     function reset(type) {
       init(type);
       originalModel = null;
       angular.copy({}, activeModel);
+    }
+
+    function resetNone() {
+      reset('none');
     }
 
     function intercept(interceptor, args) {
@@ -172,11 +172,11 @@ angular.module('lampost_editor').controller('mainEditorController', ['$q', '$sco
     }, $scope);
 
     lmBus.register('modelDelete', function (modelList, delModel, outside) {
-      if (activeModel.dbo_id == delModel.dbo_id) {
+      if (activeModel.dbo_id === delModel.dbo_id) {
         if (outside) {
           lmDialog.showOk("Outside Delete", "This object has been deleted by another user.");
         }
-        reset('none');
+        resetNone();
       }
     }, $scope);
 
@@ -191,6 +191,7 @@ angular.module('lampost_editor').controller('mainEditorController', ['$q', '$sco
       function startNew() {
         reset(type);
         $scope.saveLabel = "Create";
+        activeModel.can_write = true;
         intercept('create', activeModel);
       }
 
@@ -205,12 +206,8 @@ angular.module('lampost_editor').controller('mainEditorController', ['$q', '$sco
     $scope.model = activeModel;
     $scope.saveModel = saveModel;
 
-    $scope.$watch('model', function (model) {
-      if (model) {
-        scope.isDirty = originalModel && !angular.equals(originalModel, activeModel);
-      } else {
-        scope.isDirty = false;
-      }
+    $scope.$watch('model', function () {
+      $scope.isDirty = originalModel && !angular.equals(originalModel, activeModel);
     }, true);
 
     $scope.revertModel = function () {
@@ -234,16 +231,42 @@ angular.module('lampost_editor').controller('mainEditorController', ['$q', '$sco
         event.stopPropagation();
       }
       if (originalModel) {
-        lpEditor.deleteModel(originalModel.dbo_id, dataError);
+        lpEditor.deleteModel(context, originalModel, dataError);
       } else {
-        reset('none');
+        lmDialog.confirm("Delete " + context.objLabel,
+            "Are you sure you want to abandon this new " + context.objLabel + "?").then(resetNone);
       }
     };
 
-    reset('none');
+    resetNone();
   }
 ]);
 
+
+angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs', 'lmBus', 'lpCache', 'lpEditor',
+  function ($scope, $attrs, lmBus, lpCache, lpEditor) {
+
+    var type = $attrs.listType;
+    var context = lpEditor.getContext(type);
+    var listKey = context.parentId ? type + ":" + context.parentId : type;
+
+    lpCache.cache(listKey).then(function (objs) {
+      $scope.modelList = objs;
+    });
+
+    function dataError(error) {
+      $scope.dataError = error.text;
+    }
+
+    $scope.deleteModel = function (model, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      lpEditor.deleteModel(context, model, dataError);
+    }
+
+  }]);
 
 angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope', '$scope', 'lmRemote',
   'lmEditor', '$timeout', function ($q, $rootScope, $scope, lmRemote, lmEditor, $timeout) {

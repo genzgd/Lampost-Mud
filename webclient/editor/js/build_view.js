@@ -17,9 +17,7 @@ angular.module('lampost_editor').controller('BuildViewController', ['$scope', 'l
         event.preventDefault();
         event.stopPropagation();
       }
-      lpEditor.startNew(editorId).then(function () {
-        $scope.mainBuildInclude = 'editor/view/' + editorId + '.html';
-      });
+      lmBus.dispatch('newEdit', editorId);
     }
 
 

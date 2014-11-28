@@ -43,6 +43,19 @@ html, body {
     min-height: 36px;
 }
 
+.panel-heading {
+    overflow: hidden;
+}
+
+.btn-panel,
+.btn-group-panel > .btn {
+  padding: 2px 5px;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 3px;
+  margin-top: -6px;
+}
+
 
 .forgot-link {
   cursor: pointer;

@@ -1,9 +1,6 @@
 angular.module('lampost_editor').controller('AreaListController', ['$scope', 'lpCache', 'lpEditor',
   function ($scope, lpCache, lpEditor) {
 
-    lpCache.cache('area').then(function(areas) {
-      $scope.modelList = areas;
-    });
 
 
   }]);
