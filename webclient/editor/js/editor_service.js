@@ -1,98 +1,79 @@
-angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus', 'lmRemote', 'lmDialog', 'lmUtil',
-  function ($q, $timeout, lmBus, lmRemote, lmDialog, lmUtil) {
+angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmDialog', 'lpCache',
+  function (lmUtil, lmRemote, lmDialog, lpCache) {
 
-    var self = this;
-    var cacheHeap = [];
-    var cacheHeapSize = 32;
-    var remoteCache = {};
+    function EditContext(id, init) {
+      this.id = id;
+      angular.copy(init, this);
+      this.url = this.url || id;
+      this.label = this.label || lmUtil.capitalize(id);
+      this.baseUrl = 'editor/' + this.url + '/';
+      this.objLabel = this.objLabel || this.label;
+    }
 
-    var cacheSorts = {
-      'room': numericIdSort
+    var contextMap = {};
+
+    this.init = function() {
+      return lpCache('constants').then(function (constants) {
+        this.constants = constants;
+      });
     };
 
-    remoteCache.constants = {ref: 0, url: 'constants', sort: angular.noop};
+    this.registerContext = function (contextId, context) {
+      contextMap[contextId] = new EditContext(context);
+    };
+
+    this.getContext = function (contextId) {
+      return contextMap[contextId];
+    };
+
+    this.registerContext('none', {label: 'No Object Selected'});
+    this.registerContext('room');
+    this.registerContext('area');
+
+    this.deleteModel = function (dbo_id, error) {
+       var context = contextMap[dbo_id.split(':')[0]];
+       lmRemote.request(context.baseUrl + 'test_delete', {dbo_id: dbo_id}).then(function (holders) {
+          var extra = '';
+          if (holders.length > 0) {
+            extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
+          }
+          lmDialog.showConfirm("Delete " + context.objLabel,
+              "Are you certain you want to delete " + context.objLabel + " " + dbo_id + "?" + extra,
+            function () {
+              lmRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
+                deleteModel(model);
+              }, error);
+            });
+        });
+    };
 
 
-    function cacheEntry(key) {
-      var keyParts = key.split(':');
-      var keyType = keyParts[0];
-      var url = keyType + '/list' + (keyParts[1] ? '/' + keyParts[1] : '');
-      var entry = {ref: 0, sort: cacheSorts[keyType] || idSort, url: url};
-      remoteCache[key] = entry;
-      return entry;
-    }
+    /*  config: new lpEditContext({label: "Mud Config", url: "config"}),
+     players: {label: "Players", objLabel: 'Player', url: "player"},
+     area: new lpEditContext({label: "Areas", objLabel: "Area", url: "area"}),
+     room: {label: "Room", url: "room", create: 'dialog'},
+     mobile: {label: "Mobile", url: "mobile", create: "dialog"},
+     article: {label: "Article", url: "article", create: "dialog"},
+     script: {label: "Script", url: "script"},
+     social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
+     display: {label: "Display", url: "display"},
+     race: {label: "Races", objLabel: "Race", url: "race"},
+     attack: {label: "Attacks", objLabel: "Attack", url: "skill"},
+     defense: {label: "Defenses", objLabel: "Defense", url: "skill"},
+     imports: {label: "Imports"} */
 
-    function cacheKey(model) {
-      var cacheKey = (model.dbo_key_type + ':' + model.dbo_id).split(":");
-      return cacheKey.slice(0, cacheKey.length - 1).join(':');
-    }
 
-    function idSort(values) {
-      lmUtil.stringSort(values, 'dbo_id')
-    }
+  }]);
 
-    function numericIdSort(values) {
-      values.sort(function (a, b) {
-        var aid = parseInt(a.dbo_id.split(':')[1]);
-        var bid = parseInt(b.dbo_id.split(':')[1]);
-        return aid - bid;
-      })
-    }
 
-    function updateModel(model, outside) {
-      var entry = remoteCache[cacheKey(model)];
-      if (entry) {
-        var cacheModel = entry.map[model.dbo_id];
-        if (cacheModel) {
-          angular.copy(model, cacheModel);
-          lmBus.dispatch('modelUpdate', cacheModel, outside);
-        }
-      }
-    }
+angular.module('lampost_editor').controller('mainEditorController', ['$q', '$scope', 'lmBus', 'lmRemote', 'lmDialog', 'lpCache', 'lpEditor',
+  function ($q, $scope, lmBus, lmRemote, lmDialog, lpCache, lpEditor) {
 
-    function insertModel(model, outside) {
-      var entry = remoteCache[cacheKey(model)];
-      if (entry && !entry.promise) {
-        if (entry.map[model.dbo_id]) {
-          updateModel(model, outside);
-        } else {
-          entry.data.push(model);
-          entry.sort(entry.data);
-          entry.map[model.dbo_id] = model;
-          lmBus.dispatch('modelCreate', entry.data, model, outside);
-        }
-      }
-    }
-
-    function deleteEntry(key) {
-      var heapIx = cacheHeap.indexOf(key);
-      if (heapIx > -1) {
-        cacheHeap.splice(headIx, 1);
-      }
-      delete remoteCache[key];
-    }
-
-    function deleteModel(model, outside) {
-      var entry = remoteCache[cacheKey(model)];
-      if (entry && !entry.promise) {
-        var cacheModel = entry.map[model.dbo_id];
-        if (cacheModel) {
-          entry.data.splice(entry.data.indexOf(cacheModel), 1);
-          delete entry.map[model.dbo_id];
-          lmBus.dispatch('modelDelete', entry.data, model, outside);
-        }
-      }
-      var deleted = [];
-      angular.forEach(remoteCache, function (entry, key) {
-        var keyParts = key.split(':');
-        if (keyParts[1] === model.dbo_id) {
-          deleted.push(key);
-        }
-      });
-      angular.forEach(deleted, function (key) {
-        deleteEntry(key);
-      });
-    }
+    var activeModel = {};
+    var originalModel;
+    var context;
+    var baseUrl;
+    var parentId;
 
     function display(model) {
       var display;
@@ -109,413 +90,159 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return display;
     }
 
-    lmBus.register('edit_update', function (event) {
-      var outside = !event.local;
-      switch (event.edit_type) {
-        case 'update':
-          updateModel(event.model, outside);
-          break;
-        case 'create':
-          insertModel(event.model, outside);
-          break;
-        case 'delete':
-          deleteModel(event.model, outside);
-          break;
+    function init(type) {
+      context = lpEditor.getContext(type);
+      baseUrl = context.baseUrl;
+      parentId = context.parentId;
+      $scope.isDirty = false;
+      $scope.editorLabel = context.label;
+    }
+
+    function reset(type) {
+      init(type);
+      originalModel = null;
+      angular.copy({}, activeModel);
+    }
+
+    function intercept(interceptor, args) {
+      if (context[interceptor]) {
+        return $q.when(context[interceptor](args));
       }
-    });
+      return $q.when();
+    }
 
+    function dataError(error) {
+      $scope.dataError = error.text;
+    }
 
-    this.invalidate = function (key) {
-      deleteEntry(key)
-    };
+    function saveModel() {
+      return intercept('preUpdate', activeModel).then(function () {
+        if (originalModel) {
+          return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
+        }
+        return lmRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
+      })
+    }
 
-    this.cacheValue = function (key, dbo_id) {
-      return remoteCache[key].map[dbo_id];
-    };
+    function onCreated(created) {
+      lpCache.insertModel(created);
+      originalModel = created;
+      angular.copy(originalModel, activeModel);
+    }
 
-    this.deref = function (key) {
-      if (!key) {
+    function onSaved(updated) {
+      editScope.isDirty = false;
+      lpCache.updateModel(updated);
+      return intercept('postUpdate', activeModel);
+    }
+
+    function checkUnsaved() {
+      return lmDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
+        ": " + $scope.model.dbo_id + ".  Save changes now?", saveModel);
+    }
+
+    function onOverwrite() {
+      var deferred = $q.defer();
+      lmDialog.showAlert({title: "Unsaved Changes ",
+        body: "You have unsaved changes to <b>" + display(activeModel) +
+          "</b>.  Save your changes, discard your changes, or continue editing <b>" + display($scope.model) + "</b>?",
+        buttons: [
+          {label: "Save Changes", class: "btn-default", dismiss: true, click: function () {
+            deferred.resolve(saveModel())
+          }},
+          {label: "Discard Changes", class: "btn-danger", dismiss: true, click: deferred.resolve},
+          {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
+        ]}, true);
+      return deferred.promise;
+    }
+
+    lmBus.register('modelUpdate', function (updatedModel, outside) {
+      if (updatedModel !== originalModel) {
         return;
       }
-      var entry = remoteCache[key];
-      if (!entry) {
-        return;
+      if ($scope.isDirty && outside) {
+        lmDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
+          "Do you want to load the new object and lose your changes?", function () {
+          angular.copy(originalModel, activeModel);
+        });
+      } else {
+        $scope.outsideEdit = outside;
+        angular.copy(originalModel, activeModel);
       }
-      entry.ref--;
-      if (entry.ref === 0) {
-        cacheHeap.unshift(key);
-        for (var i = cacheHeap.length; i >= cacheHeapSize; i--) {
-          var oldEntry = remoteCache[cacheHeap.pop()];
-          delete oldEntry.map;
-          delete oldEntry.data;
+    }, $scope);
+
+    lmBus.register('modelDelete', function (modelList, delModel, outside) {
+      if (activeModel.dbo_id == delModel.dbo_id) {
+        if (outside) {
+          lmDialog.showOk("Outside Delete", "This object has been deleted by another user.");
         }
+        reset('none');
       }
+    }, $scope);
+
+    lmBus.register('editorClosing', function (handlers) {
+      if ($scope.isDirty) {
+        handlers.push(checkUnsaved);
+      }
+    }, $scope);
+
+    lmBus.register('newEdit', function (type) {
+
+      function startNew() {
+        reset(type);
+        $scope.saveLabel = "Create";
+        intercept('create', activeModel);
+      }
+
+      if ($scope.isDirty) {
+        onOverwrite().then(startNew);
+      } else {
+        startNew();
+      }
+    }, $scope);
+
+    $scope.constants = lpEditor.constants;
+    $scope.model = activeModel;
+    $scope.saveModel = saveModel;
+
+    $scope.$watch('model', function (model) {
+      if (model) {
+        scope.isDirty = originalModel && !angular.equals(originalModel, activeModel);
+      } else {
+        scope.isDirty = false;
+      }
+    }, true);
+
+    $scope.revertModel = function () {
+      angular.copy(originalModel, activeModel);
     };
 
-    this.cache = function (key) {
-      var entry = remoteCache[key] || cacheEntry(key);
-      if (entry.data) {
-        if (entry.ref === 0) {
-          cacheHeap.splice(cacheHeap.indexOf(key), 1);
-        }
-        entry.ref++;
-        return $q.when(entry.data);
-      }
-
-      if (entry.promise) {
-        entry.ref++;
-        return entry.promise;
-      }
-      entry.promise = lmRemote.request('editor/' + entry.url).then(function (data) {
-        delete entry.promise;
-        entry.ref++;
-        entry.data = data;
-        entry.map = {};
-        for (var i = 0; i < data.length; i++) {
-          entry.map[data[i].dbo_id] = data[i];
-        }
-        entry.sort(entry.data);
-        return $q.when(entry.data);
+    $scope.addNewAlias = function () {
+      activeModel.aliases.push('');
+      $timeout(function () {
+        jQuery('.alias-row:last').focus();
       });
-      return entry.promise;
     };
 
-    function userDelete(model, event) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        intercept('delConfirm', model).then(function () {
-          lmRemote.request(baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function(holders) {
-            var extra = '';
-            if (holders.length > 0) {
-              extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
-            }
-            lmDialog.showConfirm("Delete " + $scope.objLabel,
-              "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?" + extra,
-              function () {
-                 lmRemote.request(baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
-                    deleteModel(model);
-                  modelDeleted(model);
-                }, dataError);
-              });
-            });
-        });
-      };
-
-    this.prepareList = function(controller, $scope) {
-
+    $scope.deleteAlias = function (index) {
+      activeModel.aliases.splice(index, 1);
     };
 
-    this.prepare = function (controller, $scope) {
-
-      var newDialogId = null;
-      var originalModel = null;
-      var editor = $scope.editor;
-      var baseUrl = 'editor/' + editor.url + '/';
-
-      $scope.model = self.editModel;
-      $scope.objLabel = editor.objLabel || editor.label;
-
-      $scope.$watch('model', function (model) {
-        if (model) {
-          $scope.isDirty = originalModel && !angular.equals(originalModel, model);
-        } else {
-          $scope.isDirty = false;
-        }
-      }, true);
-
-      lmBus.register('modelUpdate', function (updatedModel, outside) {
-        if (updatedModel !== originalModel) {
-          return;
-        }
-        if ($scope.isDirty && outside) {
-          lmDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
-            "Do you want to load the new object and lose your changes?", function () {
-            $scope.model = angular.copy(originalModel);
-          });
-        } else {
-          $scope.outsideEdit = outside;
-          $scope.model = angular.copy(originalModel);
-        }
-      }, $scope);
-
-      lmBus.register('editorChange', function () {
-        if ($scope.isDirty) {
-          unsavedChanges();
-        }
-      }, $scope);
-
-      lmBus.register('editorClosing', function (handlers) {
-        if ($scope.isDirty) {
-          handlers.push(this);
-          unsavedChanges();
-        }
-      }, $scope);
-
-      lmBus.register('modelCreate', function (modelList, model, outside) {
-        if (modelList !== $scope.modelList) {
-          return;
-        }
-        $scope.outsideAdd = outside;
-      }, $scope);
-
-      lmBus.register('modelDelete', function (modelList, model, outside) {
-        if (modelDeleted(model, outside)) {
-          return;
-        }
-        if (modelList === $scope.modelList && outside) {
-          $scope.outsideDelete = outside;
-        }
-      }, $scope);
-
-      function unsavedChanges() {
-        lmDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
-          ": " + $scope.model.dbo_id + ".  Save changes now?", function () {
-          $scope.nextEdit = null;
-          $scope.updateModel();
-        })
-      }
-
-      function intercept(interceptor, args) {
-        if (controller[interceptor]) {
-          return $q.when(controller[interceptor](args));
-        }
-        return $q.when();
-      }
-
-      function dataError(error) {
-        $scope.dataError = error.text;
-      }
-
-      function modelDeleted(delModel, outside) {
-        if ($scope.model && $scope.model.dbo_id == delModel.dbo_id) {
-          if (outside) {
-            lmDialog.showOk("Outside Delete", "This object has been deleted by another user.");
-          }
-          $scope.selectionMode = true;
-          $scope.outsideEdit = false;
-          $scope.model = null;
-          intercept('postDelete', delModel);
-          return true;
-        }
-        return false;
-      }
-
-      function mainDelete(model) {
-        intercept('preDelete').then(function () {
-          lmRemote.request(baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
-            deleteModel(model);
-            modelDeleted(model);
-          }, dataError);
-        })
-      }
-
-      function onLoaded() {
-        intercept('onLoaded').then(function () {
-          $scope.ready = true;
-        })
-      }
-
-      function newEdit(newModel) {
-        if (!newModel) {
-          $scope.selectionMode = true;
-          return;
-        }
-        if ($scope.model && $scope.model.dbo_id !== newModel.dbo_id && $scope.isDirty) {
-          nextModel = newModel;
-          lmDialog.showAlert({title: "Unsaved Changes ",
-            body: "You are about to edit <b>" + display(newModel) + "</b>.  You have unsaved changes to <b>" +
-              display($scope.model) + "</b>.  Save your changes, discard your changes, or continue editing <b>" +
-              display($scope.model) + "</b>?",
-            buttons: [
-              {label: "Save Changes", class: "btn-default", dismiss: true, click: $scope.updateModel},
-              {label: "Discard Changes", class: "btn-danger", dismiss: true, click: nextEdit},
-              {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
-            ],
-            onCancel: function () {
-              $scope.selectionMode = false;
-              nextModel = null;
-            }}, true);
-        } else {
-          $scope.editModel(newModel);
-        }
-      }
-
-      $scope.revertModel = function () {
-        $scope.model = angular.copy(originalModel);
-        $scope.$broadcast('updateModel');
-      };
-
-      $scope.updateModel = function () {
-        intercept('preUpdate', $scope.model).then(function () {
-          lmRemote.request(baseUrl + 'update', $scope.model).then(
-            function (updatedObject) {
-              $scope.isDirty = false;
-              updateModel(updatedObject);
-              $scope.$broadcast('updateModel');
-              intercept('postUpdate', $scope.model).then(nextEdit);
-            }, dataError)
-        })
-      };
-
-      $scope.submitNewModel = function () {
-        intercept('preCreate', $scope.newModel).then(function () {
-          $scope.newModel.sub_class_id = controller.subClassId;
-          lmRemote.request(baseUrl + 'create', $scope.newModel).then(
-            function (createdObject) {
-              insertModel(createdObject);
-              $scope.$broadcast('updateModel');
-              intercept('postCreate', createdObject).then(function () {
-                $scope.editModel(createdObject);
-              });
-            }, function () {
-              $scope.newExists = true;
-            });
-        })
-      };
-
-      $scope.editModel = function (object) {
-        originalModel = object;
-        $scope.outsideEdit = false;
-        var model = angular.copy(originalModel);
-        intercept('startEdit', model).then(function () {
-          $scope.selectionMode = false;
-          $scope.model = model;
-          $scope.ready = true;
-          $scope.$broadcast('updateModel');
-        });
-      };
-
-
-
-      $scope.copyObject = function (event, object) {
+    $scope.deleteModel = function (event) {
+      if (event) {
         event.preventDefault();
         event.stopPropagation();
-        $scope.copyFromId = object.dbo_id;
-        $scope.newModel = angular.copy(object);
-        delete $scope.newModel.dbo_id;
-      };
+      }
+      if (originalModel) {
+        lpEditor.deleteModel(originalModel.dbo_id, dataError);
+      } else {
+        reset('none');
+      }
+    };
 
-      $scope.addNewAlias = function () {
-        $scope.model.aliases.push('');
-        $timeout(function () {
-          jQuery('.alias-row:last').focus();
-        });
-      };
-
-      $scope.deleteAlias = function (index) {
-        $scope.model.aliases.splice(index, 1);
-      };
-
-      return {
-        mainDelete: mainDelete,
-          originalModel: function () {
-          return originalModel;
-        }};
-    }
+    reset('none');
   }
 ]);
-
-
-angular.module('lampost_editor').controller('EditorCtrl', ['$q', '$scope', 'lmEditor', 'lmRemote', 'lmBus',
-  function ($q, $scope, lmEditor, lmRemote, lmBus) {
-
-    var editorList = [];
-
-    function editById(dbo_id) {
-      var areaId = dbo_id.split(':')[0];
-      $q.all([lmEditor.cache('area'),
-          lmEditor.cache('room:' + areaId)
-        ]).then(function () {
-          $scope.startEditor('room', lmEditor.cacheValue('room:' + areaId, dbo_id));
-        })
-    }
-
-    lmBus.register('edit_by_id', editById, $scope);
-
-    $scope.editorMap = {
-      config: {label: "Mud Config", url: "config"},
-      players: {label: "Players", objLabel: 'Player', url: "player"},
-      area: {label: "Areas", objLabel: "Area", url: "area", create: 'fragment'},
-      room: {label: "Room", url: "room", create: 'dialog'},
-      mobile: {label: "Mobile", url: "mobile", create: "dialog"},
-      article: {label: "Article", url: "article", create: "dialog"},
-      script: {label: "Script", url: "script"},
-      social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
-      display: {label: "Display", url: "display"},
-      race: {label: "Races", objLabel: "Race", url: "race"},
-      attack: {label: "Attacks", objLabel: "Attack", url: "skill"},
-      defense: {label: "Defenses", objLabel: "Defense", url: "skill"},
-      imports: {label: "Imports"}
-    };
-
-    $scope.activateArea = function (areaId) {
-      var oldArea = $scope.activeArea;
-      if (areaId) {
-        $scope.activeArea = lmEditor.cacheValue('area', areaId);
-      } else {
-        $scope.activeArea = null;
-      }
-      lmBus.dispatch('activateArea', $scope.activeArea, oldArea);
-    };
-
-    $scope.editorInclude = function (editor) {
-      return editor.activated ? 'editor/view/' + editor.id + '.html' : undefined;
-    };
-
-    $scope.idOnly = function (model) {
-      return model.dbo_id.split(':')[1];
-    };
-
-    $scope.cap = function (name) {
-      return name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
-    };
-
-    $scope.click = function (editor) {
-      if (editor === $scope.currentEditor) {
-        return;
-      }
-      lmBus.dispatch('editorChange', $scope.currentEditor);
-      editor.activated = true;
-      $scope.currentEditor = editor;
-    };
-
-    $scope.editors = [];
-    angular.forEach(editorList, function (key) {
-      var editor = $scope.editorMap[key];
-      if (editor) {
-        editor.id = key;
-        $scope.editors.push(editor);
-      } else {
-        lmRemote.log("Missing editor type: " + key);
-      }
-    });
-
-    $scope.tabClass = function (editor) {
-      return (editor == $scope.currentEditor ? "active " : " ") + editor.label_class;
-    };
-
-    $scope.startEditor = function (editType, editModel) {
-      var editor = $scope.editorMap[editType];
-      editor.editModel = editModel;
-      $scope.click(editor);
-      editor.newEdit && editor.newEdit(editModel);
-    };
-
-    lmEditor.cache('constants').then(function (constants) {
-      $scope.constants = constants;
-      $scope.loaded = true;
-      var editorRoomId = localStorage.getItem('editor_room_id');
-      if (editorRoomId) {
-        editById(editorRoomId);
-        localStorage.removeItem('editor_room_id');
-      } else {
-        $scope.click($scope.editors[0]);
-      }
-    });
-
-  }]);
 
 
 angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope', '$scope', 'lmRemote',
@@ -525,37 +252,37 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
     var startConfig = null;
     lmEditor.prepare(this, $scope);
 
-    $scope.isnumber = function(value) {
-        return typeof(value) === 'number';
+    $scope.isnumber = function (value) {
+      return typeof(value) === 'number';
     };
 
     $q.all([
-        lmEditor.cache('area').then(function (areas) {
-          $scope.areaList = areas;
-        }),
-        lmRemote.request('editor/config/get_defaults').then(function (defaults) {
-          angular.forEach(defaults, function (subDefaults) {
-            angular.forEach(subDefaults, function (value) {
-              value.type = value.type || 'number';
-              if (value.type === 'number') {
-                if (value.min === undefined) {
-                  value.min = 1;
-                }
-                value.step = value.step || 1;
+      lmEditor.cache('area').then(function (areas) {
+        $scope.areaList = areas;
+      }),
+      lmRemote.request('editor/config/get_defaults').then(function (defaults) {
+        angular.forEach(defaults, function (subDefaults) {
+          angular.forEach(subDefaults, function (value) {
+            value.type = value.type || 'number';
+            if (value.type === 'number') {
+              if (value.min === undefined) {
+                value.min = 1;
               }
-            });
+              value.step = value.step || 1;
+            }
           });
-          $scope.defaults = defaults;
-        }),
-        lmRemote.request('editor/config/get').then(function (config) {
-          startConfig = config;
-          $scope.startAreaId = config.start_room.split(':')[0];
-        })
-      ]).then(function () {
-        $scope.changeArea().then(function () {
-          $scope.editor.newEdit(startConfig);
         });
+        $scope.defaults = defaults;
+      }),
+      lmRemote.request('editor/config/get').then(function (config) {
+        startConfig = config;
+        $scope.startAreaId = config.start_room.split(':')[0];
+      })
+    ]).then(function () {
+      $scope.changeArea().then(function () {
+        $scope.editor.newEdit(startConfig);
       });
+    });
 
     $scope.changeArea = function () {
       lmEditor.deref(roomKey);
@@ -572,7 +299,6 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
 
       lampost_config.title = config.title;
       lampost_config.description = config.description;
-      $('title').text(lampost_config.title);
     }
 
   }]);

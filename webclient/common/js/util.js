@@ -150,6 +150,10 @@ angular.module('lampost_util').service('lmUtil', [function () {
     return vars;
   };
 
+  this.capitalize = function(name) {
+    return name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
+  };
+
   this.getScrollBarSizes = function () {
     var inner = $('<p></p>').css({
       'width': '100%',

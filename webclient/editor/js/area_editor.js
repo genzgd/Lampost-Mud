@@ -1,11 +1,18 @@
-angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEditor', 'lmBus',
-  function ($scope, lmEditor, lmBus) {
+angular.module('lampost_editor').controller('AreaListController', ['$scope', 'lpCache', 'lpEditor',
+  function ($scope, lpCache, lpEditor) {
 
-    $scope.editor =  {label: "Areas", objLabel: "Area", url: "area", create: 'fragment'};
-    lmEditor.prepare(this, $scope).prepareList('area');
+    lpCache.cache('area').then(function(areas) {
+      $scope.modelList = areas;
+    });
 
 
   }]);
+
+angular.module('lampost_editor').controller('AreaController', ['$scope', 'lpEditor',
+  function ($scope, lpEditor) {
+
+  }
+]);
 
 
 angular.module('lampost_editor').controller('RoomListCtrl', ['$q', '$scope', 'lmEditor',

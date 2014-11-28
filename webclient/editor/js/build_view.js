@@ -1,6 +1,6 @@
 
-angular.module('lampost_editor').controller('BuildViewController', ['$scope', 'lmBus', 'lmEditor',
-  function($scope, lmBus, lmEditor) {
+angular.module('lampost_editor').controller('BuildViewController', ['$scope', 'lmBus', 'lpEditor',
+  function($scope, lmBus, lpEditor) {
 
     var editArea = null;
     var selectArea = null;
@@ -17,7 +17,9 @@ angular.module('lampost_editor').controller('BuildViewController', ['$scope', 'l
         event.preventDefault();
         event.stopPropagation();
       }
-      $scope.mainBuildInclude = 'editor/view/' + editorId + '.html';
+      lpEditor.startNew(editorId).then(function () {
+        $scope.mainBuildInclude = 'editor/view/' + editorId + '.html';
+      });
     }
 
 

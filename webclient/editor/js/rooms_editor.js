@@ -58,10 +58,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       return $q.all(editPromises);
     };
 
-    this.postDelete = function () {
-      $scope.startEditor('area');
-    };
-
     $scope.editor.newEdit($scope.editor.editModel);
 
     this.addExit = function (exit) {
