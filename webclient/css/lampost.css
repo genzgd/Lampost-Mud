@@ -143,6 +143,10 @@ a.icon-link {
   padding-right: 4px;
 }
 
+a > i.fa {
+  cursor: pointer;
+}
+
 div.column-button {
   padding-top: 8px;
 }
@@ -253,6 +257,10 @@ div.player-msg {
   background: transparent;
   border: 0;
   -webkit-appearance: none;
+}
+
+.hand {
+  cursor: pointer;
 }
 
 div.row-fluid [class*="span"] .center-in-span {

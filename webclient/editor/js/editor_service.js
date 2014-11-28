@@ -180,19 +180,41 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
       return entry.promise;
     };
 
+    function userDelete(model, event) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        intercept('delConfirm', model).then(function () {
+          lmRemote.request(baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function(holders) {
+            var extra = '';
+            if (holders.length > 0) {
+              extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
+            }
+            lmDialog.showConfirm("Delete " + $scope.objLabel,
+              "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?" + extra,
+              function () {
+                 lmRemote.request(baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
+                    deleteModel(model);
+                  modelDeleted(model);
+                }, dataError);
+              });
+            });
+        });
+      };
+
+    this.prepareList = function(controller, $scope) {
+
+    };
 
     this.prepare = function (controller, $scope) {
 
       var newDialogId = null;
       var originalModel = null;
       var editor = $scope.editor;
-      var nextModel = null;
       var baseUrl = 'editor/' + editor.url + '/';
 
-      editor.newEdit = newEdit;
-
-      $scope.newModel = null;
-      $scope.copyFromId = null;
+      $scope.model = self.editModel;
       $scope.objLabel = editor.objLabel || editor.label;
 
       $scope.$watch('model', function (model) {
@@ -218,8 +240,8 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         }
       }, $scope);
 
-      lmBus.register('editorChange', function (previousEditor) {
-        if (previousEditor === $scope.editor && $scope.isDirty) {
+      lmBus.register('editorChange', function () {
+        if ($scope.isDirty) {
           unsavedChanges();
         }
       }, $scope);
@@ -274,7 +296,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
           $scope.selectionMode = true;
           $scope.outsideEdit = false;
           $scope.model = null;
-          $scope.$broadcast('updateModel');
           intercept('postDelete', delModel);
           return true;
         }
@@ -294,13 +315,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         intercept('onLoaded').then(function () {
           $scope.ready = true;
         })
-      }
-
-      function prepareList(listKey) {
-        self.cache(listKey).then(function (listData) {
-          $scope.modelList = listData;
-          onLoaded();
-        });
       }
 
       function newEdit(newModel) {
@@ -328,19 +342,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         }
       }
 
-      function nextEdit() {
-        if (nextModel) {
-          $scope.ready = false;
-          $scope.model = null;
-          newEdit(nextModel);
-          nextModel = null;
-        }
-      }
-
-      $scope.selectObject = function (object) {
-        newEdit(object);
-      };
-
       $scope.revertModel = function () {
         $scope.model = angular.copy(originalModel);
         $scope.$broadcast('updateModel');
@@ -365,27 +366,13 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
             function (createdObject) {
               insertModel(createdObject);
               $scope.$broadcast('updateModel');
-              lmDialog.close(newDialogId);
               intercept('postCreate', createdObject).then(function () {
                 $scope.editModel(createdObject);
               });
             }, function () {
-              $scope.dialog.newExists = true;
+              $scope.newExists = true;
             });
         })
-      };
-
-      $scope.newModelDialog = function () {
-        $scope.newModel = {};
-        $scope.dialog = {};
-        intercept('newDialog', $scope.newModel).then(function () {
-          var dialogName = editor.create === 'dialog' ? editor.id : 'generic';
-          newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/new_' + dialogName + '.html', scope: $scope.$new()});
-        });
-      };
-
-      $scope.newModelInclude = function () {
-        return editor.create === 'fragment' ? 'editor/fragments/new_' + editor.id + '.html' : null;
       };
 
       $scope.editModel = function (object) {
@@ -400,26 +387,7 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         });
       };
 
-      $scope.deleteModel = function (event, model) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        model = model || $scope.model;
-        intercept('delConfirm', model).then(function () {
-          lmRemote.request(baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function(holders) {
-            var extra = '';
-            if (holders.length > 0) {
-              extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
-            }
-            lmDialog.showConfirm("Delete " + $scope.objLabel,
-              "Are you certain you want to delete " + $scope.objLabel + " " + model.dbo_id + "?" + extra,
-              function () {
-                mainDelete(model);
-              });
-            });
-        });
-      };
+
 
       $scope.copyObject = function (event, object) {
         event.preventDefault();
@@ -427,9 +395,6 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         $scope.copyFromId = object.dbo_id;
         $scope.newModel = angular.copy(object);
         delete $scope.newModel.dbo_id;
-        $scope.dialog = {};
-        var dialogName = editor.copyDialog ? editor.id : 'generic';
-        newDialogId = lmDialog.show({templateUrl: 'editor/dialogs/copy_' + dialogName + '.html', scope: $scope.$new()});
       };
 
       $scope.addNewAlias = function () {
@@ -443,13 +408,9 @@ angular.module('lampost_editor').service('lmEditor', ['$q', '$timeout', 'lmBus',
         $scope.model.aliases.splice(index, 1);
       };
 
-      $scope.modelRowClass = function (object) {
-        return ($scope.model && $scope.model.dbo_id == object.dbo_id) ? 'highlight' : '';
-      };
-
       return {
-        prepareList: prepareList,
-        mainDelete: mainDelete, originalModel: function () {
+        mainDelete: mainDelete,
+          originalModel: function () {
           return originalModel;
         }};
     }

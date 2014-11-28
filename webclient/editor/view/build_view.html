@@ -1,0 +1,16 @@
+<div class="container-fluid" ng-controller="BuildViewController">
+  <div class="row">
+    <div class="col-md-3">
+      <div id="selectAreaPanel" class="panel panel-info">
+        <div data-parent="#selectAreaPanel" data-toggle="collapse" data-target="#areaList" class="hand panel-heading">Area: <strong>{{activeArea()}}</strong>
+          <span class="pull-right"><a ng-click="newEditor('area', $event)"><i class="fa fa-lg fa-plus-square"></i></a>&nbsp;&nbsp;
+          <a><i class="fa fa-lg fa-chevron-down"></i></a></span></div>
+        <div id="areaList" class="panel-collapse collapse">
+          <div class="panel-body" ng-controller="AreaEditorCtrl" ng-include="'editor/view/area-list.html'"></div>
+        </div>
+      </div>
+    </div>
+    <div ng-include="mainBuildInclude">
+    </div>
+  </div>
+</div>

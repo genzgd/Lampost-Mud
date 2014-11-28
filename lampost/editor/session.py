@@ -11,9 +11,9 @@ def editor_login(session):
     edit_perms = []
     player = session.player
     if has_perm(player, 'creator'):
-        edit_perms.extend(['area', 'room', 'mobile', 'article', 'script'])
+        edit_perms.extend(['build'])
     if has_perm(player, 'admin'):
-        edit_perms.extend(['players', 'social', 'display', 'race', 'attack', 'defense'])
+        edit_perms.extend(['players', 'mud'])
     if has_perm(player, 'supreme'):
         edit_perms.extend(['config'])
     session.append({'editor_login': {'edit_perms': edit_perms, 'playerId:': player.dbo_id, 'playerName': player.name}})
@@ -47,8 +47,8 @@ class EditLogin(SessionHandler):
         user_name = content.userId.lower()
         try:
             user = user_manager.validate_user(user_name, content.password)
-        except ClientError as ce:
-            self.session.append({'login_failure': ce.client_message})
+        except ClientError:
+            self.session.append({'login_failure': "Invalid user name or password."})
             return
         imm = None
         for player in (load_object(Player, player_id) for player_id in user.player_ids):

@@ -12,11 +12,12 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular-sanitize.js"></script>
 
 </head>
 
 <body ng-cloak>
-<nav ng-controller="EditorNavController" id="lm-navbar" class="navbar" role="navigation">
+<nav ng-controller="EditorNavController" id="lm-navbar" class="navbar navbar-default" role="navigation">
   <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
@@ -29,29 +30,32 @@
       <a class="navbar-brand" href="#">Lampost Editor</a>
     </div>
     <div class="collapse navbar-collapse" id="lampost-navbar-collapse">
-      <ul class="nav navbar-text">
-        <li ng-repeat="link in links | orderBy:'priority'" ng-class="link.class()">
-          <a ng-href ng-click="changeLocation(link.name)">{{link.label}} <i ng-class="link.icon"></i></a>
+      <ul class="nav navbar-nav">
+        <li ng-repeat="link in links" ng-class="link.active">
+          <a ng-href ng-click="changeNav(link.id)">{{link.label}} <i class="fa" ng-class="link.icon"></i></a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right active">
         <li><p class="navbar-text">{{welcome}}</p></li>
-        <li ng-if="appState == 'loggedIn'"><a ng-href ng-click="editorLogout()">Logout <i class="fa fa-external-link"></i></a></li>
+        <li ng-if="appState == 'loggedIn'"><a ng-href ng-click="editorLogout()">Logout <i
+            class="fa fa-external-link"></i></a></li>
         <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost"
-               target="_blank"><i class="fa fa-list-alt"></i></a></li>
+               target="_blank"><i class="fa fa-comments"></i></a></li>
         <li><a title="Lampost On Github" href="https://github.com/genzgd/Lampost-Mud" target="_blank"><i
             class="fa fa-github"></i></a></li>
       </ul>
     </div>
   </div>
 </nav>
-<div class="container-fluid" ng-controller="EditorAppController" ng-switch="appState">
-  <div class="row" ng-switch-when="connecting">
+<div class="container-fluid" ng-if="appState == 'connecting'">
+  <div class="row">
     <div class="col-md-offset-4 col-md-4 text-center">
       <div class="well well-sm">Connecting to Lampost Server</div>
     </div>
   </div>
-  <div class="row" ng-switch-when="connected">
+</div>
+<div class="container-fluid" ng-if="appState == 'connected'" ng-controller="EditLoginController">
+  <div class="row">
     <div class="col-md-6 col-xs-4">
       <div class="alert alert-info">Welcome to the <strong>{{siteTitle}}</strong> editor. Please log in with your
         immortal character or account name.
@@ -72,7 +76,7 @@
         </div>
         <div class="alert alert-danger" ng-show="loginError">
           <button type="button" class="close" ng-click="loginError = false">×</button>
-          Invalid user name or password
+          {{loginError}}
         </div>
         <div class="form-group pull-right">
           <button class="btn btn-sm btn-primary" type="submit">Enter Editor
@@ -81,10 +85,10 @@
       </form>
     </div>
   </div>
-  <div class="row" ng-switch-when="loggedIn">
-    Logged in with {{playerName}}
-  </div>
 </div>
+<ng-include ng-if="appState == 'loggedIn'" src="mainTemplate">
+</ng-include>
+
 
 <script src="common/lib/spectrum.js"></script>
 
@@ -93,9 +97,13 @@
 <script src="common/js/util.js"></script>
 <script src="common/js/remote.js"></script>
 
+
 <script src="editor/js/editor_app.js"></script>
 <script src="editor/js/editor_service.js"></script>
 <script src="editor/js/editor_directives.js"></script>
+
+<script src="editor/js/build_view.js"></script>
+
 <script src="editor/js/area_editor.js"></script>
 <script src="editor/js/rooms_editor.js"></script>
 <script src="editor/js/script_editor.js"></script>

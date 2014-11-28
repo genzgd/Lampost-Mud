@@ -1,25 +1,9 @@
 angular.module('lampost_editor').controller('AreaEditorCtrl', ['$scope', 'lmEditor', 'lmBus',
   function ($scope, lmEditor, lmBus) {
 
+    $scope.editor =  {label: "Areas", objLabel: "Area", url: "area", create: 'fragment'};
     lmEditor.prepare(this, $scope).prepareList('area');
 
-    this.startEdit = function(area) {
-      $scope.areaId = area.dbo_id;
-      $scope.selectedAreaId = area.dbo_id;
-      $scope.activateArea(area.dbo_id);
-    };
-
-    this.postDelete = function(area) {
-      if (area == $scope.activeArea) {
-        $scope.activateArea(null);
-      }
-    };
-
-    lmBus.register('editorChange', function(currentEditor) {
-      if (currentEditor === $scope.editor && $scope.model) {
-        $scope.activateArea($scope.model.dbo_id);
-      }
-    })
 
   }]);
 
