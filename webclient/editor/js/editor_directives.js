@@ -201,6 +201,13 @@ angular.module('lampost_editor').directive('lmOutsideEdit', [function () {
   }
 }]);
 
+angular.module('lampost_editor').directive('lpDataError', [function () {
+  return {
+    restrict: 'E',
+    templateUrl: 'editor/view/data_error.html'
+  }
+}]);
+
 angular.module('lampost_editor').directive('lmFormSubmit', [function () {
   return {
     restrict: 'A',

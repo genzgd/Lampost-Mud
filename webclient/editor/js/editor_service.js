@@ -28,6 +28,16 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
       return contextMap[contextId];
     };
 
+    this.translateError = function(error) {
+      if (error.id == 'ObjectExists') {
+        return "The object id " + error.text + " already exists";
+      }
+      if (error.id == 'NonUnique') {
+        return "The name " + error.text + "is already in use";
+      }
+      return error.text;
+    };
+
     this.registerContext('room');
 
     this.deleteModel = function (context, model, error) {
@@ -103,7 +113,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }
 
     function dataError(error) {
-      $scope.dataError = error.text;
+      $scope.errors.dataError = lpEditor.translateError(error);
     }
 
     function saveModel() {

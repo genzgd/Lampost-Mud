@@ -94,6 +94,21 @@ angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
     }
   };
 
+  this.dispatchSync = function() {
+    var event_type = arguments[0];
+    var i;
+    var args = [];
+    for (i = 1; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    var registrations = registry[event_type];
+    if (registrations) {
+      for (i = 0; i < registrations.length; i++) {
+        registrations[i].callback.apply(this, args);
+      }
+    }
+  };
+
   this.dispatch = function () {
     var event_type = arguments[0];
     var i;

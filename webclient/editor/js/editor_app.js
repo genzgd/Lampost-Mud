@@ -5,7 +5,7 @@ angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus',
 
     window.onbeforeunload = function () {
       var handlers = [];
-      lmBus.dispatch('editorClosing', handlers);
+      lmBus.dispatchSync('editorClosing', handlers);
       if (handlers.length) {
         return "You have changes to " + handlers.length + " item(s).  Changes will be lost if you leave this page.";
       }
@@ -17,6 +17,7 @@ angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus',
       window.windowClosing = true;
     };
 
+    $rootScope.errors = {};
     $rootScope.siteTitle = lampost_config.title;
     $rootScope.appState = 'connecting';
     var previousSession = sessionStorage.getItem('editSessionId');

@@ -5,6 +5,7 @@
         <button ng-if="model.can_write" ng-disabled="!isDirty" class="btn btn-primary btn-panel pull-right">{{saveLabel}} <i class="fa fa-floppy-o"></i></button>
       </div>
       <fieldset class="panel-body" ng-disabled="!model.can_write">
+        <lp-data-error></lp-data-error>
         <lm-outside-edit></lm-outside-edit>
         <div ng-include="detailTemplate" ></div>
       </fieldset>
