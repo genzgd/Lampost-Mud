@@ -6,8 +6,9 @@
   <title>Lampost Editor</title>
   <link rel="stylesheet" href="local_lib/bootstrap.css">
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-  <link href="css/lampost.css" rel="stylesheet">
-  <link href="css/spectrum.css" rel="stylesheet">
+  <link href="common/css/lampost.css" rel="stylesheet">
+  <link href="editor/css/editor.css" rel="stylesheet" />
+  <link href="common/css/spectrum.css" rel="stylesheet">
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
@@ -17,7 +18,7 @@
 </head>
 
 <body ng-cloak>
-<nav ng-controller="EditorNavController" id="lm-navbar" class="navbar navbar-default" role="navigation">
+<nav ng-controller="EditorNavController" id="lm-navbar" class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"

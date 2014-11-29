@@ -24,8 +24,8 @@
     <div id="roomExitPanel" class="panel panel-default">
       <div class="panel-heading" data-toggle="collapse" data-target="#roomExitDetail" data-parent="#roomExitPanel">
         Exits <strong>({{model.exits.length}})</strong></div>
-      <div class="collapse panel-collapse panel-body" id="roomExitDetail">
-        <table class="table table-condensed">
+      <div class="collapse panel-collapse" id="roomExitDetail">
+        <table class="table">
           <tr ng-repeat="exit in model.exits">
             <td>
               <div class="col-md-3">{{exit.direction}}

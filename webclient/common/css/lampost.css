@@ -2,11 +2,6 @@
     margin: 0;
 }
 
-html, body {
-    height: 100%;
-    overflow-y: hidden;
-}
-
 .navbar-brand {
     padding-top:0px;
     padding-bottom:0px;
