@@ -5,6 +5,8 @@ angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor',
     model.next_room_id = 1;
   }});
 
+  lpEditor.registerContext('room', {parentType: 'area'});
+
 
 }]);
 

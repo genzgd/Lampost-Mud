@@ -47,6 +47,10 @@ html, body {
     overflow: hidden;
 }
 
+.panel-body > .table {
+    margin-bottom: 0;
+}
+
 .form-control[disabled],
 .form-control[readonly],
 fieldset[disabled] .form-control {

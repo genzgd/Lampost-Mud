@@ -80,7 +80,7 @@ class ChildList(SessionHandler):
 
     def main(self, parent_id):
         set_key = '{}_{}s:{}'.format(self.parent_type, self.dbo_key_type, parent_id)
-        self._return([obj.dto_value for obj in load_object_set(self.obj_class, set_key)])
+        self._return([edit_dto(self.session.player, obj) for obj in load_object_set(self.obj_class, set_key)])
 
 
 class ChildrenEditor(Editor):
