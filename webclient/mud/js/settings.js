@@ -7,7 +7,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
       {id: "display", label: "Text Display", class: "btn-default"},
       {id: "notify", label: "Notifications", class: "btn-default"}
     ];
-    $scope.headingId = "account";
+    $scope.headingId = "general";
     $scope.click = function (headingId) {
       $scope.headingId = headingId;
       for (var i = 0; i < $scope.headings.length; i++) {

@@ -15,7 +15,7 @@
       </thead>
       <tbody>
       <tr class="hand" ng-repeat="model in modelList" ng-click="selectModel(model)">
-        <td class="col-md-span1">{{model.dbo_id}}</td>
+        <td class="col-md-span1">{{idOnly(model)}}</td>
         <td class="col-md-span9">{{model.title}}</td>
         <td class="col-md-span2">
           <a ng-show="model.can_write" ng-click="deleteModel(model, $event)" title="Delete Room"> <i

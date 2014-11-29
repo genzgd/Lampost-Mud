@@ -146,7 +146,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     function onCreated(created) {
       lpCache.insertModel(created);
-      existingEdit(created);
+      init(created.dbo_key_type, created);
     }
 
     function onSaved(updated) {
@@ -218,7 +218,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     lmBus.register('newEdit', function (type) {
       onOverwrite().then(function () {
         var model = {can_write: true, owner_id: lpEditor.playerId};
-        intercept('create', activeModel).then(function () {
+        intercept('create', model).then(function () {
           init(type, model)
         });
       });
@@ -268,9 +268,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     };
 
     reset();
-  }
-])
-;
+  }]);
 
 
 angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs', 'lmBus', 'lpCache', 'lpEditor',
@@ -280,16 +278,19 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
     var context = lpEditor.getContext(type);
     var activeModel;
     var listKey;
+    var parent;
 
     $scope.type = type;
     $scope.editorLabel = context.label;
 
     function updateList() {
       if (context.parentType) {
-        if (!context.parentId) {
+        if (context.parentId) {
+          listKey = type + ":" + context.parentId;
+        } else {
+          $scope.modelList = [];
           return;
         }
-        listKey = type + ":" + context.parentId;
       } else {
         listKey = type;
       }
@@ -302,11 +303,15 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       $scope.errors.dataError = lpEditor.translateError(error);
     }
 
-    lmBus.register("activeUpdated", function (active) {
-      if (active.dbo_key_type === type) {
-        activeModel = active;
-      } else if (context.parentType === active.dbo_key_type) {
-        updateList();
+    lmBus.register("activeUpdated", function (activated) {
+      if (activated.dbo_key_type === type) {
+        activeModel = activated;
+      } else if (context.parentType === activated.dbo_key_type) {
+        if (activated != parent) {
+          updateList();
+          parent = activated;
+          activeModel = null;
+        }
       }
     });
 

@@ -17,6 +17,9 @@ angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus',
       window.windowClosing = true;
     };
 
+    $rootScope.idOnly = function (model) {
+      return model.dbo_id.split(':')[1];
+    };
     $rootScope.errors = {};
     $rootScope.siteTitle = lampost_config.title;
     $rootScope.appState = 'connecting';
