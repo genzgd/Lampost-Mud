@@ -1,5 +1,8 @@
-angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmDialog', 'lpCache', 'lmBus',
-  function (lmUtil, lmRemote, lmDialog, lpCache, lmBus) {
+angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote', 'lmDialog', 'lpCache', 'lmBus',
+  function ($q, lmUtil, lmRemote, lmDialog, lpCache, lmBus) {
+
+    var lpEditor = this;
+    var contextMap = {};
 
     function EditContext(id, init) {
       this.id = id;
@@ -9,10 +12,25 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
       this.baseUrl = 'editor/' + this.url + '/';
       this.objLabel = this.objLabel || this.label;
       this.include = this.include || 'editor/view/' + id + '.html';
+      this.extend = this.extend || angular.noop;
     }
 
-    var contextMap = {};
-    var activeModels = {};
+    EditContext.prototype.newModel = function () {
+      var model = {can_write: true, owner_id: lpEditor.playerId};
+      this.extend(model);
+      return model;
+    };
+
+    EditContext.prototype.preCreate = function (model) {
+      if (this.parentType) {
+        if (this.parent) {
+          model.dbo_id = this.parent.dbo_id + ':' + model.dbo_id;
+        } else {
+          return $q.reject("No parent " + this.parentType + " set.")
+        }
+      }
+      return $q.when();
+    };
 
     this.init = function (data) {
       this.playerId = data.playerId;
@@ -36,7 +54,7 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
       if (error.id == 'NonUnique') {
         return "The name " + error.text + "is already in use";
       }
-      return error.text;
+      return error.text || error;
     };
 
     this.deleteModel = function (context, model, error) {
@@ -59,14 +77,13 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
       return model.name || model.title || model.dbo_id || '-new-';
     };
 
-    lmBus.register('editStarted', function (editModel) {
-      var type = editModel.dbo_key_type;
-      angular.forEach(contextMap, function (context) {
-        if (context.parentType === type && context.parentId != editModel.dbo_id) {
-          context.parentId = editModel.dbo_id
+    lmBus.register('modelSelected', function (activeModel) {
+      angular.forEach(contextMap, function(context) {
+        if (context.parentType === activeModel.dbo_key_type) {
+          context.parent = activeModel;
         }
       });
-      lmBus.dispatch('activeUpdated', editModel);
+      lmBus.dispatch('activeUpdated', activeModel);
     });
 
 
@@ -95,7 +112,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     var originalModel = {};
     var context;
     var baseUrl;
-    var parentId;
 
     lpEditor.registerContext('none', {label: 'Get Started'});
 
@@ -103,25 +119,18 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       return lpEditor.display(activeModel);
     }
 
-    function init(type, orig) {
-      context = lpEditor.getContext(type);
+    function init(orig) {
       baseUrl = context.baseUrl;
-      parentId = context.parentId;
       originalModel = orig;
       angular.copy(originalModel, activeModel);
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
       $scope.detailTemplate = context.include;
-      if (originalModel.dbo_id) {
-        $scope.saveLabel = "Save";
-        lmBus.dispatch('editStarted', originalModel);
-      } else {
-        $scope.saveLabel = "Create";
-      }
     }
 
     function reset() {
-      init('none', {});
+      context = lpEditor.getContext('none');
+      init({});
     }
 
     function intercept(interceptor, args) {
@@ -137,16 +146,19 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     function saveModel() {
       return intercept('preUpdate', activeModel).then(function () {
-        if (originalModel.dbo_id) {
-          return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
+        if ($scope.isNew) {
+          return context.preCreate(activeModel).then(function () {
+            lmRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
+          }, dataError);
         }
-        return lmRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
+          return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
       })
     }
 
     function onCreated(created) {
+      $scope.isDirty = false;
       lpCache.insertModel(created);
-      init(created.dbo_key_type, created);
+      lmBus.dispatch('modelSelected', created);
     }
 
     function onSaved(updated) {
@@ -181,7 +193,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     function existingEdit(model) {
       onOverwrite(model).then(function () {
-        init(model.dbo_key_type, model);
+        context = lpEditor.getContext(model.dbo_key_type);
+        $scope.isNew = false;
+        init(model);
       })
     }
 
@@ -217,10 +231,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     lmBus.register('newEdit', function (type) {
       onOverwrite().then(function () {
-        var model = {can_write: true, owner_id: lpEditor.playerId};
-        intercept('create', model).then(function () {
-          init(type, model)
-        });
+        context = lpEditor.getContext(type);
+        $scope.isNew = true;
+        init(context.newModel());
       });
     }, $scope);
 
@@ -246,9 +259,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.modelName = display;
-    $scope.isNew = function () {
-      return !originalModel.dbo_id
-    };
 
     $scope.deleteAlias = function (index) {
       activeModel.aliases.splice(index, 1);
@@ -278,16 +288,20 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
     var context = lpEditor.getContext(type);
     var activeModel;
     var listKey;
-    var parent;
 
     $scope.type = type;
     $scope.editorLabel = context.label;
+    $scope.addAllowed = function() {
+      return (context.parent && context.parent.can_write) || !context.parentType;
+    };
 
     function updateList() {
+      lpCache.deref(listKey);
       if (context.parentType) {
-        if (context.parentId) {
-          listKey = type + ":" + context.parentId;
+        if (context.parent) {
+          listKey = type + ":" + context.parent.dbo_id;
         } else {
+          activeModel = null;
           $scope.modelList = [];
           return;
         }
@@ -306,12 +320,9 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
     lmBus.register("activeUpdated", function (activated) {
       if (activated.dbo_key_type === type) {
         activeModel = activated;
-      } else if (context.parentType === activated.dbo_key_type) {
-        if (activated != parent) {
-          updateList();
-          parent = activated;
-          activeModel = null;
-        }
+      } else if (context.parent === activated) {
+        updateList();
+        activeModel = null;
       }
     });
 

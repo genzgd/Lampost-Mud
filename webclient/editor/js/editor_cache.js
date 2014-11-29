@@ -1,6 +1,7 @@
 angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 'lmUtil',
   function ($q, lmBus, lmRemote, lmUtil) {
 
+    var lpCache = this;
     var cacheHeap = [];
     var cacheHeapSize = 32;
     var remoteCache = {};
@@ -49,13 +50,13 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       var outside = !event.local;
       switch (event.edit_type) {
         case 'update':
-          updateModel(event.model, outside);
+          lpCache.updateModel(event.model, outside);
           break;
         case 'create':
-          insertModel(event.model, outside);
+          lpCache.insertModel(event.model, outside);
           break;
         case 'delete':
-          deleteModel(event.model, outside);
+          lpCache.deleteModel(event.model, outside);
           break;
       }
     });

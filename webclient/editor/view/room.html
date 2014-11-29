@@ -10,17 +10,32 @@
     </div>
   </div>
   <div class="col-md-4">
+    <div class="row">
+      <div class="form-group col-md-4">
+        <label class="control-label">Room Id</label><input ng-if="isNew" class="form-control input-sm" type="number"
+        ng-model="model.dbo_id"/>
+        <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+      </div>
+      <div class="form-group col-md-4">
+        <label class="control-label">DB Rev</label> <input class="form-control input-sm" type="number"
+        ng-model="model.dbo_rev" disabled/>
+      </div>
+    </div>
     <div id="roomExitPanel" class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" data-target="#roomExitDetail" data-parent="roomExitPanel">Exits
-        <strong>({{model.exits.length}})</strong></div>
-      <table class="collapse table table-condensed" id="roomExitDetail">
-        <tr ng-repeat="exit in model.exits">
+      <div class="panel-heading" data-toggle="collapse" data-target="#roomExitDetail" data-parent="#roomExitPanel">
+        Exits <strong>({{model.exits.length}})</strong></div>
+      <div class="collapse panel-collapse panel-body" id="roomExitDetail">
+        <table class="table table-condensed">
+          <tr ng-repeat="exit in model.exits">
+            <td>
+              <div class="col-md-3">{{exit.direction}}
+              </div>
+              <div class="col-md-9">{{exit.destination}}</div>
+            </td>
+          </tr>
+        </table>
+      </div>
 
-          <div class="col-md-3">{{exit.direction}}
-          </div>
-          <div class="col-md-9">{{exit.destination}}</div>
-        </tr>
-      </table>
     </div>
   </div>
 </div>

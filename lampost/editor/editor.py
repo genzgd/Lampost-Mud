@@ -1,5 +1,6 @@
 from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
+from lampost.datastore.exceptions import DataError
 
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'edit_update_service')
