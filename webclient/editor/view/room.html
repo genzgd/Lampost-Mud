@@ -11,10 +11,16 @@
   </div>
   <div class="col-md-4">
     <div id="roomExitPanel" class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" data-target="#roomExitDetail" data-parent="roomExitPanel">Exits <strong>({{model.exits.length}})</strong></div>
-      <ul id="roomExitDetail" class="collapse">
-        <li ng-repeat="exit in model.exits">{{exit.destination}} {{}}</li>
-      </ul>
+      <div class="panel-heading" data-toggle="collapse" data-target="#roomExitDetail" data-parent="roomExitPanel">Exits
+        <strong>({{model.exits.length}})</strong></div>
+      <table class="collapse table table-condensed" id="roomExitDetail">
+        <tr ng-repeat="exit in model.exits">
+
+          <div class="col-md-3">{{exit.direction}}
+          </div>
+          <div class="col-md-9">{{exit.destination}}</div>
+        </tr>
+      </table>
     </div>
   </div>
 </div>

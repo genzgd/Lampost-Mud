@@ -56,7 +56,7 @@ angular.module('lampost_editor').service('lpEditor', ['lmUtil', 'lmRemote', 'lmD
     };
 
     this.display = function (model) {
-      return model.name || model.title || model.dbo_id;
+      return model.name || model.title || model.dbo_id || '-new-';
     };
 
     lmBus.register('editStarted', function (editModel) {
@@ -113,7 +113,10 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       $scope.editorLabel = context.label;
       $scope.detailTemplate = context.include;
       if (originalModel.dbo_id) {
+        $scope.saveLabel = "Save";
         lmBus.dispatch('editStarted', originalModel);
+      } else {
+        $scope.saveLabel = "Create";
       }
     }
 
@@ -142,7 +145,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }
 
     function onCreated(created) {
-      $scope.isDirty = false;
       lpCache.insertModel(created);
       existingEdit(created);
     }
@@ -155,10 +157,13 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     function checkUnsaved() {
       return lmDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
-        ": " + $scope.model.dbo_id + ".  Save changes now?", saveModel);
+        ": " + display() + ".  Save changes now?", saveModel);
     }
 
     function onOverwrite() {
+      if (!$scope.isDirty) {
+        return $q.when();
+      }
       var deferred = $q.defer();
       lmDialog.showAlert({title: "Unsaved Changes ",
         body: "You have unsaved changes to <b>" + display() +
@@ -169,21 +174,15 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
           }},
           {label: "Discard Changes", class: "btn-danger", dismiss: true, click: deferred.resolve},
           {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
-        ]}, true);
+        ],
+        onCancel: deferred.reject}, true);
       return deferred.promise;
     }
 
     function existingEdit(model) {
-      function se() {
+      onOverwrite(model).then(function () {
         init(model.dbo_key_type, model);
-        $scope.saveLabel = "Save";
-      }
-
-      if ($scope.isDirty) {
-        onOverwrite().then(se);
-      } else {
-        se();
-      }
+      })
     }
 
     lmBus.register('modelUpdate', function (updatedModel, outside) {
@@ -217,18 +216,12 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }, $scope);
 
     lmBus.register('newEdit', function (type) {
-
-      function sn() {
-        init(type, {can_write: true, owner_id: lpEditor.playerId});
-        $scope.saveLabel = "Create";
-        intercept('create', activeModel);
-      }
-
-      if ($scope.isDirty) {
-        onOverwrite().then(sn);
-      } else {
-        sn();
-      }
+      onOverwrite().then(function () {
+        var model = {can_write: true, owner_id: lpEditor.playerId};
+        intercept('create', activeModel).then(function () {
+          init(type, model)
+        });
+      });
     }, $scope);
 
     lmBus.register('modelSelected', existingEdit);
@@ -253,6 +246,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.modelName = display;
+    $scope.isNew = function () {
+      return !originalModel.dbo_id
+    };
 
     $scope.deleteAlias = function (index) {
       activeModel.aliases.splice(index, 1);
@@ -273,7 +269,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     reset();
   }
-]);
+])
+;
 
 
 angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs', 'lmBus', 'lpCache', 'lpEditor',
@@ -305,7 +302,7 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       $scope.errors.dataError = lpEditor.translateError(error);
     }
 
-    lmBus.register("activeUpdated", function(active) {
+    lmBus.register("activeUpdated", function (active) {
       if (active.dbo_key_type === type) {
         activeModel = active;
       } else if (context.parentType === active.dbo_key_type) {
@@ -329,7 +326,7 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       lmBus.dispatch("modelSelected", model);
     };
 
-    $scope.activeModel = function() {
+    $scope.activeModel = function () {
       return activeModel ? lpEditor.display(activeModel) : '-NOT SELECTED-';
     };
 

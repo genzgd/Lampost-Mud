@@ -1,31 +1,29 @@
 <div id="selectAreaPanel" class="panel panel-info" ng-controller="EditListCtrl" list-type="area">
-  <div data-parent="#selectAreaPanel" data-toggle="collapse" data-target="#areaList" class="hand panel-heading">{{editorLabel}}:
-    <strong>{{activeModel()}}</strong>
-          <span class="pull-right"><a ng-click="newEditor(type, $event)"><i class="fa fa-lg fa-plus-square"></i></a>&nbsp;&nbsp;
-          <a><i class="fa fa-lg fa-chevron-down"></i></a></span>
+  <div data-parent="#selectAreaPanel" data-toggle="collapse" data-target="#areaList" class="hand panel-heading">
+    {{editorLabel}}: <strong>{{activeModel()}}</strong>
+          <span class="pull-right"><a ng-click="newEditor(type, $event)"><i class="fa fa-lg fa-plus"></i></a>&nbsp;&nbsp;
+          <a><i class="fa  fa-chevron-down"></i></a></span>
   </div>
-  <div id="areaList" class="panel-collapse collapse">
-    <div class="panel-body">
-      <table class="table table-condensed table-hover">
-        <thead>
-        <tr>
-          <th class="col-md-span4">Id</th>
-          <th class="col-md-span6">Name</th>
-          <th class="col-md-span2"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="hand" ng-repeat="area in modelList" ng-click="selectModel(area)">
-          <td class="col-md-span4">{{area.dbo_id}}</td>
-          <td class="col-md-span6">{{area.name}}</td>
-          <td class="col-md-span2">
-            <a ng-show="area.can_write" ng-click="deleteModel(area, $event)" title="Delete Area"> <i
-              class="fa fa-minus-square"></i></a> <i ng-hide="area.can_write" class="fa fa-lock"></i>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+  <div id="areaList" class="panel-collapse collapse in">
+    <table class="table table-condensed table-hover">
+      <thead>
+      <tr>
+        <th class="col-md-span4">Id</th>
+        <th class="col-md-span6">Name</th>
+        <th class="col-md-span2"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="hand" ng-repeat="area in modelList" ng-click="selectModel(area)">
+        <td class="col-md-span4">{{area.dbo_id}}</td>
+        <td class="col-md-span6">{{area.name}}</td>
+        <td class="col-md-span2">
+          <a ng-show="area.can_write" ng-click="deleteModel(area, $event)" title="Delete Area"> <i
+            class="fa fa-minus-square"></i></a> <i ng-hide="area.can_write" class="fa fa-lock"></i>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
