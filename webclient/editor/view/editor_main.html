@@ -2,8 +2,12 @@
   <form id="mainEditForm" ng-submit="saveModel()">
     <div class="panel panel-primary">
       <div class="panel-heading">{{editorLabel}}:&nbsp;&nbsp;<strong>{{modelName()}}</strong>
-        <button ng-if="model.can_write" ng-disabled="!isDirty" class="btn btn-primary btn-panel pull-right">{{isNew ?
-          'Create' : 'Save'}} <i class="fa fa-floppy-o"></i></button>
+        <div class="btn-group pull-right">
+          <button type="submit" ng-if="model.can_write" ng-disabled="!isDirty" class="btn btn-panel btn-primary ">{{isNew ?
+            'Create' : 'Save'}} <i class="fa fa-floppy-o"></i></button>&nbsp
+          <button type="button" ng-click="deleteModel()" ng-if="model.can_write" class="btn btn-panel btn-primary">Delete <i
+            class="fa fa-trash"></i></button>
+        </div>
       </div>
       <fieldset class="panel-body" ng-disabled="!model.can_write">
         <lp-data-error></lp-data-error>

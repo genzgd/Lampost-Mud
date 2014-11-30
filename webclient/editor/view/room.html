@@ -1,175 +1,185 @@
-<div class="row">
-  <div class="col-md-4">
-    <div class="form-group">
-      <label class="control-label">Title</label> <input class="form-control input-sm" type="text"
-      ng-model="model.title"/>
+<div ng-controller="RoomEditorCtrl">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label class="control-label">Title</label>
+        <input class="form-control input-sm" type="text" ng-model="model.title"/>
+      </div>
+      <div class="form-group">
+        <label class="control-label">Description</label>
+        <textarea class="form-control" rows="10" ng-model="model.desc"></textarea>
+      </div>
     </div>
-    <div class="form-group">
-      <label class="control-label">Description</label> <textarea class="form-control" rows="10"
-      ng-model="model.desc"></textarea>
+    <div class="col-md-4">
+      <div class="row">
+        <div class="form-group col-md-4">
+          <label class="control-label">Room Id</label>
+          <input ng-if="isNew" class="form-control input-sm" type="number" ng-model="model.dbo_id"/>
+          <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+        </div>
+        <div class="form-group col-md-4">
+          <label class="control-label">DB Rev</label>
+          <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled/>
+        </div>
+      </div>
+      <div id="roomExitPanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomExitDetail"
+          data-parent="#roomExitPanel">
+          Exits <strong>({{model.exits.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomExitDetail">
+          <table class="table table-condensed">
+            <tr ng-repeat="exit in model.exits">
+              <td>
+                <div class="col-md-3">{{exit.direction}}
+                </div>
+                <div class="col-md-9">{{exit.destination}}</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+    </div>
+    <div class="col-md-4 text-center">
+      <div ng-if="isNew" class="alert alert-warning">You must first create the room before adding new elements.</div>
+      <div ng-if="!activeAdd && !isNew" class="btn-group btn-group-sm btn-group">
+        <button type="button" ng-click="setAddType(add)" ng-repeat="add in addTypes" class="btn btn-default">
+          {{add.label}}
+        </button>
+      </div>
+      <ng-include src="addPanel"></ng-include>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="row">
-      <div class="form-group col-md-4">
-        <label class="control-label">Room Id</label><input ng-if="isNew" class="form-control input-sm" type="number"
-        ng-model="model.dbo_id"/>
-        <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
-      </div>
-      <div class="form-group col-md-4">
-        <label class="control-label">DB Rev</label> <input class="form-control input-sm" type="number"
-        ng-model="model.dbo_rev" disabled/>
-      </div>
+</div><!--
+  <div class="span4">
+    <table style="width: 100%; table-layout: fixed;">
+      <thead>
+      <tr>
+        <th style="width: 10%;">Dir</th>
+        <th style="width: 65%;">Destination</th>
+        <th style="width: 25%;"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="table-bordered" ng-repeat="exit in model.exits">
+        <td style="width: 10%;">{{exit.direction}}</td>
+        <td class="use-ellipses" style="width: 60%;">{{exit.destination}} {{exitRoom(exit).title}}</td>
+        <td style="width: 30%;">
+          <a title="Edit Room" ng-click="startEditor('room', exitRoom(exit))" class="icon-link"><i class="icon-wrench"></i></a>
+          <a popover-title="exitRoom(exit).title" popover="exitRoom(exit).desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+          <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
+          <a title="Delete Exit (one way)" ng-show="exitTwoWay(exit)" ng-click="deleteExit(exit, false)" class="icon-link"><i
+              class="icon-circle-arrow-left"></i></a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <button style="margin-top: 8px" ng-click="addNewExit()" class="btn btn-success btn-small">Dig</button>
+    <h5>Features ({{model.features.length}})</h5>
+    <table style="width: 95%">
+      <tbody>
+        <tr class="table-bordered" ng-repeat="feature in model.features">
+          <td style="width: 80%">{{feature.sub_class_id}}</td>
+          <td style="width: 20%"><a title="Remove Feature" ng-click="removeFeature(feature)" class="icon-link"><i class="icon-remove"></i></a>
+            <a ng-show="availFeatures[feature.sub_class_id]" title="Edit Feature" ng-click="editFeature(feature)" class="icon-link"><i class="icon-wrench"></i></a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="spacer" ng-show="features">
+      <button type="button" ng-click="addFeature()" class="btn btn-small btn-success">Add</button>
+        <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature as feature.sub_class_id for feature in features">
+      </select>
     </div>
-    <div id="roomExitPanel" class="panel panel-default">
-      <div class="panel-heading" data-toggle="collapse" data-target="#roomExitDetail" data-parent="#roomExitPanel">
-        Exits <strong>({{model.exits.length}})</strong></div>
-      <div class="collapse panel-collapse" id="roomExitDetail">
-        <table class="table">
-          <tr ng-repeat="exit in model.exits">
-            <td>
-              <div class="col-md-3">{{exit.direction}}
-              </div>
-              <div class="col-md-9">{{exit.destination}}</div>
+    </div>
+  <div class="span4">
+  </div>
+
+  </div>
+  <div class="row-fluid">
+
+  <div class="span7 tabbable">
+    <ul class="nav nav-tabs" >
+      <li class="unselectable active"><a href="#extrasTab" data-toggle="tab">Extras</a></li>
+      <li class="unselectable"><a href="#scriptsTab" data-toggle="tab">Scripts</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div lm-include="editor/fragments/room_extras.html"></div>
+      <div lm-include="editor/fragments/room_scripts.html"></div>
+    </div>
+  </div>
+  <div class="span5">
+    <div class="row-fluid">
+      <div class="span2">
+        <h5>Mobiles</h5>
+
+        <div class="column-button">
+          <button ng-click="addNewReset('mobile')" class="btn btn-success btn-small">Add</button>
+        </div>
+      </div>
+      <div class="span10">
+        <table style="width: 98%; height:60%; table-layout: fixed;">
+          <thead>
+          <tr>
+            <th style="width: 52%;">Mobile id</th>
+            <th style="width: 14%;">Count</th>
+            <th style="width: 12%;">Max</th>
+            <th style="width: 22%;"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="table-bordered" ng-repeat="reset in model.mobile_resets" ng-init="mobile = resetMobile(reset)">
+            <td class="use-ellipses" style="width: 70%;">{{mobile.dbo_id}} {{mobile.title}}</td>
+            <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
+                ng-model="reset.reset_count"/></td>
+            <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
+                ng-model="reset.reset_max"/></td>
+            <td style="width: 20%;">
+              <a title="Edit Mobile" ng-click="startEditor('mobile', mobile)" class="icon-link"><i class="icon-wrench"></i></a>
+              <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+              <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
+              <a title="Mobile Articles" ng-click="mobileArticles(reset, mobile)" class="icon-link"><i class="icon-align-justify"></i></a>
             </td>
           </tr>
+          </tbody>
         </table>
       </div>
-
     </div>
-  </div>
-</div>
+    <div class="row-fluid" style="padding-top: 16px">
+      <div class="span2">
+        <h5>Articles</h5>
 
-<!--
-<div class="span4">
-  <table style="width: 100%; table-layout: fixed;">
-    <thead>
-    <tr>
-      <th style="width: 10%;">Dir</th>
-      <th style="width: 65%;">Destination</th>
-      <th style="width: 25%;"></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr class="table-bordered" ng-repeat="exit in model.exits">
-      <td style="width: 10%;">{{exit.direction}}</td>
-      <td class="use-ellipses" style="width: 60%;">{{exit.destination}} {{exitRoom(exit).title}}</td>
-      <td style="width: 30%;">
-        <a title="Edit Room" ng-click="startEditor('room', exitRoom(exit))" class="icon-link"><i class="icon-wrench"></i></a>
-        <a popover-title="exitRoom(exit).title" popover="exitRoom(exit).desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
-        <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
-        <a title="Delete Exit (one way)" ng-show="exitTwoWay(exit)" ng-click="deleteExit(exit, false)" class="icon-link"><i
-            class="icon-circle-arrow-left"></i></a>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <button style="margin-top: 8px" ng-click="addNewExit()" class="btn btn-success btn-small">Dig</button>
-  <h5>Features ({{model.features.length}})</h5>
-  <table style="width: 95%">
-    <tbody>
-      <tr class="table-bordered" ng-repeat="feature in model.features">
-        <td style="width: 80%">{{feature.sub_class_id}}</td>
-        <td style="width: 20%"><a title="Remove Feature" ng-click="removeFeature(feature)" class="icon-link"><i class="icon-remove"></i></a>
-          <a ng-show="availFeatures[feature.sub_class_id]" title="Edit Feature" ng-click="editFeature(feature)" class="icon-link"><i class="icon-wrench"></i></a></td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="spacer" ng-show="features">
-    <button type="button" ng-click="addFeature()" class="btn btn-small btn-success">Add</button>
-      <select style="margin-top: 6px;" ng-model="newFeature" ng-options="feature as feature.sub_class_id for feature in features">
-    </select>
-  </div>
-  </div>
-<div class="span4">
-</div>
-
-</div>
-<div class="row-fluid">
-
-<div class="span7 tabbable">
-  <ul class="nav nav-tabs" >
-    <li class="unselectable active"><a href="#extrasTab" data-toggle="tab">Extras</a></li>
-    <li class="unselectable"><a href="#scriptsTab" data-toggle="tab">Scripts</a></li>
-  </ul>
-
-  <div class="tab-content">
-    <div lm-include="editor/fragments/room_extras.html"></div>
-    <div lm-include="editor/fragments/room_scripts.html"></div>
-  </div>
-</div>
-<div class="span5">
-  <div class="row-fluid">
-    <div class="span2">
-      <h5>Mobiles</h5>
-
-      <div class="column-button">
-        <button ng-click="addNewReset('mobile')" class="btn btn-success btn-small">Add</button>
+        <div class="column-button">
+          <button ng-click="addNewReset('article')" class="btn btn-success btn-small">Add</button>
+        </div>
+      </div>
+      <div class="span10">
+        <table style="width: 98%; height:60%; table-layout: fixed;">
+          <thead>
+          <tr>
+            <th style="width: 52%;">Article id</th>
+            <th style="width: 14%;">Count</th>
+            <th style="width: 12%;">Max</th>
+            <th style="width: 22%;"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="table-bordered" ng-repeat="reset in model.article_resets" ng-init="article = resetArticle(reset)">
+            <td class="use-ellipses" style="width: 70%;">{{article.dbo_id}} {{article.title}}</td>
+            <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
+                ng-model="reset.reset_count"/></td>
+            <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
+                ng-model="reset.reset_max"/></td>
+            <td style="width: 20%;">
+              <a title="Edit Article" ng-click="startEditor('article', article)" class="icon-link"><i class="icon-wrench"></i></a>
+              <a popover-title="article.title" popover="article.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
+              <a title="Delete Article" ng-click="deleteArticle($index)" class="icon-link"><i class="icon-remove"></i></a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="span10">
-      <table style="width: 98%; height:60%; table-layout: fixed;">
-        <thead>
-        <tr>
-          <th style="width: 52%;">Mobile id</th>
-          <th style="width: 14%;">Count</th>
-          <th style="width: 12%;">Max</th>
-          <th style="width: 22%;"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="table-bordered" ng-repeat="reset in model.mobile_resets" ng-init="mobile = resetMobile(reset)">
-          <td class="use-ellipses" style="width: 70%;">{{mobile.dbo_id}} {{mobile.title}}</td>
-          <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-              ng-model="reset.reset_count"/></td>
-          <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-              ng-model="reset.reset_max"/></td>
-          <td style="width: 20%;">
-            <a title="Edit Mobile" ng-click="startEditor('mobile', mobile)" class="icon-link"><i class="icon-wrench"></i></a>
-            <a popover-title="mobile.title" popover="mobile.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
-            <a title="Delete Mobile" ng-click="deleteMobile($index)" class="icon-link"><i class="icon-remove"></i></a>
-            <a title="Mobile Articles" ng-click="mobileArticles(reset, mobile)" class="icon-link"><i class="icon-align-justify"></i></a>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
-  <div class="row-fluid" style="padding-top: 16px">
-    <div class="span2">
-      <h5>Articles</h5>
-
-      <div class="column-button">
-        <button ng-click="addNewReset('article')" class="btn btn-success btn-small">Add</button>
-      </div>
-    </div>
-    <div class="span10">
-      <table style="width: 98%; height:60%; table-layout: fixed;">
-        <thead>
-        <tr>
-          <th style="width: 52%;">Article id</th>
-          <th style="width: 14%;">Count</th>
-          <th style="width: 12%;">Max</th>
-          <th style="width: 22%;"></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr class="table-bordered" ng-repeat="reset in model.article_resets" ng-init="article = resetArticle(reset)">
-          <td class="use-ellipses" style="width: 70%;">{{article.dbo_id}} {{article.title}}</td>
-          <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-              ng-model="reset.reset_count"/></td>
-          <td class="edit-cell" style="width: 15%;"><input class="span12 edit-cell cell-right" type="number" min="1"
-              ng-model="reset.reset_max"/></td>
-          <td style="width: 20%;">
-            <a title="Edit Article" ng-click="startEditor('article', article)" class="icon-link"><i class="icon-wrench"></i></a>
-            <a popover-title="article.title" popover="article.desc|left|hover" class="icon-link"><i class="icon-eye-open"></i></a>
-            <a title="Delete Article" ng-click="deleteArticle($index)" class="icon-link"><i class="icon-remove"></i></a>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-</div> -->
+  </div> -->
 

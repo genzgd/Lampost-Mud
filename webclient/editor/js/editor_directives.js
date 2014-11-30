@@ -1,9 +1,3 @@
-angular.module('lampost_editor').service('EditorHelper', ['$q', 'lmBus', 'lmRemote', 'lmEditor', 'lmDialog', 'lmUtil',
-  function ($q, lmBus, lmRemote, lmEditor, lmDialog, lmUtil) {
-
-  }
-]);
-
 angular.module('lampost_editor').controller('EffectListController', ['$scope', function ($scope) {
 
   $scope.$on('updateModel', updateModel);
@@ -156,8 +150,9 @@ angular.module('lampost_editor').controller('SkillListController', ['$q', '$scop
 
     $scope.$on('updateModel', updateModel);
 
-    lmEditor.cache('skill').then(function(skills) {
-      $scope.allSkills = skills;;
+    lmEditor.cache('skill').then(function (skills) {
+      $scope.allSkills = skills;
+      ;
       $scope.ready = true;
       updateModel();
     });
@@ -229,7 +224,7 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
     restrict: 'AE',
     templateUrl: 'editor/view/object_selector.html',
     controller: 'objSelectorController',
-    link: function(scope, element, attrs) {
+    link: function (scope, element, attrs) {
       scope.objType = attrs.lmObjectSelector;
     }
   }
@@ -238,57 +233,57 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
 angular.module('lampost_editor').controller('objSelectorController', ['$scope', 'lmEditor', 'lmBus',
   function ($scope, lmEditor, lmBus) {
 
-  var listKey;
-  var noObj = {dbo_id: "N/A"};
+    var listKey;
+    var noObj = {dbo_id: "N/A"};
 
-  $scope.$on('$destroy', function () {
-    lmEditor.deref(listKey)
-  });
+    $scope.$on('$destroy', function () {
+      lmEditor.deref(listKey)
+    });
 
-  lmBus.register('activateArea', function (newArea, oldArea) {
+    lmBus.register('activateArea', function (newArea, oldArea) {
       if (newArea) {
         $scope.selectArea(newArea);
       } else if (oldArea == $scope.selectedArea) {
         $scope.selectArea(areaList[0]);
       }
-  });
-
-  $scope.selectedClass = function (area) {
-      return $scope.selectedArea == area ? 'alert-info' : '';
-  };
-
-  lmEditor.cache('area').then(function (areas) {
-    $scope.selectAreaList = areas;
-    if (areas.indexOf($scope.startArea) > -1) {
-      $scope.selectedArea = $scope.startArea;
-    } else {
-      $scope.selectedArea = areas[0];
-    }
-    $scope.selectArea();
-  });
-
-  $scope.selectArea = function (selectedArea) {
-    $scope.selectedArea = selectedArea || $scope.selectedArea;
-    $scope.selectedAreaId = $scope.selectedArea.dbo_id;
-    if ($scope.areaChange) {
-      $scope.areaChange($scope.selectedArea);
-    }
-    listKey = $scope.objType + ':' + $scope.selectedArea.dbo_id;
-    lmEditor.cache(listKey).then(function (objects) {
-      if ($scope.listChange) {
-        $scope.listChange(objects);
-      }
-      $scope.areaObjList = objects;
-      if (objects.length > 0) {
-        $scope.selObjList = objects;
-        $scope.hasAreaObj = true;
-      } else {
-        $scope.selObjList = [noObj];
-        $scope.hasAreaObj = false;
-      }
-      $scope.selectedAreaObj = $scope.areaObjList[0];
     });
-  };
 
-}]);
+    $scope.selectedClass = function (area) {
+      return $scope.selectedArea == area ? 'alert-info' : '';
+    };
+
+    lmEditor.cache('area').then(function (areas) {
+      $scope.selectAreaList = areas;
+      if (areas.indexOf($scope.startArea) > -1) {
+        $scope.selectedArea = $scope.startArea;
+      } else {
+        $scope.selectedArea = areas[0];
+      }
+      $scope.selectArea();
+    });
+
+    $scope.selectArea = function (selectedArea) {
+      $scope.selectedArea = selectedArea || $scope.selectedArea;
+      $scope.selectedAreaId = $scope.selectedArea.dbo_id;
+      if ($scope.areaChange) {
+        $scope.areaChange($scope.selectedArea);
+      }
+      listKey = $scope.objType + ':' + $scope.selectedArea.dbo_id;
+      lmEditor.cache(listKey).then(function (objects) {
+        if ($scope.listChange) {
+          $scope.listChange(objects);
+        }
+        $scope.areaObjList = objects;
+        if (objects.length > 0) {
+          $scope.selObjList = objects;
+          $scope.hasAreaObj = true;
+        } else {
+          $scope.selObjList = [noObj];
+          $scope.hasAreaObj = false;
+        }
+        $scope.selectedAreaObj = $scope.areaObjList[0];
+      });
+    };
+
+  }]);
 

@@ -1,7 +1,7 @@
 angular.module('lampost_editor', ['lampost_dir', 'lampost_dlg', 'lampost_util', 'lampost_remote', 'ngSanitize']);
 
-angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus',
-  function ($rootScope, lmRemote, lmBus) {
+angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus', 'lmUtil',
+  function ($rootScope, lmRemote, lmBus, lmUtil) {
 
     window.onbeforeunload = function () {
       var handlers = [];
@@ -20,6 +20,7 @@ angular.module('lampost_editor').run(['$rootScope', 'lmRemote', 'lmBus',
     $rootScope.idOnly = function (model) {
       return model.dbo_id.split(':')[1];
     };
+    $rootScope.cap = lmUtil.capitalize;
     $rootScope.errors = {};
     $rootScope.siteTitle = lampost_config.title;
     $rootScope.appState = 'connecting';

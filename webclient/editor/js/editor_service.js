@@ -35,7 +35,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
     this.init = function (data) {
       this.playerId = data.playerId;
       return lpCache.cache('constants').then(function (constants) {
-        this.constants = constants;
+        lpEditor.constants = constants;
       });
     };
 
@@ -123,6 +123,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       baseUrl = context.baseUrl;
       originalModel = orig;
       angular.copy(originalModel, activeModel);
+      lpEditor.original = originalModel;
+      lpEditor.context = context;
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
       $scope.detailTemplate = context.include;
@@ -340,6 +342,10 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
         event.stopPropagation();
       }
       lmBus.dispatch("modelSelected", model);
+    };
+
+    $scope.rowClass = function(model) {
+      return model === activeModel ? 'warning' : '';
     };
 
     $scope.activeModel = function () {

@@ -1,64 +1,45 @@
-angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '$controller', 'lmRemote', 'lmEditor', '$timeout', 'lmDialog',
-  function ($q, $scope, $controller, lmRemote, lmEditor, $timeout, lmDialog) {
+angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lmRemote', 'lpEditor', 'lpCache', '$timeout', 'lmDialog',
+  function ($q, $scope, lmRemote, lpEditor, lpCache, $timeout, lmDialog) {
+
+
+    $scope.addTypes = [
+      {id: 'exit', label: 'Exit'}
+    ];
+
+    $scope.setAddType = function (addType) {
+      if (!$scope.activeAdd) {
+        $scope.activeAdd = addType;
+        $scope.addPanel = 'editor/panels/new_' + addType.id + '.html';
+      }
+    };
+
+    $scope.closeAdd = function() {
+      $scope.activeAdd = null;
+      $scope.addPanel = null;
+    };
+
+    lpCache.cache('area').then(function (data) {
+      $scope.areaList = data;
+      $scope.areaNames = [];
+      $scope.exitAreaNames = [];
+      angular.forEach(data, function (area) {
+        $scope.areaNames.push(area.dbo_id);
+        if (area.can_write) {
+          $scope.exitAreaNames.push(area.dbo_id)
+        }
+      });
+    });
+
+    $scope.directions = lpEditor.constants.directions;
+
 
     var self = this;
     var cacheKeys = [];
-    var dirMap = {};
-    var originalModel = lmEditor.prepare(this, $scope).originalModel;
-
-    function addRef(childType, childId) {
-      var childKey = childType + ':' + childId.split(":")[0];
-      if (cacheKeys.indexOf(childKey) == -1) {
-        cacheKeys.push(childKey);
-        return lmEditor.cache(childKey);
-      }
-      return $q.when()
-    }
 
     function editFeature(feature, isAdd) {
       lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
         locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
     }
-
-    this.startEdit = function (room) {
-      $scope.activateArea(room.dbo_id.split(':')[0]);
-      $scope.currentExtra = null;
-      $scope.extraDisplay = 'desc';
-
-
-      lmEditor.cache("constants").then(function (constants) {
-        angular.forEach(constants.directions, function (dir) {
-          dirMap[dir.dbo_id] = dir;
-        });
-        $scope.features = constants.features;
-        if ($scope.features.length) {
-          $scope.newFeature = $scope.features[0];
-        }
-      });
-      angular.forEach(cacheKeys, function (key) {
-        lmEditor.deref(key);
-      });
-      cacheKeys = [];
-      var editPromises = [];
-      angular.forEach(room.exits, function (exit) {
-        editPromises.push(addRef('room', exit.destination));
-      });
-      angular.forEach(room.mobile_resets, function (reset) {
-        editPromises.push(addRef('mobile', reset.mobile_id));
-        angular.forEach(reset.article_loads, function (article_load) {
-          editPromises.push(addRef('article', article_load.article_id));
-        })
-      });
-      angular.forEach(room.article_resets, function (reset) {
-        editPromises.push(addRef('article', reset.article_id));
-      });
-      angular.forEach(room.scripts, function(script) {
-        editPromises.push(addRef('script', script))
-      });
-      return $q.all(editPromises);
-    };
-
-    $scope.editor.newEdit($scope.editor.editModel);
 
     this.addExit = function (exit) {
       originalModel().exits.push(exit);
@@ -75,26 +56,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
-    $scope.visitRoom = function () {
-      lmRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id});
-      window.open("", window.opener.name);
-    };
-
-    $scope.exitRoom = function (exit) {
-      return lmEditor.cacheValue('room:' + exit.destination.split(':')[0], exit.destination);
-    };
-
-    $scope.resetMobile = function (mobileReset) {
-      return lmEditor.cacheValue('mobile:' + mobileReset.mobile_id.split(':')[0], mobileReset.mobile_id);
-    };
-
-    $scope.resetArticle = function (articleReset) {
-      return lmEditor.cacheValue('article:' + articleReset.article_id.split(':')[0], articleReset.article_id);
-    };
-
-    $scope.script = function(script) {
-      return lmEditor.cacheValue('script:' + script.split(':')[0], script);
-    };
 
     $scope.exitTwoWay = function (exit) {
       var otherRoom = $scope.exitRoom(exit);
@@ -112,10 +73,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       return false;
     };
 
-    $scope.addNewExit = function () {
-      lmDialog.show({templateUrl: "editor/dialogs/new_exit.html", controller: "NewExitCtrl",
-        locals: {roomController: self, room: $scope.model}});
-    };
 
     $scope.deleteExit = function (exit, bothSides) {
       lmDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
@@ -200,15 +157,15 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     $scope.addFeature = function () {
       var feature = angular.copy($scope.newFeature);
-      if (feature.edit_required){
+      if (feature.edit_required) {
         editFeature(feature, true)
       } else {
         $scope.model.features.push(feature);
       }
     };
 
-    $scope.selectScript = function(script) {
-      angular.forEach($scope.model.scripts, function(oldScript) {
+    $scope.selectScript = function (script) {
+      angular.forEach($scope.model.scripts, function (oldScript) {
         if (oldScript == script.dbo_id) {
           lmDialog.showOk("Script Exists", "This script is already in use.")
         }
@@ -216,7 +173,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       $scope.model.scripts.push(script.dbo_id);
     };
 
-    $scope.deleteScript = function(script_id) {
+    $scope.deleteScript = function (script_id) {
       $scope.model.scripts.splice($scope.model.scripts.indexOf(script_id), 1);
     };
 
@@ -226,29 +183,28 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       });
     };
 
-    $scope.editFeature = function(feature) {
+    $scope.editFeature = function (feature) {
       editFeature(feature);
     };
 
   }]);
 
-angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmEditor', 'lmRemote', 'roomController', 'room',
-  function ($q, $scope, lmEditor, lmRemote, roomController, room) {
+angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpEditor', 'lpCache', 'lmRemote',
+  function ($q, $scope, lpEditor, lpCache, lmRemote) {
 
     var area;
     var listKey;
     var prevDestId;
 
-    var roomAreaId = room.dbo_id.split(':')[0];
+    var roomAreaId = $scope.model.dbo_id.split(':')[0];
     var newRoom = {};
 
     $scope.hasError = false;
     $scope.lastError = null;
     $scope.oneWay = false;
     $scope.destAreaId = roomAreaId;
-
-
     $scope.useNew = true;
+    $scope.direction = $scope.directions[0];
 
     $scope.changeType = function () {
       $scope.hasError = false;
@@ -256,7 +212,6 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
         $scope.destRoom = newRoom;
         if ($scope.destAreaId !== roomAreaId) {
           $scope.destAreaId = roomAreaId;
-          loadArea();
         }
       } else {
         $scope.destRoom = $scope.roomList[0];
@@ -264,7 +219,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
     };
 
     $scope.changeId = function () {
-      if (lmEditor.cacheValue(listKey, roomAreaId + ':' + newRoom.destId)) {
+      if (lpCache.cacheValue(listKey, roomAreaId + ':' + newRoom.destId)) {
         $scope.hasError = true;
         $scope.lastError = "Room already exists";
         newRoom.destId = prevDestId;
@@ -276,9 +231,9 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
     };
 
     $scope.changeArea = function () {
-      lmEditor.deref(listKey);
+      lpCache.deref(listKey);
       listKey = 'room:' + $scope.destAreaId;
-      lmEditor.cache(listKey).then(function (rooms) {
+      lpCache.cache(listKey).then(function (rooms) {
         $scope.roomsInvalid = rooms.length === 0;
         $scope.hasError = $scope.roomsInvalid;
         if (rooms.length) {
@@ -294,31 +249,27 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lmE
 
     $scope.digExit = function () {
       var destId = $scope.useNew ? $scope.destAreaId + ':' + $scope.destRoom.destId : $scope.destRoom.dbo_id;
-      var newExit = {start_room: room.dbo_id, direction: $scope.direction.dbo_id, is_new: $scope.useNew,
+      var newExit = {start_room: $scope.model.dbo_id, direction: $scope.direction.dbo_id, is_new: $scope.useNew,
         dest_id: destId, one_way: $scope.oneWay, dest_title: $scope.destRoom.title};
       lmRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
-        room.exits.push(newExit);
-        roomController.addExit(newExit);
-        lmEditor.deref(listKey);
-        $scope.dismiss();
+        $scope.model.exits.push(newExit);
+        lpEditor.original.push(newExit);
+        $scope.closeAdd();
       }, function (error) {
         $scope.lastError = error.text;
       })
     };
 
-    $q.all([
-      lmEditor.cache('constants').then(function (constants) {
-        $scope.directions = constants.directions;
-        $scope.direction = $scope.directions[0];
-      }),
-      lmEditor.cache('area').then(function (areas) {
-        $scope.areaList = areas;
-        area = lmEditor.cacheValue('area', roomAreaId);
-        newRoom.title = area.name + " Room " + area.next_room_id;
-        newRoom.destId = area.next_room_id;
-        prevDestId = newRoom.destId;
-      })]).then($scope.changeArea);
+    $scope.$on('$destroy', function () {
+      lpCache.deref(listKey)
+    });
 
+    area = lpEditor.context.parent;
+    newRoom.title = area.name + " Room " + area.next_room_id;
+    newRoom.destId = area.next_room_id;
+    prevDestId = newRoom.destId;
+
+    $scope.changeArea();
   }]);
 
 angular.module('lampost_editor').controller('NewResetCtrl', ['$scope', 'lmEditor', 'room', 'resetType',

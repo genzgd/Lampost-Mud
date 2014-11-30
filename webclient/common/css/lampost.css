@@ -2,6 +2,24 @@
     margin: 0;
 }
 
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  background-color: #000;
+  filter: alpha(opacity=0);
+  opacity: 0;
+}
+.modal-backdrop.fade {
+  filter: alpha(opacity=0);
+  opacity: 0;
+}
+.modal-backdrop.in {
+  filter: alpha(opacity=0);
+  opacity: 0;
+}
+
 .navbar-brand {
     padding-top:0px;
     padding-bottom:0px;
@@ -40,6 +58,11 @@
 
 .panel-heading {
     overflow: hidden;
+}
+
+.panel-condensed {
+    padding-top: 4px;
+    padding-bottom: 4px;
 }
 
 .form-control[disabled],
