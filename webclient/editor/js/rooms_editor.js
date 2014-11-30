@@ -2,17 +2,15 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
   function ($q, $scope, lmRemote, lpEditor, lpCache, $timeout, lmDialog) {
 
 
-    var dirMap = {};
+    $scope.dirMap = {};
 
     $scope.addTypes = [
-      {id: 'exit', label: 'Exit'}
+      {id: 'new_exit', label: 'Exit'}
     ];
 
     $scope.setAddType = function (addType) {
-      if (!$scope.activeAdd) {
-        $scope.activeAdd = addType;
-        $scope.addPanel = 'editor/panels/new_' + addType.id + '.html';
-      }
+      $scope.activeAdd = addType;
+      $scope.addPanel = 'editor/panels/' + addType + '.html';
     };
 
     $scope.closeAdd = function () {
@@ -34,18 +32,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     $scope.directions = lpEditor.constants.directions;
     angular.forEach($scope.directions, function (dir) {
-      dirMap[dir.dbo_id] = dir;
+      $scope.dirMap[dir.dbo_id] = dir;
     });
-
-    var self = this;
-    var cacheKeys = [];
-
-    function editFeature(feature, isAdd) {
-      lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
-        locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
-    }
-
-    $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
     $scope.exitRoom = function (exit) {
       return lpCache.cacheValue('room:' + exit.destination.split(':')[0], exit.destination);
@@ -57,7 +45,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
         return false; // This can happen temporarily while creating a new exit
       }
       var otherExits = otherRoom.exits;
-      var rev_key = dirMap[exit.direction].rev_key;
+      var rev_key = $scope.dirMap[exit.direction].rev_key;
       for (var i = 0; i < otherExits.length; i++) {
         var otherExit = otherExits[i];
         if (otherExit.direction === rev_key && otherExit.destination === $scope.model.dbo_id) {
@@ -67,16 +55,30 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       return false;
     };
 
+    $scope.modifyExit = function (exit) {
+      $scope.activeExit = exit;
+      $scope.setAddType('modify_exit');
+    };
 
-    $scope.deleteExit = function (exit, bothSides) {
+    function editFeature(feature, isAdd) {
+      lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
+        locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
+    }
+
+    $scope.availFeatures = {store: 'store', entrance: 'entrance'};
+
+
+    $scope.deleteExit = function (exit) {
       lmDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
         lmRemote.request("editor/room/delete_exit",
-          {start_room: $scope.model.dbo_id, both_sides: bothSides, dir: exit.direction}).then(function () {
+          {start_room: $scope.model.dbo_id, both_sides: true, dir: exit.direction}).then(function () {
+            $scope.closeAdd();
+            $scope.activeExit = null;
             var exitLoc = $scope.model.exits.indexOf(exit);
             if (exitLoc > -1) {
               $scope.model.exits.splice(exitLoc, 1);
             }
-            var originalExits = originalModel().exits;
+            var originalExits = lpEditor.original.exits;
             for (var i = 0; i < originalExits.length; i++) {
               if (originalExits[i].dir === exit.dir) {
                 originalExits.splice(i, 1);

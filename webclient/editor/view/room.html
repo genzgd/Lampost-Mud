@@ -27,8 +27,8 @@
           data-parent="#roomExitPanel">
           Exits <strong>({{model.exits.length}})</strong></div>
         <div class="collapse in panel-collapse" id="roomExitDetail">
-          <table class="table table-condensed table-hover">
-            <tr ng-repeat="exit in model.exits">
+          <table class="table table-condensed table-hover hand">
+            <tr ng-repeat="exit in model.exits" ng-click="modifyExit(exit)">
               <td class="col-md-1">{{exit.direction}}</td>
               <td class="col-md-4">{{exit.destination}}</td>
               <td class="col-md-5">{{exitRoom(exit).title}}</td>
@@ -43,7 +43,7 @@
     <div class="col-md-4 text-center">
       <div ng-if="isNew" class="alert alert-warning">You must first create the room before adding new elements.</div>
       <div ng-if="!activeAdd && !isNew" class="btn-group btn-group-sm btn-group">
-        <button type="button" ng-click="setAddType(add)" ng-repeat="add in addTypes" class="btn btn-default">
+        <button type="button" ng-click="setAddType(add.id)" ng-repeat="add in addTypes" class="btn btn-default">
           {{add.label}}
         </button>
       </div>

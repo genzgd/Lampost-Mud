@@ -166,7 +166,7 @@ angular.module('lampost_util').service('lmUtil', [function () {
   };
 
   this.capitalize = function(name) {
-    return name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
+    return name && name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
   };
 
   this.getScrollBarSizes = function () {

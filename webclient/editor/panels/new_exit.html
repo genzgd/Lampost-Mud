@@ -1,6 +1,6 @@
 <div class="text-left panel panel-warning" ng-controller="NewExitCtrl">
   <div class="panel-heading panel-condensed">
-    <h5>Dig New Exit</h5>
+    <span class="h5">Dig New Exit</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
   </div>
 
   <div class="panel-body">
@@ -63,13 +63,13 @@
         {{lastError}}
       </div>
     </div>
+    <div class="pull-right">
+      <button type="button" ng-click="digExit()" ng-disabled="hasError" class="btn btn-sm btn-warning">Dig Exit</button>
+      <button type="button" ng-click="closeAdd()" class="btn btn-sm btn-default">Cancel</button>
+    </div>
   </div>
-  <div class="panel-footer panel-condensed">
 
-    <button type="button" ng-click="digExit()" ng-disabled="hasError" class="btn btn-xs btn-warning">Dig Exit</button>
-    <button type="button" ng-click="closeAdd()" class="btn btn-xs btn-default">Cancel</button>
 
-  </div>
 </div>
 
 

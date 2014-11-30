@@ -127,17 +127,20 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       }
     }
 
-    function init(orig) {
-      baseUrl = context.baseUrl;
-      originalModel = orig;
+    function initScope() {
       angular.copy(originalModel, activeModel);
-      clearSeeds();
-      lpCache.seedCache(context.refs, originalModel, cacheKeys);
       lpEditor.original = originalModel;
       lpEditor.context = context;
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
       $scope.detailTemplate = context.include;
+    }
+
+    function init(orig) {
+      baseUrl = context.baseUrl;
+      originalModel = orig;
+      clearSeeds();
+      $q.all(lpCache.seedCache(context.refs, originalModel, cacheKeys)).then(initScope);
     }
 
     function reset() {

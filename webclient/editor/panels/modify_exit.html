@@ -1,0 +1,24 @@
+<div class="text-left panel panel-warning">
+  <div class="panel-heading panel-condensed">
+    <span class="h5">Modify {{cap(dirMap[activeExit.direction].name)}} Exit</span> <span class="pull-right hand close"
+    ng-click="closeAdd()">x</span>
+  </div>
+  <div class="panel-body">
+
+    <div class="row">
+      <div class="col-md-offset-1 col-md-6">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="activeExit.guarded">
+          Guarded
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="pull-right">
+          <button type="button" ng-click="deleteExit(activeExit)" class="btn btn-danger btn-sm">Delete Exit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
