@@ -4,10 +4,15 @@ angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor',
     model.next_room_id = 1;
   }});
 
-  lpEditor.registerContext('room', {parentType: 'area', extend: function(model) {
-    angular.extend(model, {dbo_id: this.parent.next_room_id, exits: [], mobile_resets: [],
-      article_resets: [], extras: [], features:[], dbo_rev: 0});
-  }
+  lpEditor.registerContext('room', {
+    parentType: 'area',
+    extend: function (model) {
+      angular.extend(model, {dbo_id: this.parent.next_room_id, exits: [], mobile_resets: [],
+        article_resets: [], extras: [], features: [], dbo_rev: 0});
+    },
+    refs: [
+      {type: 'room', path: 'exits.destination'}
+    ]
   });
 
 }]);

@@ -78,7 +78,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
     };
 
     lmBus.register('modelSelected', function (activeModel) {
-      angular.forEach(contextMap, function(context) {
+      angular.forEach(contextMap, function (context) {
         if (context.parentType === activeModel.dbo_key_type) {
           context.parent = activeModel;
         }
@@ -110,6 +110,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     var activeModel = {};
     var originalModel = {};
+    var cacheKeys = [];
     var context;
     var baseUrl;
 
@@ -119,10 +120,19 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       return lpEditor.display(activeModel);
     }
 
+    function clearSeeds() {
+      var cacheKey;
+      while (cacheKey = cacheKeys.pop()) {
+        lpCache.deref(cacheKey);
+      }
+    }
+
     function init(orig) {
       baseUrl = context.baseUrl;
       originalModel = orig;
       angular.copy(originalModel, activeModel);
+      clearSeeds();
+      lpCache.seedCache(context.refs, originalModel, cacheKeys);
       lpEditor.original = originalModel;
       lpEditor.context = context;
       $scope.isDirty = false;
@@ -153,7 +163,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
             lmRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
           }, dataError);
         }
-          return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
+        return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
       })
     }
 
@@ -279,6 +289,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       }
     };
 
+    $scope.$on('$destroy', clearSeeds);
     reset();
   }]);
 
@@ -293,7 +304,7 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
 
     $scope.type = type;
     $scope.editorLabel = context.label;
-    $scope.addAllowed = function() {
+    $scope.addAllowed = function () {
       return (context.parent && context.parent.can_write) || !context.parentType;
     };
 
@@ -344,7 +355,7 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       lmBus.dispatch("modelSelected", model);
     };
 
-    $scope.rowClass = function(model) {
+    $scope.rowClass = function (model) {
       return model === activeModel ? 'warning' : '';
     };
 

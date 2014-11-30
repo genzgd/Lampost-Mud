@@ -88,7 +88,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       }
     };
 
-    this.updateModel = function(model, outside) {
+    this.updateModel = function (model, outside) {
       var entry = remoteCache[cacheKey(model)];
       if (entry) {
         var cacheModel = entry.map[model.dbo_id];
@@ -99,7 +99,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       }
     };
 
-    this.insertModel = function(model, outside) {
+    this.insertModel = function (model, outside) {
       var entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
         if (entry.map[model.dbo_id]) {
@@ -113,7 +113,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       }
     };
 
-    this.deleteModel = function(model, outside) {
+    this.deleteModel = function (model, outside) {
       var entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
         var cacheModel = entry.map[model.dbo_id];
@@ -134,7 +134,6 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
         deleteEntry(key);
       });
     };
-
 
     this.cache = function (key) {
       var entry = remoteCache[key] || cacheEntry(key);
@@ -164,4 +163,39 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       return entry.promise;
     };
 
-}]);
+    this.seedCache = function (refs, baseModel, cacheKeys) {
+
+      var promises = [];
+
+      function childRefs(refType, refPath, model) {
+        var ix;
+        var pieces = refPath.split('.');
+        var children = model[pieces[0]];
+        if (!children) {
+          return;
+        }
+        children = [].concat(children);
+        if (pieces.length === 1) {
+          for (ix = 0; ix < children.length; ix++) {
+             var childKey = refType + ':' + children[ix].split(":")[0];
+             if (cacheKeys.indexOf(childKey) == -1) {
+              cacheKeys.push(childKey);
+              promises.push(lpCache.cache(childKey));
+            }
+          }
+        } else {
+          refPath = pieces.slice(1).join('.');
+          for (ix = 0; ix < children.length; ix++) {
+            childRefs(refType, refPath, children[ix]);
+          }
+        }
+      }
+
+      angular.forEach(refs, function(ref) {
+        childRefs(ref.type, ref.path, baseModel);
+      });
+
+      return promises;
+    }
+
+  }]);

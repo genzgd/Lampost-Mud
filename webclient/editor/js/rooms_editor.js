@@ -2,6 +2,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
   function ($q, $scope, lmRemote, lpEditor, lpCache, $timeout, lmDialog) {
 
 
+    var dirMap = {};
+
     $scope.addTypes = [
       {id: 'exit', label: 'Exit'}
     ];
@@ -13,7 +15,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       }
     };
 
-    $scope.closeAdd = function() {
+    $scope.closeAdd = function () {
       $scope.activeAdd = null;
       $scope.addPanel = null;
     };
@@ -31,7 +33,9 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     });
 
     $scope.directions = lpEditor.constants.directions;
-
+    angular.forEach($scope.directions, function (dir) {
+      dirMap[dir.dbo_id] = dir;
+    });
 
     var self = this;
     var cacheKeys = [];
@@ -41,21 +45,11 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
         locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
     }
 
-    this.addExit = function (exit) {
-      originalModel().exits.push(exit);
-      addRef('room', exit.destination);
-    };
-
-    this.newDialog = function (newModel) {
-      newModel.id = $scope.selectedArea.next_room_id;
-    };
-
-    this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.id;
-    };
-
     $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
+    $scope.exitRoom = function (exit) {
+      return lpCache.cacheValue('room:' + exit.destination.split(':')[0], exit.destination);
+    };
 
     $scope.exitTwoWay = function (exit) {
       var otherRoom = $scope.exitRoom(exit);
@@ -253,7 +247,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
         dest_id: destId, one_way: $scope.oneWay, dest_title: $scope.destRoom.title};
       lmRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
         $scope.model.exits.push(newExit);
-        lpEditor.original.push(newExit);
+        lpEditor.original.exits.push(newExit);
         $scope.closeAdd();
       }, function (error) {
         $scope.lastError = error.text;

@@ -27,13 +27,13 @@
           data-parent="#roomExitPanel">
           Exits <strong>({{model.exits.length}})</strong></div>
         <div class="collapse in panel-collapse" id="roomExitDetail">
-          <table class="table table-condensed">
+          <table class="table table-condensed table-hover">
             <tr ng-repeat="exit in model.exits">
-              <td>
-                <div class="col-md-3">{{exit.direction}}
-                </div>
-                <div class="col-md-9">{{exit.destination}}</div>
-              </td>
+              <td class="col-md-1">{{exit.direction}}</td>
+              <td class="col-md-4">{{exit.destination}}</td>
+              <td class="col-md-5">{{exitRoom(exit).title}}</td>
+              <td class="col-md-1"><i ng-if="exit.guarded" class="fa fa-shield"></i></td>
+              <td class="col-md-1"><i ng-if="!exitTwoWay(exit)" class="fa fa-arrow-circle-right"></i></td>
             </tr>
           </table>
         </div>
