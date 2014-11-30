@@ -11,16 +11,14 @@
       <table class="table table-condensed table-hover" style="padding-bottom: 0; margin: 0">
         <thead>
         <tr>
-          <th class="col-md-1">Id</th>
-          <th class="col-md-10">title</th>
-          <th class="col-md-1"></th>
+          <th class="col-md-2">Id</th>
+          <th class="col-md-10">Title</th>
         </tr>
         </thead>
         <tbody>
         <tr class="hand" ng-repeat="model in modelList" ng-click="selectModel(model)" ng-class="rowClass(model)">
-          <td class="col-md-1">{{idOnly(model)}}</td>
+          <td class="col-md-2">{{idOnly(model)}}</td>
           <td class="col-md-10">{{model.title}}</td>
-          <td class="col-md-1"> <i ng-hide="model.can_write" class="fa fa-lock"></i>
           </td>
         </tr>
         </tbody>

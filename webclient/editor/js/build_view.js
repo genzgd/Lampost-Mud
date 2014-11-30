@@ -10,7 +10,7 @@ angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor',
     parentType: 'area',
     extend: function (model) {
       angular.extend(model, {dbo_id: this.parent.next_room_id, exits: [], mobile_resets: [],
-        article_resets: [], extras: [], features: [], dbo_rev: 0});
+        article_resets: [], extras: [], features: []});
     },
     refs: [
       {type: 'room', path: 'exits.destination'}

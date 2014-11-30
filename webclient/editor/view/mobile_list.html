@@ -17,8 +17,8 @@
         </thead>
         <tbody>
         <tr class="hand" ng-repeat="model in modelList" ng-click="selectModel(model)" ng-class="rowClass(model)">
-          <td class="col-md-4">{{model.dbo_id}}</td>
-          <td class="col-md-8">{{model.name}}</td>
+          <td class="col-md-4">{{idOnly(model)}}</td>
+          <td class="col-md-8">{{model.title}}</td>
         </tr>
         </tbody>
       </table>

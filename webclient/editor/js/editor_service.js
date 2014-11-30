@@ -16,7 +16,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
     }
 
     EditContext.prototype.newModel = function () {
-      var model = {can_write: true, owner_id: lpEditor.playerId};
+      var model = {can_write: true, owner_id: lpEditor.playerId, dbo_rev: 0};
       this.extend(model);
       return model;
     };
