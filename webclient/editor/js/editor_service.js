@@ -128,11 +128,19 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }
 
     function initScope() {
+      lmBus.dispatch('editStarting', originalModel);
       angular.copy(originalModel, activeModel);
       lpEditor.original = originalModel;
       lpEditor.context = context;
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
+      if (context.parent) {
+        $scope.parentType = lpEditor.getContext(context.parentType).label + ':';
+        $scope.parentLabel = lpEditor.display(context.parent);
+      } else {
+        $scope.parentType = null;
+        $scope.parentLabel = 'MUD';
+      }
       $scope.detailTemplate = context.include;
     }
 

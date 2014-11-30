@@ -1,5 +1,5 @@
-angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lmRemote', 'lpEditor', 'lpCache', '$timeout', 'lmDialog',
-  function ($q, $scope, lmRemote, lpEditor, lpCache, $timeout, lmDialog) {
+angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lmRemote', 'lmBus', 'lpEditor', 'lpCache', '$timeout', 'lmDialog',
+  function ($q, $scope, lmRemote, lmBus, lpEditor, lpCache, $timeout, lmDialog) {
 
 
     $scope.dirMap = {};
@@ -67,7 +67,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
-
     $scope.deleteExit = function (exit) {
       lmDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
         lmRemote.request("editor/room/delete_exit",
@@ -89,6 +88,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
         )
       })
     };
+
+    lmBus.register('editStarting', function(editModel) {
+      if (editModel.dbo_id !== $scope.model.dbo_id) {
+        $scope.closeAdd();
+      }
+    }, $scope);
 
     $scope.addNewExtra = function () {
       var newExtra = {title: "", desc: "", aliases: []};

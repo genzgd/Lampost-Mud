@@ -52,28 +52,7 @@
   </div>
 </div><!--
   <div class="span4">
-    <table style="width: 100%; table-layout: fixed;">
-      <thead>
-      <tr>
-        <th style="width: 10%;">Dir</th>
-        <th style="width: 65%;">Destination</th>
-        <th style="width: 25%;"></th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr class="table-bordered" ng-repeat="exit in model.exits">
-        <td style="width: 10%;">{{exit.direction}}</td>
-        <td class="use-ellipses" style="width: 60%;">{{exit.destination}} {{exitRoom(exit).title}}</td>
-        <td style="width: 30%;">
-          <a title="Edit Room" ng-click="startEditor('room', exitRoom(exit))" class="icon-link"><i class="icon-wrench"></i></a>
-          <a popover-title="exitRoom(exit).title" popover="exitRoom(exit).desc|right|hover" class="icon-link"><i class="icon-eye-open"></i></a>
-          <a title="Delete Exit" ng-click="deleteExit(exit, true)" class="icon-link"><i class="icon-remove"></i></a>
-          <a title="Delete Exit (one way)" ng-show="exitTwoWay(exit)" ng-click="deleteExit(exit, false)" class="icon-link"><i
-              class="icon-circle-arrow-left"></i></a>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+
     <button style="margin-top: 8px" ng-click="addNewExit()" class="btn btn-success btn-small">Dig</button>
     <h5>Features ({{model.features.length}})</h5>
     <table style="width: 95%">

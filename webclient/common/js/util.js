@@ -14,9 +14,13 @@ angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
 
   function applyCallback(callback, args, scope) {
     if (scope)  {
-      scope.$evalAsync(function() {
+      if (scope.$$phase || (scope.$root && scope.$root.$$phase)) {
         callback.apply(scope, args);
-      })
+      } else {
+        scope.$apply(function() {
+           callback.apply(scope, args)
+        })
+      }
     } else {
         callback.apply(this, args)
     }

@@ -1,8 +1,10 @@
 angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor', function (lmBus, lpEditor) {
 
-  lpEditor.registerContext('area', {extend: function (model) {
-    model.next_room_id = 1;
-  }});
+  lpEditor.registerContext('area', {
+    extend: function (model) {
+      model.next_room_id = 1;
+    }
+  });
 
   lpEditor.registerContext('room', {
     parentType: 'area',
@@ -14,6 +16,14 @@ angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor',
       {type: 'room', path: 'exits.destination'}
     ]
   });
+
+  lpEditor.registerContext('mobile', {
+    parentType: 'area',
+    extend: function(model) {
+      model.level = 1;
+      model.affinity = 'neutral';
+    }
+  })
 
 }]);
 
