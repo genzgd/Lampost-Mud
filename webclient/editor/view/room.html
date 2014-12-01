@@ -39,6 +39,30 @@
         </div>
 
       </div>
+      <div id="roomMobilePanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomMobileDetail"
+          data-parent="#roomMobilePanel">
+          Mobile Resets <strong>({{model.mobile_resets.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomMobileDetail">
+          <table class="table table-condensed table-hover hand">
+            <thead>
+              <th class="col-md-5">Id</th>
+              <th class="col-md-3">Count</th>
+              <th class="col-md-3">Max</th>
+              <th class="col-md-1"><i class="fa fa-magic"></i></th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="reset in model.mobile_resets" ng-click="modifyMobile(reset)">
+              <td class="col-md-5">{{reset.mobile_id}}</td>
+              <td class="col-md-3">{{reset.reset_count}}</td>
+              <td class="col-md-3">{{reset.reset_max}}</td>
+              <td class="col-md-1">{{reset.article_loads.length}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
     </div>
     <div class="col-md-4 text-center">
       <div ng-if="isNew" class="alert alert-warning">You must first create the room before adding new elements.</div>

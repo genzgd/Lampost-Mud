@@ -5,7 +5,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     $scope.dirMap = {};
 
     $scope.addTypes = [
-      {id: 'new_exit', label: 'Exit'}
+      {id: 'new_exit', label: 'Exit'},
+      {id: 'new_mobile_reset', label: 'Mobile'}
     ];
 
     $scope.setAddType = function (addType) {
@@ -16,6 +17,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     $scope.closeAdd = function () {
       $scope.activeAdd = null;
       $scope.addPanel = null;
+      $scope.
     };
 
     lpCache.cache('area').then(function (data) {
