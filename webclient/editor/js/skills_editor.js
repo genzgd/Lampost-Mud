@@ -1,5 +1,5 @@
-angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope', '$filter', 'lmEditor', 'lmDialog',
-  function ($q, $scope, $filter, lmEditor, lmDialog) {
+angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope', '$filter', 'lmEditor', 'lpDialog',
+  function ($q, $scope, $filter, lmEditor, lpDialog) {
 
     this.subClassId = 'attack';
 
@@ -24,7 +24,7 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope',
 
     this.preUpdate = function (attack) {
       if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {
-        lmDialog.showOk("Invalid Weapon/Damage Types",
+        lpDialog.showOk("Invalid Weapon/Damage Types",
           "Damage type of weapon with 'Unused' weapon is invalid.")
         return $q.reject();
       }
@@ -34,8 +34,8 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope',
   }]);
 
 
-angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter', 'lmDialog', '$scope', 'lmEditor',
-  function ($q, $filter, lmDialog, $scope, lmEditor) {
+angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter', 'lpDialog', '$scope', 'lmEditor',
+  function ($q, $filter, lpDialog, $scope, lmEditor) {
 
     this.subClassId = 'defense';
 
@@ -70,7 +70,7 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter
 
     this.preUpdate = function (model) {
       if (!model.auto_start && !model.verb) {
-        lmDialog.showOk("Start Method Required", "Either a command or 'autoStart' is required");
+        lpDialog.showOk("Start Method Required", "Either a command or 'autoStart' is required");
         return $q.reject();
       }
       return $q.when();

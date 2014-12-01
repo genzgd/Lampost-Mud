@@ -1,4 +1,4 @@
-angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lmBus, lmUtil) {
+angular.module('lampost_mud').service('lmData', ['lpEvent', 'lpUtil', function (lpEvent, lpUtil) {
 
   var maxLines = 1000;
   var unreadCount = 0;
@@ -44,17 +44,17 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
     }
     unreadCount += lines.length;
     jQuery('title').text('[' + unreadCount + '] ' + title);
-    lmBus.dispatch("display_update");
+    lpEvent.dispatch("display_update");
   }
 
   function channelSubscribe(channel) {
     self.channels[channel.id] = channel.messages;
-    lmBus.dispatch("sort_channels");
+    lpEvent.dispatch("sort_channels");
   }
 
   function channelUnsubscribe(channel_id) {
     delete self.channels[channel_id];
-    lmBus.dispatch("sort_channels");
+    lpEvent.dispatch("sort_channels");
   }
 
   function updateChannel(channelMessage) {
@@ -67,7 +67,7 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
     self.playerIds = data.player_ids;
     self.notifies = data.notifies;
     if (data.password_reset) {
-      lmBus.dispatch('password_reset');
+      lpEvent.dispatch('password_reset');
     }
   }
 
@@ -93,11 +93,11 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
     }
   };
 
-  lmBus.register('client_config', function (data) {
+  lpEvent.register('client_config', function (data) {
     self.defaultDisplays = data.default_displays;
   });
 
-  lmBus.register("login", function (data) {
+  lpEvent.register("login", function (data) {
     setUser(data);
     self.playerIds = data.player_ids;
     self.playerName = data.name;
@@ -107,27 +107,27 @@ angular.module('lampost_mud').service('lmData', ['lmBus', 'lmUtil', function (lm
     self.validTabs = ['status', 'channel', 'messages', 'playerList'];
     self.messages = data.messages;
 
-    lmUtil.intSort(self.messages, 'msg_id');
+    lpUtil.intSort(self.messages, 'msg_id');
   }, null, -100);
 
-  lmBus.register("user_login", setUser, null, -100);
-  lmBus.register("display", updateDisplay, null, -100);
-  lmBus.register("channel", updateChannel, null, -100);
-  lmBus.register("channel_subscribe", channelSubscribe, null, -100);
-  lmBus.register("channel_unsubscribe", channelUnsubscribe, null, -100);
-  lmBus.register("user_activity", clearUnread);
-  lmBus.register("status", function (status) {
+  lpEvent.register("user_login", setUser, null, -100);
+  lpEvent.register("display", updateDisplay, null, -100);
+  lpEvent.register("channel", updateChannel, null, -100);
+  lpEvent.register("channel_subscribe", channelSubscribe, null, -100);
+  lpEvent.register("channel_unsubscribe", channelUnsubscribe, null, -100);
+  lpEvent.register("user_activity", clearUnread);
+  lpEvent.register("status", function (status) {
     self.status = status;
   });
-  lmBus.register("logout", clear, null, -100);
+  lpEvent.register("logout", clear, null, -100);
 
-  lmBus.register("new_message", function (message) {
+  lpEvent.register("new_message", function (message) {
     self.messages.push(message);
   }, null, -100);
 
-  lmBus.register("player_list", function (playerList) {
+  lpEvent.register("player_list", function (playerList) {
     self.playerList = playerList;
-    lmBus.dispatch('player_list_update');
+    lpEvent.dispatch('player_list_update');
   });
 
 }]);

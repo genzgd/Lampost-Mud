@@ -144,8 +144,8 @@ angular.module('lampost_editor').directive('lmSkillList', [function () {
 }]);
 
 
-angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor', 'lmBus',
-  function ($q, $scope, lmEditor, lmBus) {
+angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor', 'lpEvent',
+  function ($q, $scope, lmEditor, lpEvent) {
 
 
     $scope.$on('updateModel', updateModel);
@@ -230,8 +230,8 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   }
 }]);
 
-angular.module('lampost_editor').controller('objSelectorController', ['$scope', 'lmEditor', 'lmBus',
-  function ($scope, lmEditor, lmBus) {
+angular.module('lampost_editor').controller('objSelectorController', ['$scope', 'lmEditor', 'lpEvent',
+  function ($scope, lmEditor, lpEvent) {
 
     var listKey;
     var noObj = {dbo_id: "N/A"};
@@ -240,7 +240,7 @@ angular.module('lampost_editor').controller('objSelectorController', ['$scope', 
       lmEditor.deref(listKey)
     });
 
-    lmBus.register('activateArea', function (newArea, oldArea) {
+    lpEvent.register('activateArea', function (newArea, oldArea) {
       if (newArea) {
         $scope.selectArea(newArea);
       } else if (oldArea == $scope.selectedArea) {

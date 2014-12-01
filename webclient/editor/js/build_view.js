@@ -1,4 +1,4 @@
-angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor', function (lmBus, lpEditor) {
+angular.module('lampost_editor').service('lpBuildService', ['lpEvent', 'lpEditor', function (lpEvent, lpEditor) {
 
   lpEditor.registerContext('area', {
     extend: function (model) {
@@ -27,8 +27,8 @@ angular.module('lampost_editor').service('lpBuildService', ['lmBus', 'lpEditor',
 
 }]);
 
-angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lmBus', 'lpBuildService', 'lpEditor',
-  function ($scope, lmBus, lpBuildService, lpEditor) {
+angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lpEvent', 'lpBuildService', 'lpEditor',
+  function ($scope, lpEvent, lpBuildService, lpEditor) {
 
     var editArea = null;
 
@@ -42,7 +42,7 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lmBus',
         event.preventDefault();
         event.stopPropagation();
       }
-      lmBus.dispatch('newEdit', editorId);
+      lpEvent.dispatch('newEdit', editorId);
     }
 
 

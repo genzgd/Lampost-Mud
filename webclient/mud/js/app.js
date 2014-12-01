@@ -12,12 +12,12 @@ angular.module('lampost_mud').config(['$routeProvider', '$locationProvider', fun
 
 // Using services here so they get instantiated.  Many depend on event listeners only
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote', 'lpStorage', 'lmData', 'lmDialog', 'lmComm',
-  function ($rootScope, $timeout, lmBus, lmRemote, lpStorage, lmData, lmDialog, lmComm) {
+angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lpEvent', 'lpRemote', 'lpStorage', 'lmData', 'lpDialog', 'lmComm',
+  function ($rootScope, $timeout, lpEvent, lpRemote, lpStorage, lmData, lpDialog, lmComm) {
 
     window.onbeforeunload = function () {
       window.windowClosing = true;
-      lmBus.dispatch("window_closing");
+      lpEvent.dispatch("window_closing");
     };
 
     $rootScope.siteTitle = lampost_config.title;
@@ -25,30 +25,30 @@ angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lmBus', 'lmRemote'
 
     var lastSession = lpStorage.lastSession();
     if (lastSession) {
-      lmRemote.connect('game_connect', lastSession.sessionId, {player_id: lastSession.playerId});
+      lpRemote.connect('game_connect', lastSession.sessionId, {player_id: lastSession.playerId});
     } else {
-      lmRemote.connect('game_connect');
+      lpRemote.connect('game_connect');
     }
 
   }]);
 
-angular.module('lampost_mud').service('lmApp', ['$timeout', 'lmBus', 'lmData', 'lmDialog',
-  function ($timeout, lmBus, lmData, lmDialog) {
+angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lmData', 'lpDialog',
+  function ($timeout, lpEvent, lmData, lpDialog) {
 
-    lmBus.register("user_login", function () {
+    lpEvent.register("user_login", function () {
       if (lmData.playerIds.length == 0) {
-        lmDialog.show({templateUrl: 'mud/dialogs/new_character.html', controller: 'NewCharacterCtrl'});
+        lpDialog.show({templateUrl: 'mud/dialogs/new_character.html', controller: 'NewCharacterCtrl'});
       } else {
-        lmDialog.show({templateUrl: 'mud/select_character.html', controller: "SelectCharacterCtrl"});
+        lpDialog.show({templateUrl: 'mud/select_character.html', controller: "SelectCharacterCtrl"});
       }
     });
 
-    lmBus.register("password_reset", function () {
-      lmDialog.show({templateUrl: 'dialogs/password_reset.html', controller: 'PasswordResetCtrl', noEscape: true});
+    lpEvent.register("password_reset", function () {
+      lpDialog.show({templateUrl: 'dialogs/password_reset.html', controller: 'PasswordResetCtrl', noEscape: true});
     });
 
-    lmBus.register('server_error', function() {
-      lmBus.dispatch("display", {lines: [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.", display: 'combat'},
+    lpEvent.register('server_error', function() {
+      lpEvent.dispatch("display", {lines: [{text: "You hear a crash.  Something unfortunate seems to have happened in the back room.", display: 'combat'},
               {text:"Don't mind the smoke, I'm sure someone is investigating.", display: 'combat'}
              ]});
     });
@@ -56,8 +56,8 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lmBus', 'lmData', '
   }]);
 
 
-angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lmBus', 'lmData', 'lmUtil', 'lmDialog',
-  function ($rootScope, $scope, $location, lmBus, lmData, lmUtil, lmDialog) {
+angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lpEvent', 'lmData', 'lpUtil', 'lpDialog',
+  function ($rootScope, $scope, $location, lpEvent, lmData, lpUtil, lpDialog) {
 
     $(window).on("resize", function () {
       $rootScope.$apply(resize);
@@ -107,21 +107,21 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
     };
 
     $scope.logout = function () {
-      lmBus.dispatch("server_request", "action", {action: "quit"});
+      lpEvent.dispatch("server_request", "action", {action: "quit"});
     };
 
     validatePath();
-    lmBus.register("login", function () {
+    lpEvent.register("login", function () {
       $scope.links.push(settingsLink);
       $scope.welcome = 'Welcome ' + lmData.playerName;
       $scope.loggedIn = true;
       $scope.immLevel = lmData.immLevel;
     }, $scope);
 
-    lmBus.register("logout", function (reason) {
+    lpEvent.register("logout", function (reason) {
       if (reason == "other_location") {
         var playerName = lmData.playerName ? lmData.playerName : "Unknown";
-        lmDialog.showOk("Logged Out", playerName + " logged in from another location.");
+        lpDialog.showOk("Logged Out", playerName + " logged in from another location.");
       }
       validatePath();
     }, $scope, -500);
@@ -129,19 +129,19 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
   }]);
 
 
-angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lmBus', 'lmData', 'lmDialog',
-  function ($scope, lmApp, lmBus, lmData, lmDialog) {
+angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEvent', 'lmData', 'lpDialog',
+  function ($scope, lmApp, lpEvent, lmData, lpDialog) {
 
      update();
 
-    lmBus.register("login", function () {
+    lpEvent.register("login", function () {
       update();
     }, $scope);
 
-    lmBus.register("logout", function (reason) {
+    lpEvent.register("logout", function (reason) {
       if (reason == "invalid_session") {
-        lmDialog.removeAll();
-        lmDialog.showOk("Session Lost", "Your session has been disconnected.");
+        lpDialog.removeAll();
+        lpDialog.showOk("Session Lost", "Your session has been disconnected.");
       }
       update();
     }, $scope);
@@ -156,36 +156,36 @@ angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lmBus'
   }]);
 
 
-angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lmDialog', 'lmBus',
-  function ($scope, lmDialog, lmBus) {
+angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lpEvent',
+  function ($scope, lpDialog, lpEvent) {
 
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
-      lmBus.dispatch("server_request", "login", {user_id: this.userId,
+      lpEvent.dispatch("server_request", "login", {user_id: this.userId,
         password: this.password})
     };
 
     $scope.newAccountDialog = function () {
-      lmDialog.show({templateUrl: "mud/dialogs/new_account.html", controller: "NewAccountCtrl"});
+      lpDialog.show({templateUrl: "mud/dialogs/new_account.html", controller: "NewAccountCtrl"});
     };
 
     $scope.forgotName = function () {
-      lmDialog.show({templateUrl: "mud/dialogs/forgot_name.html", controller: "ForgotNameCtrl"})
+      lpDialog.show({templateUrl: "mud/dialogs/forgot_name.html", controller: "ForgotNameCtrl"})
     };
 
     $scope.forgotPassword = function () {
-      lmDialog.show({templateUrl: "mud/dialogs/forgot_password.html", controller: "ForgotPasswordCtrl"})
+      lpDialog.show({templateUrl: "mud/dialogs/forgot_password.html", controller: "ForgotPasswordCtrl"})
     };
 
-    lmBus.register("login_failure", function () {
+    lpEvent.register("login_failure", function () {
       $scope.loginError = true
     }, $scope);
 
   }]);
 
-angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmData',
-  function ($scope, $timeout, lmRemote, lmDialog, lmData) {
+angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout', 'lpRemote', 'lpDialog', 'lmData',
+  function ($scope, $timeout, lpRemote, lpDialog, lmData) {
 
     $scope.accountName = "";
     $scope.password = "";
@@ -204,12 +204,12 @@ angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout'
         $scope.errorText = "Spaces not permitted in account names";
         return;
       }
-      lmRemote.request("settings/create_account", {account_name: $scope.accountName,
+      lpRemote.request("settings/create_account", {account_name: $scope.accountName,
         password: $scope.password, email: $scope.email}).then(function (response) {
           lmData.userId = response.user_id;
           $scope.dismiss();
           $timeout(function () {
-            lmDialog.show({templateUrl: "mud/dialogs/new_character.html", controller: "NewCharacterCtrl", noEscape: true});
+            lpDialog.show({templateUrl: "mud/dialogs/new_character.html", controller: "NewCharacterCtrl", noEscape: true});
           })
         }, function (error) {
           $scope.errorText = "Account name " + error.text + " is in use.";
@@ -217,23 +217,23 @@ angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout'
     }
   }]);
 
-angular.module('lampost_mud').controller('ForgotNameCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
+angular.module('lampost_mud').controller('ForgotNameCtrl', ['$scope', 'lpRemote', 'lpDialog', function ($scope, lpRemote, lpDialog) {
   $scope.showError = false;
   $scope.submitRequest = function () {
-    lmRemote.request("settings/send_name", {info: $scope.info}).then(function () {
+    lpRemote.request("settings/send_name", {info: $scope.info}).then(function () {
       $scope.dismiss();
-      lmDialog.showOk("Email Sent", "An email has been sent to " + $scope.info + " with account information");
+      lpDialog.showOk("Email Sent", "An email has been sent to " + $scope.info + " with account information");
     }, function () {
       $scope.showError = true;
     })
   };
 }]);
 
-angular.module('lampost_mud').controller('ForgotPasswordCtrl', ['$scope', 'lmRemote', 'lmDialog', function ($scope, lmRemote, lmDialog) {
+angular.module('lampost_mud').controller('ForgotPasswordCtrl', ['$scope', 'lpRemote', 'lpDialog', function ($scope, lpRemote, lpDialog) {
   $scope.submitRequest = function () {
-    lmRemote.request("settings/temp_password", {info: $scope.info}).then(function () {
+    lpRemote.request("settings/temp_password", {info: $scope.info}).then(function () {
       $scope.dismiss();
-      lmDialog.showOk("Password Sent", "An email has been set to the address on file for " + $scope.info +
+      lpDialog.showOk("Password Sent", "An email has been set to the address on file for " + $scope.info +
         " with a temporary password.");
     }, function (error) {
       $scope.showError = error.text
@@ -241,7 +241,7 @@ angular.module('lampost_mud').controller('ForgotPasswordCtrl', ['$scope', 'lmRem
   };
 }]);
 
-angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lmRemote', function ($scope, lmRemote) {
+angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lpRemote', function ($scope, lpRemote) {
   $scope.errorText = null;
   $scope.password = '';
   $scope.passwordCopy = '';
@@ -250,13 +250,13 @@ angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lmRemo
       $scope.errorText = "Passwords do not match";
     } else {
       $scope.dismiss();
-      lmRemote.request('settings/set_password', {password: $scope.password});
+      lpRemote.request('settings/set_password', {password: $scope.password});
     }
   }
 }]);
 
-angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lmBus', 'lmData',
-  function ($scope, $timeout, lmBus, lmData) {
+angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lmData',
+  function ($scope, $timeout, lpEvent, lmData) {
   var curAction;
 
   $scope.update = 0;
@@ -265,21 +265,21 @@ angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'l
   function updateAction(action) {
     $scope.action = action;
     $timeout(function () {
-      lmBus.dispatch('user_activity')
+      lpEvent.dispatch('user_activity')
     }, 150);
   }
 
-  lmBus.register("display_update", function () {
+  lpEvent.register("display_update", function () {
     $scope.update++;
   }, $scope);
 
   $scope.actionFocus = function() {
-    lmBus.dispatch('user_activity');
+    lpEvent.dispatch('user_activity');
   };
 
   $scope.sendAction = function () {
     if ($scope.action) {
-      lmBus.dispatch("server_request", "action", {action: $scope.action});
+      lpEvent.dispatch("server_request", "action", {action: $scope.action});
       lmData.history.push($scope.action);
       lmData.historyIx = lmData.history.length;
       updateAction('');

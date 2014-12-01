@@ -1,5 +1,5 @@
-angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 'lmRemote', 'lmDialog', 'lmBus', 'lmData',
-  function ($scope, $timeout, lmRemote, lmDialog, lmBus, lmData) {
+angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 'lpRemote', 'lpDialog', 'lpEvent', 'lmData',
+  function ($scope, $timeout, lpRemote, lpDialog, lpEvent, lmData) {
 
     $scope.headings = [
       {id: "general", label: "General", class: "btn-primary"},
@@ -17,11 +17,11 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
     };
 
     $scope.deleteAccount = function () {
-      lmDialog.showPrompt({title: "Confirm Account Deletion", prompt: "Account Password: ", password: true,
+      lpDialog.showPrompt({title: "Confirm Account Deletion", prompt: "Account Password: ", password: true,
         submit: function (password) {
-          lmRemote.request("settings/delete_account", {password: password}).then(function (response) {
-            lmDialog.showOk("Account Deleted", "Your account has been deleted");
-            lmBus.dispatchMap(response);
+          lpRemote.request("settings/delete_account", {password: password}).then(function (response) {
+            lpDialog.showOk("Account Deleted", "Your account has been deleted");
+            lpEvent.dispatchMap(response);
           });
         }
       });
@@ -31,7 +31,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
     $scope.emailInUse = false;
     $scope.passwordMismatch = false;
 
-    lmRemote.request("settings/get", {user_id: lmData.userId}).then(updateSettings);
+    lpRemote.request("settings/get", {user_id: lmData.userId}).then(updateSettings);
 
     function updateSettings(data) {
       $scope.user = data;
@@ -44,7 +44,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
         $scope.passwordMismatch = true;
         return;
       }
-      lmRemote.request("settings/update_account", {user_id: lmData.userId,
+      lpRemote.request("settings/update_account", {user_id: lmData.userId,
         user: $scope.user}).then(function () {
         $scope.showSuccess = true;
         $scope.user.password = "";
@@ -65,8 +65,8 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
 
   }]);
 
-angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData', 'lmRemote', 'lmBus', 'lmDialog',
-  function ($scope, lmData, lmRemote, lmBus, lmDialog) {
+angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData', 'lpRemote', 'lpEvent', 'lpDialog',
+  function ($scope, lmData, lpRemote, lpEvent, lpDialog) {
 
     $scope.players = [];
     $scope.errorText = null;
@@ -75,9 +75,9 @@ angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData
         $scope.errorText = "Cannot delete logged in player";
         return;
       }
-      lmDialog.showPrompt({title: "Delete Player", prompt: "Enter account password to delete player " + playerId + ":", password: true,
+      lpDialog.showPrompt({title: "Delete Player", prompt: "Enter account password to delete player " + playerId + ":", password: true,
         submit: function (password) {
-          lmRemote.request("settings/delete_player", {player_id: playerId, password: password}).then(function (players) {
+          lpRemote.request("settings/delete_player", {player_id: playerId, password: password}).then(function (players) {
             $scope.players = players;
           }, function (error) {
             $scope.errorText = error.text;
@@ -86,15 +86,15 @@ angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData
       });
     };
 
-    lmBus.register('players_updated', loadCharacters, $scope);
+    lpEvent.register('players_updated', loadCharacters, $scope);
 
     $scope.addCharacter = function () {
-      lmDialog.show({templateUrl: "mud/dialogs/new_character.html", controller: "NewCharacterCtrl"});
+      lpDialog.show({templateUrl: "mud/dialogs/new_character.html", controller: "NewCharacterCtrl"});
     };
 
     loadCharacters();
     function loadCharacters() {
-      lmRemote.request("settings/get_players", {user_id: lmData.userId}).then(function (players) {
+      lpRemote.request("settings/get_players", {user_id: lmData.userId}).then(function (players) {
         $scope.players = players;
       });
     }
@@ -103,7 +103,7 @@ angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData
   }]);
 
 
-angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lmData', 'lmRemote', function ($scope, $timeout, lmData, lmRemote) {
+angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lmData', 'lpRemote', function ($scope, $timeout, lmData, lpRemote) {
 
   $scope.selectors = [];
   $scope.showSuccess = false;
@@ -127,7 +127,7 @@ angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout'
       }
     });
     lmData.userDisplays = newDisplays;
-    lmRemote.request("settings/update_display", {displays: newDisplays}).then(function () {
+    lpRemote.request("settings/update_display", {displays: newDisplays}).then(function () {
       $scope.showSuccess = true;
       $timeout(function () {
           $scope.showSuccess = false;
@@ -138,7 +138,7 @@ angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout'
 
 }]);
 
-angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lmBus', 'lmData', 'lmRemote', function ($scope, $timeout, lmBus, lmData, lmRemote) {
+angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lpEvent', 'lmData', 'lpRemote', function ($scope, $timeout, lpEvent, lmData, lpRemote) {
 
   $scope.showSuccess = false;
   $scope.isImm = lmData.immLevel;
@@ -154,13 +154,13 @@ angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout',
         newNotifies.push(key);
       }
     });
-    lmRemote.request('settings/notifies', {notifies: newNotifies}).then(function () {
+    lpRemote.request('settings/notifies', {notifies: newNotifies}).then(function () {
       $scope.showSuccess = true;
       lmData.notifies = newNotifies;
       $timeout(function () {
         $scope.showSuccess = false;
       }, 3000);
-      lmBus.dispatch('notifies_updated');
+      lpEvent.dispatch('notifies_updated');
     })
   }
 

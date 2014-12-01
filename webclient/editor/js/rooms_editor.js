@@ -1,5 +1,5 @@
-angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lmRemote', 'lmBus', 'lpEditor', 'lpCache', '$timeout', 'lmDialog',
-  function ($q, $scope, lmRemote, lmBus, lpEditor, lpCache, $timeout, lmDialog) {
+angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog',
+  function ($q, $scope, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog) {
 
 
     $scope.dirMap = {};
@@ -63,15 +63,15 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     function editFeature(feature, isAdd) {
-      lmDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
+      lpDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
         locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
     }
 
     $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
     $scope.deleteExit = function (exit) {
-      lmDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
-        lmRemote.request("editor/room/delete_exit",
+      lpDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
+        lpRemote.request("editor/room/delete_exit",
           {start_room: $scope.model.dbo_id, both_sides: true, dir: exit.direction}).then(function () {
             $scope.closeAdd();
             $scope.activeExit = null;
@@ -91,7 +91,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       })
     };
 
-    lmBus.register('editStarting', function(editModel) {
+    lpEvent.register('editStarting', function(editModel) {
       if (editModel.dbo_id !== $scope.model.dbo_id) {
         $scope.closeAdd();
       }
@@ -114,7 +114,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.addNewReset = function (resetType) {
-      lmDialog.show({templateUrl: "editor/dialogs/new_reset.html", controller: "NewResetCtrl", scope: $scope.$new(),
+      lpDialog.show({templateUrl: "editor/dialogs/new_reset.html", controller: "NewResetCtrl", scope: $scope.$new(),
         locals: {room: $scope.model, resetType: resetType}});
     };
 
@@ -125,7 +125,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     $scope.mobileArticles = function (mobileReset, mobile) {
       var scope = $scope.$new();
       scope.mobileTitle = mobile.title;
-      lmDialog.show({templateUrl: "editor/dialogs/article_load.html", controller: "ArticleLoadCtrl",
+      lpDialog.show({templateUrl: "editor/dialogs/article_load.html", controller: "ArticleLoadCtrl",
         scope: scope, locals: {reset: mobileReset, areaId: $scope.model.dbo_id.split(':')[0]}});
     };
 
@@ -170,7 +170,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     $scope.selectScript = function (script) {
       angular.forEach($scope.model.scripts, function (oldScript) {
         if (oldScript == script.dbo_id) {
-          lmDialog.showOk("Script Exists", "This script is already in use.")
+          lpDialog.showOk("Script Exists", "This script is already in use.")
         }
       });
       $scope.model.scripts.push(script.dbo_id);
@@ -181,7 +181,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.removeFeature = function (feature) {
-      lmDialog.showConfirm("Remove Feature", "Are you sure you want to remove this feature?", function () {
+      lpDialog.showConfirm("Remove Feature", "Are you sure you want to remove this feature?", function () {
         $scope.model.features.splice($scope.model.features.indexOf(feature), 1);
       });
     };
@@ -192,8 +192,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
   }]);
 
-angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpEditor', 'lpCache', 'lmRemote',
-  function ($q, $scope, lpEditor, lpCache, lmRemote) {
+angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpEditor', 'lpCache', 'lpRemote',
+  function ($q, $scope, lpEditor, lpCache, lpRemote) {
 
     var area;
     var listKey;
@@ -254,7 +254,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
       var destId = $scope.useNew ? $scope.destAreaId + ':' + $scope.destRoom.destId : $scope.destRoom.dbo_id;
       var newExit = {start_room: $scope.model.dbo_id, direction: $scope.direction.dbo_id, is_new: $scope.useNew,
         dest_id: destId, one_way: $scope.oneWay, dest_title: $scope.destRoom.title};
-      lmRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
+      lpRemote.request('editor/room/create_exit', newExit).then(function (newExit) {
         $scope.model.exits.push(newExit);
         lpEditor.original.exits.push(newExit);
         $scope.closeAdd();

@@ -1,5 +1,5 @@
-angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 'lmUtil',
-  function ($q, lmBus, lmRemote, lmUtil) {
+angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote', 'lpUtil',
+  function ($q, lpEvent, lpRemote, lpUtil) {
 
     var lpCache = this;
     var cacheHeap = [];
@@ -27,7 +27,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
     }
 
     function idSort(values) {
-      lmUtil.stringSort(values, 'dbo_id')
+      lpUtil.stringSort(values, 'dbo_id')
     }
 
     function numericIdSort(values) {
@@ -46,7 +46,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
       delete remoteCache[key];
     }
 
-    lmBus.register('edit_update', function (event) {
+    lpEvent.register('edit_update', function (event) {
       var outside = !event.local;
       switch (event.edit_type) {
         case 'update':
@@ -94,7 +94,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
         var cacheModel = entry.map[model.dbo_id];
         if (cacheModel) {
           angular.copy(model, cacheModel);
-          lmBus.dispatch('modelUpdate', cacheModel, outside);
+          lpEvent.dispatch('modelUpdate', cacheModel, outside);
         }
       }
     };
@@ -108,7 +108,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
           entry.data.push(model);
           entry.sort(entry.data);
           entry.map[model.dbo_id] = model;
-          lmBus.dispatch('modelCreate', entry.data, model, outside);
+          lpEvent.dispatch('modelCreate', entry.data, model, outside);
         }
       }
     };
@@ -120,7 +120,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
         if (cacheModel) {
           entry.data.splice(entry.data.indexOf(cacheModel), 1);
           delete entry.map[model.dbo_id];
-          lmBus.dispatch('modelDelete', entry.data, model, outside);
+          lpEvent.dispatch('modelDelete', entry.data, model, outside);
         }
       }
       var deleted = [];
@@ -149,7 +149,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lmBus', 'lmRemote', 
         entry.ref++;
         return entry.promise;
       }
-      entry.promise = lmRemote.request('editor/' + entry.url).then(function (data) {
+      entry.promise = lpRemote.request('editor/' + entry.url).then(function (data) {
         delete entry.promise;
         entry.ref++;
         entry.data = data;

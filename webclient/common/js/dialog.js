@@ -1,4 +1,4 @@
-angular.module('lampost_dlg', []).service('lmDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
+angular.module('lampost_dlg', []).service('lpDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
   function ($rootScope, $compile, $controller, $templateCache, $timeout, $http) {
 
     var dialogMap = {};
@@ -8,7 +8,7 @@ angular.module('lampost_dlg', []).service('lmDialog', ['$rootScope', '$compile',
     var enabledLinks;
 
     function showDialog(args) {
-      var dialogId = "lmDialog_" + nextId++;
+      var dialogId = "lpDialog_" + nextId++;
       if (args.templateUrl) {
         $http.get(args.templateUrl, {cache: $templateCache}).then(
           function (response) {

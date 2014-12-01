@@ -1,5 +1,5 @@
-angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '$q', 'lmLog', 'lmBus', 'lmDialog',
-  function ($timeout, $http, $q, lmLog, lmBus, lmDialog) {
+angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '$q', 'lmLog', 'lpEvent', 'lpDialog',
+  function ($timeout, $http, $q, lmLog, lpEvent, lpDialog) {
 
     var sessionId = '';
     var connectEndpoint = '';
@@ -18,19 +18,19 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
       return $http({method: 'POST',
         url: resourceRoot + resource,
         data: data || {},
-        headers: sessionId ? {'X-Lampost-Session': sessionId} : null}).success(lmBus.dispatchMap).error(linkFailure);
+        headers: sessionId ? {'X-Lampost-Session': sessionId} : null}).success(lpEvent.dispatchMap).error(linkFailure);
     }
 
     function resourceRequest(resource, data) {
       if (waitCount == 0) {
-        waitDialogId = lmDialog.show({template: loadingTemplate, noEscape: true});
+        waitDialogId = lpDialog.show({template: loadingTemplate, noEscape: true});
       }
       waitCount++;
 
       function checkWait() {
         waitCount--;
         if (waitCount == 0) {
-          lmDialog.close(waitDialogId);
+          lpDialog.close(waitDialogId);
           waitDialogId = null;
         }
       }
@@ -58,9 +58,9 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
             }
             deferred.reject(errorResult);
           } else if (status === 403) {
-            lmDialog.showOk("Denied", "You do not have permission for that action");
+            lpDialog.showOk("Denied", "You do not have permission for that action");
           } else if (status) {
-            lmDialog.showOk("Server Error: " + status, data);
+            lpDialog.showOk("Server Error: " + status, data);
           }
         });
 
@@ -72,14 +72,14 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
         return;
       }
       if (status >= 500) {
-        lmBus.dispatch('server_error');
+        lpEvent.dispatch('server_error');
         return;
       }
       connected = false;
       lmLog.log("Link stopped: " + status);
       $timeout(function () {
         if (!connected && !window.windowClosing) {
-          lmDialog.show({template: reconnectTemplate, controller: ReconnectCtrl, noEscape: true});
+          lpDialog.show({template: reconnectTemplate, controller: ReconnectCtrl, noEscape: true});
         }
       }, 50);
     }
@@ -94,10 +94,10 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
         angular.forEach(services, function(service) {
           service.registered = false;
         });
-        lmBus.dispatch("logout", "invalid_session");
+        lpEvent.dispatch("logout", "invalid_session");
         serverRequest(connectEndpoint);
       } else if (status == "no_login") {
-        lmBus.dispatch("logout", "invalid_session");
+        lpEvent.dispatch("logout", "invalid_session");
       } else if (status == "cancel") {
         lmLog.log("Outstanding request cancelled");
       }
@@ -188,15 +188,15 @@ angular.module('lampost_remote', []).service('lmRemote', ['$timeout', '$http', '
       validateService(service);
     };
 
-    lmBus.register("connect", onConnect);
-    lmBus.register("link_status", onLinkStatus);
-    lmBus.register("server_request", serverRequest);
+    lpEvent.register("connect", onConnect);
+    lpEvent.register("link_status", onLinkStatus);
+    lpEvent.register("server_request", serverRequest);
 
 
     function ReconnectCtrl($scope, $timeout) {
       var tickPromise;
       var time = 16;
-      lmBus.register("link_status", function (link_status) {
+      lpEvent.register("link_status", function (link_status) {
         if (link_status == 'cancel') {
           return;
         }

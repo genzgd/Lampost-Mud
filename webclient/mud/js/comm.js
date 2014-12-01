@@ -1,25 +1,25 @@
-angular.module('lampost_mud').service('lmComm', ['lmBus', 'lmData', 'lmRemote', 'lmDialog', function (lmBus, lmData, lmRemote, lmDialog) {
+angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lmData', 'lpRemote', 'lpDialog', function (lpEvent, lmData, lpRemote, lpDialog) {
 
     var self = this;
     var allLogins = false;
-    lmBus.register('friend_login', friendLogin);
-    lmBus.register('any_login', anyLogin);
-    lmBus.register('login', checkAllLogins);
-    lmBus.register('logout', function() {
+    lpEvent.register('friend_login', friendLogin);
+    lpEvent.register('any_login', anyLogin);
+    lpEvent.register('login', checkAllLogins);
+    lpEvent.register('logout', function() {
         checkAllLogins();
     });
-    lmBus.register('notifies_updated', checkAllLogins);
+    lpEvent.register('notifies_updated', checkAllLogins);
 
     function checkAllLogins() {
         if (lmData.notifies.indexOf('allDesktop') > -1 || lmData.notifies.indexOf('allSound') > -1) {
             if (!allLogins) {
-                lmRemote.registerService('any_login_service');
+                lpRemote.registerService('any_login_service');
                 allLogins = true;
             }
         } else {
             if (allLogins) {
                 allLogins = false;
-                lmRemote.unregisterService('any_login_service');
+                lpRemote.unregisterService('any_login_service');
 
             }
         }
@@ -50,7 +50,7 @@ angular.module('lampost_mud').service('lmComm', ['lmBus', 'lmData', 'lmRemote', 
     }
 
     this.requestNotificationPermission = function (notify_data) {
-        lmDialog.showConfirm("Allow Notifications", "You must grant permission to allow notifications from " + lampost_config.title, function () {
+        lpDialog.showConfirm("Allow Notifications", "You must grant permission to allow notifications from " + lampost_config.title, function () {
             window.webkitNotifications.requestPermission(function () {
                 self.notify(notify_data);
             })

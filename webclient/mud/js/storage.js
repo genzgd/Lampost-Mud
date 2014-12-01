@@ -1,4 +1,4 @@
-angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
+angular.module('lampost_mud').service('lpStorage', ['lpEvent', function (lpEvent) {
 
   var playerId;
   var sessionId;
@@ -64,17 +64,17 @@ angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
     return lastSession;
   };
 
-  lmBus.register('connect', function (data) {
+  lpEvent.register('connect', function (data) {
     sessionId = data;
   });
 
-  lmBus.register("link_status", function (status) {
+  lpEvent.register("link_status", function (status) {
     if (playerId && status === 'good') {
       updateTimestamp();
     }
   });
 
-  lmBus.register("login", function (data) {
+  lpEvent.register("login", function (data) {
     playerId = data.name.toLowerCase();
     if (data.imm_level) {
       immSession = {userId: data.user_id, gameSessionId: sessionId};
@@ -83,9 +83,9 @@ angular.module('lampost_mud').service('lpStorage', ['lmBus', function (lmBus) {
     updateTimestamp();
   });
 
-  lmBus.register("logout", onLogout);
+  lpEvent.register("logout", onLogout);
 
-  lmBus.register("window_closing", function () {
+  lpEvent.register("window_closing", function () {
     if (playerId) {
       updateTimestamp();
     }

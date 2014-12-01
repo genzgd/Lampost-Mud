@@ -1,5 +1,5 @@
-angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote', 'lmDialog', 'lpCache', 'lmBus',
-  function ($q, lmUtil, lmRemote, lmDialog, lpCache, lmBus) {
+angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote', 'lpDialog', 'lpCache', 'lpEvent',
+  function ($q, lpUtil, lpRemote, lpDialog, lpCache, lpEvent) {
 
     var lpEditor = this;
     var contextMap = {};
@@ -8,7 +8,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
       this.id = id;
       angular.copy(init, this);
       this.url = this.url || id;
-      this.label = this.label || lmUtil.capitalize(id);
+      this.label = this.label || lpUtil.capitalize(id);
       this.baseUrl = 'editor/' + this.url + '/';
       this.objLabel = this.objLabel || this.label;
       this.include = this.include || 'editor/view/' + id + '.html';
@@ -58,15 +58,15 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
     };
 
     this.deleteModel = function (context, model, error) {
-      lmRemote.request(context.baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function (holders) {
+      lpRemote.request(context.baseUrl + 'test_delete', {dbo_id: model.dbo_id}).then(function (holders) {
         var extra = '';
         if (holders.length > 0) {
           extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
         }
-        lmDialog.showConfirm("Delete " + context.objLabel,
+        lpDialog.showConfirm("Delete " + context.objLabel,
             "Are you certain you want to delete " + context.objLabel + " " + model.dbo_id + "?" + extra,
           function () {
-            lmRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
+            lpRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
               lpCache.deleteModel(model);
             }, error);
           });
@@ -77,13 +77,13 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
       return model.name || model.title || model.dbo_id || '-new-';
     };
 
-    lmBus.register('modelSelected', function (activeModel) {
+    lpEvent.register('modelSelected', function (activeModel) {
       angular.forEach(contextMap, function (context) {
         if (context.parentType === activeModel.dbo_key_type) {
           context.parent = activeModel;
         }
       });
-      lmBus.dispatch('activeUpdated', activeModel);
+      lpEvent.dispatch('activeUpdated', activeModel);
     });
 
 
@@ -105,8 +105,8 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lmUtil', 'lmRemote'
   }]);
 
 
-angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', 'lmBus', 'lmRemote', 'lmDialog', 'lpCache', 'lpEditor',
-  function ($q, $scope, lmBus, lmRemote, lmDialog, lpCache, lpEditor) {
+angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', 'lpEvent', 'lpRemote', 'lpDialog', 'lpCache', 'lpEditor',
+  function ($q, $scope, lpEvent, lpRemote, lpDialog, lpCache, lpEditor) {
 
     var activeModel = {};
     var originalModel = {};
@@ -128,7 +128,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }
 
     function initScope() {
-      lmBus.dispatch('editStarting', originalModel);
+      lpEvent.dispatch('editStarting', originalModel);
       angular.copy(originalModel, activeModel);
       lpEditor.original = originalModel;
       lpEditor.context = context;
@@ -171,17 +171,17 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       return intercept('preUpdate', activeModel).then(function () {
         if ($scope.isNew) {
           return context.preCreate(activeModel).then(function () {
-            lmRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
+            lpRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
           }, dataError);
         }
-        return lmRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
+        return lpRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
       })
     }
 
     function onCreated(created) {
       $scope.isDirty = false;
       lpCache.insertModel(created);
-      lmBus.dispatch('modelSelected', created);
+      lpEvent.dispatch('modelSelected', created);
     }
 
     function onSaved(updated) {
@@ -191,7 +191,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     }
 
     function checkUnsaved() {
-      return lmDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
+      return lpDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
         ": " + display() + ".  Save changes now?", saveModel);
     }
 
@@ -200,7 +200,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
         return $q.when();
       }
       var deferred = $q.defer();
-      lmDialog.showAlert({title: "Unsaved Changes ",
+      lpDialog.showAlert({title: "Unsaved Changes ",
         body: "You have unsaved changes to <b>" + display() +
           "</b>.  Save your changes, discard your changes, or continue editing <b>" + display() + "</b>?",
         buttons: [
@@ -222,12 +222,12 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       })
     }
 
-    lmBus.register('modelUpdate', function (updatedModel, outside) {
+    lpEvent.register('modelUpdate', function (updatedModel, outside) {
       if (updatedModel !== originalModel) {
         return;
       }
       if ($scope.isDirty && outside) {
-        lmDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
+        lpDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
           "Do you want to load the new object and lose your changes?", function () {
           angular.copy(originalModel, activeModel);
         });
@@ -237,22 +237,22 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       }
     }, $scope);
 
-    lmBus.register('modelDelete', function (modelList, delModel, outside) {
+    lpEvent.register('modelDelete', function (modelList, delModel, outside) {
       if (activeModel.dbo_id === delModel.dbo_id) {
         if (outside) {
-          lmDialog.showOk("Outside Delete", "This object has been deleted by another user.");
+          lpDialog.showOk("Outside Delete", "This object has been deleted by another user.");
         }
         reset();
       }
     }, $scope);
 
-    lmBus.register('editorClosing', function (handlers) {
+    lpEvent.register('editorClosing', function (handlers) {
       if ($scope.isDirty) {
         handlers.push(checkUnsaved);
       }
     }, $scope);
 
-    lmBus.register('newEdit', function (type) {
+    lpEvent.register('newEdit', function (type) {
       onOverwrite().then(function () {
         context = lpEditor.getContext(type);
         $scope.isNew = true;
@@ -260,7 +260,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       });
     }, $scope);
 
-    lmBus.register('modelSelected', existingEdit);
+    lpEvent.register('modelSelected', existingEdit);
 
     $scope.constants = lpEditor.constants;
     $scope.model = activeModel;
@@ -295,7 +295,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
       if (originalModel.dbo_id) {
         lpEditor.deleteModel(context, originalModel, dataError);
       } else {
-        lmDialog.confirm("Delete " + context.objLabel,
+        lpDialog.confirm("Delete " + context.objLabel,
             "Are you sure you want to abandon this new " + context.objLabel + "?").then(reset);
       }
     };
@@ -305,8 +305,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
   }]);
 
 
-angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs', 'lmBus', 'lpCache', 'lpEditor',
-  function ($scope, $attrs, lmBus, lpCache, lpEditor) {
+angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs', 'lpEvent', 'lpCache', 'lpEditor',
+  function ($scope, $attrs, lpEvent, lpCache, lpEditor) {
 
     var type = $attrs.listType;
     var context = lpEditor.getContext(type);
@@ -341,7 +341,7 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       $scope.errors.dataError = lpEditor.translateError(error);
     }
 
-    lmBus.register("activeUpdated", function (activated) {
+    lpEvent.register("activeUpdated", function (activated) {
       if (activated.dbo_key_type === type) {
         activeModel = activated;
       } else if (context.parent === activated) {
@@ -363,7 +363,7 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
         event.preventDefault();
         event.stopPropagation();
       }
-      lmBus.dispatch("modelSelected", model);
+      lpEvent.dispatch("modelSelected", model);
     };
 
     $scope.rowClass = function (model) {
@@ -378,8 +378,8 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
 
   }]);
 
-angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope', '$scope', 'lmRemote',
-  'lmEditor', '$timeout', function ($q, $rootScope, $scope, lmRemote, lmEditor, $timeout) {
+angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope', '$scope', 'lpRemote',
+  'lmEditor', '$timeout', function ($q, $rootScope, $scope, lpRemote, lmEditor, $timeout) {
 
     var roomKey;
     var startConfig = null;
@@ -393,7 +393,7 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
       lmEditor.cache('area').then(function (areas) {
         $scope.areaList = areas;
       }),
-      lmRemote.request('editor/config/get_defaults').then(function (defaults) {
+      lpRemote.request('editor/config/get_defaults').then(function (defaults) {
         angular.forEach(defaults, function (subDefaults) {
           angular.forEach(subDefaults, function (value) {
             value.type = value.type || 'number';
@@ -407,7 +407,7 @@ angular.module('lampost_editor').controller('MudConfigCtrl', ['$q', '$rootScope'
         });
         $scope.defaults = defaults;
       }),
-      lmRemote.request('editor/config/get').then(function (config) {
+      lpRemote.request('editor/config/get').then(function (config) {
         startConfig = config;
         $scope.startAreaId = config.start_room.split(':')[0];
       })

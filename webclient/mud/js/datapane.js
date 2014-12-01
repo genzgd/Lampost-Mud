@@ -1,5 +1,5 @@
 angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
-  'lmBus', 'lmData', 'lmRemote', 'lmUtil', function ($scope, $timeout, lmBus, lmData, lmRemote, lmUtil) {
+  'lpEvent', 'lmData', 'lpRemote', 'lpUtil', function ($scope, $timeout, lpEvent, lmData, lpRemote, lpUtil) {
 
     var tabInfo = [{id: 'status', label: 'Status', include: 'mud/view/status_tab.html'},
       {id: 'playerList', label: 'Player List', include: 'mud/view/player_list_tab.html'},
@@ -26,7 +26,7 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
           $scope.channelMessages.push(msg);
         })
       });
-      lmUtil.descIntSort($scope.channelMessages, 'timestamp');
+      lpUtil.descIntSort($scope.channelMessages, 'timestamp');
     }
 
     function updateTabs() {
@@ -56,10 +56,10 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
       }
     }
 
-    lmBus.register('login', updateTabs, $scope);
-    lmBus.register('logout', updateTabs, $scope);
+    lpEvent.register('login', updateTabs, $scope);
+    lpEvent.register('logout', updateTabs, $scope);
 
-    lmBus.register('new_message', function () {
+    lpEvent.register('new_message', function () {
       updateMsgCount();
       if (tabMap.messages.visible) {
         $scope.changeTab(tabMap.messages);
@@ -77,9 +77,9 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
         return;
       }
       if (tab.id == 'playerList') {
-        lmRemote.registerService('player_list_service');
+        lpRemote.registerService('player_list_service');
       } else if (lmData.activeTab == 'playerList') {
-        lmRemote.unregisterService('player_list_service');
+        lpRemote.unregisterService('player_list_service');
       }
       lmData.activeTab = tab.id;
     };
@@ -88,20 +88,20 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
     $timeout(updateTabs);
 
 
-    lmBus.register("player_list_update", function () {
+    lpEvent.register("player_list_update", function () {
       if ($scope.playerList != lmData.playerList) {
         $scope.playerList = lmData.playerList;
       }
     }, $scope);
-    lmBus.register("sort_channels", sortChannels, $scope);
-    lmBus.register("channel", function (msg) {
+    lpEvent.register("sort_channels", sortChannels, $scope);
+    lpEvent.register("channel", function (msg) {
       lmData.adjustLine(msg, msg.id + "_channel");
       $scope.channelMessages.unshift(msg);
     }, $scope);
 
 
     $scope.deleteMessage = function (msg) {
-      lmRemote.asyncRequest("messages/delete", {msg_id: msg.msg_id, player_id: lmData.playerId}).then(function () {
+      lpRemote.asyncRequest("messages/delete", {msg_id: msg.msg_id, player_id: lmData.playerId}).then(function () {
         var msg_ix = lmData.messages.indexOf(msg);
         lmData.messages.splice(msg_ix, 1);
         updateMsgCount();
@@ -121,15 +121,15 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
 
     $scope.$on('$destroy', function () {
       if (lmData.activeTab == 'playerList') {
-        lmRemote.unregisterService('player_list_service');
+        lpRemote.unregisterService('player_list_service');
       }
       lmData.activeTab = null;
     })
   }]);
 
-angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lmData', 'lmRemote', function ($scope, lmData, lmRemote) {
+angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lmData', 'lpRemote', function ($scope, lmData, lpRemote) {
   $scope.respond = function (response) {
-    lmRemote.asyncRequest("messages/friend_response", {action: response, player_id: lmData.playerId,
+    lpRemote.asyncRequest("messages/friend_response", {action: response, player_id: lmData.playerId,
       source_id: $scope.msg.content.friend_id, msg_id: $scope.msg.msg_id}).then(function () {
         var msg_ix = lmData.messages.indexOf($scope.msg);
         lmData.messages.splice(msg_ix, 1);

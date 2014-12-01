@@ -8,7 +8,7 @@ angular.module('lampost_util').service('lmLog', [function () {
   }
 }]);
 
-angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
+angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
   var self = this;
   var registry = {};
 
@@ -138,7 +138,7 @@ angular.module('lampost_util').service('lmBus', ['lmLog', function (lmLog) {
 }]);
 
 
-angular.module('lampost_util').service('lmUtil', [function () {
+angular.module('lampost_util').service('lpUtil', [function () {
   this.stringSort = function (array, field) {
     array.sort(function (a, b) {
       var aField = a[field].toLowerCase();

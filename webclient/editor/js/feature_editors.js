@@ -54,8 +54,8 @@ angular.module('lampost_editor').controller('storeFeatureController', ['$scope',
 }]);
 
 
-angular.module('lampost_editor').controller('entranceFeatureController', ['$scope', '$filter', 'lmEditor', 'lmDialog',  'room', 'feature', 'isAdd',
-  function($scope, $filter, lmEditor, lmDialog, room, feature, isAdd) {
+angular.module('lampost_editor').controller('entranceFeatureController', ['$scope', '$filter', 'lmEditor', 'lpDialog',  'room', 'feature', 'isAdd',
+  function($scope, $filter, lmEditor, lpDialog, room, feature, isAdd) {
 
     $scope.objType = 'room';
     $scope.entrance = angular.copy(feature);
@@ -95,7 +95,7 @@ angular.module('lampost_editor').controller('entranceFeatureController', ['$scop
 
     $scope.finishEdit = function() {
       if (!$scope.entrance.destination) {
-        lmDialog.showOk("Destination Request", "Please set a destination");
+        lpDialog.showOk("Destination Request", "Please set a destination");
         return;
       }
 
