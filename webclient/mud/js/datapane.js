@@ -13,6 +13,8 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
       tabMap[tab.id] = tab;
     });
 
+    var dateString = new Date().toLocaleDateString();
+
     function updateMsgCount() {
       tabMap.messages.label = "Messages (" + $scope.messages.length + ")";
     }
@@ -109,14 +111,18 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
     };
 
     $scope.msgTime = function (msg) {
-      var date = new Date(msg.timestamp * 1000);
-      var now = new Date();
-      var result = date.toLocaleTimeString();
+      if (!msg.dateDisplay) {
+        var date = new Date(msg.timestamp * 1000);
+        var now = new Date();
+        var result = date.toLocaleTimeString();
 
-      if (date.toLocaleDateString() != now.toLocaleDateString()) {
-        result += " " + date.toLocaleDateString();
+        if (date.toLocaleDateString() != now.toLocaleDateString()) {
+          result += " " + date.toLocaleDateString();
+        }
+        msg.dateDisplay = result;
       }
-      return result;
+      return msg.dateDisplay;
+
     };
 
     $scope.$on('$destroy', function () {

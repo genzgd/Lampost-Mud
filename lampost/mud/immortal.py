@@ -236,8 +236,8 @@ def log_level(args, **_):
     return "Log level at {0}".format(log.level_desc)
 
 
-@imm_action('promote', 'player', prep='to', obj_target_class='args', imm_level='admin')
-def promote(source, target, obj, **_):
+@imm_action('promote', 'is_player', prep='to', obj_target_class='args', imm_level='admin')
+def promote(source, target, obj, obj_key, **_):
     if source == target:
         return "Let someone else do that."
     check_perm(source, target)

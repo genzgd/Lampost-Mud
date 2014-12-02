@@ -229,3 +229,12 @@ def consider(target_method, source, target, **_):
     source.status_change()
     source.last_opponent = saved_last
     return "At first glance, {} looks {}.".format(target.name, con_string)
+
+@mud_action('peace')
+def peace(source, **_):
+    if source.fight.opponents:
+        source.fight.end_all()
+        return "You use your great calming power to end the fight."
+    else:
+        return "You're not in combat"
+

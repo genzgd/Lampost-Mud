@@ -30,7 +30,7 @@ class PlayerLP(Player, EntityLP):
 
     def check_logout(self):
         if self.last_opponent:
-            raise ActionError("You can't log out right now.", COMBAT_DISPLAY)
+            raise ActionError("You are in life threatening combat!  You can't log out right now.", COMBAT_DISPLAY)
 
     def status_change(self):
         if not self.session:

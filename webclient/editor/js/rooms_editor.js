@@ -1,23 +1,25 @@
 angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog',
   function ($q, $scope, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog) {
 
-
     $scope.dirMap = {};
 
     $scope.addTypes = [
       {id: 'new_exit', label: 'Exit'},
-      {id: 'new_mobile_reset', label: 'Mobile'}
+      {id: 'mobile_reset', label: 'Mobile', addOptions: {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile',
+        reset: {}}}
     ];
 
-    $scope.setAddType = function (addType) {
+    $scope.setAddType = function (addType, addOptions) {
       $scope.activeAdd = addType;
       $scope.addPanel = 'editor/panels/' + addType + '.html';
+      $scope.newAdd = !!addOptions;
+      angular.extend($scope, addOptions);
     };
 
     $scope.closeAdd = function () {
       $scope.activeAdd = null;
       $scope.addPanel = null;
-      $scope.
+      $scope.activeExit = null;
     };
 
     lpCache.cache('area').then(function (data) {
@@ -74,7 +76,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
         lpRemote.request("editor/room/delete_exit",
           {start_room: $scope.model.dbo_id, both_sides: true, dir: exit.direction}).then(function () {
             $scope.closeAdd();
-            $scope.activeExit = null;
+
             var exitLoc = $scope.model.exits.indexOf(exit);
             if (exitLoc > -1) {
               $scope.model.exits.splice(exitLoc, 1);
@@ -275,26 +277,18 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
     $scope.changeArea();
   }]);
 
-angular.module('lampost_editor').controller('NewResetCtrl', ['$scope', 'lmEditor', 'room', 'resetType',
-  function ($scope, lmEditor, room, resetType) {
+angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpCache',
+  function ($scope, lpCache) {
 
     var listKey;
-    var resetLabel = resetType.substring(0, 1).toUpperCase() + resetType.substring(1);
-    var invalidObject = {dbo_id: ':No ' + resetLabel + 's', title: 'No ' + resetLabel + 's', desc: ''};
-    $scope.resetLabel = resetLabel;
-    $scope.disabled = true;
-    $scope.room = room;
-    lmEditor.cache('area').then(function (areas) {
-      $scope.areaList = areas;
-      $scope.areaId = room.dbo_id.split(':')[0];
-      $scope.changeArea();
-    });
-    $scope.reset = {reset_count: 1, reset_max: 1, object: invalidObject, article_loads: []};
+    var invalidObject = {dbo_id: ':No ' + $scope.resetType + 's', title: 'No ' + $cope.resetType + 's', desc: ''};
+
+    $scope.areaId = $scope.model.dbo_id.split(':')[0];
 
     $scope.changeArea = function () {
-      lmEditor.deref(listKey);
-      listKey = resetType + ':' + $scope.areaId;
-      lmEditor.cache(listKey).then(function (objects) {
+      lpCache.deref(listKey);
+      listKey = $scope.resetType + ':' + $scope.areaId;
+      lpCache.cache(listKey).then(function (objects) {
         $scope.disabled = objects.length == 0;
         if ($scope.disabled) {
           objects = [invalidObject];

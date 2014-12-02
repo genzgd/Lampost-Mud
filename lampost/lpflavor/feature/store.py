@@ -149,5 +149,3 @@ class Store(Feature):
             perm_article = template.create_instance()
             perm_article.store = self
             self.add_inven(perm_article)
-
-
