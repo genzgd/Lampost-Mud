@@ -9,6 +9,7 @@ game_group.add_argument('-cid', '--config_id', help="database configuration id",
 log_group = parent_parser.add_argument_group(title="Logging Configuration")
 log_group.add_argument('-l', '--log', help="default logging level", default='info', dest='log_level')
 log_group.add_argument('-lf', '--log_file', help="log output file", default=None)
+log_group.add_argument('-lm', '--log_mode', help="log file open mode", default='w')
 
 db_group = parent_parser.add_argument_group(title="Redis Database Configuration")
 db_group.add_argument('-db_host', help="database server host name", default='localhost')

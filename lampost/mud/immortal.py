@@ -78,7 +78,11 @@ def goto(source, args, **_):
         area = load_object(Area, args[1])
         if not area:
             raise ActionError("Area does not exist")
-        new_env = area.first_room
+        dest = area.sorted_keys[0]
+        if dest:
+            new_env = load_obj(Room, dest)
+        else:
+            raise ActionError("No rooms in area {}".format(args(1)))
     else:
         session = session_manager.player_session(dest)
         if session:
@@ -86,7 +90,7 @@ def goto(source, args, **_):
         else:
             if not ":" in dest:
                 dest = ":".join([source.env.parent_id, dest])
-            new_env = load_object(Room, dest)
+        new_env = load_object(Room, dest)
     if new_env:
         source.change_env(new_env)
     else:
@@ -236,8 +240,8 @@ def log_level(args, **_):
     return "Log level at {0}".format(log.level_desc)
 
 
-@imm_action('promote', 'is_player', prep='to', obj_target_class='args', imm_level='admin')
-def promote(source, target, obj, obj_key, **_):
+@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_target_class='args', imm_level='admin')
+def promote(source, verb, target, obj, obj_key, **_):
     if source == target:
         return "Let someone else do that."
     check_perm(source, target)
@@ -245,11 +249,15 @@ def promote(source, target, obj, obj_key, **_):
         return "Promote {0} to what?".format(target.name)
     imm_level = perm_to_level(obj_key[0])
     if imm_level is None:
-        return "That is not a valid level"
+        return "That is not a valid level."
+    if imm_level == target.imm_level:
+        return "{} is already a(n) {}".format(target.name, obj_key[0])
     target.imm_level = imm_level
     dispatch('imm_baptise', target)
     update_immortal_list(target)
-    source.broadcast(s="You promote {N} to " + obj_key[0], t="{n} promotes you to " + obj_key[0] + "!", e="{N} gets promoted!", target=target)
+    target.session.append({'player_update': {'imm_level': imm_level}})
+    source.broadcast(s="You {vb} {N} to {lvl}.", t="{n} {vb}s you to {lvl}!", e="{N} gets {vb}d!",
+                     target=target, ext_fmt={'vb': verb[0], 'lvl': obj_key[0]})
 
 
 @imm_action('run update', imm_level='supreme')

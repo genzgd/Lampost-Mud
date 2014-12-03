@@ -6,7 +6,7 @@ m_requires(__name__, 'datastore')
 
 @provides('perm', True)
 class Permissions():
-    levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0}
+    levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0, 'player': 0}
 
     def __init__(self):
         self.rev_levels = {}

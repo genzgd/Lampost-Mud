@@ -8,7 +8,7 @@ import lampost.setup.args
 args = lampost.setup.args.main_parser.parse_args()
 
 import lampost.util.log
-lampost.util.log.init_config(args.log_level, args.log_file)
+lampost.util.log.init_config(args)
 lampost.util.log.root_logger.info("Started with args {}", args)
 
 import lampost.context.context

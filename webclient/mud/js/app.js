@@ -118,6 +118,10 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
       $scope.immLevel = lmData.immLevel;
     }, $scope);
 
+    lpEvent.register('player_update', function() {
+      $scope.immLevel = lmData.immLevel;
+    });
+
     lpEvent.register("logout", function (reason) {
       if (reason == "other_location") {
         var playerName = lmData.playerName ? lmData.playerName : "Unknown";

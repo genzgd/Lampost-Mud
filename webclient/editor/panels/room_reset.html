@@ -6,16 +6,16 @@
     <div class="row">
       <div class="col-md-5">
         <div class="form-group">
-          <label class="control-label">Mobile Id</label>
-          <select class="form-control input-sm" ng-disabled="disabled || !newAdd" ng-model="reset[add_id]"
-            ng-options="object as idOnly(object) for object in objects" autofocus></select>
+          <label class="control-label">{{addLabel}} Id</label>
+          <select class="form-control input-sm" ng-disabled="disabled || !newAdd" ng-model="reset[addId]"
+            ng-options="idOnly(object) as idOnly(object) for object in objects" autofocus></select>
         </div>
 
       </div>
       <div class="col-md-7">
         <div ng-if="newAdd" class="form-group">
           <label class="control-label">Source Area</label>
-           <select class="span6" ng-model="areaId" ng-change="changeArea()"
+           <select class="form-control input.sm" ng-model="areaId" ng-change="changeArea()"
             ng-options="area.dbo_id as area.dbo_id for area in areaList" required></select>
         </div>
       </div>
@@ -23,7 +23,7 @@
     </div>
     <div class="row">
       <div class="form-group col-md-5">
-        <label class="control-label">Mobile Count</label>
+        <label class="control-label">{{addLabel}} Count</label>
         <input class="form-control input-sm" type="number" ng-model="reset.reset_count" required="true" min="1"/>
       </div>
       <div class="form-group col-md-5">
@@ -33,7 +33,7 @@
     </div>
 
     <div class="pull-right">
-      <button ng-if="newAdd" type="button" ng-click="addReset()" ng-disabled="hasError" class="btn btn-sm btn-warning">Add Reset</button>
+      <button ng-if="newAdd" type="button" ng-click="addReset()" ng-disabled="hasError" class="btn btn-sm btn-warning">Add {{addLabel}}</button>
       <button type="button" ng-click="closeAdd()" class="btn btn-sm btn-default">Cancel</button>
     </div>
   </div>

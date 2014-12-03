@@ -32,8 +32,7 @@
               <td class="col-md-1">{{exit.direction}}</td>
               <td class="col-md-4">{{exit.destination}}</td>
               <td class="col-md-5">{{exitRoom(exit).title}}</td>
-              <td class="col-md-1"><i ng-if="exit.guarded" class="fa fa-shield"></i></td>
-              <td class="col-md-1"><i ng-if="!exitTwoWay(exit)" class="fa fa-arrow-circle-right"></i></td>
+              <td class="col-md-2"><i ng-if="exit.guarded" class="fa fa-shield"></i> <i ng-if="!exitTwoWay(exit)" class="fa fa-arrow-circle-right"></i></td>
             </tr>
           </table>
         </div>
@@ -45,20 +44,12 @@
           Mobile Resets <strong>({{model.mobile_resets.length}})</strong></div>
         <div class="collapse in panel-collapse" id="roomMobileDetail">
           <table class="table table-condensed table-hover hand">
-            <thead>
-              <th class="col-md-5">Id</th>
-              <th class="col-md-3">Count</th>
-              <th class="col-md-3">Max</th>
-              <th class="col-md-1"><i class="fa fa-magic"></i></th>
-            </thead>
-            <tbody>
+
             <tr ng-repeat="reset in model.mobile_resets" ng-click="modifyMobile(reset)">
-              <td class="col-md-5">{{reset.mobile_id}}</td>
-              <td class="col-md-3">{{reset.reset_count}}</td>
-              <td class="col-md-3">{{reset.reset_max}}</td>
-              <td class="col-md-1">{{reset.article_loads.length}}</td>
+              <td class="col-md-5">{{reset.mobile_id}} {{resetCount(reset)}}</td>
+              <td class="col-md-5">{{resetMobile(reset).title}}</td>
+              <td class="col-md-2"><span ng-if="reset.article_loads" title="Loads Articles"><i class="fa fa-briefcase"></i></span></td>
             </tr>
-            </tbody>
           </table>
         </div>
 
@@ -67,7 +58,7 @@
     <div class="col-md-4 text-center">
       <div ng-if="isNew" class="alert alert-warning">You must first create the room before adding new elements.</div>
       <div ng-if="!activeAdd && !isNew" class="btn-group btn-group-sm btn-group">
-        <button type="button" ng-click="setAddType(add.id)" ng-repeat="add in addTypes" class="btn btn-default">
+        <button type="button" ng-click="setAddType(add.id, add.options)" ng-repeat="add in addTypes" class="btn btn-default">
           {{add.label}}
         </button>
       </div>

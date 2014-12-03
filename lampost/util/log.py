@@ -31,10 +31,13 @@ log_format = '{asctime: <20}  {levelname: <8} {name: <26}  {message}'
 root_logger = None
 
 
-def init_config(init_level='info', filename=None):
+def init_config(args):
     global root_logger
-    log_level = getattr(logging, init_level.upper())
-    logging.basicConfig(level=log_level, style="{", format=log_format, filename=filename)
+    log_level = getattr(logging, args.log_level.upper())
+    kwargs = {'format': log_format}
+    if args.log_file:
+        kwargs.update({'filename': args.log_file, 'filemode': args.log_mode})
+    logging.basicConfig(level=log_level, style="{", **kwargs)
     root_logger = logging.getLogger('root')
 
 

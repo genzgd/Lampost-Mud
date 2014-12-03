@@ -26,10 +26,6 @@ class Area(Scriptable):
     def sorted_keys(self):
         return sorted(self.room_keys,  key=lambda x: int(x.split(":")[1]))
 
-    @property
-    def first_room(self, instance=0):
-        return self.load_room(self.sorted_keys[0], instance)
-
     def load_room(self, dbo_id, instance=0):
         room = load_object(Room, dbo_id)
         if instance:

@@ -34,9 +34,14 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
     this.init = function (data) {
       this.playerId = data.playerId;
-      return lpCache.cache('constants').then(function (constants) {
+      lpCache.clearAll();
+      return lpRemote.request('editor/constants').then(function (constants) {
         lpEditor.constants = constants;
       });
+    };
+
+    this.reset = function() {
+      contextMap = {}
     };
 
     this.registerContext = function (contextId, context) {
@@ -77,6 +82,15 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       return model.name || model.title || model.dbo_id || '-new-';
     };
 
+    lpEvent.register('modelDelete', function(modelList, delModel) {
+      angular.forEach(contextMap, function (context) {
+        if (context.parent = delModel) {
+          context.parent = null;
+          lpEvent.dispatch('contextUpdate', context);
+        }
+      })
+    });
+
     lpEvent.register('modelSelected', function (activeModel) {
       angular.forEach(contextMap, function (context) {
         if (context.parentType === activeModel.dbo_key_type) {
@@ -89,9 +103,6 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
     /*  config: new lpEditContext({label: "Mud Config", url: "config"}),
      players: {label: "Players", objLabel: 'Player', url: "player"},
-     area: new lpEditContext({label: "Areas", objLabel: "Area", url: "area"}),
-     room: {label: "Room", url: "room", create: 'dialog'},
-     mobile: {label: "Mobile", url: "mobile", create: "dialog"},
      article: {label: "Article", url: "article", create: "dialog"},
      script: {label: "Script", url: "script"},
      social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
@@ -170,8 +181,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
     function saveModel() {
       return intercept('preUpdate', activeModel).then(function () {
         if ($scope.isNew) {
-          return context.preCreate(activeModel).then(function () {
-            lpRemote.request(baseUrl + 'create', activeModel).then(onCreated, dataError);
+          var modelDto = angular.copy(activeModel);
+          return context.preCreate(modelDto).then(function () {
+            lpRemote.request(baseUrl + 'create', modelDto).then(onCreated, dataError);
           }, dataError);
         }
         return lpRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
@@ -341,6 +353,12 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       $scope.errors.dataError = lpEditor.translateError(error);
     }
 
+    lpEvent.register("contextUpdate", function(updated) {
+      if (context === updated) {
+        updateList();
+      }
+    });
+
     lpEvent.register("activeUpdated", function (activated) {
       if (activated.dbo_key_type === type) {
         activeModel = activated;
@@ -349,14 +367,6 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
         activeModel = null;
       }
     });
-
-    $scope.deleteModel = function (model, event) {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      lpEditor.deleteModel(context, model, dataError);
-    };
 
     $scope.selectModel = function (model, event) {
       if (event) {

@@ -99,7 +99,6 @@ angular.module('lampost_mud').service('lmData', ['lpEvent', 'lpUtil', function (
 
   lpEvent.register("login", function (data) {
     setUser(data);
-    self.playerIds = data.player_ids;
     self.playerName = data.name;
     self.userDisplays = data.displays;
     self.immLevel = data.imm_level;
@@ -108,6 +107,10 @@ angular.module('lampost_mud').service('lmData', ['lpEvent', 'lpUtil', function (
     self.messages = data.messages;
 
     lpUtil.intSort(self.messages, 'msg_id');
+  }, null, -100);
+
+  lpEvent.register('player_update', function(data) {
+    self.immLevel = data.imm_level;
   }, null, -100);
 
   lpEvent.register("user_login", setUser, null, -100);

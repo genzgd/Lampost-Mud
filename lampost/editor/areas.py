@@ -11,7 +11,7 @@ m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_update_serv
 
 class AreaEditor(Editor):
     def initialize(self):
-        super().initialize(Area)
+        super().initialize(Area, 'creator')
 
     def pre_delete(self, del_obj):
         if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
@@ -22,7 +22,7 @@ class AreaEditor(Editor):
 
 class RoomEditor(ChildrenEditor):
     def initialize(self):
-        super().initialize(Room)
+        super().initialize(Room, 'creator')
 
     def visit(self):
         room = load_object(Room, self.raw['room_id'])

@@ -19,7 +19,7 @@ class ExitLP(lampost.env.room.Exit):
     class_id = 'exit'
     prep_time = 1
 
-    guarded = DBOField(True)
+    guarded = DBOField(False)
     door_key = DBOField()
 
     def prepare_action(self, source, **_):

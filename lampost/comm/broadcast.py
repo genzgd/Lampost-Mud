@@ -33,7 +33,7 @@ broadcast_tokens = [{'id': token_id, 'token': token} for token_id, token in [
 token_pattern = re.compile('\$([nNeEsSmMfFaA])')
 
 
-def substitute(message, source=None, target=None, verb=None):
+def substitute(message, source=None, target=None, verb=None, **ext_fmt):
     if source:
         s_name = getattr(source, 'name', source)
         s_sub, s_obj, s_poss, s_self, s_abs = pronouns[getattr(source, 'sex', 'none')]
@@ -47,7 +47,7 @@ def substitute(message, source=None, target=None, verb=None):
 
     result = message.format(n=s_name, N=t_name, e=s_sub, E=t_sub, s=s_poss, S=t_poss,
                             m=s_obj, M=t_obj, f=s_self, F=t_self, a=s_abs, A=t_abs,
-                            v=verb)
+                            v=verb, **ext_fmt)
     return result
 
 
@@ -69,7 +69,7 @@ class BroadcastMap():
 
 class Broadcast():
     def __init__(self, broadcast_map=None, source=None, target=None, display='default',
-                 silent=False, verb=None, **kwargs):
+                 silent=False, verb=None, ext_fmt=None, **kwargs):
         if broadcast_map:
             self.broadcast_map = broadcast_map
         else:
@@ -79,6 +79,7 @@ class Broadcast():
         self.display = display
         self.silent = silent
         self.verb = verb
+        self.ext_fmt = ext_fmt if ext_fmt else {}
 
     def translate(self, observer):
         if self.silent and observer == self.source:
@@ -105,4 +106,4 @@ class Broadcast():
         return self.substitute('ea')
 
     def substitute(self, version):
-        return substitute(self.broadcast_map[version], self.source, self.target, self.verb)
+        return substitute(self.broadcast_map[version], self.source, self.target, self.verb, **self.ext_fmt)

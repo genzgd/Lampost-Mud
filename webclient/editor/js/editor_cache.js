@@ -7,10 +7,8 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     var remoteCache = {};
 
     var cacheSorts = {
-      'room': numericIdSort
+      room: numericIdSort
     };
-
-    remoteCache.constants = {ref: 0, url: 'constants', sort: angular.noop};
 
     function cacheEntry(key) {
       var keyParts = key.split(':');
@@ -41,7 +39,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     function deleteEntry(key) {
       var heapIx = cacheHeap.indexOf(key);
       if (heapIx > -1) {
-        cacheHeap.splice(headIx, 1);
+        cacheHeap.splice(heapIx, 1);
       }
       delete remoteCache[key];
     }
@@ -60,6 +58,11 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
           break;
       }
     });
+
+    this.clearAll = function() {
+      cacheHeap = [];
+      remoteCache = {}
+    };
 
     this.invalidate = function (key) {
       deleteEntry(key)
