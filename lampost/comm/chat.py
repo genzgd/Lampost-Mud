@@ -10,9 +10,7 @@ m_requires(__name__, 'session_manager', 'user_manager')
 @mud_action('emote')
 def emote(source, verb, command, **_):
     statement = command[len(verb[0]) + 1:]
-    if not source.imm_level:
-        statement = ":{}".format(statement)
-    source.broadcast(raw="{} {}".format(source.name, statement))
+    source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, statement))
 
 
 @mud_action(('t', 'tell'))

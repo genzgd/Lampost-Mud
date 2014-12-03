@@ -74,23 +74,21 @@ def goto(source, args, **_):
     if not args:
         raise ActionError("Go to whom? or to where?")
     dest = args[0].lower()
-    if dest == 'area' and len(args) > 1:
-        area = load_object(Area, args[1])
-        if not area:
-            raise ActionError("Area does not exist")
-        dest = area.sorted_keys[0]
-        if dest:
-            new_env = load_obj(Room, dest)
-        else:
-            raise ActionError("No rooms in area {}".format(args(1)))
+    session = session_manager.player_session(dest)
+    if session:
+        new_env = session.player.env
     else:
-        session = session_manager.player_session(dest)
-        if session:
-            new_env = session.player.env
+        area = load_object(Area, dest)
+        if area:
+            dest = area.sorted_keys[0]
+            if dest:
+                new_env = load_object(Room, dest)
+            else:
+                raise ActionError("No rooms in area {}".format(args(1)))
         else:
-            if not ":" in dest:
+            if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])
-        new_env = load_object(Room, dest)
+            new_env = load_object(Room, dest)
     if new_env:
         source.change_env(new_env)
     else:
