@@ -30,15 +30,18 @@ class Entity(BaseItem):
         self.inven_actions = defaultdict(set)
         self.followers = set()
         self.registrations = set()
+        self._soul_objects = set()
 
     def baptise(self):
         add_actions(self.inven_actions, self.inven)
 
     def enhance_soul(self, action):
         add_action(self.soul, action)
+        self._soul_objects.add(action)
 
     def diminish_soul(self, action):
         remove_action(self.soul, action)
+        self._soul_objects.discard(action)
 
     def add_inven(self, article):
         self.inven.append(article)
@@ -185,7 +188,7 @@ class Entity(BaseItem):
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
-        for item in itertools.chain(self.inven, self.soul.values()):
+        for item in list(itertools.chain(self.inven, self._soul_objects)):
             if hasattr(item, 'detach'):
                 item.detach()
             if hasattr(item, 'detach_shared'):
