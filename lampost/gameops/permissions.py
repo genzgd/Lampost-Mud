@@ -39,6 +39,8 @@ class Permissions():
             return False
 
     def check_perm(self, player, action):
+        if getattr(action, 'unprotected', None):
+            return
         if isinstance(action, int):
             perm_required = action
         elif action in self.levels:

@@ -17,6 +17,7 @@ class Area(Scriptable):
     next_room_id = DBOField(0)
     owner_id = DBOField()
     dbo_rev = DBOField(0)
+    unprotected = DBOField(False)
 
     @property
     def room_keys(self):

@@ -15,9 +15,14 @@ class AreaEditor(Editor):
 
     def pre_delete(self, del_obj):
         if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
-            raise ActionError("Cannot delete root area.")
+            raise DataError("Cannot delete root area.")
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, self.session, del_obj.dbo_id)
+
+    def pre_update(self, existing_obj):
+        if existing_obj.unprotected and not self.raw[
+            'unprotected'] and self.session.player.dbo_id != existing_obj.owner_id:
+            raise DataError("Only the owner can change edit permissions.")
 
 
 class RoomEditor(ChildrenEditor):
