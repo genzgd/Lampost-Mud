@@ -15,7 +15,7 @@
       <div class="col-md-6">
         <div class="form-group">
           <label class="control-label">Source Area</label>
-           <select ng-disabled="!newAdd" class="form-control input.sm" ng-model="addOpts.areaId" ng-change="changeArea()"
+           <select ng-disabled="!newAdd" class="form-control input.sm" ng-model="vars.areaId" ng-change="changeArea()"
             ng-options="area.dbo_id as area.dbo_id for area in areaList" required></select>
         </div>
       </div>

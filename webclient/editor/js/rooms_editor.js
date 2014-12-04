@@ -5,12 +5,11 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     $scope.addTypes = [
       {id: 'new_exit', label: 'Exit'},
-      {id: 'room_reset', label: 'Mobile', options: {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile',
-        addObj: {reset_count: 1, reset_max: 1}, newAdd: true}}
+      {id: 'room_reset', label: 'Mobile', options: {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile'}}
     ];
 
     $scope.setAddType = function (addType, addOptions) {
-      $scope.addOpts = addOptions;
+      lpEditor.addOpts = addOptions;
       $scope.activeAdd = addType;
       $scope.addPanel = 'editor/panels/' + addType + '.html';
     };
@@ -293,25 +292,29 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
     $scope.changeArea();
   }]);
 
-angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpCache',
-  function ($scope, lpCache) {
+angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEditor', 'lpCache',
+  function ($scope, lpEditor, lpCache) {
 
-    angular.extend($scope, $scope.addOpts);
+    angular.extend($scope, lpEditor.addOpts);
 
     var listKey;
     var invalidObject = {dbo_id: ':No ' + $scope.resetType + 's', title: 'No ' + $scope.resetType + 's', desc: ''};
 
-    $scope.reset = $scope.addObj;
+    $scope.vars = {};
 
-    if ($scope.reset[$scope.addId]) {
-      $scope.addOpts.areaId = $scope.reset[$scope.addId].split(':')[0];
+    if ($scope.addObj) {
+      $scope.newAdd = false;
+      $scope.reset = $scope.addObj;
+      $scope.vars.areaId = $scope.reset[$scope.addId].split(':')[0];
     } else {
-      $scope.addOpts.areaId = $scope.model.dbo_id.split(':')[0];
+      $scope.newAdd = true;
+      $scope.reset = {reset_count: 1, reset_max: 1};
+      $scope.vars.areaId = $scope.model.dbo_id.split(':')[0];
     }
 
     $scope.changeArea = function () {
       lpCache.deref(listKey);
-      listKey = $scope.resetType + ':' + $scope.addOpts.areaId;
+      listKey = $scope.resetType + ':' + $scope.vars.areaId;
       lpCache.cache(listKey).then(function (objects) {
         $scope.disabled = objects.length == 0;
         if ($scope.disabled) {

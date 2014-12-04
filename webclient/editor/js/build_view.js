@@ -1,8 +1,6 @@
 angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lpEvent', 'lpEditor',
   function ($scope, lpEvent, lpEditor) {
 
-    var editArea = null;
-
     lpEditor.reset();
 
     lpEditor.registerContext('area', {
@@ -18,7 +16,8 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lpEvent
           article_resets: [], extras: [], features: []});
       },
       refs: [
-        {type: 'room', path: 'exits.destination'}
+        {type: 'room', path: 'exits.destination'},
+        {type: 'mobile', path: 'mobile_resets.mobile_id'}
       ]
     });
 
@@ -29,11 +28,6 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lpEvent
         model.affinity = 'neutral';
       }
     });
-
-    $scope.activeArea = function () {
-      return editArea ? editArea.name : '-NOT SET-';
-    };
-
 
     $scope.newEditor = function (editorId, event) {
       if (event) {
