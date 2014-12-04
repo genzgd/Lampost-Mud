@@ -15,7 +15,7 @@ class Group(ActionProvider):
         self.leader = leader
         self.members = []
         self.invites = set()
-        self.channel = Channel('gchat', 'next')
+        self.channel = Channel('gchat', 'next', aliases=('g', 'gc', 'gt', 'gtell', 'gsay', 'gs'))
         dispatcher.register('player_connect', self._player_connect)
 
     def join(self, member):
@@ -23,6 +23,7 @@ class Group(ActionProvider):
             self._add_member(self.leader)
         self.msg("{} has joined the group".format(member.name))
         self._add_member(member)
+        self.invites.remove(member)
 
     def _add_member(self, member):
         member.group = self
@@ -45,7 +46,7 @@ class Group(ActionProvider):
             self._check_empty()
 
     def _remove_member(self, member):
-        self.msg("{} has left the group.".format(source.name))
+        self.msg("{} has left the group.".format(member.name))
         member.group = None
         member.diminish_soul(self)
         self.channel.remove_sub(member)
@@ -58,7 +59,7 @@ class Group(ActionProvider):
         if self.invites:
             return
         if len(self.members) == 1:
-            _remove_member(self.members[0])
+           self._remove_member(self.members[0])
         self.channel.disband()
         detach_events(self)
 
@@ -103,7 +104,7 @@ class Invitation(BaseItem):
         super().detach()
 
 
-@mud_action('group', target_class='logged_in')
+@mud_action(('group', 'invite'), target_class='logged_in')
 def invite(source, target, **_):
     if target == source:
         return "Not really necessary.  You're pretty much stuck with yourself anyway."

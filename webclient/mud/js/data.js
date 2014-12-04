@@ -59,7 +59,7 @@ angular.module('lampost_mud').service('lmData', ['lpEvent', 'lpUtil', function (
 
   function updateChannel(channelMessage) {
     self.channels[channelMessage.id].push(channelMessage);
-    updateDisplay({lines: [{text: channelMessage.text, display: channelMessage.id + "_channel"}]});
+    updateDisplay({lines: [{text: channelMessage.text, display: channelMessage.id.split("_")[0] + "_channel"}]});
   }
 
   function setUser(data) {

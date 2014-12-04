@@ -123,7 +123,7 @@ def room_clean_up(room, session, area_delete=None):
         other_room = my_exit.dest_room
         if other_room and other_room.parent_id != area_delete:
             for other_exit in other_room.exits:
-                if other_exit.destination == room:
+                if other_exit.destination == room.dbo_id:
                     other_room.exits.remove(other_exit)
                     save_object(other_room, True)
                     publish_edit('update', other_room, session, True)

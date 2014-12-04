@@ -22,9 +22,9 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
     function sortChannels() {
       $scope.channelMessages = [];
       angular.forEach(lmData.channels, function (msg_list, channel_id) {
+        var display = channel_id.split('_')[0] + "_channel";
         angular.forEach(msg_list, function (msg) {
-          msg.id = channel_id;
-          lmData.adjustLine(msg, msg.id + "_channel");
+          lmData.adjustLine(msg, display);
           $scope.channelMessages.push(msg);
         })
       });

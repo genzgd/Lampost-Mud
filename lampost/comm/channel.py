@@ -10,12 +10,11 @@ GENERAL_CHANNELS = 'general_channels'
 
 
 class Channel():
-    def __init__(self, channel_type, instance_id=None, general=False):
+    def __init__(self, channel_type, instance_id=None, general=False, aliases=()):
         if instance_id == 'next':
             instance_id = db_counter('channel')
-        make_action(self, channel_type)
+        make_action(self, (channel_type,) + aliases)
         self.id = "{}_{}".format(channel_type, instance_id) if instance_id else channel_type
-        self.display = "{}_display".format(channel_type)
         channel_service.register_channel(self.id, general)
 
     def __call__(self, source, command, **_):
