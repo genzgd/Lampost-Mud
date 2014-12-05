@@ -20,7 +20,7 @@ class AreaEditor(Editor):
             room_clean_up(room, self.session, del_obj.dbo_id)
 
     def pre_update(self, existing_obj):
-        if existing_obj.unprotected and not self.raw[
+        if not check_perm(self.session, 'supreme') and existing_obj.unprotected and not self.raw[
             'unprotected'] and self.session.player.dbo_id != existing_obj.owner_id:
             raise DataError("Only the owner can change edit permissions.")
 
