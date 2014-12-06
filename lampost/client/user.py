@@ -6,7 +6,7 @@ from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
-from lampost.util.lmutil import ClientError
+from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher')
 

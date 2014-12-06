@@ -1,4 +1,4 @@
-from lampost.util.lmutil import ClientError
+from lampost.util.lputil import ClientError
 
 
 class DataError(ClientError):

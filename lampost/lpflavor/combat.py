@@ -8,7 +8,7 @@ from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_LIST
 from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
-from lampost.util.lmutil import args_print
+from lampost.util.lputil import args_print
 
 m_requires(__name__, 'log', 'tools', 'dispatcher')
 

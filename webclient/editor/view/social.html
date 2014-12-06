@@ -1,54 +1,63 @@
-<div class="v-full" ng-controller="SocialsEditorCtrl" ng-show="ready">
-  <div class="span2">
-    <h4>Socials ({{modelList.length}})</h4>
-    <button ng-click="newModelDialog()" class="btn btn-small btn-success">New Social</button>
-    <div style="padding-bottom: 15px;"></div>
-    <div ng-repeat="broadcast_token in constants.broadcast_tokens">
-      <div>{{'$' + broadcast_token.id + '--' + broadcast_token.token}}</div>
+<div ng-controller="SocialEditorCtrl">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="form-group">
+        <label class="control-label">Social</label>
+        <input ng-disabled="!isNew" type="text" class="form-control input-sm" ng-model="model.dbo_id" required="true"/>
+      </div>
+    </div>
+    <div ng-hide="isNew">
+      <div class="col-md-2">
+        <div class="form-group">
+          <label class="control-label">Mode</label>
+          <div class="input-group" ng-hide="isNew">
+            <button ng-class="editMode ? 'active' : ''" type="button" class="btn btn-sm btn-default" ng-click="startEditMode()">Edit</button>
+            <button ng-class="editMode ? '' : 'active'" type="button" class="btn btn-sm btn-default" ng-click="previewSocial()">View</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label class="control-label">Player</label>
+          <input ng-model="source" class="col-md-5 form-control input-sm" ng-blur="previewSocial()"
+            enter-key="previewSocial()"/>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label class="control-label">Target</label>
+          <input ng-model="target" class="col-md-5 form-control input-sm"
+            ng-blur="previewSocial()" enter-key="previewSocial()"/>
+        </div>
+      </div>
+      <div class="col-md-1">
+      ` <label class="checkbox">
+          <input type="checkbox" ng-model="sourceSelf" ng-change="previewSocial()">
+          (Self)
+        </label>
+      </div>
     </div>
   </div>
-  <div class="span2 scrollable wrapper">
-    <table class="table table-condensed table-bordered" >
-      <thead>
-      <tr>
-        <th>Social</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr class="edit-row" ng-class="modelRowClass(model)" ng-click="editModel(model)" ng-repeat="model in modelList">
-        <td class="span8">{{model.dbo_id}}</td>
-        <td class="span4">
-          <a ng-click="deleteModel($event, model)" title="Delete Social" class="icon-link"><i class="icon-remove"></i></a>
-          <a ng-click="copyModel($event, model)" title="Copy Social" class="icon-link"><i class="icon-share"></i></a>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="span8 v-full" ng-hide="!model">
-    <div class="row-fluid" style="padding-bottom: 8px">
-      <div class="btn-group span3" data-toggle="buttons-radio">
-        <button type="button" class="btn btn-info active" ng-click="displayMode = 'edit'">Edit</button>
-        <button type="button" class="btn btn-info" ng-click="previewSocial()">View</button>
+
+  <div class="row" ng-if="!isNew">
+    <div class="col-md-6">
+      <div class="row" ng-repeat="broadcast_type in constants.broadcast_types" ng-if="$even">
+        <div class="col-md-12">
+          <h5><em>{{broadcast_type.label}}</em></h5>
+        <textarea ng-disabled="!editMode" ng-change="updateSocial(broadcast_type.id)"
+          ng-model="displayMap[broadcast_type.id]" lines="2" class="col-md-12"></textarea>
+        </div>
       </div>
-      <div class="span9" ng-hide="displayMode == 'edit'">
-        <input ng-model="source" class="span3" lm-blur="previewSocial()" enter-key="previewSocial()" />
-        <input ng-model="target" class="offset1 span3" lm-blur="previewSocial()" enter-key="previewSocial()" />
-        <span class="control-label">Self <input ng-model="sourceSelf" type="checkbox" ng-change="previewSocial()" /></span>
-      </div>
-      <div class="offset6 span3" ng-hide="displayMode == 'view'">
-        <button type="button" class="btn" ng-disabled="!isDirty" ng-click="revertModel()">Revert</button>
-        <button type="button" class="btn btn-primary" ng-disabled="!isDirty" ng-click="updateModel()">Update</button>
+    </div>
+    <div class="col-md-6">
+      <div class="row" ng-repeat="broadcast_type in constants.broadcast_types" ng-if="$odd">
+        <div class="col-md-12">
+          <h5><em>{{broadcast_type.label}}</em></h5>
+        <textarea ng-disabled="!editMode" ng-change="updateSocial(broadcast_type.id)"
+          ng-model="displayMap[broadcast_type.id]" lines="2" class="col-md-12"></textarea>
+        </div>
       </div>
     </div>
 
-    <div class="row-fluid scrollable" >
-      <div class="row-fluid" ng-repeat="broadcast_type in constants.broadcast_types">
-        <div ng-hide="displayMode == 'edit'" class="span12" style="color: mediumslateblue;">{{model.b_map[broadcast_type.id]}}</div>
-        <div ng-hide="displayMode == 'edit'" class="span12" title="{{broadcast_type.label}}">&nbsp&nbsp{{preview[broadcast_type.id]}}</div>
-
-        <textarea style="margin: 0 2px 0 0;" ng-model="model.b_map[broadcast_type.id]" lines="2" class="span12" ng-hide="displayMode == 'view'" title="{{broadcast_type.label}}"></textarea>
-      </div>
-    </div>
-    </div>
+  </div>
 </div>

@@ -2,7 +2,7 @@ from tornado.web import RequestHandler
 from lampost.client.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.model.player import Player
-from lampost.util.lmutil import ClientError
+from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log', 'session_manager', 'user_manager', 'datastore',
            'json_decode', 'json_encode', 'perm', 'edit_update_service')

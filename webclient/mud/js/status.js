@@ -1,5 +1,5 @@
-angular.module('lampost_mud').controller('StatusTabCtrl', ['$scope', 'lmData', 'lpEvent',
-  function($scope, lmData, lpEvent) {
+angular.module('lampost_mud').controller('StatusTabCtrl', ['$scope', 'lpData', 'lpEvent',
+  function($scope, lpData, lpEvent) {
 
     $scope.statsList = ['health', 'mental', 'stamina', 'action'];
     $scope.stats = {action: {label: 'Action'},
@@ -8,7 +8,7 @@ angular.module('lampost_mud').controller('StatusTabCtrl', ['$scope', 'lmData', '
       mental: {label: 'Mental'}};
     $scope.oppStats = angular.copy($scope.stats);
 
-    updateStatus(lmData.status);
+    updateStatus(lpData.status);
 
     lpEvent.register('status', updateStatus);
 

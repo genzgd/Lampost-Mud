@@ -3,7 +3,7 @@ import html
 from tornado.web import RequestHandler, asynchronous
 
 from lampost.context.resource import m_requires, get_resource
-from lampost.util.lmutil import ClientError, Blank
+from lampost.util.lputil import ClientError, Blank
 
 m_requires(__name__, 'log', 'perm', 'session_manager', 'json_decode', 'json_encode')
 

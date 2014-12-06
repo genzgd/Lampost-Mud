@@ -21,6 +21,9 @@ angular.module('lampost_editor').run(['$rootScope', 'lpRemote', 'lpEvent', 'lpUt
       return model.dbo_id.split(':')[1];
     };
     $rootScope.cap = lpUtil.capitalize;
+    $rootScope.join = function (values, del) {
+      return values.join(del || ' ');
+    };
     $rootScope.errors = {};
     $rootScope.siteTitle = lampost_config.title;
     $rootScope.appState = 'connecting';
@@ -35,6 +38,14 @@ angular.module('lampost_editor').run(['$rootScope', 'lpRemote', 'lpEvent', 'lpUt
       } else {
         lpRemote.connect('editor/edit_connect');
       }
+    }
+
+    $rootScope.newEditor = function (editorId, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      lpEvent.dispatch('newEdit', editorId);
     }
 
   }]);
@@ -56,21 +67,20 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
       if (newNav == activeNav) {
         return;
       }
-      activeNav = newNav;
-      for (var i = 0; i < $scope.links.length; i++) {
-        var link = $scope.links[i];
-        if (link.id === activeNav) {
-          link.active = 'active';
-        } else {
-          link.active = '';
-        }
-      }
-
       var handlers = [];
       lpEvent.dispatch('editorClosing', handlers);
       $q.all(handlers).then(function () {
+        activeNav = newNav;
+        for (var i = 0; i < $scope.links.length; i++) {
+          var link = $scope.links[i];
+          if (link.id === activeNav) {
+            link.active = 'active';
+          } else {
+            link.active = '';
+          }
+        }
         $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
-      })
+      });
     };
 
     lpEvent.register('connect', function (data) {
@@ -96,6 +106,7 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
       }
 
       lpEditor.init(data).then(function () {
+        $rootScope.constants = lpEditor.constants;
         if ($scope.links.length) {
           $scope.changeNav($scope.links[0].id);
         }

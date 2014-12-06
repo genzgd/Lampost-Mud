@@ -4,7 +4,7 @@ from lampost.model.item import BaseItem, target_keys
 from lampost.gameops.action import ActionError
 from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.gameops.template import Template
-from lampost.util.lmutil import plural
+from lampost.util.lputil import plural
 
 VOWELS = {'a', 'e', 'i', 'o', 'u'}
 

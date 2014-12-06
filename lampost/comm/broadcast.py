@@ -1,6 +1,6 @@
 import re
 
-from lampost.util.lmutil import pronouns
+from lampost.util.lputil import pronouns
 
 defaults = {'e': 's', 't': 'e', 'st': 's', 'et': 'e', 'sf': 's', 'ef': 'e', 'sa': 'st', 'ea': 'et'}
 
@@ -62,9 +62,9 @@ class BroadcastMap():
             msg = getattr(self, msg_key, None)
             if msg:
                 return msg
-            msg_key = defaults[msg_key]
+            msg_key = defaults.get(msg_key, None)
             if not msg_key:
-                raise KeyError
+                return "[EMPTY]"
 
 
 class Broadcast():

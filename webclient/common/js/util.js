@@ -46,16 +46,16 @@ angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
     });
     if (scope) {
       registration.scope = scope;
-      if (!scope['lm_regs']) {
-        scope.lm_regs = [];
+      if (!scope['lpRegs']) {
+        scope.lpRegs = [];
         scope.$on('$destroy', function (event) {
-          var copy = event.currentScope.lm_regs.slice();
+          var copy = event.currentScope.lpRegs.slice();
           for (var i = 0; i < copy.length; i++) {
             self.unregister(copy[i]);
           }
         });
       }
-      scope.lm_regs.push(registration);
+      scope.lpRegs.push(registration);
     }
     return registration;
   };
@@ -85,7 +85,7 @@ angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
       return;
     }
     if (registration.scope) {
-      var listeners = registration.scope.lm_regs;
+      var listeners = registration.scope.lpRegs;
       for (i = 0; i < listeners.length; i++) {
         if (listeners[i] === registration) {
           listeners.splice(i, 1);
@@ -93,7 +93,7 @@ angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
         }
       }
       if (!listeners.length) {
-        delete registration.scope.lm_regs;
+        delete registration.scope.lpRegs;
       }
     }
   };

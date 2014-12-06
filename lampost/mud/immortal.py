@@ -10,7 +10,7 @@ from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action
 from lampost.model.player import Player
-from lampost.util.lmutil import find_extra, patch_object, str_to_primitive
+from lampost.util.lputil import find_extra, patch_object, str_to_primitive
 from lampost.gameops.display import TELL_TO_DISPLAY
 
 m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager')

@@ -1,7 +1,7 @@
 from collections import defaultdict
 from lampost.context.resource import m_requires, register
 from lampost.gameops.action import make_action, ActionError, convert_verbs
-from lampost.util.lmutil import ClientError
+from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log', 'user_manager', 'session_manager', 'message_service', 'friend_service', 'dispatcher')
 _mud_actions = {}

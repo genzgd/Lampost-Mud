@@ -1,32 +1,41 @@
-angular.module('lampost_editor').controller('SocialsEditorCtrl', ['$scope', 'lpRemote', 'lmEditor', 'lpDialog',
-  function ($scope, lpRemote, lmEditor, lpDialog) {
+angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRemote', 'lpEditor',
+  function ($scope, lpRemote, lpEditor) {
 
-    var helpers = lmEditor.prepare(this, $scope);
-    helpers.prepareList('social');
+    var preview;
 
-    $scope.displayMode = 'edit';
+    $scope.editMode = true;
     $scope.source = 'Player';
     $scope.target = 'Target';
     $scope.sourceSelf = false;
+    $scope.displayMap = {};
 
-    $scope.changeSocial = function () {
-      $scope.newModel.b_map.s = "You " + $scope.newModel.dbo_id.toLocaleLowerCase() + ".";
-      $scope.dialog.newExists = false;
-    };
-
-    this.newDialog = function (newModel) {
-      newModel.b_map = {};
-    };
+    $scope.startEditMode = function() {
+      $scope.editMode = true;
+      updateDisplayMap();
+    }
 
     $scope.previewSocial = function () {
       lpRemote.request('editor/social/preview', {target: $scope.target, self_source: $scope.sourceSelf,
         source: $scope.source, b_map: $scope.model.b_map})
-        .then(function (preview) {
-          $scope.preview = preview;
-          $scope.displayMode = 'view';
+        .then(function (data) {
+          preview = data;
+          $scope.editMode = false;
+          updateDisplayMap();
         });
     };
 
+    $scope.updateSocial = function(bType) {
+      $scope.model.b_map[bType] = $scope.displayMap[bType];
+    }
+
+    function updateDisplayMap() {
+      angular.forEach(lpEditor.constants.broadcast_types, function(bType) {
+        var key = bType.id;
+        $scope.displayMap[key] = $scope.editMode ? $scope.model.b_map[key] : preview[key];
+      });
+    }
+
+    updateDisplayMap();
 
   }]);
 

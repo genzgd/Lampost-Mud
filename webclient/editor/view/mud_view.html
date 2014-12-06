@@ -1,3 +1,10 @@
-<div class="container-fluid">
-  MUDD!!!
+<div class="container-fluid" ng-controller="MudViewCtrl">
+  <div class="row">
+    <div class="col-md-3">
+      <ng-include src="'editor/view/social_list.html'"></ng-include>
+      <ng-include src="'editor/view/social_cheat.html'"></ng-include>
+    </div>
+    <div ng-include="'editor/view/editor_main.html'">
+    </div>
+  </div>
 </div>

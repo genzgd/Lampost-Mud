@@ -4,7 +4,7 @@ from lampost.context.resource import m_requires, inject, provides
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.gameops.action import obj_action
 from lampost.mud.action import imm_action
-from lampost.util.lmutil import Blank
+from lampost.util.lputil import Blank
 
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'script_manager')

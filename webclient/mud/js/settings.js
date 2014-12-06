@@ -1,5 +1,5 @@
-angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 'lpRemote', 'lpDialog', 'lpEvent', 'lmData',
-  function ($scope, $timeout, lpRemote, lpDialog, lpEvent, lmData) {
+angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 'lpRemote', 'lpDialog', 'lpEvent', 'lpData',
+  function ($scope, $timeout, lpRemote, lpDialog, lpEvent, lpData) {
 
     $scope.headings = [
       {id: "general", label: "General", class: "btn-primary"},
@@ -31,7 +31,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
     $scope.emailInUse = false;
     $scope.passwordMismatch = false;
 
-    lpRemote.request("settings/get", {user_id: lmData.userId}).then(updateSettings);
+    lpRemote.request("settings/get", {user_id: lpData.userId}).then(updateSettings);
 
     function updateSettings(data) {
       $scope.user = data;
@@ -44,7 +44,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
         $scope.passwordMismatch = true;
         return;
       }
-      lpRemote.request("settings/update_account", {user_id: lmData.userId,
+      lpRemote.request("settings/update_account", {user_id: lpData.userId,
         user: $scope.user}).then(function () {
         $scope.showSuccess = true;
         $scope.user.password = "";
@@ -65,13 +65,13 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
 
   }]);
 
-angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData', 'lpRemote', 'lpEvent', 'lpDialog',
-  function ($scope, lmData, lpRemote, lpEvent, lpDialog) {
+angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lpData', 'lpRemote', 'lpEvent', 'lpDialog',
+  function ($scope, lpData, lpRemote, lpEvent, lpDialog) {
 
     $scope.players = [];
     $scope.errorText = null;
     $scope.deleteCharacter = function (playerId) {
-      if (playerId == lmData.playerId) {
+      if (playerId == lpData.playerId) {
         $scope.errorText = "Cannot delete logged in player";
         return;
       }
@@ -94,7 +94,7 @@ angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData
 
     loadCharacters();
     function loadCharacters() {
-      lpRemote.request("settings/get_players", {user_id: lmData.userId}).then(function (players) {
+      lpRemote.request("settings/get_players", {user_id: lpData.userId}).then(function (players) {
         $scope.players = players;
       });
     }
@@ -103,14 +103,14 @@ angular.module('lampost_mud').controller('CharactersTabCtrl', ['$scope', 'lmData
   }]);
 
 
-angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lmData', 'lpRemote', function ($scope, $timeout, lmData, lpRemote) {
+angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout', 'lpData', 'lpRemote', function ($scope, $timeout, lpData, lpRemote) {
 
   $scope.selectors = [];
   $scope.showSuccess = false;
 
-  angular.forEach(lmData.defaultDisplays, function (value, key) {
+  angular.forEach(lpData.defaultDisplays, function (value, key) {
     var selector = {name: key, desc: value.desc, defaultColor: value.color};
-    var userDisplay = lmData.userDisplays[key];
+    var userDisplay = lpData.userDisplays[key];
     if (userDisplay) {
       selector.userColor = userDisplay.color;
     } else {
@@ -126,7 +126,7 @@ angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout'
         newDisplays[selector.name] = {color: selector.userColor};
       }
     });
-    lmData.userDisplays = newDisplays;
+    lpData.userDisplays = newDisplays;
     lpRemote.request("settings/update_display", {displays: newDisplays}).then(function () {
       $scope.showSuccess = true;
       $timeout(function () {
@@ -138,12 +138,12 @@ angular.module('lampost_mud').controller('DisplayTabCtrl', ['$scope', '$timeout'
 
 }]);
 
-angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lpEvent', 'lmData', 'lpRemote', function ($scope, $timeout, lpEvent, lmData, lpRemote) {
+angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout', 'lpEvent', 'lpData', 'lpRemote', function ($scope, $timeout, lpEvent, lpData, lpRemote) {
 
   $scope.showSuccess = false;
-  $scope.isImm = lmData.immLevel;
+  $scope.isImm = lpData.immLevel;
   $scope.notifies = {friendSound: false, friendDesktop: false, friendEmail: false, allSound: false, allDesktop: false, allEmail: false};
-  angular.forEach(lmData.notifies, function (value) {
+  angular.forEach(lpData.notifies, function (value) {
     $scope.notifies[value] = true;
   });
   $scope.desktopAvailable = window.webkitNotifications && true;
@@ -156,7 +156,7 @@ angular.module('lampost_mud').controller('NotifyTabCtrl', ['$scope', '$timeout',
     });
     lpRemote.request('settings/notifies', {notifies: newNotifies}).then(function () {
       $scope.showSuccess = true;
-      lmData.notifies = newNotifies;
+      lpData.notifies = newNotifies;
       $timeout(function () {
         $scope.showSuccess = false;
       }, 3000);

@@ -1,5 +1,5 @@
-angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lmData', 'lpRemote', 'lpEvent', 'lpDialog',
-  function ($scope, lmData, lpRemote, lpEvent, lpDialog) {
+angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lpData', 'lpRemote', 'lpEvent', 'lpDialog',
+  function ($scope, lpData, lpRemote, lpEvent, lpDialog) {
 
     $scope.playerName = '';
     $scope.errorText = null;
@@ -12,7 +12,7 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lmData'
     });
 
     $scope.tryCancel = function () {
-      if (lmData.playerIds.length == 0) {
+      if (lpData.playerIds.length == 0) {
         lpDialog.showConfirm("No Characters", "This account has no characters and will be deleted.  Do you still wish to continue?",
           function () {
             lpRemote.request("settings/delete_account").then(function (response) {
@@ -30,9 +30,9 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lmData'
         $scope.errorText = "Spaces not permitted in character names";
         return;
       }
-      lpRemote.request("settings/create_player", {user_id: lmData.userId, player_name: $scope.playerName, player_data: $scope.playerData})
+      lpRemote.request("settings/create_player", {user_id: lpData.userId, player_name: $scope.playerName, player_data: $scope.playerData})
         .then(function () {
-          if (!lmData.playerId) {
+          if (!lpData.playerId) {
             lpEvent.dispatch('server_request', 'login', {player_id: $scope.playerName.toLowerCase()});
           }
           lpEvent.dispatch('players_updated');
@@ -44,8 +44,8 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lmData'
 
   }]);
 
-angular.module('lampost_mud').controller('SelectCharacterCtrl', ['$scope', 'lpRemote', 'lpEvent', 'lmData',
-  function ($scope, lpRemote, lpEvent, lmData) {
+angular.module('lampost_mud').controller('SelectCharacterCtrl', ['$scope', 'lpRemote', 'lpEvent', 'lpData',
+  function ($scope, lpRemote, lpEvent, lpData) {
 
     $scope.players = [];
 
@@ -57,7 +57,7 @@ angular.module('lampost_mud').controller('SelectCharacterCtrl', ['$scope', 'lpRe
 
     loadCharacters();
     function loadCharacters() {
-      lpRemote.request("settings/get_players", {user_id: lmData.userId}).then(function (players) {
+      lpRemote.request("settings/get_players", {user_id: lpData.userId}).then(function (players) {
         $scope.players = players;
       });
     }

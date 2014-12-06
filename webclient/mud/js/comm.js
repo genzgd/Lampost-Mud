@@ -1,4 +1,4 @@
-angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lmData', 'lpRemote', 'lpDialog', function (lpEvent, lmData, lpRemote, lpDialog) {
+angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lpData', 'lpRemote', 'lpDialog', function (lpEvent, lpData, lpRemote, lpDialog) {
 
     var self = this;
     var allLogins = false;
@@ -11,7 +11,7 @@ angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lmData', 'lpRemote'
     lpEvent.register('notifies_updated', checkAllLogins);
 
     function checkAllLogins() {
-        if (lmData.notifies.indexOf('allDesktop') > -1 || lmData.notifies.indexOf('allSound') > -1) {
+        if (lpData.notifies.indexOf('allDesktop') > -1 || lpData.notifies.indexOf('allSound') > -1) {
             if (!allLogins) {
                 lpRemote.registerService('any_login_service');
                 allLogins = true;
@@ -26,20 +26,20 @@ angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lmData', 'lpRemote'
     }
 
     function friendLogin(friend_info) {
-        if (lmData.notifies.indexOf('friendDesktop') > -1 && lmData.notifies.indexOf('allDesktop') == -1) {
+        if (lpData.notifies.indexOf('friendDesktop') > -1 && lpData.notifies.indexOf('allDesktop') == -1) {
             self.notify({icon: 'image/friendNotify.png', title: "Your friend " + friend_info.name + " logged into " + lampost_config.title, content: ''});
         }
-        if (lmData.notifies.indexOf('friendSound') > -1 && lmData.notifies.indexOf('allSound') == -1) {
+        if (lpData.notifies.indexOf('friendSound') > -1 && lpData.notifies.indexOf('allSound') == -1) {
             jQuery('#sound_beep_ping')[0].play();
         }
     }
 
     function anyLogin(login) {
-        if (lmData.notifies.indexOf('allDesktop') > -1) {
+        if (lpData.notifies.indexOf('allDesktop') > -1) {
             self.notify({icon: 'image/friendNotify.png', title: "Player " + login.name + " logged into " + lampost_config.title, content: ''});
         }
 
-        if (lmData.notifies.indexOf('allSound') > -1) {
+        if (lpData.notifies.indexOf('allSound') > -1) {
             jQuery('#sound_beep_ping')[0].play();
         }
     }

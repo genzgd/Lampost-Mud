@@ -1,4 +1,4 @@
-angular.module('lampost_mud').service('lmData', ['lpEvent', 'lpUtil', function (lpEvent, lpUtil) {
+angular.module('lampost_mud').service('lpData', ['lpEvent', 'lpUtil', function (lpEvent, lpUtil) {
 
   var maxLines = 1000;
   var unreadCount = 0;

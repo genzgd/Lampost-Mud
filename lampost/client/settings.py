@@ -7,7 +7,7 @@ from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash
-from lampost.util.lmutil import ClientError
+from lampost.util.lputil import ClientError
 
 
 m_requires(__name__, 'datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service')

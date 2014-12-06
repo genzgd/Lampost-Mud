@@ -16,6 +16,7 @@ class Social(RootDBO):
     dbo_set_key = 'socials'
 
     b_map = DBOField({})
+    aliases = DBOField([])
 
     msg_class = 'social'
 

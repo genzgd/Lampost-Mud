@@ -3,7 +3,7 @@ import itertools
 from lampost.gameops import target_gen
 from lampost.context.resource import m_requires
 from lampost.gameops.action import find_actions
-from lampost.util.lmutil import find_extra, ClientError
+from lampost.util.lputil import find_extra, ClientError
 
 m_requires(__name__, 'log', 'mud_actions')
 

@@ -12,8 +12,8 @@ angular.module('lampost_mud').config(['$routeProvider', '$locationProvider', fun
 
 // Using services here so they get instantiated.  Many depend on event listeners only
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lpEvent', 'lpRemote', 'lpStorage', 'lmData', 'lpDialog', 'lmComm',
-  function ($rootScope, $timeout, lpEvent, lpRemote, lpStorage, lmData, lpDialog, lmComm) {
+angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lpEvent', 'lpRemote', 'lpStorage', 'lpData', 'lpDialog', 'lmComm',
+  function ($rootScope, $timeout, lpEvent, lpRemote, lpStorage, lpData, lpDialog, lmComm) {
 
     window.onbeforeunload = function () {
       window.windowClosing = true;
@@ -32,11 +32,11 @@ angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lpEvent', 'lpRemot
 
   }]);
 
-angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lmData', 'lpDialog',
-  function ($timeout, lpEvent, lmData, lpDialog) {
+angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData', 'lpDialog',
+  function ($timeout, lpEvent, lpData, lpDialog) {
 
     lpEvent.register("user_login", function () {
-      if (lmData.playerIds.length == 0) {
+      if (lpData.playerIds.length == 0) {
         lpDialog.show({templateUrl: 'mud/dialogs/new_character.html', controller: 'NewCharacterCtrl'});
       } else {
         lpDialog.show({templateUrl: 'mud/select_character.html', controller: "SelectCharacterCtrl"});
@@ -56,8 +56,8 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lmData',
   }]);
 
 
-angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lpEvent', 'lmData', 'lpUtil', 'lpDialog',
-  function ($rootScope, $scope, $location, lpEvent, lmData, lpUtil, lpDialog) {
+angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lpEvent', 'lpData', 'lpUtil', 'lpDialog',
+  function ($rootScope, $scope, $location, lpEvent, lpData, lpUtil, lpDialog) {
 
     $(window).on("resize", function () {
       $rootScope.$apply(resize);
@@ -113,18 +113,18 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
     validatePath();
     lpEvent.register("login", function () {
       $scope.links.push(settingsLink);
-      $scope.welcome = 'Welcome ' + lmData.playerName;
+      $scope.welcome = 'Welcome ' + lpData.playerName;
       $scope.loggedIn = true;
-      $scope.immLevel = lmData.immLevel;
+      $scope.immLevel = lpData.immLevel;
     }, $scope);
 
     lpEvent.register('player_update', function() {
-      $scope.immLevel = lmData.immLevel;
+      $scope.immLevel = lpData.immLevel;
     });
 
     lpEvent.register("logout", function (reason) {
       if (reason == "other_location") {
-        var playerName = lmData.playerName ? lmData.playerName : "Unknown";
+        var playerName = lpData.playerName ? lpData.playerName : "Unknown";
         lpDialog.showOk("Logged Out", playerName + " logged in from another location.");
       }
       validatePath();
@@ -133,8 +133,8 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
   }]);
 
 
-angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEvent', 'lmData', 'lpDialog',
-  function ($scope, lmApp, lpEvent, lmData, lpDialog) {
+angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEvent', 'lpData', 'lpDialog',
+  function ($scope, lmApp, lpEvent, lpData, lpDialog) {
 
      update();
 
@@ -151,7 +151,7 @@ angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEven
     }, $scope);
 
     function update() {
-      if (lmData.playerId) {
+      if (lpData.playerId) {
         $scope.actionPane = "action";
       } else {
         $scope.actionPane = "login";
@@ -188,8 +188,8 @@ angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lp
 
   }]);
 
-angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout', 'lpRemote', 'lpDialog', 'lmData',
-  function ($scope, $timeout, lpRemote, lpDialog, lmData) {
+angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout', 'lpRemote', 'lpDialog', 'lpData',
+  function ($scope, $timeout, lpRemote, lpDialog, lpData) {
 
     $scope.accountName = "";
     $scope.password = "";
@@ -210,7 +210,7 @@ angular.module('lampost_mud').controller('NewAccountCtrl', ['$scope', '$timeout'
       }
       lpRemote.request("settings/create_account", {account_name: $scope.accountName,
         password: $scope.password, email: $scope.email}).then(function (response) {
-          lmData.userId = response.user_id;
+          lpData.userId = response.user_id;
           $scope.dismiss();
           $timeout(function () {
             lpDialog.show({templateUrl: "mud/dialogs/new_character.html", controller: "NewCharacterCtrl", noEscape: true});
@@ -259,12 +259,12 @@ angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lpRemo
   }
 }]);
 
-angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lmData',
-  function ($scope, $timeout, lpEvent, lmData) {
+angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lpData',
+  function ($scope, $timeout, lpEvent, lpData) {
   var curAction;
 
   $scope.update = 0;
-  $scope.display = lmData.display;
+  $scope.display = lpData.display;
 
   function updateAction(action) {
     $scope.action = action;
@@ -284,29 +284,29 @@ angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'l
   $scope.sendAction = function () {
     if ($scope.action) {
       lpEvent.dispatch("server_request", "action", {action: $scope.action});
-      lmData.history.push($scope.action);
-      lmData.historyIx = lmData.history.length;
+      lpData.history.push($scope.action);
+      lpData.historyIx = lpData.history.length;
       updateAction('');
     }
   };
 
   $scope.historyUp = function () {
-    if (lmData.historyIx > 0) {
-      if (lmData.historyIx == lmData.history.length) {
+    if (lpData.historyIx > 0) {
+      if (lpData.historyIx == lpData.history.length) {
         curAction = this.action;
       }
-      lmData.historyIx--;
-      updateAction(lmData.history[lmData.historyIx]);
+      lpData.historyIx--;
+      updateAction(lpData.history[lpData.historyIx]);
     }
   };
 
   $scope.historyDown = function () {
-    if (lmData.historyIx < lmData.history.length) {
-      lmData.historyIx++;
-      if (lmData.historyIx == lmData.history.length) {
+    if (lpData.historyIx < lpData.history.length) {
+      lpData.historyIx++;
+      if (lpData.historyIx == lpData.history.length) {
         updateAction(curAction);
       } else {
-        updateAction(lmData.history[lmData.historyIx]);
+        updateAction(lpData.history[lpData.historyIx]);
       }
     }
   }

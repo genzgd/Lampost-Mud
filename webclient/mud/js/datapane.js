@@ -1,5 +1,5 @@
 angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
-  'lpEvent', 'lmData', 'lpRemote', 'lpUtil', function ($scope, $timeout, lpEvent, lmData, lpRemote, lpUtil) {
+  'lpEvent', 'lpData', 'lpRemote', 'lpUtil', function ($scope, $timeout, lpEvent, lpData, lpRemote, lpUtil) {
 
     var tabInfo = [{id: 'status', label: 'Status', include: 'mud/view/status_tab.html'},
       {id: 'playerList', label: 'Player List', include: 'mud/view/player_list_tab.html'},
@@ -21,10 +21,10 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
 
     function sortChannels() {
       $scope.channelMessages = [];
-      angular.forEach(lmData.channels, function (msg_list, channel_id) {
+      angular.forEach(lpData.channels, function (msg_list, channel_id) {
         var display = channel_id.split('_')[0] + "_channel";
         angular.forEach(msg_list, function (msg) {
-          lmData.adjustLine(msg, display);
+          lpData.adjustLine(msg, display);
           $scope.channelMessages.push(msg);
         })
       });
@@ -33,25 +33,25 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
 
     function updateTabs() {
       sortChannels();
-      $scope.availChannels = lmData.availChannels;
+      $scope.availChannels = lpData.availChannels;
       $scope.tabList = [];
-      $scope.messages = lmData.messages;
-      $scope.playerList = lmData.playerList;
+      $scope.messages = lpData.messages;
+      $scope.playerList = lpData.playerList;
       updateMsgCount();
 
       angular.forEach(tabInfo, function (tab) {
-        if (lmData.validTabs.indexOf(tab.id) > -1) {
+        if (lpData.validTabs.indexOf(tab.id) > -1) {
           $scope.tabList.push(tab);
           tab.visible = true;
         } else {
           tab.visible = false;
-          if (lmData.activeTab == tab.id) {
-            lmData.activeTab = null;
+          if (lpData.activeTab == tab.id) {
+            lpData.activeTab = null;
           }
         }
       });
 
-      if (lmData.messages.length > 0) {
+      if (lpData.messages.length > 0) {
         $scope.changeTab(tabMap.messages);
       } else {
         $scope.changeTab($scope.tabList[0]);
@@ -69,43 +69,43 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
     }, $scope);
 
     $scope.tabClass = function (tab) {
-      if (tab.id == lmData.activeTab) {
+      if (tab.id == lpData.activeTab) {
         return 'active';
       }
       return '';
     };
     $scope.changeTab = function (tab) {
-      if (tab.id == lmData.activeTab) {
+      if (tab.id == lpData.activeTab) {
         return;
       }
       if (tab.id == 'playerList') {
         lpRemote.registerService('player_list_service');
-      } else if (lmData.activeTab == 'playerList') {
+      } else if (lpData.activeTab == 'playerList') {
         lpRemote.unregisterService('player_list_service');
       }
-      lmData.activeTab = tab.id;
+      lpData.activeTab = tab.id;
     };
 
-    $scope.playerList = lmData.playerList;
+    $scope.playerList = lpData.playerList;
     $timeout(updateTabs);
 
 
     lpEvent.register("player_list_update", function () {
-      if ($scope.playerList != lmData.playerList) {
-        $scope.playerList = lmData.playerList;
+      if ($scope.playerList != lpData.playerList) {
+        $scope.playerList = lpData.playerList;
       }
     }, $scope);
     lpEvent.register("sort_channels", sortChannels, $scope);
     lpEvent.register("channel", function (msg) {
-      lmData.adjustLine(msg, msg.id + "_channel");
+      lpData.adjustLine(msg, msg.id + "_channel");
       $scope.channelMessages.unshift(msg);
     }, $scope);
 
 
     $scope.deleteMessage = function (msg) {
-      lpRemote.asyncRequest("messages/delete", {msg_id: msg.msg_id, player_id: lmData.playerId}).then(function () {
-        var msg_ix = lmData.messages.indexOf(msg);
-        lmData.messages.splice(msg_ix, 1);
+      lpRemote.asyncRequest("messages/delete", {msg_id: msg.msg_id, player_id: lpData.playerId}).then(function () {
+        var msg_ix = lpData.messages.indexOf(msg);
+        lpData.messages.splice(msg_ix, 1);
         updateMsgCount();
       })
     };
@@ -126,19 +126,19 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
     };
 
     $scope.$on('$destroy', function () {
-      if (lmData.activeTab == 'playerList') {
+      if (lpData.activeTab == 'playerList') {
         lpRemote.unregisterService('player_list_service');
       }
-      lmData.activeTab = null;
+      lpData.activeTab = null;
     })
   }]);
 
-angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lmData', 'lpRemote', function ($scope, lmData, lpRemote) {
+angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lpData', 'lpRemote', function ($scope, lpData, lpRemote) {
   $scope.respond = function (response) {
-    lpRemote.asyncRequest("messages/friend_response", {action: response, player_id: lmData.playerId,
+    lpRemote.asyncRequest("messages/friend_response", {action: response, player_id: lpData.playerId,
       source_id: $scope.msg.content.friend_id, msg_id: $scope.msg.msg_id}).then(function () {
-        var msg_ix = lmData.messages.indexOf($scope.msg);
-        lmData.messages.splice(msg_ix, 1);
+        var msg_ix = lpData.messages.indexOf($scope.msg);
+        lpData.messages.splice(msg_ix, 1);
       })
   }
 }]);

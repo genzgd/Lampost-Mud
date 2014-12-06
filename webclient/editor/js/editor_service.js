@@ -105,7 +105,6 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
      players: {label: "Players", objLabel: 'Player', url: "player"},
      article: {label: "Article", url: "article", create: "dialog"},
      script: {label: "Script", url: "script"},
-     social: {label: "Socials", objLabel: "Social", url: "social", create: 'dialog'},
      display: {label: "Display", url: "display"},
      race: {label: "Races", objLabel: "Race", url: "race"},
      attack: {label: "Attacks", objLabel: "Attack", url: "skill"},
@@ -116,8 +115,9 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
   }]);
 
 
-angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', 'lpEvent', 'lpRemote', 'lpDialog', 'lpCache', 'lpEditor',
-  function ($q, $scope, lpEvent, lpRemote, lpDialog, lpCache, lpEditor) {
+angular.module('lampost_editor').controller('MainEditorCtrl',
+  ['$scope', '$rootScope', '$q', 'lpEvent', 'lpRemote', 'lpDialog', 'lpCache', 'lpEditor',
+  function ($scope, $rootScope, $q, lpEvent, lpRemote, lpDialog, lpCache, lpEditor) {
 
     var activeModel = {};
     var originalModel = {};
@@ -153,6 +153,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
         $scope.parentLabel = 'MUD';
       }
       $scope.detailTemplate = context.include;
+      $rootScope.activeEditor = activeModel.dbo_key_type;
     }
 
     function init(orig) {
@@ -274,7 +275,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl', ['$q', '$scope', '
 
     lpEvent.register('modelSelected', existingEdit);
 
-    $scope.constants = lpEditor.constants;
     $scope.model = activeModel;
     $scope.saveModel = saveModel;
 

@@ -29,6 +29,21 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lpEvent
       }
     });
 
+  }]);
+
+
+angular.module('lampost_editor').controller('MudViewCtrl', ['$scope', 'lpEvent', 'lpEditor',
+  function ($scope, lpEvent, lpEditor) {
+
+    lpEditor.reset();
+
+    lpEditor.registerContext('social', {
+      extend: function(model) {
+        model.b_map = {};
+        model.aliases = [];
+      }
+    });
+
     $scope.newEditor = function (editorId, event) {
       if (event) {
         event.preventDefault();
@@ -36,6 +51,4 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['$scope', 'lpEvent
       }
       lpEvent.dispatch('newEdit', editorId);
     }
-
-
   }]);

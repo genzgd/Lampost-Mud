@@ -6,7 +6,7 @@ from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
 from lampost.gameops.display import SYSTEM_DISPLAY
-from lampost.util.lmutil import ClientError
+from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log', 'dispatcher')
 

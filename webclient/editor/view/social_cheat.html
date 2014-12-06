@@ -1,0 +1,17 @@
+<div ng-if="activeEditor == 'social'" id="socialCheatPanel" class="panel panel-default">
+  <div data-parent="#socialCheatPanel" data-toggle="collapse" data-target="#socialCheatList"
+    class="panel-heading panel-condensed">Social Cheat Sheet <span class="pull-right"><a><i
+    class="fa fa-chevron-down"></i></a></span>
+  </div>
+  <div id="socialCheatList" class="panel-collapse collapse in">
+    <table class="table table-condensed">
+      <tbody>
+      <tr class="hand" ng-repeat="token in constants.broadcast_tokens" ng-click="selectModel(model)"
+        ng-class="rowClass(model)">
+        <td class="col-md-2">${{token.id}}</td>
+        <td class="col-md-10">{{token.token}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
