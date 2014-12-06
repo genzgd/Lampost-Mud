@@ -6,6 +6,11 @@
         <input ng-disabled="!isNew" type="text" class="form-control input-sm" ng-model="model.dbo_id" required="true"/>
       </div>
     </div>
+    <div ng-show="isNew">
+      <div class="col-md-offset-2 col-md-4 alert alert-warning">
+        Please create the social before editing.
+      </div>
+    </div>
     <div ng-hide="isNew">
       <div class="col-md-2">
         <div class="form-group">

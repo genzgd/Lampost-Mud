@@ -154,6 +154,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       }
       $scope.detailTemplate = context.include;
       $rootScope.activeEditor = activeModel.dbo_key_type;
+      lpEvent.dispatch('editReady', activeModel);
     }
 
     function init(orig) {

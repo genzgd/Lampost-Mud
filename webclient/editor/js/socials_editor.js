@@ -1,5 +1,5 @@
-angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRemote', 'lpEditor',
-  function ($scope, lpRemote, lpEditor) {
+angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRemote', 'lpEditor', 'lpEvent',
+  function ($scope, lpRemote, lpEditor, lpEvent) {
 
     var preview;
 
@@ -29,11 +29,15 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
     }
 
     function updateDisplayMap() {
-      angular.forEach(lpEditor.constants.broadcast_types, function(bType) {
-        var key = bType.id;
-        $scope.displayMap[key] = $scope.editMode ? $scope.model.b_map[key] : preview[key];
-      });
+      if ($scope.model.b_map) {
+        angular.forEach(lpEditor.constants.broadcast_types, function(bType) {
+          var key = bType.id;
+          $scope.displayMap[key] = $scope.editMode ? $scope.model.b_map[key] : preview[key];
+        });
+      }
     }
+
+    lpEvent.register('editReady', updateDisplayMap, $scope);
 
     updateDisplayMap();
 
