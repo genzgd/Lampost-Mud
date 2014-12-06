@@ -1,7 +1,7 @@
 angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRemote', 'lpEditor', 'lpEvent',
   function ($scope, lpRemote, lpEditor, lpEvent) {
 
-    var preview;
+    var preview = {};
 
     $scope.editMode = true;
     $scope.source = 'Player';
@@ -19,6 +19,7 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
         source: $scope.source, b_map: $scope.model.b_map})
         .then(function (data) {
           preview = data;
+          preview.dbo_id = $scope.model.dbo_id
           $scope.editMode = false;
           updateDisplayMap();
         });
@@ -37,7 +38,13 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
       }
     }
 
-    lpEvent.register('editReady', updateDisplayMap, $scope);
+    lpEvent.register('editReady', function() {
+      if (!$scope.editMode &&  $scope.model.dbo_id != preview.dbo_id) {
+        $scope.previewSocial()
+      } else {
+        updateDisplayMap()
+      }
+    }, $scope);
 
     updateDisplayMap();
 
