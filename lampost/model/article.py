@@ -1,3 +1,4 @@
+import itertools
 from lampost.datastore.auto import TemplateField
 from lampost.gameops.script import Scriptable
 from lampost.model.item import BaseItem, target_keys
@@ -28,7 +29,7 @@ class ArticleTemplate(Template):
 
 
 class Article(BaseItem, Scriptable):
-    template_id  = 'article'
+    template_id = 'article'
 
     weight = DBOTField(0)
     value = DBOTField(0)
@@ -58,7 +59,7 @@ class Article(BaseItem, Scriptable):
     @property
     def target_keys(self):
         if self.quantity and self.quantity > 1:
-            return self.plural_keys
+            return itertools.chain(self.plural_keys, self.single_keys)
         return self.single_keys
 
     def short_desc(self, observer=None):

@@ -44,6 +44,18 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       delete remoteCache[key];
     }
 
+    function parentList(model) {
+      if (model.dbo_parent_type) {
+        entry = remoteCache[model.dbo_parent_type];
+        if (entry && !entry.promise) {
+          var parent = entry.map[model.dbo_id.split(':')[0]];
+          if (parent) {
+            return parent[model.dbo_key_type + '_list'];
+          }
+        }
+      }
+    }
+
     lpEvent.register('edit_update', function (event) {
       var outside = !event.local;
       switch (event.edit_type) {
@@ -114,6 +126,12 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
           lpEvent.dispatch('modelCreate', entry.data, model, outside);
         }
       }
+      var plist = parentList(model);
+      if (plist) {
+        plist.push(model.dbo_id);
+        plist.sort()
+      }
+
     };
 
     this.deleteModel = function (model, outside) {

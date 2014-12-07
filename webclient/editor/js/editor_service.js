@@ -5,8 +5,8 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
     var contextMap = {};
 
     function EditContext(id, init) {
-      this.id = id;
       angular.copy(init, this);
+      this.id = id;
       this.url = this.url || id;
       this.label = this.label || lpUtil.capitalize(id);
       this.baseUrl = 'editor/' + this.url + '/';
@@ -52,8 +52,11 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
             context.newObj = data.new_object;
           }));
         }
+        if (context.invalidate) {
+          lpCache.invalidate(context.id);
+        }
       });
-      return $q.when(requests);
+      return $q.all(requests);
     }
 
     this.registerContext = function (contextId, context) {
@@ -116,8 +119,6 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
 
     /*  config: new lpEditContext({label: "Mud Config", url: "config"}),
-     players: {label: "Players", objLabel: 'Player', url: "player"},
-     article: {label: "Article", url: "article", create: "dialog"},
      script: {label: "Script", url: "script"},
      display: {label: "Display", url: "display"},
      race: {label: "Races", objLabel: "Race", url: "race"},

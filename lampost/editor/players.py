@@ -1,4 +1,5 @@
 from lampost.context.resource import m_requires
+from lampost.datastore.classes import get_dbo_class
 from lampost.datastore.exceptions import DataError
 from lampost.client.user import User
 from lampost.editor.editor import Editor
@@ -26,6 +27,9 @@ class PlayerEditor(Editor):
             delete_object(user)
         else:
             save_object(user)
+
+    def metadata(self):
+        return {'new_object': get_dbo_class(self.dbo_key_type)('-new-').dto_value}
 
 
 def check_player_perm(player, session):

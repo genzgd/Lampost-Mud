@@ -1,0 +1,78 @@
+<div class="text-left panel panel-warning" ng-controller="RoomResetCtrl">
+  <div class="panel-heading panel-condensed">
+    <span class="h5">{{addLabel}} Reset</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label class="control-label">{{addLabel}} Id</label>
+          <select class="form-control input-sm" ng-disabled="disabled || !newAdd" ng-model="reset[addId]"
+            ng-options="object.dbo_id as idOnly(object) for object in objects" autofocus></select>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label class="control-label">Source Area</label>
+          <select ng-disabled="!newAdd" class="form-control input.sm" ng-model="vars.areaId" ng-change="changeArea()"
+            ng-options="area.dbo_id as area.dbo_id for area in areaList" required></select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <h5>{{resetObj}}</h5>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-md-6">
+        <label class="control-label">{{addLabel}} Count</label>
+        <input class="form-control input-sm" type="number" ng-model="reset.reset_count" required="true" min="1"/>
+      </div>
+      <div class="form-group col-md-6">
+        <label class="control-label">Max Count</label>
+        <input class="form-control input-sm" type="number" ng-model="reset.reset_max" required="true" min="1"/>
+      </div>
+    </div>
+
+    <div ng-controller="ArticleLoadCtrl">
+      <div class="row" ng-if="isNew">
+        <div class="h4">Add Article</div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">{{addLabel}} Id</label>
+              <select class="form-control input-sm" ng-disabled="disabled || !newAdd" ng-model="reset[addId]"
+                ng-options="object.dbo_id as idOnly(object) for object in objects" autofocus></select>
+            </div>
+
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Source Area</label>
+              <select ng-disabled="!newAdd" class="form-control input.sm" ng-model="vars.areaId"
+                ng-change="changeArea()" ng-options="area.dbo_id as area.dbo_id for area in areaList" required></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" ng-controller="ArticleLoadCtrl">
+
+    </div>
+
+    <div class="pull-right">
+      <button ng-if="!newAdd" type="button" ng-click="deleteReset()" class="btn btn-sm btn-danger">Delete {{addLabel}}
+      </button>
+      <button ng-if="newAdd" type="button" ng-click="createReset()" ng-disabled="disabled || hasError"
+        class="btn btn-sm btn-warning">Add {{addLabel}}
+      </button>
+      <button type="button" ng-click="closeAdd()" class="btn btn-sm btn-default">{{newAdd ? 'Cancel' : 'Close'}}
+      </button>
+    </div>
+  </div>
+
+</div>
+
+

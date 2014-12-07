@@ -96,6 +96,7 @@ class RootDBO(metaclass=CommonMeta):
     def dto_value(self):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
         dto_value['dbo_key_type'] = self.dbo_key_type
+        dto_value['dbo_parent_type'] = self.dbo_parent_type
         return self.metafields(dto_value, ['dbo_id', 'sub_class_id', 'template_id'])
 
     def autosave(self):

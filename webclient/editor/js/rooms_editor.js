@@ -23,12 +23,10 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
 
     lpCache.cache('area').then(function (data) {
       $scope.areaList = data;
-      $scope.areaNames = [];
-      $scope.exitAreaNames = [];
+      $scope.exitAreas = [];
       angular.forEach(data, function (area) {
-        $scope.areaNames.push(area.dbo_id);
         if (area.can_write) {
-          $scope.exitAreaNames.push(area.dbo_id)
+          $scope.exitAreas.push(area)
         }
       });
     });
@@ -374,27 +372,19 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEdito
 
   }]);
 
-angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lmEditor', 'reset', 'areaId',
-  function ($scope, lmEditor, reset, areaId) {
+angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lpEditor',
+  function ($scope, lpEditor) {
 
     var listKey;
     var invalidObject = {dbo_id: 'No articles', title: 'No articles', desc: ''};
     $scope.newArticle = {};
     $scope.disabled = true;
-    $scope.article_loads = angular.copy(reset.article_loads);
-    $scope.areaId = areaId;
-
-    lmEditor.cache("constants").then(function (constants) {
-      $scope.article_load_types = constants.article_load_types;
-      lmEditor.cache('area').then(function (areas) {
-        $scope.areaList = areas;
-        $scope.changeArea();
-      });
-    });
+    $scope.article_loads = angular.copy($scope.reset.article_loads);
+    $scope.loadAreaId = $scope.model.dbo_id.split(':')[0];
 
     $scope.changeArea = function () {
       lmEditor.deref(listKey);
-      listKey = 'article:' + $scope.areaId;
+      listKey = 'article:' + $scope.loadAreaId;
       lmEditor.cache(listKey).then(function (articles) {
         $scope.disabled = articles.length == 0;
         if ($scope.disabled) {
@@ -423,11 +413,6 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lmEdi
 
     $scope.deleteArticleLoad = function (articleIndex) {
       $scope.article_loads.splice(articleIndex, 1);
-    };
-
-    $scope.saveArticleLoads = function () {
-      reset.article_loads = $scope.article_loads;
-      $scope.dismiss();
     };
 
 

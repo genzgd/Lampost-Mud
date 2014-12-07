@@ -51,8 +51,9 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
 
   }]);
 
-angular.module('lampost_editor').controller('EditorNavController', ['$q', '$rootScope', '$scope', 'lpEvent', 'lpEditor',
-  function ($q, $rootScope, $scope, lpEvent, lpEditor) {
+angular.module('lampost_editor').controller('EditorNavController',
+  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpEditor', 'lpEditorView',
+  function ($q, $rootScope, $scope, lpEvent, lpEditor, lpEditorView) {
 
     var editNav = [
       {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
@@ -106,6 +107,7 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
       if (newNav == activeNav) {
         return;
       }
+
       var handlers = [];
       lpEvent.dispatch('editorClosing', handlers);
       $q.all(handlers).then(function () {
@@ -118,7 +120,9 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
             link.active = '';
           }
         }
-        $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
+        lpEditorView.prepareView(activeNav).then(function () {
+          $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
+        })
       });
     };
 
