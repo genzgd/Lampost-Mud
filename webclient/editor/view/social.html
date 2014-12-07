@@ -16,8 +16,12 @@
         <div class="form-group">
           <label class="control-label">Mode</label>
           <div class="input-group" ng-hide="isNew">
-            <button ng-class="editMode ? 'active' : ''" type="button" class="btn btn-sm btn-default" ng-click="startEditMode()">Edit</button>
-            <button ng-class="editMode ? '' : 'active'" type="button" class="btn btn-sm btn-default" ng-click="previewSocial()">View</button>
+            <button ng-class="editMode ? 'active' : ''" type="button" class="btn btn-sm btn-default"
+              ng-click="startEditMode()">Edit
+            </button>
+            <button ng-class="editMode ? '' : 'active'" type="button" class="btn btn-sm btn-default"
+              ng-click="previewSocial()">View
+            </button>
           </div>
         </div>
       </div>
@@ -31,12 +35,13 @@
       <div class="col-md-3">
         <div class="form-group">
           <label class="control-label">Target</label>
-          <input ng-model="target" class="col-md-5 form-control input-sm"
-            ng-blur="previewSocial()" enter-key="previewSocial()"/>
+          <input ng-model="target" class="col-md-5 form-control input-sm" ng-blur="previewSocial()"
+            enter-key="previewSocial()"/>
         </div>
       </div>
       <div class="col-md-1">
-      ` <label class="checkbox">
+        `
+        <label class="checkbox">
           <input type="checkbox" ng-model="sourceSelf" ng-change="previewSocial()">
           (Self)
         </label>
@@ -44,25 +49,15 @@
     </div>
   </div>
 
-  <div class="row" ng-if="!isNew">
-    <div class="col-md-6">
-      <div class="row" ng-repeat="broadcast_type in constants.broadcast_types" ng-if="$even">
-        <div class="col-md-12">
-          <h5><em>{{broadcast_type.label}}</em></h5>
-        <textarea ng-disabled="!editMode" ng-change="updateSocial(broadcast_type.id)"
-          ng-model="displayMap[broadcast_type.id]" lines="2" class="col-md-12"></textarea>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="row" ng-repeat="broadcast_type in constants.broadcast_types" ng-if="$odd">
-        <div class="col-md-12">
-          <h5><em>{{broadcast_type.label}}</em></h5>
-        <textarea ng-disabled="!editMode" ng-change="updateSocial(broadcast_type.id)"
-          ng-model="displayMap[broadcast_type.id]" lines="2" class="col-md-12"></textarea>
-        </div>
-      </div>
-    </div>
+  <div class="row" ng-if="!isNew" ng-repeat="$index in bTypeGrid">
+    <div class="col-md-4" ng-repeat="broadcast_type in bTypeGrid[$index]">
 
+      <div class="form-group">
+        <label class="control-label h5"><em>{{broadcast_type.label}}</em></label>
+        <textarea ng-disabled="!editMode" ng-change="updateSocial(broadcast_type.id)"
+          ng-model="displayMap[broadcast_type.id]" rows="3" class="form-control"></textarea>
+      </div>
+
+    </div>
   </div>
 </div>

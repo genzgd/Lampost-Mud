@@ -16,7 +16,7 @@ angular.module('lampost_mud').service('lpData', ['lpEvent', 'lpUtil', function (
     self.display = [];
     self.userId = 0;
     self.playerIds = [];
-    self.playerId = 0;
+    self.playerId = null;
     self.playerList = {};
     self.immLevel = null;
     self.history = [];

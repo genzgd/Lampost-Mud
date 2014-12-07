@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lampost Editor</title>
+  <link rel="icon" href="lampost.png">
   <link rel="stylesheet" href="local_lib/bootstrap.css">
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link href="common/css/lampost.css" rel="stylesheet">
@@ -35,6 +36,8 @@
       <ul class="nav navbar-nav">
         <li ng-repeat="link in links" ng-class="link.active">
           <a ng-href ng-click="changeNav(link.id)">{{link.label}} <i class="fa" ng-class="link.icon"></i></a>
+        </li>
+        <li><a href="lampost.html" ng-click="mudWindow($event)" target="_blank">Mud <i class="fa fa-tree"></i></a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right active">
@@ -101,6 +104,7 @@
 <script src="editor/js/editor_service.js"></script>
 <script src="editor/js/editor_directives.js"></script>
 <script src="editor/js/editor_views.js"></script>
+<script src="editor/js/storage.js"></script>
 
 <script src="editor/js/area_editor.js"></script>
 <script src="editor/js/rooms_editor.js"></script>

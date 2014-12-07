@@ -1,4 +1,4 @@
-angular.module('lampost_mud').service('lpStorage', ['lpEvent', function (lpEvent) {
+angular.module('lampost_mud').service('lpStorage', ['$window', 'lpEvent', function ($window, lpEvent) {
 
   var playerId;
   var sessionId;
@@ -29,7 +29,10 @@ angular.module('lampost_mud').service('lpStorage', ['lpEvent', function (lpEvent
       delete sessions[playerId];
       writeSessions();
     }
-    playerId = null;
+    if (playerId) {
+      localStorage.removeItem('lpMudWindow*' + playerId);
+      playerId = null;
+    }
     if (immSession) {
       localStorage.removeItem(immKey);
       immSession = null;
@@ -76,6 +79,8 @@ angular.module('lampost_mud').service('lpStorage', ['lpEvent', function (lpEvent
 
   lpEvent.register("login", function (data) {
     playerId = data.name.toLowerCase();
+    $window.name = "lpMudWindow*" + playerId
+    localStorage.setItem($window.name, 'active')
     if (data.imm_level) {
       immSession = {userId: data.user_id, gameSessionId: sessionId};
       localStorage.setItem(immKey, JSON.stringify(immSession));
@@ -88,6 +93,7 @@ angular.module('lampost_mud').service('lpStorage', ['lpEvent', function (lpEvent
   lpEvent.register("window_closing", function () {
     if (playerId) {
       updateTimestamp();
+      localStorage.removeItem('lpMudWindow*' + playerId);
     }
   });
 

@@ -4,16 +4,16 @@ from lampost.util.lputil import pronouns
 
 defaults = {'e': 's', 't': 'e', 'st': 's', 'et': 'e', 'sf': 's', 'ef': 'e', 'sa': 'st', 'ea': 'et'}
 
-broadcast_types = [{'id': b_type, 'label': label, 'reduce': reduce} for b_type, label, reduce in [
-    ('s', 'To self (no target)', 's'),
-    ('e', 'To others (no target)', 's'),
-    ('t', 'To target (target is other)', 'e'),
-    ('st', 'To self (target is other)', 's'),
-    ('et', 'To others (target is other)', 'e'),
-    ('sf', 'To self (target is self)', 's'),
-    ('ef', 'To others (target is self)', 'e'),
-    ('sa', 'To self (target is not living)', 'st'),
-    ('ea', 'To environment (target is not living)', 'et')]]
+broadcast_types = [{'id': bt[0], 'label': bt[1], 'reduce': bt[2], 'grid_x': bt[3], 'grid_y': bt[4]} for bt in [
+    ('s', 'To self (no target)', 's', 0, 0),
+    ('e', 'To others (no target)', 's', 0, 1),
+    ('t', 'To target (target is other)', 'e', 0, 2),
+    ('st', 'To self (target is other)', 's', 1, 0),
+    ('et', 'To others (target is other)', 'e', 1, 1),
+    ('sf', 'To self (target is self)', 's', 2, 0),
+    ('ef', 'To others (target is self)', 'e', 2, 1),
+    ('sa', 'To self (target is not living)', 'st', 3, 0),
+    ('ea', 'To environment (target is not living)', 'et', 3, 1)]]
 
 broadcast_tokens = [{'id': token_id, 'token': token} for token_id, token in [
     ('n', 'Subject name'),

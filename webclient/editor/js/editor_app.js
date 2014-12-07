@@ -1,21 +1,23 @@
 angular.module('lampost_editor', ['lampost_dir', 'lampost_dlg', 'lampost_util', 'lampost_remote', 'ngSanitize']);
 
-angular.module('lampost_editor').run(['$rootScope', 'lpRemote', 'lpEvent', 'lpUtil',
-  function ($rootScope, lpRemote, lpEvent, lpUtil) {
+angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEvent', 'lpUtil', 'lpEditorStorage',
+  function ($window, $rootScope, lpRemote, lpEvent, lpUtil, lpEditorStorage) {
 
-    window.onbeforeunload = function () {
+    $window.onbeforeunload = function () {
       var handlers = [];
       lpEvent.dispatchSync('editorClosing', handlers);
       if (handlers.length) {
         return "You have changes to " + handlers.length + " item(s).  Changes will be lost if you leave this page.";
       }
-      window.windowClosing = true;
+      $window.windowClosing = true;
+      lpEvent.dispatch("window_closing");
       return undefined;
     };
 
-    window.onunload = function () {
-      window.windowClosing = true;
+    $window.onunload = function () {
+      $window.windowClosing = true;
     };
+
 
     $rootScope.idOnly = function (model) {
       return model.dbo_id.split(':')[1];
@@ -54,14 +56,53 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
   function ($q, $rootScope, $scope, lpEvent, lpEditor) {
 
     var editNav = [
-      {id: 'build', label: 'Build', icon: 'fa-cubes'},
-      {id: 'mud', label: 'Mud', icon: 'fa-shield'},
+      {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
+      {id: 'mud', label: 'Shared', icon: 'fa-shield'},
       {id: 'config', label: 'Admin', icon: 'fa-wrench'},
       {id: 'players', label: 'Players', icon: 'fa-user'}
     ];
 
     var activeNav = '';
-    var sessionId;
+
+
+    lpEvent.register('connect', function (data) {
+      $rootScope.appState = 'connected';
+      $scope.welcome = 'Please log in.';
+    });
+
+    lpEvent.register('editor_login', function (data) {
+      activeNav = '';
+      $rootScope.appState = 'loggedIn';
+      $rootScope.playerName = data.playerName;
+      $scope.welcome = "Immortal " + data.playerName;
+      $scope.links = [];
+      for (var i = 0; i < editNav.length; i++) {
+        var nav = editNav[i];
+        if (data.edit_perms.indexOf(nav.id) > -1) {
+          var link = angular.copy(nav);
+          link.active = '';
+          $scope.links.push(link);
+        }
+      }
+
+      lpEditor.init(data).then(function () {
+        $rootScope.constants = lpEditor.constants;
+        if ($scope.links.length) {
+          $scope.changeNav($scope.links[0].id);
+        }
+      });
+
+    });
+
+    lpEvent.register('editor_logout', function () {
+      $rootScope.appState = 'connected';
+      $scope.welcome = 'Please Log In';
+      $scope.links = [];
+    });
+
+    $scope.editorLogout = function () {
+      lpEvent.dispatch('server_request', 'editor/edit_logout');
+    }
 
     $scope.changeNav = function (newNav) {
       if (newNav == activeNav) {
@@ -83,46 +124,16 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
       });
     };
 
-    lpEvent.register('connect', function (data) {
-      sessionId = data;
-      $rootScope.appState = 'connected';
-      $scope.welcome = 'Please log in.';
-    });
-
-    lpEvent.register('editor_login', function (data) {
-      activeNav = '';
-      sessionStorage.setItem('editSessionId', sessionId);
-      $rootScope.appState = 'loggedIn';
-      $rootScope.playerName = data.playerName;
-      $scope.welcome = "Immortal " + data.playerName;
-      $scope.links = [];
-      for (var i = 0; i < editNav.length; i++) {
-        var nav = editNav[i];
-        if (data.edit_perms.indexOf(nav.id) > -1) {
-          var link = angular.copy(nav);
-          link.active = '';
-          $scope.links.push(link);
+    $scope.mudWindow = function(event) {
+      if (lpEditor.playerId) {
+        var mudTarget = "lpMudWindow*" + lpEditor.playerId;
+        if (localStorage.getItem(mudTarget)) {
+          event.preventDefault();
+          window.open("", mudTarget).focus();
         }
       }
-
-      lpEditor.init(data).then(function () {
-        $rootScope.constants = lpEditor.constants;
-        if ($scope.links.length) {
-          $scope.changeNav($scope.links[0].id);
-        }
-      });
-    });
-
-    lpEvent.register('editor_logout', function () {
-      sessionStorage.removeItem('editSessionId');
-      $rootScope.appState = 'connected';
-      $scope.welcome = 'Please Log In';
-      $scope.links = [];
-    });
-
-    $scope.editorLogout = function () {
-      lpEvent.dispatch('server_request', 'editor/edit_logout');
     }
+
   }]);
 
 

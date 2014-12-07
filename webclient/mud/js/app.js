@@ -56,7 +56,8 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData',
   }]);
 
 
-angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$location', 'lpEvent', 'lpData', 'lpUtil', 'lpDialog',
+angular.module('lampost_mud').controller('NavCtrl',
+  ['$rootScope', '$scope', '$location', 'lpEvent', 'lpData', 'lpUtil', 'lpDialog',
   function ($rootScope, $scope, $location, lpEvent, lpData, lpUtil, lpDialog) {
 
     $(window).on("resize", function () {
@@ -72,7 +73,8 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
 
     resize();
 
-    function Link(name, label, icon, priority) {
+    function Link(name, label, icon, priority, href) {
+      this.href = href;
       this.name = name;
       this.label = label;
       this.icon = icon;
@@ -88,47 +90,56 @@ angular.module('lampost_mud').controller('NavCtrl', ['$rootScope', '$scope', '$l
 
     var baseLinks = [new Link("game", "Mud", "fa fa-tree", 0)];
     var settingsLink = new Link("settings", "Settings", "fa fa-sliders", 50);
+    var editorLink = new Link('editor', 'Editor', 'fa fa-pencil', 100, 'editor.html');
 
     function validatePath() {
-      $scope.welcome = 'Please Log In';
-      $scope.loggedIn = false;
       $scope.links = baseLinks.slice();
-      $scope.immLevel = 0;
-      for (var i = 0; i < $scope.links.length; i++) {
-        if ($scope.links[i].active()) {
-          return;
+      if ($scope.loggedIn) {
+        $scope.welcome = 'Welcome ' + lpData.playerName;
+        $scope.links.push(settingsLink);
+        if (lpData.immLevel) {
+          $scope.links.push(editorLink);
         }
+      } else {
+        $scope.welcome = 'Please Log In';
+        $location.path(baseLinks[0].name);
       }
-      $location.path(baseLinks[0].name);
     }
 
-    $scope.changeLocation = function (name) {
-      $location.path(name);
+    $scope.changeLocation = function (link, event) {
+      if (link === editorLink) {
+        var editorTarget = 'lpEditor*' + lpData.playerId;
+        if (localStorage.getItem(editorTarget)) {
+          event.preventDefault();
+          window.open("", editorTarget).focus();
+        }
+      } else {
+        $location.path(link.name);
+      }
     };
 
     $scope.logout = function () {
       lpEvent.dispatch("server_request", "action", {action: "quit"});
     };
 
-    validatePath();
     lpEvent.register("login", function () {
-      $scope.links.push(settingsLink);
-      $scope.welcome = 'Welcome ' + lpData.playerName;
       $scope.loggedIn = true;
-      $scope.immLevel = lpData.immLevel;
+      validatePath();
     }, $scope);
 
-    lpEvent.register('player_update', function() {
-      $scope.immLevel = lpData.immLevel;
-    });
+    lpEvent.register('player_update', validatePath);
 
     lpEvent.register("logout", function (reason) {
       if (reason == "other_location") {
         var playerName = lpData.playerName ? lpData.playerName : "Unknown";
         lpDialog.showOk("Logged Out", playerName + " logged in from another location.");
       }
+      $scope.loggedIn = false;
       validatePath();
     }, $scope, -500);
+
+    validatePath();
+
 
   }]);
 

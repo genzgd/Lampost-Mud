@@ -2,6 +2,15 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
   function ($scope, lpRemote, lpEditor, lpEvent) {
 
     var preview = {};
+    var bTypeIds = [];
+
+    $scope.bTypeGrid = [];
+
+    angular.forEach(lpEditor.constants.broadcast_types, function(bType) {
+      $scope.bTypeGrid[bType.grid_x] = $scope.bTypeGrid[bType.grid_x] || [];
+      $scope.bTypeGrid[bType.grid_x][bType.grid_y] = bType;
+      bTypeIds.push(bType.id);
+      });
 
     $scope.editMode = true;
     $scope.source = 'Player';
@@ -31,8 +40,7 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
 
     function updateDisplayMap() {
       if ($scope.model.b_map) {
-        angular.forEach(lpEditor.constants.broadcast_types, function(bType) {
-          var key = bType.id;
+        angular.forEach(bTypeIds, function(key) {
           $scope.displayMap[key] = $scope.editMode ? $scope.model.b_map[key] : preview[key];
         });
       }
