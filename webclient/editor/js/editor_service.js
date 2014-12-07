@@ -42,21 +42,24 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       });
     };
 
-    this.reset = function() {
-      contextMap = {}
-    };
-
     this.initView = function() {
+      var requests = [];
       angular.forEach(contextMap, function(context) {
-        lpRemote.request('editor/' + context.url + '/metadata').then(function(data) {
-          context.parentType = data.parent_type;
-          context.newObj = data.new_object;
-        });
+        delete context.parent;
+        if (!context.newObj) {
+          requests.push(lpRemote.request('editor/' + context.url + '/metadata').then(function(data) {
+            context.parentType = data.parent_type;
+            context.newObj = data.new_object;
+          }));
+        }
       });
+      return $q.when(requests);
     }
 
     this.registerContext = function (contextId, context) {
-      contextMap[contextId] = new EditContext(contextId, context);
+      if (!contextMap[contextId]) {
+        contextMap[contextId] = new EditContext(contextId, context);
+      }
     };
 
     this.getContext = function (contextId) {
@@ -397,6 +400,11 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
     $scope.activeModel = function () {
       return activeModel ? lpEditor.display(activeModel) : '-NOT SELECTED-';
     };
+
+    $scope.refreshList = function () {
+      lpCache.invalidate(listKey);
+      updateList();
+    }
 
     updateList()
 

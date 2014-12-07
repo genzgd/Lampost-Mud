@@ -14,7 +14,7 @@ def editor_login(session):
     if has_perm(player, 'creator'):
         edit_perms.extend(['build'])
     if has_perm(player, 'admin'):
-        edit_perms.extend(['players', 'mud'])
+        edit_perms.extend(['player', 'mud'])
     if has_perm(player, 'supreme'):
         edit_perms.extend(['config'])
     session.append({'editor_login': {'edit_perms': edit_perms, 'playerId': player.dbo_id, 'playerName': player.name}})

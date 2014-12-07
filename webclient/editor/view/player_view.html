@@ -1,0 +1,36 @@
+<div class="container-fluid" ng-controller="PlayerViewCtrl">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="panel panel-info" ng-controller="EditListCtrl" list-type="player">
+        <div class="panel-heading panel-condensed"><strong>Players</strong>
+          <span class="pull-right"><a ng-click="refreshList()"><i class="fa fa-refresh"></i></a></span>
+        </div>
+
+        <div style="max-height: 600px; overflow: auto;">
+          <table class="table table-condensed table-hover" style="padding-bottom: 0; margin: 0">
+            <thead>
+            <tr>
+              <th class="col-md-5">Name</th>
+              <th class="col-md-2">User</th>
+              <th class="col-md-2">ImmLevel</th>
+              <th class="col-md-1">On Now</th>
+              <th class="col-md-2">Last Login</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="hand" ng-repeat="model in modelList" ng-click="selectModel(model)" ng-class="rowClass(model)">
+              <td class="col-md-5">{{cap(model.dbo_id)}}</td>
+              <td class="col-md-2">{{model.user_id}}</td>
+              <td class="col-md-2">{{model.imm_level}}</td>
+              <td class="col-md-1">{{model.logged_in}}</td>
+              <td class="col-md-2">{{model.last_login * 1000 | date:'short'}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

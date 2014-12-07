@@ -1,7 +1,5 @@
 angular.module('lampost_editor').controller('BuildViewCtrl', ['lpEditor', function (lpEditor) {
 
-    lpEditor.reset();
-
     lpEditor.registerContext('area');
 
     lpEditor.registerContext('room', {
@@ -16,10 +14,7 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['lpEditor', functi
     });
 
     lpEditor.registerContext('mobile');
-    lpEditor.registerContext('article', {
-      preEdit: function(model) {
-      }
-    });
+    lpEditor.registerContext('article');
 
     lpEditor.initView();
 
@@ -28,10 +23,19 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['lpEditor', functi
 
 angular.module('lampost_editor').controller('MudViewCtrl', ['lpEditor', function (lpEditor) {
 
-    lpEditor.reset();
-
     lpEditor.registerContext('social');
 
     lpEditor.initView();
 
   }]);
+
+
+angular.module('lampost_editor').controller('PlayerViewCtrl', ['$scope', 'lpEditor', 'lpCache',
+ function($scope, lpEditor, lpCache) {
+
+    lpEditor.registerContext('player');
+
+    lpCache.invalidate('player');
+
+    lpEditor.initView();
+ }])

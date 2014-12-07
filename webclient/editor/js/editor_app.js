@@ -18,7 +18,6 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
       $window.windowClosing = true;
     };
 
-
     $rootScope.idOnly = function (model) {
       return model && model.dbo_id && model.dbo_id.split(':')[1];
     };
@@ -59,11 +58,10 @@ angular.module('lampost_editor').controller('EditorNavController', ['$q', '$root
       {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
       {id: 'mud', label: 'Shared', icon: 'fa-shield'},
       {id: 'config', label: 'Admin', icon: 'fa-wrench'},
-      {id: 'players', label: 'Players', icon: 'fa-user'}
+      {id: 'player', label: 'Players', icon: 'fa-user'}
     ];
 
     var activeNav = '';
-
 
     lpEvent.register('connect', function (data) {
       $rootScope.appState = 'connected';
