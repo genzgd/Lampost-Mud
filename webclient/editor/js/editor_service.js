@@ -16,7 +16,9 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
     }
 
     EditContext.prototype.newModel = function () {
-      var model = {can_write: true, owner_id: lpEditor.playerId, dbo_rev: 0};
+      var model = angular.copy(this.newObj);
+      model.can_write = true
+      model.owner_id = lpEditor.playerId;
       this.extend(model);
       return model;
     };
@@ -43,6 +45,15 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
     this.reset = function() {
       contextMap = {}
     };
+
+    this.initView = function() {
+      angular.forEach(contextMap, function(context) {
+        lpRemote.request('editor/' + context.url + '/metadata').then(function(data) {
+          context.parentType = data.parent_type;
+          context.newObj = data.new_object;
+        });
+      });
+    }
 
     this.registerContext = function (contextId, context) {
       contextMap[contextId] = new EditContext(contextId, context);
@@ -125,8 +136,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     var context;
     var baseUrl;
 
-    lpEditor.registerContext('none', {label: 'Get Started'});
-
     function display() {
       return lpEditor.display(activeModel);
     }
@@ -165,7 +174,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     }
 
     function reset() {
-      context = lpEditor.getContext('none');
+      context = {label: 'Get Started'};
       init({});
     }
 
@@ -305,11 +314,13 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         event.preventDefault();
         event.stopPropagation();
       }
-      if (originalModel.dbo_id) {
+      if (!$scope.isNew) {
         lpEditor.deleteModel(context, originalModel, dataError);
+      } else if ($scope.isDirty) {
+        lpDialog.showConfirm("Delete " + context.objLabel,
+            "Are you sure you want to abandon this new " + context.objLabel + "?", reset);
       } else {
-        lpDialog.confirm("Delete " + context.objLabel,
-            "Are you sure you want to abandon this new " + context.objLabel + "?").then(reset);
+        reset();
       }
     };
 

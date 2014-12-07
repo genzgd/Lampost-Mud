@@ -20,7 +20,7 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
 
 
     $rootScope.idOnly = function (model) {
-      return model.dbo_id.split(':')[1];
+      return model && model.dbo_id && model.dbo_id.split(':')[1];
     };
     $rootScope.cap = lpUtil.capitalize;
     $rootScope.join = function (values, del) {

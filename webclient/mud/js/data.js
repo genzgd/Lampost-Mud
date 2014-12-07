@@ -133,5 +133,9 @@ angular.module('lampost_mud').service('lpData', ['lpEvent', 'lpUtil', function (
     lpEvent.dispatch('player_list_update');
   });
 
+  lpEvent.register("display_line", function(line, display) {
+    updateDisplay({lines: [{text: line, display: display}]});
+  })
+
 }]);
 

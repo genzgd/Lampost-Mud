@@ -28,10 +28,13 @@ angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lpData', 'lpRemote'
     function friendLogin(friend_info) {
         if (lpData.notifies.indexOf('friendDesktop') > -1 && lpData.notifies.indexOf('allDesktop') == -1) {
             self.notify({icon: 'image/friendNotify.png', title: "Your friend " + friend_info.name + " logged into " + lampost_config.title, content: ''});
+
         }
         if (lpData.notifies.indexOf('friendSound') > -1 && lpData.notifies.indexOf('allSound') == -1) {
             jQuery('#sound_beep_ping')[0].play();
+
         }
+        lpEvent.dispatch('display_line', 'Your friend ' + friend_info.name + ' just logged in', 'system');
     }
 
     function anyLogin(login) {
@@ -41,7 +44,9 @@ angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lpData', 'lpRemote'
 
         if (lpData.notifies.indexOf('allSound') > -1) {
             jQuery('#sound_beep_ping')[0].play();
+            lpEvent.dispatch('display_line', login.name + ' just logged in', 'system');
         }
+
     }
 
     function showNotification(notify_data) {
