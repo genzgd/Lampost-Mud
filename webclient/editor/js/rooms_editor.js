@@ -1,11 +1,12 @@
-angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog',
-  function ($q, $scope, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog) {
+angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '$timeout', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog',
+  function ($q, $scope, $timeout, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog) {
 
     $scope.dirMap = {};
 
     $scope.addTypes = [
       {id: 'new_exit', label: 'Exit'},
-      {id: 'room_reset', label: 'Mobile', options: {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile'}}
+      {id: 'room_reset', label: 'Mobile', options: {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile'}},
+      {id: 'room_reset', label: 'Article', options: {addLabel: 'Article', addId: 'article_id', resetType: 'article'}}
     ];
 
     $scope.setAddType = function (addType, addOptions) {
@@ -76,8 +77,24 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
     };
 
     $scope.modifyMobile = function(mobileReset) {
-      $scope.setAddType('room_reset', {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile', addObj: mobileReset});
+      $scope.closeAdd();
+      $timeout(function () {
+        $scope.setAddType('room_reset', {addLabel: 'Mobile', addId: 'mobile_id', resetType: 'mobile', addObj: mobileReset});
+      });
+
     };
+
+    $scope.resetArticle = function (mobileReset) {
+      return lpCache.cacheValue('article:' + mobileReset.article_id.split(':')[0], mobileReset.article_id);
+    };
+
+    $scope.modifyArticle = function(articleReset) {
+      $scope.closeAdd();
+      $timeout(function () {
+        $scope.setAddType('room_reset', {addLabel: 'Article', addId: 'article_id', resetType: 'article', addObj: articleReset});
+      });
+    };
+
 
     function editFeature(feature, isAdd) {
       lpDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
@@ -321,7 +338,9 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEdito
           objects = [invalidObject];
         }
         $scope.objects = objects;
-        $scope.reset[$scope.addId] = objects[0].dbo_id;
+        if ($scope.newAdd) {
+          $scope.reset[$scope.addId] = objects[0].dbo_id;
+        }
         $scope.changeResetId();
       });
     };

@@ -54,6 +54,21 @@
         </div>
 
       </div>
+
+      <div id="roomArticlePanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomArticleDetail"
+          data-parent="#roomArticlePanel">
+          Article Resets <strong>({{model.article_resets.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomArticleDetail">
+          <table class="table table-condensed table-hover hand">
+
+            <tr ng-repeat="reset in model.article_resets" ng-click="modifyArticle(reset)">
+              <td class="col-md-5">{{reset.article_id}} {{resetCount(reset)}}</td>
+              <td class="col-md-5">{{resetArticle(reset).title}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
     <div class="col-md-4 text-center">
       <div ng-if="isNew" class="alert alert-warning">You must first create the room before adding new elements.</div>

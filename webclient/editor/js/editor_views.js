@@ -7,7 +7,8 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['lpEditor', functi
     lpEditor.registerContext('room', {
       refs: [
         {type: 'room', path: 'exits.destination'},
-        {type: 'mobile', path: 'mobile_resets.mobile_id'}
+        {type: 'mobile', path: 'mobile_resets.mobile_id'},
+        {type: 'article', path: 'article_resets.article_id'}
       ],
       extend: function(model) {
         model.dbo_id = this.parent.next_room_id;
