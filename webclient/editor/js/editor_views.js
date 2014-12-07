@@ -15,7 +15,10 @@ angular.module('lampost_editor').controller('BuildViewCtrl', ['lpEditor', functi
     });
 
     lpEditor.registerContext('mobile');
-    lpEditor.registerContext('article');
+    lpEditor.registerContext('article', {
+      preEdit: function(model) {
+      }
+    });
 
     lpEditor.initView();
 

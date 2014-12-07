@@ -127,8 +127,8 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
 
 angular.module('lampost_editor').controller('MainEditorCtrl',
-  ['$scope', '$rootScope', '$q', 'lpEvent', 'lpRemote', 'lpDialog', 'lpCache', 'lpEditor',
-  function ($scope, $rootScope, $q, lpEvent, lpRemote, lpDialog, lpCache, lpEditor) {
+  ['$scope', '$rootScope', '$q', '$timeout', 'lpEvent', 'lpRemote', 'lpDialog', 'lpCache', 'lpEditor',
+  function ($scope, $rootScope, $q, $timeout, lpEvent, lpRemote, lpDialog, lpCache, lpEditor) {
 
     var activeModel = {};
     var originalModel = {};
@@ -241,7 +241,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       onOverwrite(model).then(function () {
         context = lpEditor.getContext(model.dbo_key_type);
         $scope.isNew = false;
-        init(model);
+        intercept('preEdit').then(function() {
+          init(model);
+        })
       })
     }
 
