@@ -25,7 +25,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       $scope.areaList = data;
       $scope.exitAreas = [];
       angular.forEach(data, function (area) {
-        if (area.can_write) {
+        if (area.can_write && area.room_list.length) {
           $scope.exitAreas.push(area)
         }
       });
@@ -269,15 +269,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
       lpCache.deref(listKey);
       listKey = 'room:' + $scope.destAreaId;
       lpCache.cache(listKey).then(function (rooms) {
-        $scope.roomsInvalid = rooms.length === 0;
-        $scope.hasError = $scope.roomsInvalid;
-        if (rooms.length) {
-          $scope.roomList = rooms;
-        } else {
-          $scope.roomList = [
-            {title: "NO VALID ROOMS", dbo_id: "NO VALID ROOMS"}
-          ];
-        }
+        $scope.roomList = rooms;
         $scope.changeType();
       })
     };
