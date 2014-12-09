@@ -1,7 +1,7 @@
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
-from lampost.editor.editor import Editor, ChildrenEditor, find_parent, ParentEditor
+from lampost.editor.editor import Editor, ChildrenEditor, find_parent
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.model.area import Area
@@ -9,7 +9,7 @@ from lampost.model.area import Area
 m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager')
 
 
-class AreaEditor(ParentEditor):
+class AreaEditor(Editor):
     def initialize(self):
         super().initialize(Area, 'creator')
 

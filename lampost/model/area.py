@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbo import DBOField, RootDBO
 from lampost.env.room import Room
 from lampost.gameops.script import Scriptable
 
@@ -7,7 +7,7 @@ from lampost.gameops.script import Scriptable
 m_requires(__name__, 'log', 'datastore')
 
 
-class Area(Scriptable):
+class Area(RootDBO, Scriptable):
     dbo_key_type = "area"
     dbo_set_key = "areas"
     dbo_children_types = ['room', 'mobile', 'article', 'script']
@@ -19,26 +19,9 @@ class Area(Scriptable):
     dbo_rev = DBOField(0)
     unprotected = DBOField(False)
 
-    @property
-    def room_keys(self):
-        return fetch_set_keys('area_rooms:{}'.format(self.dbo_id))
-
-    @property
-    def sorted_keys(self):
-        return sorted(self.room_keys,  key=lambda x: int(x.split(":")[1]))
-
-    def load_room(self, dbo_id, instance=0):
-        room = load_object(Room, dbo_id)
-        if instance:
-            clone = get_dbo_class('room')()
-            clone.template = room
-            clone.instance = instance
-            return clone
-        return room
-
     def add_room(self):
         next_id = 0
-        sorted_ids = self.sorted_keys
+        sorted_ids = self.dbo_child_keys('room')
         if sorted_ids:
             next_id = int(sorted_ids[0].split(":")[1])
         for dbo_id in sorted_ids:

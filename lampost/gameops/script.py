@@ -2,6 +2,7 @@ import os
 
 from lampost.context.resource import m_requires, inject, provides
 from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
 from lampost.mud.action import imm_action
 from lampost.util.lputil import Blank
@@ -214,7 +215,7 @@ class Script(RootDBO):
                 del self.code
 
 
-class Scriptable(RootDBO):
+class Scriptable(metaclass=CommonMeta):
     scripts = DBOField([], 'script')
     script_vars = DBOField({})
 

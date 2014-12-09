@@ -72,9 +72,10 @@ class Exit(RootDBO):
         source.change_env(destination, self)
 
 
-class Room(Scriptable):
+class Room(RootDBO, Scriptable):
     dbo_key_type = 'room'
     dbo_parent_type = 'area'
+    dbo_key_sort = lambda key: int(key.split(":")[1])
 
     dbo_rev = DBOTField(0)
     desc = DBOTField()

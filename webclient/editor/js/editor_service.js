@@ -24,6 +24,12 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
     };
 
     EditContext.prototype.preCreate = function (model) {
+      if (model.dbo_id.indexOf(':') > -1) {
+        return $q.reject("Colons not allowed in base ids");
+      }
+      if (model.dbo_id.indexOf(' ') > -1) {
+        return $q.reject("No spaces allowed in ids");
+      }
       if (this.parentType) {
         if (this.parent) {
           model.dbo_id = this.parent.dbo_id + ':' + model.dbo_id;
@@ -99,7 +105,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       return model.name || model.title || model.dbo_id || '-new-';
     };
 
-    lpEvent.register('modelDelete', function(modelList, delModel) {
+    lpEvent.register('modelDelete', function(delModel) {
       angular.forEach(contextMap, function (context) {
         if (context.parent = delModel) {
           context.parent = null;
@@ -266,7 +272,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       }
     }, $scope);
 
-    lpEvent.register('modelDelete', function (modelList, delModel, outside) {
+    lpEvent.register('modelDelete', function (delModel, outside) {
       if (activeModel.dbo_id === delModel.dbo_id) {
         if (outside) {
           lpDialog.showOk("Outside Delete", "This object has been deleted by another user.");

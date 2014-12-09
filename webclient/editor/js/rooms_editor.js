@@ -21,15 +21,21 @@ angular.module('lampost_editor').controller('RoomEditorCtrl', ['$q', '$scope', '
       $scope.activeExit = null;
     };
 
-    lpCache.cache('area').then(function (data) {
-      $scope.areaList = data;
-      $scope.exitAreas = [];
-      angular.forEach(data, function (area) {
-        if (area.can_write && area.room_list.length) {
-          $scope.exitAreas.push(area)
-        }
+    function loadAreas() {
+      lpCache.cache('area').then(function (data) {
+        $scope.areaList = data;
+        $scope.exitAreas = [];
+        angular.forEach(data, function (area) {
+          if (area.can_write && area.room_list.length) {
+            $scope.exitAreas.push(area)
+          }
+        });
       });
-    });
+    }
+
+    lpEvent.register('childListUpdated', loadAreas, $scope);
+
+    loadAreas();
 
     $scope.directions = lpEditor.constants.directions;
     angular.forEach($scope.directions, function (dir) {
@@ -305,7 +311,6 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEdito
     angular.extend($scope, lpEditor.addOpts);
 
     var listKey;
-    var invalidObject = {dbo_id: ':No ' + $scope.resetType + 's', title: 'No ' + $scope.resetType + 's', desc: ''};
 
     $scope.vars = {};
 
@@ -323,10 +328,6 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEdito
       lpCache.deref(listKey);
       listKey = $scope.resetType + ':' + $scope.vars.areaId;
       lpCache.cache(listKey).then(function (objects) {
-        $scope.disabled = objects.length == 0;
-        if ($scope.disabled) {
-          objects = [invalidObject];
-        }
         $scope.objects = objects;
         if ($scope.newAdd) {
           $scope.reset[$scope.addId] = objects[0].dbo_id;
@@ -336,11 +337,6 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEdito
     };
 
     $scope.changeResetId = function () {
-      var resetId = $scope.reset[$scope.addId];
-      if (resetId.indexOf(':') == 0) {
-        $scope.resetObj = null;
-        return;
-      }
       $scope.resetObj = lpCache.cacheValue($scope.resetType, resetId);
     };
 
@@ -368,9 +364,7 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lpEdi
   function ($scope, lpEditor) {
 
     var listKey;
-    var invalidObject = {dbo_id: 'No articles', title: 'No articles', desc: ''};
     $scope.newArticle = {};
-    $scope.disabled = true;
     $scope.article_loads = angular.copy($scope.reset.article_loads);
     $scope.loadAreaId = $scope.model.dbo_id.split(':')[0];
 
@@ -378,10 +372,6 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lpEdi
       lmEditor.deref(listKey);
       listKey = 'article:' + $scope.loadAreaId;
       lmEditor.cache(listKey).then(function (articles) {
-        $scope.disabled = articles.length == 0;
-        if ($scope.disabled) {
-          articles = [invalidObject];
-        }
         $scope.articles = articles;
         $scope.newArticle = articles[0];
       });

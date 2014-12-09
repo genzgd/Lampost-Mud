@@ -80,7 +80,7 @@ def goto(source, args, **_):
     else:
         area = load_object(Area, dest)
         if area:
-            dest = area.sorted_keys[0]
+            dest = area.dbo_child_keys('room')[0]
             if dest:
                 new_env = load_object(Room, dest)
             else:

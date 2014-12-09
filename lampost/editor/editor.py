@@ -57,7 +57,7 @@ class Editor(MethodHandler):
         return publish_edit('update', existing_obj, self.session)
 
     def metadata(self):
-        return {'parent_type': self.parent_type, 'new_object': get_dbo_class(self.dbo_key_type)('').dto_value}
+        return {'parent_type': self.parent_type, 'new_object': get_dbo_class(self.dbo_key_type)().dto_value}
 
     def test_delete(self):
         return ['{} - {}'.format(key_type, dbo_id) for key_type, dbo_id in fetch_holders(self.dbo_key_type, self.raw['dbo_id'])]
@@ -79,16 +79,6 @@ class Editor(MethodHandler):
 
     def post_update(self, existing_obj):
         pass
-
-
-class ParentEditor(Editor):
-    def list(self):
-        dto_list = super().list()
-        for dto in dto_list:
-            for child_type in self.obj_class.dbo_children_types:
-                child_keys = fetch_set_keys("{}_{}s:{}".format(self.dbo_key_type, child_type, dto['dbo_id']))
-                dto['{}_list'.format(child_type)] = sorted(child_keys)
-        return dto_list
 
 
 class ChildList(SessionHandler):

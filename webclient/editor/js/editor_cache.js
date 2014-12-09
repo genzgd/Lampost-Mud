@@ -129,31 +129,45 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       var plist = parentList(model);
       if (plist) {
         plist.push(model.dbo_id);
-        plist.sort()
+        plist.sort();
+        lpEvent.dispatch('childListUpdate', model.dbo_parent_type, model.dbo_key_type);
       }
-
     };
 
     this.deleteModel = function (model, outside) {
+      var ix;
       var entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
         var cacheModel = entry.map[model.dbo_id];
         if (cacheModel) {
           entry.data.splice(entry.data.indexOf(cacheModel), 1);
           delete entry.map[model.dbo_id];
-          lpEvent.dispatch('modelDelete', entry.data, model, outside);
+          lpEvent.dispatch('modelDelete', model, outside);
         }
       }
-      var deleted = [];
-      angular.forEach(remoteCache, function (entry, key) {
-        var keyParts = key.split(':');
-        if (keyParts[1] === model.dbo_id) {
-          deleted.push(key);
+
+      angular.forEach(model.dbo_children_types, function (cType) {
+        var childList = model[cType + "_list"];
+        for (ix = 0; ix < childList.length; ix++) {
+          var key = childList[ix];
+          var childModels = remoteCache[key];
+          if (childModels) {
+            for (var ic = 0; ic < childModels.length; ic++) {
+              lpEvent.dispatch('modelDelete', childModels[ic], outside);
+            }
+          }
+          deleteEntry[key];
         }
       });
-      angular.forEach(deleted, function (key) {
-        deleteEntry(key);
-      });
+
+      var plist = parentList(model);
+      if (plist) {
+        ix = plist.indexOf(model.dbo_id);
+        if (ix > -1) {
+          plist.splice(ix, 1);
+          lpEvent.dispatch('childListUpdate', model.dbo_parent_type, model.dbo_key_type);
+        }
+      }
     };
 
     this.cache = function (key) {

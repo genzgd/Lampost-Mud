@@ -8,6 +8,7 @@ m_requires(__name__, 'log', 'datastore')
 
 class RootDBO(metaclass=CommonMeta):
     dbo_key_type = None
+    dbo_key_sort = None
     dbo_parent_type = None
     dbo_children_types = []
 
@@ -95,9 +96,17 @@ class RootDBO(metaclass=CommonMeta):
     @property
     def dto_value(self):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
-        dto_value['dbo_key_type'] = self.dbo_key_type
-        dto_value['dbo_parent_type'] = self.dbo_parent_type
-        return self.metafields(dto_value, ['dbo_id', 'sub_class_id', 'template_id'])
+        for child_type in self.dbo_children_types:
+            dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
+        return self.metafields(dto_value, ['dbo_id', 'sub_class_id', 'template_id', 'dbo_key_type', 'dbo_parent_type',
+                                           'dbo_children_types'])
+
+    def dbo_child_keys(self, child_type):
+        if getattr(self, 'dbo_id', None):
+            child_class = get_dbo_class(child_type)
+            return sorted(fetch_set_keys("{}_{}s:{}".format(self.dbo_key_type, child_type, self.dbo_id)),
+                          key=child_class.dbo_key_sort)
+        return []
 
     def autosave(self):
         save_object(self, autosave=True)
