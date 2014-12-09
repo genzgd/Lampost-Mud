@@ -54,13 +54,12 @@ def new_setup(args):
     imm_name = args.imm_name.lower()
     imm_level = perm_level('supreme')
 
-    area = create_object(Area, {'dbo_id': args.root_area, 'name': args.root_area, 'owner_id': args.imm_name})
+    area = create_object(Area, {'dbo_id': args.root_area, 'name': args.root_area, 'owner_id': args.imm_name, 'next_room_id': 1})
 
     room = create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room",
                                 'desc': "A brand new start room for immortals."})
     dispatch('first_room_setup', room)
     save_object(room)
-    area.add_room()
 
     user = user_manager.create_user(args.imm_account, args.imm_password)
     player = {'dbo_id': args.imm_name, 'room_id': room_id,

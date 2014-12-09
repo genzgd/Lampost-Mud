@@ -80,11 +80,11 @@ def goto(source, args, **_):
     else:
         area = load_object(Area, dest)
         if area:
-            dest = area.dbo_child_keys('room')[0]
-            if dest:
-                new_env = load_object(Room, dest)
+            dest_rooms = area.dbo_child_keys('room')
+            if dest_rooms:
+                new_env = load_object(Room, dest_rooms[0])
             else:
-                raise ActionError("No rooms in area {}".format(args(1)))
+                raise ActionError("No rooms in area {}.".format(args[0]))
         else:
             if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])

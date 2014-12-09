@@ -106,7 +106,16 @@ class RoomEditor(ChildrenEditor):
 
 
 def add_room(area, session):
-    area.add_room()
+    next_id = 0
+    sorted_ids = area.dbo_child_keys('room')
+    for dbo_id in sorted_ids:
+        room_id = int(dbo_id.split(':')[1])
+        if room_id == next_id:
+            next_id += 1
+        else:
+            break
+    area.next_room_id = next_id
+    save_object(area)
     publish_edit('update', area, session, True)
 
 
