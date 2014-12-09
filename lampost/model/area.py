@@ -1,6 +1,5 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, RootDBO
-from lampost.env.room import Room
 from lampost.gameops.script import Scriptable
 
 

@@ -30,6 +30,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       if (model.dbo_id.indexOf(' ') > -1) {
         return $q.reject("No spaces allowed in ids");
       }
+      model.dbo_id = model.dbo_id.toLocaleLowerCase();
       if (this.parentType) {
         if (this.parent) {
           model.dbo_id = this.parent.dbo_id + ':' + model.dbo_id;

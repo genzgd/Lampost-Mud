@@ -26,7 +26,7 @@ class Settings(MethodHandler):
 
     def create_account(self):
         account_name = self.raw['account_name'].lower()
-        if get_index("ix:user:name", account_name) or object_exists('player', account_name):
+        if get_index("ix:user:name", account_name) or object_exists('player', account_name) or object_exists('area', account_name):
             raise DataError("InUse: {}".format(account_name))
         user = user_manager.create_user(account_name, self.raw['password'], self.raw['email'].lower())
         self.session.connect_user(user)
@@ -66,7 +66,8 @@ class Settings(MethodHandler):
         if not user:
             raise DataError("User {0} does not exist".format(content.user_id))
         player_name = content.player_name.lower()
-        if (player_name != user.user_name and get_index("ix:user:user_name", player_name)) or object_exists('player', player_name):
+        if (player_name != user.user_name and get_index("ix:user:user_name", player_name))\
+                or object_exists('player', player_name) or object_exists('area', player_name):
             raise DataError(content.player_name.capitalize() + " is in use.")
         content.player_data['dbo_id'] = player_name
         user_manager.attach_player(user, content.player_data)

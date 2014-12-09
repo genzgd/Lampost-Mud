@@ -13,6 +13,10 @@ class AreaEditor(Editor):
     def initialize(self):
         super().initialize(Area, 'creator')
 
+    def pre_create(self):
+        if object_exists('player', self.raw['dbo_id']):
+            raise DataError("Area name should not match any player name.")
+
     def pre_delete(self, del_obj):
         if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
             raise DataError("Cannot delete root area.")
