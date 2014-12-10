@@ -12,10 +12,13 @@ angular.module('lampost_mud').config(['$routeProvider', '$locationProvider', fun
 
 // Using services here so they get instantiated.  Many depend on event listeners only
 //noinspection JSUnusedLocalSymbols
-angular.module('lampost_mud').run(['$rootScope', '$timeout', 'lpEvent', 'lpRemote', 'lpStorage', 'lpData', 'lpDialog', 'lmComm',
-  function ($rootScope, $timeout, lpEvent, lpRemote, lpStorage, lpData, lpDialog, lmComm) {
+angular.module('lampost_mud').run(
+  ['$rootScope', '$timeout', '$window', 'lpEvent', 'lpRemote', 'lpStorage', 'lpData', 'lpDialog', 'lmComm',
+  function ($rootScope, $timeout, $window, lpEvent, lpRemote, lpStorage, lpData, lpDialog, lmComm) {
 
-    window.onbeforeunload = function () {
+    $window.name = "lpMudWindow" + new Date().getTime();
+
+    $window.onbeforeunload = function () {
       window.windowClosing = true;
       lpEvent.dispatch("window_closing");
     };
@@ -57,8 +60,13 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData',
 
 
 angular.module('lampost_mud').controller('NavCtrl',
-  ['$rootScope', '$scope', '$location', 'lpEvent', 'lpData', 'lpUtil', 'lpDialog',
-  function ($rootScope, $scope, $location, lpEvent, lpData, lpUtil, lpDialog) {
+  ['$rootScope', '$scope', '$location', '$log', 'lpEvent', 'lpData', 'lpUtil', 'lpDialog',
+  function ($rootScope, $scope, $location, $log, lpEvent, lpData, lpUtil, lpDialog) {
+
+    var baseLinks = [new Link("game", "Mud", "fa fa-tree", 0)];
+    var settingsLink = new Link("settings", "Settings", "fa fa-sliders", 50);
+    var editorLink = new Link('editor', 'Editor', 'fa fa-pencil', 100);
+    var editorWindow = window.opener;
 
     $(window).on("resize", function () {
       $rootScope.$apply(resize);
@@ -74,7 +82,6 @@ angular.module('lampost_mud').controller('NavCtrl',
     resize();
 
     function Link(name, label, icon, priority, href) {
-      this.href = href;
       this.name = name;
       this.label = label;
       this.icon = icon;
@@ -87,10 +94,6 @@ angular.module('lampost_mud').controller('NavCtrl',
       };
 
     }
-
-    var baseLinks = [new Link("game", "Mud", "fa fa-tree", 0)];
-    var settingsLink = new Link("settings", "Settings", "fa fa-sliders", 50);
-    var editorLink = new Link('editor', 'Editor', 'fa fa-pencil', 100, 'editor.html');
 
     function validatePath() {
       $scope.links = baseLinks.slice();
@@ -108,11 +111,19 @@ angular.module('lampost_mud').controller('NavCtrl',
 
     $scope.changeLocation = function (link, event) {
       if (link === editorLink) {
-        var editorTarget = 'lpEditor*' + lpData.playerId;
-        if (localStorage.getItem(editorTarget)) {
-          event.preventDefault();
-          window.open("", editorTarget).focus();
+        if (!editorWindow || editorWindow.closed) {
+          editorWindow = window.open('editor.html', '_blank');
+        } else {
+          window.open("", editorWindow.name);
         }
+        if (editorWindow) {
+          try {
+            editorWindow.focus();
+          } catch (e) {
+            $log.log("Error opening other window", e);
+          }
+        }
+
       } else {
         $location.path(link.name);
       }

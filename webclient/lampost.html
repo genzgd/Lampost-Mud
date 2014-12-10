@@ -36,7 +36,7 @@
     <div class="collapse navbar-collapse" id="lampost-navbar-collapse">
       <ul class="nav navbar-nav">
         <li ng-repeat="link in links | orderBy:'priority'" ng-class="link.class()">
-          <a ng-href="{{link.href}}" ng-click="changeLocation(link, $event)" target="_blank">{{link.label}} <i ng-class="link.icon"></i></a>
+          <a ng-click="changeLocation(link, $event)">{{link.label}} <i ng-class="link.icon"></i></a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right active">

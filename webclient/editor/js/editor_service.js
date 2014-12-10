@@ -415,6 +415,10 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
       updateList();
     }
 
+    $scope.$on('$destroy', function() {
+      lpCache.deref(listKey)}
+    );
+
     updateList()
 
   }]);

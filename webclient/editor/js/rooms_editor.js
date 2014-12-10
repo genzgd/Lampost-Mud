@@ -360,18 +360,18 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEdito
 
   }]);
 
-angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lpEditor',
-  function ($scope, lpEditor) {
+angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lpCache',
+  function ($scope, lpCache) {
 
     var listKey;
     $scope.newArticle = {};
-    $scope.article_loads = angular.copy($scope.reset.article_loads);
+    $scope.article_loads = $scope.reset.article_loads;
     $scope.loadAreaId = $scope.model.dbo_id.split(':')[0];
 
     $scope.changeArea = function () {
-      lmEditor.deref(listKey);
+      lpCache.deref(listKey);
       listKey = 'article:' + $scope.loadAreaId;
-      lmEditor.cache(listKey).then(function (articles) {
+      lpCache.cache(listKey).then(function (articles) {
         $scope.articles = articles;
         $scope.newArticle = articles[0];
       });
@@ -396,6 +396,10 @@ angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', 'lpEdi
     $scope.deleteArticleLoad = function (articleIndex) {
       $scope.article_loads.splice(articleIndex, 1);
     };
+
+     $scope.$on('$destroy', function() {
+      lpCache.deref(listKey);
+    });
 
 
   }]);

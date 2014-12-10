@@ -1,7 +1,9 @@
 angular.module('lampost_editor', ['lampost_dir', 'lampost_dlg', 'lampost_util', 'lampost_remote', 'ngSanitize']);
 
-angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEvent', 'lpUtil', 'lpEditorStorage',
-  function ($window, $rootScope, lpRemote, lpEvent, lpUtil, lpEditorStorage) {
+angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEvent', 'lpUtil',
+  function ($window, $rootScope, lpRemote, lpEvent, lpUtil) {
+
+    $window.name = 'lpEditor' + new Date().getTime();
 
     $window.onbeforeunload = function () {
       var handlers = [];
@@ -52,8 +54,11 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
   }]);
 
 angular.module('lampost_editor').controller('EditorNavController',
-  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpEditor', 'lpEditorView',
-  function ($q, $rootScope, $scope, lpEvent, lpEditor, lpEditorView) {
+  ['$q', '$log', '$window', '$rootScope', '$scope', 'lpEvent', 'lpEditor', 'lpEditorView',
+  function ($q, $log, $window, $rootScope,  $scope, lpEvent, lpEditor, lpEditorView) {
+
+    var sessionId;
+    var mudWindow = $window.opener;
 
     var editNav = [
       {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
@@ -65,6 +70,7 @@ angular.module('lampost_editor').controller('EditorNavController',
     var activeNav = '';
 
     lpEvent.register('connect', function (data) {
+      sessionId = data;
       $rootScope.appState = 'connected';
       $scope.welcome = 'Please log in.';
     });
@@ -73,6 +79,7 @@ angular.module('lampost_editor').controller('EditorNavController',
       activeNav = '';
       $rootScope.appState = 'loggedIn';
       $rootScope.playerName = data.playerName;
+      sessionStorage.setItem('editSessionId', sessionId);
       $scope.welcome = "Immortal " + data.playerName;
       $scope.links = [];
       for (var i = 0; i < editNav.length; i++) {
@@ -94,6 +101,7 @@ angular.module('lampost_editor').controller('EditorNavController',
     });
 
     lpEvent.register('editor_logout', function () {
+      sessionStorage.removeItem('editSessionId');
       $rootScope.appState = 'connected';
       $scope.welcome = 'Please Log In';
       $scope.links = [];
@@ -127,13 +135,18 @@ angular.module('lampost_editor').controller('EditorNavController',
     };
 
     $scope.mudWindow = function(event) {
-      if (lpEditor.playerId) {
-        var mudTarget = "lpMudWindow*" + lpEditor.playerId;
-        if (localStorage.getItem(mudTarget)) {
-          event.preventDefault();
-          window.open("", mudTarget).focus();
+      if (!mudWindow || mudWindow.closed) {
+          mudWindow = window.open('lampost.html', '_blank');
+        } else {
+          window.open("", mudWindow.name);
         }
-      }
+        if (mudWindow) {
+          try {
+            mudWindow.focus();
+          } catch (e) {
+            $log.log("Error opening other window", e);
+          }
+        }
     }
 
   }]);

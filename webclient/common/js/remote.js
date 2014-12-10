@@ -1,5 +1,5 @@
-angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '$q', 'lmLog', 'lpEvent', 'lpDialog',
-  function ($timeout, $http, $q, lmLog, lpEvent, lpDialog) {
+angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '$q', '$log', 'lpEvent', 'lpDialog',
+  function ($timeout, $http, $q, $log, lpEvent, lpDialog) {
 
     var sessionId = '';
     var connectEndpoint = '';
@@ -76,7 +76,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
         return;
       }
       connected = false;
-      lmLog.log("Link stopped: " + status);
+      $log.log("Link stopped: " + status);
       $timeout(function () {
         if (!connected && !window.windowClosing) {
           lpDialog.show({template: reconnectTemplate, controller: ReconnectCtrl, noEscape: true});
@@ -99,7 +99,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       } else if (status == "no_login") {
         lpEvent.dispatch("logout", "invalid_session");
       } else if (status == "cancel") {
-        lmLog.log("Outstanding request cancelled");
+        $log.log("Outstanding request cancelled");
       }
     }
 
@@ -123,7 +123,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
         return;
       }
       if (service.refCount < 0) {
-        lmLog.log("Error: Service " + service.serviceId + " has refCount " + service.refCount);
+        $log.log("Error: Service " + service.serviceId + " has refCount " + service.refCount);
         service.refCount = 0;
       }
       if (service.refCount == 0 && service.registered && !service.inFlight) {
@@ -181,7 +181,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     this.unregisterService = function (serviceId) {
       var service = services[serviceId];
       if (!service) {
-        lmLog.error(serviceId + " unregistered without registration");
+        $log.error(serviceId + " unregistered without registration");
         return;
       }
       service.refCount--;

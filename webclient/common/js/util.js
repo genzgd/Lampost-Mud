@@ -1,14 +1,6 @@
 angular.module('lampost_util', []);
 
-angular.module('lampost_util').service('lmLog', [function () {
-  this.log = function (msg) {
-    if (window.console) {
-      window.console.log(msg);
-    }
-  }
-}]);
-
-angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
+angular.module('lampost_util').service('lpEvent', ['$log', function ($log) {
   var self = this;
   var registry = {};
 
@@ -63,7 +55,7 @@ angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
   this.unregister = function (registration) {
     var registrations = registry[registration.event_type];
     if (!registrations) {
-      lmLog.log("Unregistering event for " + registration.event_type + " that was never registered");
+      $log.log("Unregistering event for " + registration.event_type + " that was never registered");
       return;
     }
     var found = false;
@@ -81,7 +73,7 @@ angular.module('lampost_util').service('lpEvent', ['lmLog', function (lmLog) {
     }
 
     if (!found) {
-      lmLog.log("Failed to unregister event " + registration.event_type + " " + registration.callback);
+      $log.log("Failed to unregister event " + registration.event_type + " " + registration.callback);
       return;
     }
     if (registration.scope) {
