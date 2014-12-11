@@ -111,10 +111,17 @@ angular.module('lampost_mud').controller('NavCtrl',
 
     $scope.changeLocation = function (link, event) {
       if (link === editorLink) {
+        try {
+          if (editorWindow && !editorWindow.closed) {
+            editorWindow = window.open("", editorWindow.name);
+          }
+        }
+        catch (e) {
+          $log.log("Unable to reference editor window");
+          editorWindow = null;
+        }
         if (!editorWindow || editorWindow.closed) {
           editorWindow = window.open('editor.html', '_blank');
-        } else {
-          window.open("", editorWindow.name);
         }
         if (editorWindow) {
           try {
@@ -123,7 +130,6 @@ angular.module('lampost_mud').controller('NavCtrl',
             $log.log("Error opening other window", e);
           }
         }
-
       } else {
         $location.path(link.name);
       }
