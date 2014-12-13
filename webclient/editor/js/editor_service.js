@@ -71,6 +71,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       if (!contextMap[contextId]) {
         contextMap[contextId] = new EditContext(contextId, context);
       }
+      return contextMap[contextId];
     };
 
     this.getContext = function (contextId) {
@@ -256,7 +257,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         intercept('preEdit').then(function() {
           init(model);
         })
-      })
+      }, function() {
+        lpEvent.dispatch('modelSelected', originalModel);
+      });
     }
 
     lpEvent.register('modelUpdate', function (updatedModel, outside) {
@@ -297,7 +300,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       });
     }, $scope);
 
-    lpEvent.register('modelSelected', existingEdit);
+    lpEvent.register('startEdit', existingEdit);
 
     $scope.model = activeModel;
     $scope.saveModel = saveModel;
@@ -358,6 +361,11 @@ angular.module('lampost_editor').controller('EditListCtrl',
       return (context.parent && context.parent.can_write) || !context.parentType;
     };
 
+    function changeActive(active) {
+      activeModel = active;
+      lpEditorView.selectModel(type, active);
+    }
+
     function updateList() {
       lpCache.deref(listKey);
       if (context.parentType) {
@@ -373,7 +381,18 @@ angular.module('lampost_editor').controller('EditListCtrl',
       }
       lpCache.cache(listKey).then(function (objs) {
         $scope.modelList = objs;
-      })
+        var selectedId = lpEditorView.selectedId(type);
+        if (selectedId) {
+          var selected = lpCache.cacheValue(listKey, selectedId);
+          if (selected) {
+            activeModel = selected;
+            lpEvent.dispatch("modelSelected", activeModel);
+            if (selectedId == lpEditorView.lastEdit(type)) {
+               lpEvent.dispatch("startEdit", activeModel);
+            }
+          }
+        }
+      });
     }
 
     function dataError(error) {
@@ -388,16 +407,17 @@ angular.module('lampost_editor').controller('EditListCtrl',
 
     lpEvent.register("activeUpdated", function (activated) {
       if (activated.dbo_key_type === type) {
-        activeModel = activated;
+        changeActive(activated);
       } else if (context.parent === activated) {
         updateList();
-        activeModel = null;
+        changeActive(null);
       }
+
     });
 
     lpEvent.register("modelDelete", function(delModel) {
       if (activeModel == delModel) {
-        activeModel = null;
+        changeActive(null);
       }
     })
 
@@ -408,6 +428,7 @@ angular.module('lampost_editor').controller('EditListCtrl',
         event.stopPropagation();
       }
       lpEvent.dispatch("modelSelected", model);
+      lpEvent.dispatch("startEdit", model);
     };
 
     $scope.rowClass = function (model) {

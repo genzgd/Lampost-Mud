@@ -7,7 +7,7 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEditorView',  funct
       var parent = element.find('.panel-heading')[0];
       var child = element.find('.panel-collapse')[0];
 
-      scope.listOpen = !!lpEditorView.openViews[scope.type];
+      scope.listOpen = lpEditorView.listState(scope.type);
       if (scope.listOpen) {
         jQuery(child).addClass('in');
       }
@@ -16,7 +16,7 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEditorView',  funct
         jQuery(child).collapse(!!scope.listOpen ? 'hide' : 'show');
         scope.listOpen = !scope.listOpen;
         lpEditorView.toggleList(scope.type, scope.listOpen);
-      })
+      });
     }
   }
 }]);

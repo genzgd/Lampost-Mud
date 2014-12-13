@@ -4,13 +4,7 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lp
     var mudWindow = $window.opener;
     var localData;
     var views = {};
-    var openViews = {};
-
-    lpEvent.register('editReady', function(model) {
-        localData.editId = model.dbo_id;
-        localData.editType = model.dbo_key_type;
-        updateLocal();
-    });
+    var viewState = {};
 
     function loadLocal() {
         localData = JSON.parse(localStorage.getItem(lpEditor.playerId + '*editData')) || {};
@@ -52,24 +46,46 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lp
     this.prepareView = function(viewType) {
       loadLocal();
       localData.lastView = viewType;
-      localData.viewState = localData.viewState || {};
-      this.openViews = localData.viewState[viewType] || {};
-      localData.viewState[viewType] = this.openViews;
+      localData.viewStates = localData.viewStates || {};
+      viewState = localData.viewStates[viewType] || {};
+      viewState.models = viewState.models || {}
+      viewState.openLists = viewState.openLists || {}
+      localData.viewStates[viewType] = viewState;
       updateLocal();
 
-      angular.forEach(views[viewType], function(context, key) {
-        lpEditor.registerContext(key, context)
+      angular.forEach(views[viewType], function(contextDef, key) {
+        lpEditor.registerContext(key, contextDef);
       });
+
       return lpEditor.initView();
     }
 
     this.toggleList = function(type, value) {
         if (value) {
-            this.openViews[type] = true;
+            viewState.openLists[type] = true;
         } else {
-            delete this.openViews[type];
+            delete viewState.openLists[type];
         }
         updateLocal();
+    }
+
+    this.listState = function(type) {
+        return viewState.openLists[type];
+    }
+
+    this.selectedId = function(type) {
+        return viewState.models[type];
+    }
+
+    this.lastEdit = function(type) {
+        return type == viewState.lastType ? viewState.lastEdit : undefined;
+    }
+
+    this.selectModel = function(type, value) {
+      if (value && value.dbo_id) {
+        viewState.models[type] = value.dbo_id;
+        updateLocal();
+      }
     }
 
     this.mudWindow = function() {
@@ -92,5 +108,14 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lp
         }
       }
     }
+
+    lpEvent.register('editReady', function(model) {
+      if (model.dbo_key_type && model.dbo_id) {
+        viewState.lastEdit = model.dbo_id
+        viewState.lastType = model.dbo_key_type;
+      }
+      updateLocal();
+    });
+
   }]);
 
