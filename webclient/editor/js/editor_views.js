@@ -5,8 +5,8 @@ angular.module('lampost_editor').service('lpEditorView', ['lpEditor', function(l
       room:  {
         refs: [
           {type: 'room', path: 'exits.destination'},
-          {type: 'mobile', path: 'mobile_resets.mobile_id'},
-          {type: 'article', path: 'article_resets.article_id'}
+          {type: 'mobile', path: 'mobile_resets.mobile'},
+          {type: 'article', path: 'article_resets.article'}
         ],
         extend: function(model) {
           model.dbo_id = this.parent.next_room_id;

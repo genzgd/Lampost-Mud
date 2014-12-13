@@ -1,0 +1,15 @@
+<div class="row" ng-controller="ArticleLoadCtrl">
+  <div class="col-md-8">
+    <div class="form-group text-center">
+      <label class="control-label">Load Target</label>
+      <select class="form-control input.sm" ng-model="reset.mobile_ref" ng-change="changeMobileRef()"
+        ng-options="m_reset.reset_key as m_reset.mobile for m_reset in mobileList" required></select>
+    </div>
+  </div>
+  <div class="col-md-3 col-md-offset-1" ng-hide="reset.mobile_ref == 0">
+    <label class="checkbox">
+      <input type="checkbox" ng-model="isEquip" ng-change="changeEquip()">
+      Equip
+    </label>
+  </div>
+</div>

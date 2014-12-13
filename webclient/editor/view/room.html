@@ -19,7 +19,11 @@
         </div>
         <div class="form-group col-md-4">
           <label class="control-label">DB Rev</label>
-          <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled/>
+          <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled>
+        </div>
+         <div class="form-group col-md-3">
+           <label class="control-label">&nbsp;</label>
+          <button type="button" class="form-control input-sm btn btn-xs btn-success" ng-click="visit()">Visit</button>
         </div>
       </div>
       <div id="roomExitPanel" class="panel panel-default">
@@ -46,7 +50,7 @@
           <table class="table table-condensed table-hover hand">
 
             <tr ng-repeat="reset in model.mobile_resets" ng-click="modifyMobile(reset)">
-              <td class="col-md-5">{{reset.mobile_id}} {{resetCount(reset)}}</td>
+              <td class="col-md-5">{{reset.mobile}} {{resetCount(reset)}}</td>
               <td class="col-md-5">{{resetMobile(reset).title}}</td>
               <td class="col-md-2"><span ng-if="reset.article_loads.length" title="Loads Articles"><i class="fa fa-briefcase"></i></span></td>
             </tr>
@@ -63,7 +67,7 @@
           <table class="table table-condensed table-hover hand">
 
             <tr ng-repeat="reset in model.article_resets" ng-click="modifyArticle(reset)">
-              <td class="col-md-5">{{reset.article_id}} {{resetCount(reset)}}</td>
+              <td class="col-md-5">{{reset.article}} {{resetCount(reset)}}</td>
               <td class="col-md-5">{{resetArticle(reset).title}}</td>
             </tr>
           </table>

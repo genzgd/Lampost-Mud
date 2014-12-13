@@ -107,10 +107,6 @@ angular.module('lampost_editor').controller('EditorNavController',
       $scope.links = [];
     }, $scope);
 
-    lpEvent.register('window_closing', function() {
-      sessionStorage.removeItem('editSessionId');
-    });
-
     $scope.editorLogout = function () {
       lpEvent.dispatch('server_request', 'editor/edit_logout');
     }
@@ -140,14 +136,14 @@ angular.module('lampost_editor').controller('EditorNavController',
 
     $scope.mudWindow = function(event) {
       try {
-        if (mudWindow || !mudWindow.closed) {
+        if (mudWindow && !mudWindow.closed) {
           window.open("", mudWindow.name);
         }
       } catch (e) {
         $log.log("Unable to reference mud window");
         mudWindow = null;
       }
-      if (!mudWindow) {
+      if (!mudWindow || mudWindow.closed) {
         mudWindow = window.open('lampost.html', '_blank');
       }
       if (mudWindow) {

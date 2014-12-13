@@ -199,54 +199,41 @@ class Room(RootDBO, Scriptable):
         self.clean_up()
 
     def reset(self):
+        new_mobiles = defaultdict(list)
         for m_reset in self.mobile_resets:
-            template = m_reset.mobile_id
-            if not template:
-                error("Missing template for mobile reset roomId: {}  mobileId: {}", self.dbo_id, m_reset.mobile_id)
-                continue
-            curr_count = len(self.mobiles[template])
-            for unused in range(m_reset.reset_count - curr_count):
-                self.add_mobile(template, m_reset)
+            curr_count = len(self.mobiles[m_reset.mobile])
+            for _ in range(m_reset.reset_count - curr_count):
+                new_mobiles[m_reset.reset_key].append(m_reset.mobile.create_instance(self))
             if m_reset.reset_count <= curr_count < m_reset.reset_max:
-                self.add_mobile(template, m_reset)
-        for a_reset in self.article_resets:
-            template = a_reset.article_id
-            if not template:
-                error('Invalid article in reset roomId: {}  articleId: {}', self.dbo_id, a_reset.article_id)
-                continue
-            curr_count = len([entity for entity in self.inven if getattr(entity, 'template', None) == template])
-            if template.divisible:
-                if not curr_count:
-                    instance = template.create_instance(self)
-                    instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max + 1)
-                    instance.enter_env(self)
-            else:
-                for _ in range(a_reset.reset_count - curr_count):
-                    instance = template.create_instance(self)
-                    instance.enter_env(self)
-                if a_reset.reset_count <= curr_count < a_reset.reset_max:
-                    instance = template.create_instance(self)
-                    instance.enter_env(self)
+                new_mobiles[m_reset.reset_key].append(m_reset.mobile.create_instance(self))
 
-    def add_mobile(self, template, reset):
-        instance = template.create_instance(self)
-        for article_load in reset.article_loads:
-            article_template = article_load.article_id
-            if not template:
-                error(
-                    "Invalid article load for roomId: {}, mobileId: {}, articleId: {}", self.dbo_id, template.mobile_id, article_template.article_id)
-                continue
-            if article_template.divisible:
-                article = article_template.create_instance()
-                article.quantity = article_load.count
-                instance.add_inven(article)
+        for a_reset in self.article_resets:
+            template = a_reset.article
+            if a_reset.mobile_ref:
+                for new_mobile in new_mobiles[a_reset.mobile_ref]:
+                    quantity = random.randrange(a_reset.reset_count, a_reset.reset_max + 1)
+                    if template.divisible:
+                        article = template.create_instance(new_mobile)
+                        article.quantity = quantity
+                        new_mobile.add_inven(article)
+                    else:
+                        for _ in range(quantity):
+                            article = template.create_instance(new_mobile)
+                            new_mobile.add_inven(article)
+                            if a_reset.load_type == 'equip':
+                                new_mobile.equip_article(article)
             else:
-                for _ in range(article_load.count):
-                    article = article_template.create_instance()
-                    instance.add_inven(article)
-                    if article_load.load_type == "equip":
-                        instance.equip_article(article)
-        instance.enter_env(self)
+                curr_count = len([entity for entity in self.inven if getattr(entity, 'template', None) == template])
+                if template.divisible:
+                    if not curr_count:
+                        instance = template.create_instance(self)
+                        instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max + 1)
+                        instance.enter_env(self)
+                else:
+                    for _ in range(a_reset.reset_count - curr_count):
+                        template.create_instance(self).enter_env(self)
+                    if a_reset.reset_count <= curr_count < a_reset.reset_max:
+                        template.create_instance(self).enter_env(self)
 
     def social(self):
         pass

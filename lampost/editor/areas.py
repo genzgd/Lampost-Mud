@@ -34,6 +34,8 @@ class RoomEditor(ChildrenEditor):
         super().initialize(Room, 'creator')
 
     def visit(self):
+        if not self.session.player.session:
+            raise DataError("You are not logged in")
         room = load_object(Room, self.raw['room_id'])
         if not room:
             raise DataError("ROOM_MISSING")

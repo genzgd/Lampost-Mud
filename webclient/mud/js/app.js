@@ -111,6 +111,7 @@ angular.module('lampost_mud').controller('NavCtrl',
 
     $scope.changeLocation = function (link, event) {
       if (link === editorLink) {
+        sessionStorage.removeItem('editSessionId');
         try {
           if (editorWindow && !editorWindow.closed) {
             editorWindow = window.open("", editorWindow.name);

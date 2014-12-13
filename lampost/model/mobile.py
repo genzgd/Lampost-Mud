@@ -12,6 +12,7 @@ class MobileTemplate(Template):
         instance.baptise()
         instance.original_env = room
         room.mobiles[self].add(instance)
+        instance.enter_env(room)
 
     def on_loaded(self):
         self.target_keys = target_keys(self)
@@ -27,8 +28,7 @@ class Mobile(Entity):
 
 class MobileReset(RootDBO):
     class_id = 'mobile_reset'
-    mobile_id = DBOField(None, 'mobile', True)
+    mobile = DBOField(dbo_class_id='mobile', required=True)
+    reset_key = DBOField(0)
     reset_count = DBOField(1)
     reset_max = DBOField(1)
-    article_loads = DBOField([], 'article_load')
-

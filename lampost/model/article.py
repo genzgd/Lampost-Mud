@@ -114,13 +114,8 @@ class Article(BaseItem, Scriptable):
 
 class ArticleReset(RootDBO):
     class_id = 'article_reset'
-    article_id = DBOField(None, 'article', True)
+    article = DBOField(dbo_class_id='article', required=True)
     reset_count = DBOField(1)
     reset_max = DBOField(1)
-
-
-class ArticleLoad(RootDBO):
-    class_id = 'article_load'
-    article_id = DBOField(None, 'article', True)
-    count = DBOField(1)
+    mobile_ref = DBOField(0)
     load_type = DBOField('equip')
