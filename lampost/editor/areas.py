@@ -39,7 +39,7 @@ class RoomEditor(ChildrenEditor):
         room = load_object(Room, self.raw['room_id'])
         if not room:
             raise DataError("ROOM_MISSING")
-        room.reset()
+        room.reload()
         self.session.player.change_env(room)
 
     def create_exit(self):

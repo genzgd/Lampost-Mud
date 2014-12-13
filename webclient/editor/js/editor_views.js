@@ -1,4 +1,7 @@
-angular.module('lampost_editor').service('lpEditorView', ['lpEditor', function(lpEditor) {
+angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lpEditor',
+  function($window, $log, lpEditor) {
+
+    var mudWindow = $window.opener;
 
     this.build = {
       area: {},
@@ -29,6 +32,27 @@ angular.module('lampost_editor').service('lpEditorView', ['lpEditor', function(l
         lpEditor.registerContext(key, context)
       });
       return lpEditor.initView();
+    }
+
+    this.mudWindow = function() {
+      try {
+        if (mudWindow && !mudWindow.closed) {
+          window.open("", mudWindow.name);
+        }
+      } catch (e) {
+        $log.log("Unable to reference mud window");
+        mudWindow = null;
+      }
+      if (!mudWindow || mudWindow.closed) {
+        mudWindow = window.open('lampost.html', '_blank');
+      }
+      if (mudWindow) {
+        try {
+          mudWindow.focus();
+        } catch (e) {
+          $log.log("Error opening other window", e);
+        }
+      }
     }
   }]);
 

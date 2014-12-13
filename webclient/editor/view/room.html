@@ -9,6 +9,19 @@
         <label class="control-label">Description</label>
         <textarea class="form-control" rows="10" ng-model="model.desc"></textarea>
       </div>
+      <div id="roomExtraPanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomExtraDetail"
+          data-parent="#roomExtraPanel">
+          Extras <strong>({{model.extras.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomExtraDetail">
+          <table class="table table-condensed table-hover hand">
+
+            <tr ng-repeat="extra in model.extras" ng-click="modifyExtra(extra)">
+              <td class="col-md-10">{{extra.title}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
     <div class="col-md-4">
       <div class="row">

@@ -52,8 +52,7 @@
       <button ng-if="!newAdd && validReset" type="button" ng-click="deleteReset()" class="btn btn-sm btn-danger">Delete
         {{addLabel}}
       </button>
-      <button ng-if="newAdd && validReset" type="button" ng-click="createReset()" ng-disabled="disabled || hasError"
-        class="btn btn-sm btn-warning">Add {{addLabel}}
+      <button ng-if="newAdd && validReset" type="button" ng-click="createReset()" class="btn btn-sm btn-warning">Add {{addLabel}}
       </button>
       <button type="button" ng-click="closeAdd()" class="btn btn-sm btn-default">{{newAdd ? 'Cancel' : 'Close'}}
       </button>

@@ -54,12 +54,10 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
   }]);
 
 angular.module('lampost_editor').controller('EditorNavController',
-  ['$q', '$log', '$window', '$rootScope', '$scope', 'lpEvent', 'lpEditor', 'lpEditorView',
-  function ($q, $log, $window, $rootScope,  $scope, lpEvent, lpEditor, lpEditorView) {
+  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpEditor', 'lpEditorView',
+  function ($q, $rootScope,  $scope, lpEvent, lpEditor, lpEditorView) {
 
     var sessionId;
-    var mudWindow = $window.opener;
-
     var editNav = [
       {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
       {id: 'mud', label: 'Shared', icon: 'fa-shield'},
@@ -134,26 +132,7 @@ angular.module('lampost_editor').controller('EditorNavController',
       });
     };
 
-    $scope.mudWindow = function(event) {
-      try {
-        if (mudWindow && !mudWindow.closed) {
-          window.open("", mudWindow.name);
-        }
-      } catch (e) {
-        $log.log("Unable to reference mud window");
-        mudWindow = null;
-      }
-      if (!mudWindow || mudWindow.closed) {
-        mudWindow = window.open('lampost.html', '_blank');
-      }
-      if (mudWindow) {
-        try {
-          mudWindow.focus();
-        } catch (e) {
-          $log.log("Error opening other window", e);
-        }
-      }
-    }
+    $scope.mudWindow = lpEditorView.mudWindow;
 
   }]);
 

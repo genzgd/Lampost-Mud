@@ -1,6 +1,6 @@
 angular.module('lampost_editor').controller('RoomEditorCtrl',
- ['$q', '$scope', '$timeout', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog',
-  function ($q, $scope, $timeout, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog) {
+ ['$q', '$scope', '$timeout', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog', 'lpEditorView',
+  function ($q, $scope, $timeout, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog, lpEditorView) {
 
     var mobileOptions = {addLabel: 'Mobile', addId: 'mobile', resetType: 'mobile'};
     var articleOptions = {addLabel: 'Article', addId: 'article', resetType: 'article',
@@ -11,7 +11,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     $scope.addTypes = [
       {id: 'new_exit', label: 'Exit'},
       {id: 'room_reset', label: 'Mobile', options: mobileOptions},
-      {id: 'room_reset', label: 'Article', options: articleOptions}
+      {id: 'room_reset', label: 'Article', options: articleOptions},
+      {id: 'extra', label: 'Extra'}
     ];
 
     $scope.setAddType = function (addType, addOptions, addObj) {
@@ -49,6 +50,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     });
 
     $scope.visit = function() {
+      lpEditorView.mudWindow();
       lpRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id});
     };
 
@@ -95,7 +97,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       $timeout(function () {
         $scope.setAddType('room_reset', mobileOptions, mobileReset);
       });
-
     };
 
     $scope.resetArticle = function (mobileReset) {
@@ -109,6 +110,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       });
     };
 
+    $scope.modifyExtra = function(extra) {
+      $scope.closeAdd();
+      $timeout(function() {
+        $scope.setAddType('extra', {}, extra);
+      })
+    }
 
     function editFeature(feature, isAdd) {
       lpDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
@@ -140,67 +147,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     };
 
     lpEvent.register('editStarting', $scope.closeAdd, $scope);
-
-    $scope.addNewExtra = function () {
-      var newExtra = {title: "", desc: "", aliases: []};
-      $scope.model.extras.push(newExtra);
-      $scope.showDesc(newExtra);
-      $timeout(function () {
-        jQuery('.extra-title-edit:last').focus();
-      })
-    };
-
-    $scope.deleteExtra = function (extra) {
-      if ($scope.currentExtra === extra) {
-        $scope.currentExtra = null;
-      }
-      $scope.model.extras.splice($scope.model.extras.indexOf(extra), 1);
-    };
-
-    $scope.addNewReset = function (resetType) {
-      lpDialog.show({templateUrl: "editor/dialogs/new_reset.html", controller: "NewResetCtrl", scope: $scope.$new(),
-        locals: {room: $scope.model, resetType: resetType}});
-    };
-
-    $scope.deleteMobile = function (mobileIx) {
-      $scope.model.mobile_resets.splice(mobileIx);
-    };
-
-    $scope.mobileArticles = function (mobileReset, mobile) {
-      var scope = $scope.$new();
-      scope.mobileTitle = mobile.title;
-      lpDialog.show({templateUrl: "editor/dialogs/article_load.html", controller: "ArticleLoadCtrl",
-        scope: scope, locals: {reset: mobileReset, areaId: $scope.model.dbo_id.split(':')[0]}});
-    };
-
-    $scope.deleteArticle = function (articleIx) {
-      $scope.model.article_resets.splice(articleIx);
-    };
-
-    $scope.showDesc = function (extra) {
-      $scope.currentExtra = extra;
-      $scope.extraDisplay = 'desc';
-    };
-
-    $scope.newAlias = function () {
-      $scope.currentExtra.aliases.push("");
-      $timeout(function () {
-        jQuery('.extra-alias-edit:last').focus();
-      });
-    };
-
-    $scope.extraRowClass = function (extra) {
-      return extra === $scope.currentExtra ? 'info' : '';
-    };
-
-    $scope.deleteAlias = function (ix) {
-      $scope.currentExtra.aliases.splice(ix, 1);
-    };
-
-    $scope.showAliases = function (extra) {
-      $scope.currentExtra = extra;
-      $scope.extraDisplay = 'aliases';
-    };
 
     $scope.addFeature = function () {
       var feature = angular.copy($scope.newFeature);
@@ -235,6 +181,53 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     };
 
   }]);
+
+
+angular.module('lampost_editor').controller('RoomExtraCtrl', ['$scope', 'lpEditor', function($scope, lpEditor) {
+
+  $scope.parentModel = $scope.model;
+
+  if (lpEditor.addObj) {
+    $scope.model = lpEditor.addObj;
+    $scope.newAdd = false;
+  } else {
+    $scope.model = {desc: '', aliases: [], title: ''}
+    $scope.newAdd = true;
+  }
+
+   $scope.addNewAlias = function () {
+      $scope.model.aliases.push('');
+      $timeout(function () {
+        jQuery('.alias-row:last').focus();
+      });
+    };
+
+
+    $scope.deleteAlias = function (index) {
+      $scope.model.aliases.splice(index, 1);
+    };
+
+
+  $scope.closeAdd = function() {
+    if ($scope.model.title && $scope.model.desc) {
+      $scope.$parent.closeAdd();
+    } else {
+      $scope.lastError = "Title and Description required.";
+    }
+  }
+
+  $scope.deleteExtra = function (extra) {
+    $scope.parentModel.extras.splice($scope.parentModel.extras.indexOf($scope.model), 1);
+    $scope.closeAdd();
+  };
+
+  $scope.createExtra = function () {
+    $scope.parentModel.extras.push($scope.model);
+    $scope.closeAdd();
+  };
+
+}]);
+
 
 angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpEditor', 'lpCache', 'lpRemote',
   function ($q, $scope, lpEditor, lpCache, lpRemote) {
