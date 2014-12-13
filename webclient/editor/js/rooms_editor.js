@@ -12,7 +12,8 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       {id: 'new_exit', label: 'Exit'},
       {id: 'room_reset', label: 'Mobile', options: mobileOptions},
       {id: 'room_reset', label: 'Article', options: articleOptions},
-      {id: 'extra', label: 'Extra'}
+      {id: 'extra', label: 'Extra'},
+      {id: 'feature', label: 'Feature'}
     ];
 
     $scope.setAddType = function (addType, addOptions, addObj) {
@@ -26,6 +27,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       $scope.activeAdd = null;
       $scope.addPanel = null;
       $scope.activeExit = null;
+      $scope.newFeature = null;
     };
 
     function loadAreas() {
@@ -118,11 +120,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     }
 
     function editFeature(feature, isAdd) {
-      lpDialog.show({templateUrl: "editor/dialogs/edit-" + feature.sub_class_id + ".html", controller: feature.sub_class_id + "FeatureController",
-        locals: {room: $scope.model, feature: feature, isAdd: isAdd}, noEscape: true});
+      $scope.closeAdd();
+      $timeout(function () {
+        $scope.activeFeature = feature;
+        $scope.setAddType(feature.sub_class_id, null, isAdd ? feature : undefined);
+      })
     }
-
-    $scope.availFeatures = {store: 'store', entrance: 'entrance'};
 
     $scope.deleteExit = function (exit) {
       lpDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit", function () {
@@ -146,15 +149,20 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       })
     };
 
-    lpEvent.register('editStarting', $scope.closeAdd, $scope);
 
-    $scope.addFeature = function () {
-      var feature = angular.copy($scope.newFeature);
+    $scope.startFeature = function (newFeature) {
+      $scope.closeAdd();
+      var feature = angular.copy(newFeature);
       if (feature.edit_required) {
         editFeature(feature, true)
       } else {
         $scope.model.features.push(feature);
       }
+    };
+
+    $scope.deleteFeature = function () {
+      $scope.model.features.splice($scope.model.features.indexOf($scope.activeFeature), 1);
+      $scope.closeAdd();
     };
 
     $scope.selectScript = function (script) {
@@ -170,15 +178,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       $scope.model.scripts.splice($scope.model.scripts.indexOf(script_id), 1);
     };
 
-    $scope.removeFeature = function (feature) {
-      lpDialog.showConfirm("Remove Feature", "Are you sure you want to remove this feature?", function () {
-        $scope.model.features.splice($scope.model.features.indexOf(feature), 1);
-      });
-    };
-
-    $scope.editFeature = function (feature) {
+    $scope.modifyFeature = function (feature) {
       editFeature(feature);
     };
+
+    lpEvent.register('editStarting', $scope.closeAdd, $scope);
+
 
   }]);
 

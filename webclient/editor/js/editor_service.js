@@ -311,6 +311,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
 
     $scope.revertModel = function () {
       angular.copy(originalModel, activeModel);
+      lpEvent.dispatch('editStarting', originalModel);
     };
 
     $scope.addNewAlias = function () {
