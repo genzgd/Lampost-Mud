@@ -209,7 +209,7 @@ angular.module('lampost_editor').controller('RoomExtraCtrl', ['$scope', 'lpEdito
 
 
   $scope.closeAdd = function() {
-    if ($scope.model.title && $scope.model.desc) {
+    if ($scope.newAdd || ($scope.model.title && $scope.model.desc)) {
       $scope.$parent.closeAdd();
     } else {
       $scope.lastError = "Title and Description required.";

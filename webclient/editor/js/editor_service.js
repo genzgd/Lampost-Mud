@@ -109,7 +109,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
     lpEvent.register('modelDelete', function(delModel) {
       angular.forEach(contextMap, function (context) {
-        if (context.parent = delModel) {
+        if (context.parent == delModel) {
           context.parent = null;
           lpEvent.dispatch('contextUpdate', context);
         }
@@ -343,10 +343,11 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
   }]);
 
 
-angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs', 'lpEvent', 'lpCache', 'lpEditor',
-  function ($scope, $attrs, lpEvent, lpCache, lpEditor) {
+angular.module('lampost_editor').controller('EditListCtrl',
+  ['$scope', '$attrs', 'lpEvent', 'lpCache', 'lpEditor', 'lpEditorView',
+  function ($scope, $attrs, lpEvent, lpCache, lpEditor, lpEditorView) {
 
-    var type = $attrs.listType;
+    var type =  $attrs.listType || $attrs.lpEditList;
     var context = lpEditor.getContext(type);
     var activeModel;
     var listKey;
@@ -393,6 +394,13 @@ angular.module('lampost_editor').controller('EditListCtrl', ['$scope', '$attrs',
         activeModel = null;
       }
     });
+
+    lpEvent.register("modelDelete", function(delModel) {
+      if (activeModel == delModel) {
+        activeModel = null;
+      }
+    })
+
 
     $scope.selectModel = function (model, event) {
       if (event) {

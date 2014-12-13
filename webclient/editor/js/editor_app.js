@@ -91,9 +91,14 @@ angular.module('lampost_editor').controller('EditorNavController',
 
       lpEditor.init(data).then(function () {
         $rootScope.constants = lpEditor.constants;
-        if ($scope.links.length) {
-          $scope.changeNav($scope.links[0].id);
+        var lastView = lpEditorView.lastView();
+        for (var ix = 0; ix < $scope.links.length; ix++) {
+          if ($scope.links[ix].id === lastView ) {
+            $scope.changeNav(lastView);
+            return;
+          }
         }
+        $scope.changeNav($scope.links[0].id);
       });
 
     });

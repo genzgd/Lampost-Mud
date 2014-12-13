@@ -1,3 +1,26 @@
+angular.module('lampost_editor').directive('lpEditList', ['lpEditorView',  function(lpEditorView) {
+
+  return {
+    controller: 'EditListCtrl',
+    link: function(scope, element, attrs) {
+
+      var parent = element.find('.panel-heading')[0];
+      var child = element.find('.panel-collapse')[0];
+
+      scope.listOpen = !!lpEditorView.openViews[scope.type];
+      if (scope.listOpen) {
+        jQuery(child).addClass('in');
+      }
+
+      jQuery(parent).bind('click', function() {
+        jQuery(child).collapse(!!scope.listOpen ? 'hide' : 'show');
+        scope.listOpen = !scope.listOpen;
+        lpEditorView.toggleList(scope.type, scope.listOpen);
+      })
+    }
+  }
+}]);
+
 angular.module('lampost_editor').controller('EffectListController', ['$scope', function ($scope) {
 
   $scope.$on('updateModel', updateModel);

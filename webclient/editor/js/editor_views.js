@@ -1,9 +1,26 @@
-angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lpEditor',
-  function($window, $log, lpEditor) {
+angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lpEvent', 'lpEditor',
+  function($window, $log, lpEvent, lpEditor) {
 
     var mudWindow = $window.opener;
+    var localData;
+    var views = {};
+    var openViews = {};
 
-    this.build = {
+    lpEvent.register('editReady', function(model) {
+        localData.editId = model.dbo_id;
+        localData.editType = model.dbo_key_type;
+        updateLocal();
+    });
+
+    function loadLocal() {
+        localData = JSON.parse(localStorage.getItem(lpEditor.playerId + '*editData')) || {};
+    }
+
+    function updateLocal() {
+        localStorage.setItem(lpEditor.playerId + '*editData', JSON.stringify(localData));
+    }
+
+    views.build = {
       area: {},
       room:  {
         refs: [
@@ -19,19 +36,40 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$log', 'lp
       article: {}
     };
 
-    this.mud = {
+    views.mud = {
       social: {}
     };
 
-    this.player = {
+    views.player = {
       player: {invalidate: true}
     }
 
+    this.lastView = function() {
+        loadLocal();
+        return localData.lastView;
+    }
+
     this.prepareView = function(viewType) {
-      angular.forEach(this[viewType], function(context, key) {
+      loadLocal();
+      localData.lastView = viewType;
+      localData.viewState = localData.viewState || {};
+      this.openViews = localData.viewState[viewType] || {};
+      localData.viewState[viewType] = this.openViews;
+      updateLocal();
+
+      angular.forEach(views[viewType], function(context, key) {
         lpEditor.registerContext(key, context)
       });
       return lpEditor.initView();
+    }
+
+    this.toggleList = function(type, value) {
+        if (value) {
+            this.openViews[type] = true;
+        } else {
+            delete this.openViews[type];
+        }
+        updateLocal();
     }
 
     this.mudWindow = function() {
