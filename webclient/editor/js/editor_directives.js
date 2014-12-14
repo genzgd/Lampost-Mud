@@ -257,50 +257,53 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
   ['$scope', '$attrs', '$filter', 'lpCache', 'lpEvent', 'lpEditor',
   function ($scope, $attrs, $filter, lpCache, lpEvent, lpEditor) {
 
+    var parentKey;
     var listKey;
+    var listChange;
+    var parentId;
     var type = $attrs.lpChildType;
-    var listChange = $scope[$attrs.lpListChange] || $scope.listChange || angular.noop;
     var context = lpEditor.getContext(type);
-    var noObj = {dbo_id: "N/A"};
-
-    $scope.sourceList = [];
-    $scope.childList = [];
-    $scope.vars = {};
 
     $scope.$on('$destroy', function () {
-      lpCache.deref(listKey)
+      lpCache.deref(listKey);
+      lpCache.deref(parentKey);
     });
 
-    $scope.vars.parent = $scope['parent' + type] || context.parent;
-
-    $scope.selectedClass = function (area) {
-      return $scope.selectedArea == area ? 'alert-info' : '';
-    };
-
-    function loadList() {
-      lpCache.cache(context.parentType).then(function (parents) {
+    function initialize() {
+      $scope.vars = {};
+      parentId = $scope[$attrs.lpListParent] || context.parent.dbo_id;
+      listChange = $scope[$attrs.lpListChange] || $scope.listChange || angular.noop;
+      lpCache.deref(parentKey);
+      parentKey = context.parentType;
+      lpCache.cache(parentKey).then(function (parents) {
         $scope.sourceList = parents;
-        $scope.selectParent();
+        $scope.vars.parent = lpCache.cacheValue(parentKey, parentId);
+        loadChildren();
       });
     }
 
-    $scope.selectParent = function () {
+    function loadChildren() {
       lpCache.deref(listKey);
-      if (!$scope.vars.parent) {
-        return;
-      }
-      listKey = type + ':' + $scope.vars.parent.dbo_id;
+      listKey = type + ':' + parentId
       lpCache.cache(listKey).then(function (children) {
         $scope.childList = children;
         listChange(children);
       });
+    }
+
+    $scope.selectParent = function () {
+      if (!$scope.vars.parent) {
+        return;
+      }
+      parentId = $scope.vars.parent.dbo_id;
+      loadChildren();
     };
 
-    lpEvent.register("modelDeleted", loadList, $scope);
-    lpEvent.register("modelUpdated", loadList, $scope);
-    lpEvent.register("modelInserted", loadList, $scope);
+    lpEvent.register("modelDeleted", initialize, $scope);
+    lpEvent.register("modelUpdated", initialize, $scope);
+    lpEvent.register("modelInserted", initialize, $scope);
 
-    loadList();
+    initialize();
 
   }]);
 

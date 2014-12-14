@@ -136,7 +136,7 @@ class Store(Feature):
             self.buyback_reg = None
 
     def add_inven(self, article):
-        for perm_article in self.perm_inven:
+        for perm_article in self.perm_items:
             if article.template == perm_article.template and article.save_value == perm_article.save_value:
                 return
         self.inven.append(article)

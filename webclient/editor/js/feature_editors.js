@@ -4,6 +4,7 @@ angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter
   var noItems = {dbo_id: '--No Items--', invalid: true};
 
   $scope.store = $scope.activeFeature;
+  $scope.currencyParent = $scope.store.currency ? $scope.store.currency.split(":")[0] : undefined;
   $scope.newPerm = {};
 
   $scope.setCurrencyList = function(objects) {

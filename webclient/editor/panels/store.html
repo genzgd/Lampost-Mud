@@ -48,7 +48,7 @@
             </div>
           </div>
           <div class="col-md-6">
-            <div class="form-group" ng-controller="ChildSelectCtrl" lp-child-type="article" lp-list-change="setCurrencyList">
+            <div class="form-group" ng-controller="ChildSelectCtrl" lp-list-parent="currencyParent" lp-child-type="article" lp-list-change="setCurrencyList">
               <label class="control-label">Currency Area</label>
               <select class="form-control input.sm" ng-model="vars.parent" ng-change="selectParent()"
                 ng-options="parent as parent.dbo_id for parent in sourceList" required></select>
