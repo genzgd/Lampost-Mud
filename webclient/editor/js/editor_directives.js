@@ -253,60 +253,55 @@ angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   }
 }]);
 
-angular.module('lampost_editor').controller('objSelectorController', ['$scope', 'lmEditor', 'lpEvent',
-  function ($scope, lmEditor, lpEvent) {
+angular.module('lampost_editor').controller('ChildSelectCtrl',
+  ['$scope', '$attrs', '$filter', 'lpCache', 'lpEvent', 'lpEditor',
+  function ($scope, $attrs, $filter, lpCache, lpEvent, lpEditor) {
 
     var listKey;
+    var type = $attrs.lpChildType;
+    var context = lpEditor.getContext(type);
     var noObj = {dbo_id: "N/A"};
 
+    $scope.sourceList = [];
+    $scope.childList = [];
+    $scope.vars = {};
+
     $scope.$on('$destroy', function () {
-      lmEditor.deref(listKey)
+      lpCache.deref(listKey)
     });
 
-    lpEvent.register('activateArea', function (newArea, oldArea) {
-      if (newArea) {
-        $scope.selectArea(newArea);
-      } else if (oldArea == $scope.selectedArea) {
-        $scope.selectArea(areaList[0]);
-      }
-    });
+    $scope.vars.parent = $scope['parent' + type] || context.parent;
 
     $scope.selectedClass = function (area) {
       return $scope.selectedArea == area ? 'alert-info' : '';
     };
 
-    lmEditor.cache('area').then(function (areas) {
-      $scope.selectAreaList = areas;
-      if (areas.indexOf($scope.startArea) > -1) {
-        $scope.selectedArea = $scope.startArea;
-      } else {
-        $scope.selectedArea = areas[0];
-      }
-      $scope.selectArea();
-    });
+    function loadList() {
+      lpCache.cache(context.parentType).then(function (parents) {
+        $scope.sourceList = parents;
+        $scope.selectParent();
+      });
+    }
 
-    $scope.selectArea = function (selectedArea) {
-      $scope.selectedArea = selectedArea || $scope.selectedArea;
-      $scope.selectedAreaId = $scope.selectedArea.dbo_id;
-      if ($scope.areaChange) {
-        $scope.areaChange($scope.selectedArea);
+    $scope.selectParent = function () {
+      lpCache.deref(listKey);
+      if (!$scope.vars.parent) {
+        return;
       }
-      listKey = $scope.objType + ':' + $scope.selectedArea.dbo_id;
-      lmEditor.cache(listKey).then(function (objects) {
+      listKey = type + ':' + $scope.vars.parent.dbo_id;
+      lpCache.cache(listKey).then(function (children) {
+        angular.copy(children, $scope.childList);
         if ($scope.listChange) {
-          $scope.listChange(objects);
+          $scope.listChange(children);
         }
-        $scope.areaObjList = objects;
-        if (objects.length > 0) {
-          $scope.selObjList = objects;
-          $scope.hasAreaObj = true;
-        } else {
-          $scope.selObjList = [noObj];
-          $scope.hasAreaObj = false;
-        }
-        $scope.selectedAreaObj = $scope.areaObjList[0];
       });
     };
+
+    lpEvent.register("modelDeleted", loadList, $scope);
+    lpEvent.register("modelUpdated", loadList, $scope);
+    lpEvent.register("modelInserted", loadList, $scope);
+
+    loadList();
 
   }]);
 

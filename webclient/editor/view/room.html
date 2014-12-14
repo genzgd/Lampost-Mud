@@ -62,7 +62,8 @@
         <div class="collapse in panel-collapse" id="roomFeatures">
           <table class="table table-condensed table-hover hand">
             <tr ng-repeat="feature in model.features" ng-click="modifyFeature(feature)">
-              <td class="col-md-12">{{cap(feature.sub_class_id)}}</td>
+              <td class="col-md-6">{{cap(feature.sub_class_id)}}</td>
+              <td class="col-md-6">{{feature.title}}</td>
             </tr>
           </table>
         </div>
