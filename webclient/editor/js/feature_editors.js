@@ -1,28 +1,33 @@
 angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter', function($scope, $filter) {
 
-  var noCurrency = {dbo_id: '--None--'};
+  var noCurrency = {dbo_id: ':--None--'};
   var noItems = {dbo_id: '--No Items--', invalid: true};
 
-  $scope.objType = 'article';
   $scope.store = $scope.activeFeature;
+  $scope.newPerm = {};
 
-  $scope.listChange = function(objects) {
+  $scope.setCurrencyList = function(objects) {
     $scope.currencyList = $filter('filter')(objects, {divisible: true});
     $scope.currencyList.unshift(noCurrency);
-    $scope.permList = $filter('filter')(objects, {divisible: false});
-    if ($scope.permList.length === 0) {
-      $scope.permList = [noItems];
-    }
-    $scope.newPerm = $scope.permList[0].dbo_id;
 
     for (var ix = 0; ix < $scope.currencyList.length; ix++) {
-      if ($scope.store.currency = $scope.currencyList[ix].dbo_id) {
+      if ($scope.store.currency == $scope.currencyList[ix].dbo_id) {
         $scope.newCurrency = $scope.store.currency;
+        return;
       }
     }
     $scope.newCurrency = noCurrency.dbo_id;
     $scope.store.currency = null;
   };
+
+
+  $scope.setPermList = function (objects) {
+    $scope.permList = $filter('filter')(objects, {divisible: false});
+    if ($scope.permList.length === 0) {
+      $scope.permList = [noItems];
+    }
+    $scope.newPerm = $scope.permList[0].dbo_id;
+  }
 
   $scope.updateCurrency = function() {
     if ($scope.newCurrency == noCurrency.dbo_id) {

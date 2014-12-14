@@ -50,10 +50,6 @@ class BaseItem(TemplateInstance):
 
     general = True
 
-    def __init__(self, dbo_id=None):
-        self.target_providers = []
-        super().__init__(dbo_id)
-
     @property
     def name(self):
         return self.title

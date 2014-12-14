@@ -28,5 +28,5 @@ class Touchstone(Feature):
         source.touchstone = self.room.dbo_id
 
     def on_created(self):
-        self.target_providers.append(self.inscription)
+        self.target_providers = [self.inscription]
         self.instance_providers.append(self.inscription)

@@ -1,4 +1,5 @@
 from collections import deque
+import itertools
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import DBOField
@@ -67,14 +68,12 @@ class Store(Feature):
 
     @obj_action()
     def buy(self, source, target, **_):
-        if target not in self.inven:
-            raise ActionError("That is not in the store.")
         if self.currency and target.value:
             money = self._take_money(source, self._price(target))
             self_msg = ''.join(("You buy {N} for ", money.name, '.'))
         else:
             self_msg = "You withdraw {N}."
-        if getattr(target, 'store', None) == self:
+        if target in self.perm_items:
             target = target.template.create_instance()
         else:
             self.inven.remove(target)
@@ -93,9 +92,9 @@ class Store(Feature):
 
     def examine(self, source, **_):
         super().examine(source)
-        if self.inven:
+        if self.perm_items or self.inven:
             source.display_line("It currently contains:")
-            for article in self.inven:
+            for article in self.target_providers:
                 if self.currency:
                     price = self._price(article)
                     name = self.currency.plural_name(price)
@@ -137,15 +136,15 @@ class Store(Feature):
             self.buyback_reg = None
 
     def add_inven(self, article):
-        for perm_article in self.inven:
-            if getattr(perm_article, 'store', None) == self and article.template == perm_article.template and article.save_value == perm_article.save_value:
+        for perm_article in self.perm_inven:
+            if article.template == perm_article.template and article.save_value == perm_article.save_value:
                 return
         self.inven.append(article)
         self.room.dirty = True
 
     def on_created(self):
-        self.target_providers = self.inven.contents
-        for template in self.perm_inven:
-            perm_article = template.create_instance()
-            perm_article.store = self
-            self.add_inven(perm_article)
+        self.perm_items = [template.create_instance() for template in self.perm_inven]
+
+    @property
+    def target_providers(self):
+        return itertools.chain(self.inven.contents, self.perm_items)

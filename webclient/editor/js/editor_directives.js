@@ -259,6 +259,7 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
 
     var listKey;
     var type = $attrs.lpChildType;
+    var listChange = $scope[$attrs.lpListChange] || $scope.listChange || angular.noop;
     var context = lpEditor.getContext(type);
     var noObj = {dbo_id: "N/A"};
 
@@ -290,10 +291,8 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
       }
       listKey = type + ':' + $scope.vars.parent.dbo_id;
       lpCache.cache(listKey).then(function (children) {
-        angular.copy(children, $scope.childList);
-        if ($scope.listChange) {
-          $scope.listChange(children);
-        }
+        $scope.childList = children;
+        listChange(children);
       });
     };
 
