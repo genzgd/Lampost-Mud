@@ -56,57 +56,60 @@ angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter
 }]);
 
 
-angular.module('lampost_editor').controller('entranceFeatureController', ['$scope', '$filter', 'lmEditor', 'lpDialog',  'room', 'feature', 'isAdd',
-  function($scope, $filter, lmEditor, lpDialog, room, feature, isAdd) {
+angular.module('lampost_editor').controller('EditEntranceCtrl', ['$scope', 'lpEditor',
+  function($scope, lpEditor) {
 
-    $scope.objType = 'room';
-    $scope.entrance = angular.copy(feature);
-    $scope.room = room;
+    $scope.ent_dirs = angular.copy(lpEditor.constants.directions);
+    $scope.ent_dirs.unshift({key: 'unused', name: "Use Command"});
+    $scope.parentFilter = 'hasRooms';
 
-    $scope.listChange = function(rooms) {
 
-      if (rooms.length > 0) {
-        $scope.roomList = rooms;
-        $scope.hasRoom = true;
-      } else {
-        $scope.roomList = [{dbo_id: "N/A"}];
-        $scope.hasRoom= false;
-      }
-       $scope.entranceRoom = $scope.roomList[0];
+    function initialize() {
+       $scope.entrance = angular.copy($scope.activeFeature);
+       $scope.newAdd = !!lpEditor.addObj;
+       if (!$scope.entrance.direction) {
+        $scope.entrance.direction = 'unused';
+       }
+    }
+
+    $scope.listChange = function(children) {
+      $scope.childList = children;
+      $scope.entrance.destination = children[0].dbo_id;
+      $scope.destRoom = children[0];
     };
-
-    lmEditor.cache('constants').then(function (constants) {
-        $scope.directions = constants.directions;
-    });
 
     $scope.checkVerb = function() {
       if ($scope.entrance.verb) {
-        $scope.entrance.direction = null;
+        $scope.entrance.direction = 'unused';
       }
     };
 
     $scope.checkDirection = function () {
-      if ($scope.entrance.direction) {
+      if ($scope.entrance.direction != 'unused') {
         $scope.entrance.verb = null;
       }
     };
 
-    $scope.changeDest = function() {
-      $scope.entrance.destination = $scope.entranceRoom.dbo_id;
+    $scope.updateRoom = function() {
+      $scope.entrance.destination = $scope.destRoom.dbo_id;
     };
 
-    $scope.finishEdit = function() {
-      if (!$scope.entrance.destination) {
-        lpDialog.showOk("Destination Request", "Please set a destination");
-        return;
+    $scope.updateEntrance = function() {
+      if ($scope.entrance.direction == 'unused') {
+        $scope.entrance.direction = null;
       }
-
-      if (isAdd) {
-        room.features.push($scope.entrance);
+      if ($scope.isAdd) {
+        $scope.model.features.push($scope.entrance);
       } else {
-        angular.copy($scope.entrance, feature);
+        angular.copy($scope.entrance, $scope.activeFeature);
       }
-      $scope.dismiss();
+      $scope.closeAdd();
     };
+
+    $scope.$on('addInit', initialize);
+
+    initialize();
+
+
 
 }]);
