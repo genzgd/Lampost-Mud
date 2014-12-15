@@ -95,10 +95,14 @@ angular.module('lampost_editor').controller('EditEntranceCtrl', ['$scope', 'lpEd
     };
 
     $scope.updateEntrance = function() {
+      if (!$scope.entrance.title && !$scope.entrance.desc) {
+        $scope.lastError = "Title and description required.";
+        return;
+      }
       if ($scope.entrance.direction == 'unused') {
         $scope.entrance.direction = null;
       }
-      if ($scope.isAdd) {
+      if ($scope.newAdd) {
         $scope.model.features.push($scope.entrance);
       } else {
         angular.copy($scope.entrance, $scope.activeFeature);

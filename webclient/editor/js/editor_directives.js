@@ -274,12 +274,12 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
     function initialize() {
       $scope.vars = {};
       parentId = $scope[$attrs.lpListParent] || context.parent.dbo_id;
-      parentFilter = $scope[$attrs.lpParentFilter] || $scope.parentFilter || angular.noop;
+      parentFilter = $scope[$attrs.lpParentFilter] || $scope.parentFilter;
       listChange = $scope[$attrs.lpListChange] || $scope.listChange || angular.noop;
       lpCache.deref(parentKey);
       parentKey = context.parentType;
       lpCache.cache(parentKey).then(function (parents) {
-        $scope.sourceList = $filter(parentFilter)(parents);
+        $scope.sourceList = parentFilter ? $filter(parentFilter)(parents) : parents;
         $scope.vars.parent = lpCache.cacheValue(parentKey, parentId);
         loadChildren();
       });

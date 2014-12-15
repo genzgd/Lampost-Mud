@@ -78,11 +78,11 @@ def goto(source, args, **_):
     if session:
         new_env = session.player.env
     else:
-        area = load_object(Area, dest)
+        area = load_by_key('area', dest, True)
         if area:
             dest_rooms = area.dbo_child_keys('room')
             if dest_rooms:
-                new_env = load_object(Room, dest_rooms[0])
+                new_env = load_by_key('room', dest_rooms[0], True)
             else:
                 raise ActionError("No rooms in area {}.".format(args[0]))
         else:

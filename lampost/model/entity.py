@@ -146,8 +146,8 @@ class Entity(BaseItem):
                 self.instance.remove_entity(self)
             if new_instance:
                 new_instance.add_entity(self)
-        if not self.instance and self.env.room_id:
-            self.room_id = self.env.room_id
+        if not self.instance and self.env.dbo_id:
+            self.room_id = self.env.dbo_id
         self.env.first_look(self)
 
     def broadcast(self, **kwargs):

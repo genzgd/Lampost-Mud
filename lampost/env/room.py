@@ -103,11 +103,9 @@ class Room(RootDBO, Scriptable):
         return itertools.chain(self.features, self.exits, self.denizens, self.inven, self.instance_providers)
 
     @property
-    def room_id(self):
-        return self.dbo_id
-
-    @property
     def name(self):
+        if self.instance:
+            return "{} [i]".format(self.title)
         return self.title
 
     @property
@@ -115,7 +113,7 @@ class Room(RootDBO, Scriptable):
         return itertools.chain(self.features, self.denizens, self.inven)
 
     def glance(self, source, **_):
-        return source.display_line(self.title, ROOM_DISPLAY)
+        return source.display_line(self.name, ROOM_DISPLAY)
 
     def entity_enters(self, entity, from_ex):
         try:
@@ -158,7 +156,7 @@ class Room(RootDBO, Scriptable):
         self.examine(source)
 
     def examine(self, source, **_):
-        source.display_line(self.title, ROOM_TITLE_DISPLAY)
+        source.display_line(self.name, ROOM_TITLE_DISPLAY)
         source.display_line('HRT', ROOM_DISPLAY)
         source.display_line(self.desc, ROOM_DISPLAY)
         source.display_line('HRB', ROOM_DISPLAY)

@@ -12,11 +12,10 @@
           <input class="form-control input-sm" ng-model="entrance.title">
         </div>
       </div>
-      <div class="col-md-offset-1 col-md-3">
+      <div class="col-md-4">
         <div class="checkbox">
           <label>
-            <input type="checkbox" ng-model="entrance.instanced">
-            Instanced
+            <input type="checkbox" ng-model="entrance.instanced"> Instanced
           </label>
         </div>
       </div>
@@ -64,18 +63,31 @@
 
     <div class="row">
       <div class="col-md-12">
-      <div class="well well-sm">
-        {{destRoom.title}}
-        <p></p>
-      </div>
+        <div class="well well-sm">
+          {{destRoom.title}}
+          <p></p>
+        </div>
       </div>
     </div>
 
     <div class="row">
       <div class="col-md-12">
-        <div class="pull-right">
+        <div class="alert alert-danger" ng-show="lastError != null">
+          <button type="button" class="close" ng-click="lastError = null">×</button>
+          {{lastError}}
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="pull-right" ng-if="!newAdd">
           <button type="button" ng-click="deleteFeature()" class="btn btn-danger btn-sm">Delete Entrance</button>
-          <button type="button" ng-click="closeAdd()" class="btn btn-default btn-sm">Close</button>
+          <button type="button" ng-click="updateEntrance()" class="btn btn-default btn-sm">Close</button>
+        </div>
+        <div class="pull-right" ng-if="newAdd">
+          <button type="button" ng-click="updateEntrance()" class="btn btn-warning btn-sm">Create Entrance</button>
+          <button type="button" ng-click="closeAdd()" class="btn btn-default btn-sm">Cancel</button>
         </div>
       </div>
     </div>
