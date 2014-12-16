@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops import target_gen
-from lampost.gameops.action import convert_verbs
+from lampost.gameops.action import convert_verbs, ActionError
 from lampost.gameops.display import EXIT_DISPLAY
 
 m_requires(__name__, 'datastore')
@@ -32,6 +32,8 @@ class AreaInstance():
             self.entities.remove(entity)
             if not self.entities:
                 self.clear_rooms()
+                if entity.group:
+                    entity.group.instance = None
 
     def clear_rooms(self):
         for room in self.rooms.values():
@@ -72,6 +74,10 @@ class Entrance(Feature):
     def dest_room(self):
         return load_by_key('room', self.destination)
 
+    @property
+    def dir_desc(self):
+        return self.verb or self.direction.desc
+
     def glance(self, source, **_):
         if self.direction:
             source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
@@ -80,8 +86,16 @@ class Entrance(Feature):
 
     def __call__(self, source, **_):
         if self.instanced:
-            instance = next_instance()
+            if source.group:
+                if source.group.instance:
+                    instance = source.group.instance
+                    if self.destination not in instance.rooms:
+                        raise ActionError("Your group has entered a different instance.  You must leave your group to go this way.")
+                else:
+                    instance = source.group.instance = next_instance()
+            else:
+                instance = next_instance()
             destination = instance.get_room(self.destination)
         else:
             destination = self.dest_room
-        source.change_env(destination)
+        source.change_env(destination, self)

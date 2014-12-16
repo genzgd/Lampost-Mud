@@ -88,7 +88,7 @@ def goto(source, args, **_):
         else:
             if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])
-            new_env = load_object(Room, dest)
+            new_env = load_by_key("room", dest, True)
     if new_env:
         source.change_env(new_env)
     else:

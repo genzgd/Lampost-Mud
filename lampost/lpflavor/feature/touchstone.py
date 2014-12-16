@@ -1,10 +1,11 @@
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
 from lampost.gameops.action import obj_action
+from lampost.gameops.template import TemplateInstance
 from lampost.model.item import Readable, BaseItem
 
 
-class Inscription(BaseItem, Readable):
+class Inscription(BaseItem, TemplateInstance, Readable):
     class_id = 'inscription'
 
 inscription = Inscription()

@@ -1,13 +1,13 @@
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
-from lampost.gameops.script import Scriptable
+from lampost.gameops.template import TemplateInstance
 from lampost.model.item import BaseItem
 
 m_requires(__name__, 'log')
 
 
-class Feature(BaseItem, Scriptable):
+class Feature(BaseItem, TemplateInstance):
     class_id = 'feature'
 
     editor = DBOField(False)

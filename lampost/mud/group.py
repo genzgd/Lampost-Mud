@@ -15,6 +15,7 @@ class Group(ActionProvider):
         self.leader = leader
         self.members = []
         self.invites = set()
+        self.instance = None
         self.channel = Channel('gchat', 'next', aliases=('g', 'gc', 'gt', 'gtell', 'gsay', 'gs'))
         dispatcher.register('player_connect', self._player_connect)
 

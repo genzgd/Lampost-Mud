@@ -217,7 +217,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     function onCreated(created) {
       $scope.isDirty = false;
       lpCache.insertModel(created);
-      lpEvent.dispatch('modelSelected', created);
+      existingEdit(created);
     }
 
     function onSaved(updated) {
@@ -256,9 +256,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         $scope.isNew = false;
         intercept('preEdit').then(function() {
           init(model);
+          lpEvent.dispatch('modelSelected', originalModel);
         })
-      }, function() {
-        lpEvent.dispatch('modelSelected', originalModel);
       });
     }
 
@@ -428,7 +427,6 @@ angular.module('lampost_editor').controller('EditListCtrl',
         event.preventDefault();
         event.stopPropagation();
       }
-      lpEvent.dispatch("modelSelected", model);
       lpEvent.dispatch("startEdit", model);
     };
 

@@ -2,7 +2,7 @@ import math
 import itertools
 
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.dbo import DBOField, DBOTField, RootDBO
 from lampost.datastore.auto import TemplateField, AutoField
 from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
@@ -34,12 +34,16 @@ def target_keys(item):
     return target_keys
 
 
-class BaseItem(TemplateInstance):
+class BaseItem(RootDBO):
     class_id = 'base_item'
 
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])
+
+    def __lt__(self, y):
+        return super().__lt__(y)
+
     sex = DBOTField('none')
     flags = DBOField({})
     target_keys = TemplateField(set())

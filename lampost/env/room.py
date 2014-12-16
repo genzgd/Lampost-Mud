@@ -105,7 +105,7 @@ class Room(RootDBO, Scriptable):
     @property
     def name(self):
         if self.instance:
-            return "{} [i]".format(self.title)
+            return "{} (instance {})".format(self.title, self.instance.instance_id)
         return self.title
 
     @property

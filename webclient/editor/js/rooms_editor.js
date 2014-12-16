@@ -181,7 +181,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
 
     lpEvent.register('editStarting', $scope.closeAdd, $scope);
 
-
   }]);
 
 
