@@ -57,12 +57,12 @@ class MobileLP(EntityLP):
     enemies = TemplateField('enemies')
     guard_msg = DBOField("{source} stops you from moving {exit}.")
 
-    def entity_enter_env(self, entity):
+    def entity_enter_env(self, entity, *_):
         self._react_entity(entity)
 
-    def entity_leave_env(self, entity, ex):
-        super().entity_leave_env(entity, ex)
-        self.fight.check_follow(entity, ex)
+    def entity_leave_env(self, entity, exit_action):
+        super().entity_leave_env(entity, exit_action)
+        self.fight.check_follow(entity, exit_action)
 
     def enter_env(self, new_env, ex=None):
         super().enter_env(new_env, ex)

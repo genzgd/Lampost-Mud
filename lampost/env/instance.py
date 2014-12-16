@@ -1,6 +1,8 @@
+from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField
 from lampost.env.feature import Feature
+from lampost.env.movement import Direction
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
 from lampost.gameops.display import EXIT_DISPLAY
@@ -49,6 +51,11 @@ class AreaInstance():
         return room
 
 
+verb_exit = BroadcastMap(ea='{n} leaves {N}')
+dir_exit = BroadcastMap(ea='{n} leaves to the {N}')
+verb_entry = BroadcastMap(ea='{n} arrives {N}')
+dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
+
 class Entrance(Feature):
     sub_class_id = 'entrance'
 
@@ -75,8 +82,21 @@ class Entrance(Feature):
         return load_by_key('room', self.destination)
 
     @property
-    def dir_desc(self):
+    def name(self):
         return self.verb or self.direction.desc
+
+    @property
+    def from_name(self):
+        return self.verb if self.verb else Direction.ref_map.get(self.direction.rev_key).desc
+
+    @property
+    def entry_msg(self):
+        return verb_entry if self.verb else verb_entry
+
+    @property
+    def exit_msg(self):
+        return verb_exit if self.verb else dir_exit
+
 
     def glance(self, source, **_):
         if self.direction:

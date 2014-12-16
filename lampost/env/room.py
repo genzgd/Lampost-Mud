@@ -44,14 +44,12 @@ class Exit(RootDBO):
         return (self.direction.dbo_id,), (self.direction.desc,)
 
     @property
-    def dir_desc(self):
+    def name(self):
         return self.direction.desc
 
     @property
-    def from_desc(self):
-        from_dir = Direction.ref_map.get(self.direction.rev_key, None)
-        if from_dir:
-            return from_dir.desc
+    def from_name(self):
+        return Direction.ref_map.get(self.direction.rev_key).desc
 
     @property
     def dest_room(self):
@@ -115,25 +113,17 @@ class Room(RootDBO, Scriptable):
     def glance(self, source, **_):
         return source.display_line(self.name, ROOM_DISPLAY)
 
-    def entity_enters(self, entity, from_ex):
-        try:
-            entity.entry_msg.source = entity
-            self.receive_broadcast(entity.entry_msg)
-        except AttributeError:
-            pass
+    def entity_enters(self, entity, enter_action, entry_msg=None):
+        self.receive_broadcast(entry_msg)
         entity.env = self
         self.denizens.append(entity)
         entity.pulse_stamp = current_pulse()
-        tell(self.contents, "entity_enter_env", entity)
+        tell(self.contents, "entity_enter_env", entity, enter_action)
 
-    def entity_leaves(self, entity, ex):
-        try:
-            entity.exit_msg.source = entity
-            self.receive_broadcast(entity.exit_msg)
-        except AttributeError:
-            pass
+    def entity_leaves(self, entity, exit_action, exit_msg=None):
+        self.receive_broadcast(exit_msg)
         self.denizens.remove(entity)
-        tell(self.contents, "entity_leave_env", entity, ex)
+        tell(self.contents, "entity_leave_env", entity, exit_action)
 
     def add_inven(self, article):
         self.inven.append(article)
@@ -168,7 +158,7 @@ class Room(RootDBO, Scriptable):
         tell([x for x in self.contents if x != source], 'glance', source)
 
     def short_exits(self):
-        return ", ".join([ex.dir_desc for ex in self.exits])
+        return ", ".join([ex.name for ex in self.exits])
 
     def find_exit(self, exit_dir):
         for my_exit in self.exits:

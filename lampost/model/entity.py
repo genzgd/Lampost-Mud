@@ -1,14 +1,15 @@
 from collections import defaultdict
 import itertools
+
 from lampost.datastore.dbo import DBOField, DBOTField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
-
-from lampost.comm.broadcast import Broadcast
+from lampost.comm.broadcast import Broadcast, BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.model.item import BaseItem
 from lampost.mud.inventory import InvenContainer
+
 
 m_requires(__name__, 'log')
 
@@ -21,8 +22,8 @@ class Entity(BaseItem):
     living = True
     instance = None
 
-    entry_msg = Broadcast(e='{n} materializes.', ea="{n} arrives from the {N}.", silent=True)
-    exit_msg = Broadcast(e='{n} dematerializes.', ea="{n} leaves to the {N}", silent=True)
+    entry_msg = BroadcastMap(e='{n} materializes.', ea="{n} arrives from the {N}.")
+    exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
     def __init__(self, dbo_id=None):
         super().__init__(dbo_id)
@@ -51,10 +52,10 @@ class Entity(BaseItem):
         self.inven.remove(article)
         remove_action(self.inven_actions, article)
 
-    def entity_enter_env(self, entity):
+    def entity_enter_env(self, *_):
         pass
 
-    def entity_leave_env(self, entity, ex):
+    def entity_leave_env(self, *_):
         pass
 
     def parse(self, command):
@@ -123,23 +124,24 @@ class Entity(BaseItem):
         else:
             source.display_line("Nothing")
 
-    def change_env(self, new_env, ex=None):
+    def change_env(self, new_env, exit_action=None):
         if new_env:
-            self.leave_env(ex)
-            self.enter_env(new_env, ex)
+            self.leave_env(exit_action)
+            self.enter_env(new_env, exit_action)
         else:
             error("Entity {} changed to null environment", self.name)
 
-    def leave_env(self, ex=None):
+    def leave_env(self, exit_action=None):
         if self.env:
             old_env = self.env
             self.env = None
-            self.exit_msg.target = getattr(ex, 'dir_desc', None)
-            old_env.entity_leaves(self, ex)
+            exit_msg = Broadcast(getattr(exit_action, 'exit_msg', self.exit_msg), self, exit_action, silent=True)
+            old_env.entity_leaves(self, exit_action, exit_msg)
 
-    def enter_env(self, new_env, ex=None):
-        self.entry_msg.target = getattr(ex, 'from_desc', None)
-        new_env.entity_enters(self, ex)
+    def enter_env(self, new_env, enter_action=None):
+        entry_msg = Broadcast(getattr(enter_action, 'entry_msg', self.entry_msg), self, silent=True)
+        entry_msg.target = getattr(enter_action, 'from_name', None)
+        new_env.entity_enters(self, enter_action, entry_msg)
         new_instance = getattr(self.env, 'instance', None)
         if self.instance != new_instance:
             if self.instance:

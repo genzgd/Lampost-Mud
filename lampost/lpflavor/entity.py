@@ -125,8 +125,8 @@ class EntityLP(Entity):
             del self._next_command
         self.check_fight()
 
-    def entity_leave_env(self, entity, ex):
-        super().entity_leave_env(entity, ex)
+    def entity_leave_env(self, entity, exit_action):
+        super().entity_leave_env(entity, exit_action)
         if self._current_action and self._action_target == entity:
             self._cancel_actions()
 
