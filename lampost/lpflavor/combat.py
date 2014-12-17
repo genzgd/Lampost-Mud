@@ -119,7 +119,7 @@ class Attack(metaclass=AutoMeta):
 
 
 class AttackTemplate(SkillTemplate):
-    sub_class_id = 'attack'
+    class_id = 'attack'
 
 
 class AttackSkill(BaseSkill):
@@ -167,7 +167,7 @@ class AttackSkill(BaseSkill):
 
 
 class DefenseTemplate(SkillTemplate):
-    sub_class_id = 'defense'
+    class_id = 'defense'
 
     def on_loaded(self):
         self.calc_damage_types = set()

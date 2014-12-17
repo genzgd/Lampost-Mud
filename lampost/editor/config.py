@@ -1,7 +1,7 @@
 import copy
 from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires, requires
-from lampost.datastore.classes import get_dbo_class, get_sub_classes
+from lampost.datastore.classes import get_dbo_class
 
 m_requires(__name__, 'perm', 'datastore', 'config_manager')
 
@@ -34,6 +34,4 @@ class DisplayEditor(MethodHandler):
 @requires('context')
 class Properties(SessionHandler):
     def main(self):
-        constants = copy.copy(self.context.properties)
-        constants['features'] = [get_dbo_class(feature_id)().dto_value for feature_id in get_sub_classes('feature')]
-        self._return(constants)
+        self._return(self.context.properties)

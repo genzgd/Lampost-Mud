@@ -18,7 +18,7 @@ class RedisStore():
         self._object_map = WeakValueDictionary()
 
     def create_object(self, dbo_class, dbo_dict):
-        dbo_class = get_dbo_class(dbo_dict.get('sub_class_id', dbo_class.dbo_key_type))
+        dbo_class = get_dbo_class(dbo_class.dbo_key_type)
         dbo_id = dbo_dict['dbo_id']
         if self.object_exists(dbo_class.dbo_key_type, dbo_id):
             raise ObjectExistsError(dbo_id)
@@ -64,7 +64,7 @@ class RedisStore():
                 warn("Failed to find {} in database", dbo_key)
             return None
         dbo_dict = json_decode(json_str)
-        dbo_class = get_mixed_class(dbo_dict.get('sub_class_id', key_type), dbo_dict.get('mixins'))
+        dbo_class = get_mixed_class(key_type, dbo_dict.get('mixins'))
         dbo = dbo_class(key)
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
@@ -234,7 +234,7 @@ class RedisStore():
                 except KeyError:
                     continue
                 save_value[field] = field_value
-            return dbo.metafields(save_value, ['sub_class_id', 'template_id'])
+            return dbo.metafields(save_value, ['class_id', 'template_id'])
 
         root_save = save_level(root_dbo, True)
         self._set_new_refs(root_dbo, new_refs)

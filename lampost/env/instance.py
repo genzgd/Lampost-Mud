@@ -1,7 +1,6 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
-from lampost.env.feature import Feature
+from lampost.datastore.dbo import DBOField, RootDBO
 from lampost.env.movement import Direction
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
@@ -56,11 +55,12 @@ dir_exit = BroadcastMap(ea='{n} leaves to the {N}')
 verb_entry = BroadcastMap(ea='{n} arrives {N}')
 dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
 
-class Entrance(Feature):
-    sub_class_id = 'entrance'
+
+class Entrance(RootDBO):
+    class_id = 'entrance'
 
     verb = DBOField('enter')
-    direction = DBOField(None, 'direction')
+    direction = DBOField(None)
     destination = DBOField()
     instanced = DBOField(True)
     edit_required = DBOField(True)
@@ -69,7 +69,8 @@ class Entrance(Feature):
 
     def on_loaded(self):
         if self.direction:
-            self.verbs = (self.direction.obj_id,), (self.direction.desc,)
+            self._dir = Direction.ref_map[self.direction]
+            self.verbs = (self._dir.obj_id,), (self._dir.desc,)
             self.target_class = 'no_args'
         else:
             self.verbs = convert_verbs(self.verb)
@@ -83,11 +84,11 @@ class Entrance(Feature):
 
     @property
     def name(self):
-        return self.verb or self.direction.desc
+        return self.verb or self._dir.desc
 
     @property
     def from_name(self):
-        return self.verb if self.verb else Direction.ref_map.get(self.direction.rev_key).desc
+        return self.verb if self.verb else Direction.ref_map.get(self._dir.rev_key).desc
 
     @property
     def entry_msg(self):
@@ -97,10 +98,9 @@ class Entrance(Feature):
     def exit_msg(self):
         return verb_exit if self.verb else dir_exit
 
-
     def glance(self, source, **_):
-        if self.direction:
-            source.display_line('Exit: {0}  {1}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
+        if self._dir:
+            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
         else:
             source.display_line(self.title, EXIT_DISPLAY)
 

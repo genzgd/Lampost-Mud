@@ -1,9 +1,10 @@
 from random import randint
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.dbo import DBOField, DBOTField, RootDBO
 from lampost.datastore.auto import TemplateField
+from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import ActionError, convert_verbs
-from lampost.gameops.template import Template, TemplateInstance
+from lampost.gameops.template import Template
 from lampost.mud.action import mud_action, imm_action
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher')
@@ -47,8 +48,7 @@ class SkillTemplate(Template):
         return self.template_id
 
 
-class BaseSkill(TemplateInstance):
-    template_id = 'skill'
+class BaseSkill(metaclass=CommonMeta):
 
     verb = DBOTField()
     desc = DBOTField()

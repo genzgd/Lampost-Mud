@@ -2,8 +2,7 @@ from collections import deque
 import itertools
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
-from lampost.datastore.dbo import DBOField
-from lampost.env.feature import Feature
+from lampost.datastore.dbo import DBOField, RootDBO
 from lampost.gameops.action import obj_action, ActionError
 from lampost.mud.inventory import InvenContainer
 
@@ -25,8 +24,8 @@ def buyback_gen(target_key, entity, action):
 buyback_gen.abs_msg = "{target} is not available to buy back"
 
 
-class Store(Feature):
-    sub_class_id = 'store'
+class Store(RootDBO):
+    class_id = 'store'
 
     currency = DBOField(None, 'article')
     inven = DBOField(InvenContainer(), 'container')

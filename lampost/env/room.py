@@ -31,7 +31,7 @@ class Exit(RootDBO):
     class_id = 'exit'
 
     target_class = None
-    direction = DBOField(None, 'direction')
+    direction = DBOField()
     destination = DBOField()
     desc = DBOField()
     aliases = DBOField([])
@@ -41,22 +41,22 @@ class Exit(RootDBO):
 
     @property
     def verbs(self):
-        return (self.direction.dbo_id,), (self.direction.desc,)
+        return (self._dir.dbo_id,), (self._dir.desc,)
 
     @property
     def name(self):
-        return self.direction.desc
+        return self._dir.desc
 
     @property
     def from_name(self):
-        return Direction.ref_map.get(self.direction.rev_key).desc
+        return Direction.ref_map.get(self._dir.rev_key).desc
 
     @property
     def dest_room(self):
         return load_by_key('room', self.destination)
 
     def examine(self, source, **_):
-        source.display_line('Exit: {}  {}'.format(self.direction.desc, self.dest_room.title), EXIT_DISPLAY)
+        source.display_line('Exit: {}  {}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
 
     def __call__(self, source, **_):
         source.env.allow_leave(source, self)
@@ -68,6 +68,9 @@ class Exit(RootDBO):
         else:
             destination = self.dest_room
         source.change_env(destination, self)
+
+    def on_loaded(self):
+        self._dir = Direction.ref_map.get(self.direction)
 
 
 class Room(RootDBO, Scriptable):
@@ -172,7 +175,6 @@ class Room(RootDBO, Scriptable):
 
     def allow_leave(self, *args):
         pass
-
 
     def check_garbage(self):
         if hasattr(self, 'dirty'):

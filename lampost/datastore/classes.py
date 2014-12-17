@@ -52,16 +52,5 @@ def get_mixed_class(class_id, mixins):
         _mixed_registry[mixin_key] = mixin_class
         return mixin_class
 
-def add_sub_class(cls):
-    if cls.dbo_key_type:
-        _subclass_registry[cls.dbo_key_type].append(cls.sub_class_id)
-    else:
-        _subclass_registry[cls.class_id].append(cls.sub_class_id)
-
-
-def get_sub_classes(class_id):
-    return _subclass_registry.get(class_id, [])
-
-
 def cls_name(cls):
     return ".".join([cls.__module__, cls.__name__])

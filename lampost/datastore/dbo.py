@@ -11,29 +11,15 @@ class RootDBO(metaclass=CommonMeta):
     dbo_key_sort = None
     dbo_parent_type = None
     dbo_children_types = []
-
     dbo_indexes = ()
-
-    @classmethod
-    def load_ref(cls, dbo_repr, owner=None):
-        if dbo_repr:
-            if cls.dbo_key_type:
-                return load_object(cls, dbo_repr)
-            return cls().hydrate(dbo_repr)
-
-    @classmethod
-    def to_dto_repr(cls, value):
-        try:
-            return value.dbo_id
-        except AttributeError:
-            try:
-                return value.dto_value
-            except AttributeError:
-                return None
+    template_id = None
 
     def __init__(self, dbo_id=None):
         if dbo_id:
             self.dbo_id = str(dbo_id).lower()
+
+    def set_owner(self, owner):
+        pass
 
     def _on_loaded(self):
         for load_func in reversed(self.load_funcs):
@@ -70,7 +56,7 @@ class RootDBO(metaclass=CommonMeta):
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
                 continue
-        return self.metafields(save_value, ['dbo_id', 'sub_class_id'])
+        return self.metafields(save_value, ['dbo_id', 'class_id', 'template_id'])
 
     def on_created(self):
         pass
@@ -98,7 +84,7 @@ class RootDBO(metaclass=CommonMeta):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
         for child_type in self.dbo_children_types:
             dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
-        return self.metafields(dto_value, ['dbo_id', 'sub_class_id', 'template_id', 'dbo_key_type', 'dbo_parent_type',
+        return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_id', 'dbo_key_type', 'dbo_parent_type',
                                            'dbo_children_types'])
 
     def dbo_child_keys(self, child_type):
@@ -144,29 +130,57 @@ class RootDBO(metaclass=CommonMeta):
         return display
 
 
+def load_ref(class_id, dbo_repr, owner=None):
+    if not dbo_repr:
+        return
+
+    cls = get_dbo_class(class_id)
+    if not cls:
+        error('Unable to load reference for {}', class_id)
+        return
+    if cls.dbo_key_type:
+        return load_object(cls, dbo_repr)
+    if cls.template_id:
+        template = load_by_key(cls.template_id, dbo_repr['template_id'])
+        instance = template.create_instance(owner).hydrate(dbo_repr)
+        instance.on_created()
+        return instance
+    try:
+        cls = get_dbo_class(dbo_repr['class_id'])
+    except KeyError:
+        pass
+    instance = cls().hydrate(dbo_repr)
+    instance.set_owner(owner)
+    return instance
+
+
+def to_dto_repr(value):
+    try:
+        return value.dbo_id
+    except AttributeError:
+        try:
+            return value.dto_value
+        except AttributeError:
+            return None
+
+
 class DBOField(AutoField):
     def __init__(self, default=None, dbo_class_id=None, required=False):
         super().__init__(default)
         self.required = required
         if dbo_class_id:
-            self.value_wrapper = value_wrapper(self.default)
             self.dbo_class_id = dbo_class_id
+            self.value_wrapper = value_wrapper(self.default)
             self.hydrate_value = value_wrapper(self.default, False)(self.hydrate_dbo_value)
             self.convert_save_value = value_wrapper(self.default)(save_repr)
-            self.dto_value = value_wrapper(self.default)(self.dbo_dto_value)
+            self.dto_value = value_wrapper(self.default)(to_dto_repr)
         else:
             self.hydrate_value = lambda dto_repr, instance: dto_repr
             self.convert_save_value = lambda value: value
             self.dto_value = lambda value: value
 
-    def _dbo_class(self):
-        return get_dbo_class(self.dbo_class_id)
-
-    def dbo_dto_value(self, dbo_value):
-        return self._dbo_class().to_dto_repr(dbo_value)
-
     def hydrate_dbo_value(self, dto_repr, instance):
-        return self._dbo_class().load_ref(dto_repr, instance)
+        return load_ref(self.dbo_class_id, dto_repr, instance)
 
     def save_value(self, instance):
         value = self.convert_save_value(instance.__dict__[self.field])

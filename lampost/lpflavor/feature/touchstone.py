@@ -1,11 +1,9 @@
-from lampost.datastore.dbo import DBOField
-from lampost.env.feature import Feature
+from lampost.datastore.dbo import DBOField, RootDBO
 from lampost.gameops.action import obj_action
-from lampost.gameops.template import TemplateInstance
 from lampost.model.item import Readable, BaseItem
 
 
-class Inscription(BaseItem, TemplateInstance, Readable):
+class Inscription(BaseItem, Readable):
     class_id = 'inscription'
 
 inscription = Inscription()
@@ -15,8 +13,8 @@ inscription.desc = "An inscription written in the flowery letters of a time long
 inscription._on_loaded()
 
 
-class Touchstone(Feature):
-    sub_class_id = 'touchstone'
+class Touchstone(RootDBO):
+    class_id = 'touchstone'
 
     title = DBOField('Touchstone')
     desc = DBOField("An unadorned marble obelisk about five feet high.  There is an inscription in an archaic script on one side.")

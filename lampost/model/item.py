@@ -7,7 +7,6 @@ from lampost.datastore.auto import TemplateField, AutoField
 from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
 from lampost.gameops.display import TELL_TO_DISPLAY
-from lampost.gameops.template import TemplateInstance
 
 
 m_requires(__name__, 'dispatcher', 'log')
@@ -40,9 +39,6 @@ class BaseItem(RootDBO):
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])
-
-    def __lt__(self, y):
-        return super().__lt__(y)
 
     sex = DBOTField('none')
     flags = DBOField({})

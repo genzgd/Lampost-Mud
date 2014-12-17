@@ -1,5 +1,5 @@
 from lampost.datastore.dbo import RootDBO, DBOField
-from lampost.gameops.template import Template, TemplateInstance
+from lampost.gameops.template import Template
 from lampost.model.entity import Entity
 from lampost.model.item import target_keys
 
@@ -18,7 +18,7 @@ class MobileTemplate(Template):
         self.target_keys = target_keys(self)
 
 
-class Mobile(Entity, TemplateInstance):
+class Mobile(Entity):
     template_id = 'mobile'
 
     def detach(self):

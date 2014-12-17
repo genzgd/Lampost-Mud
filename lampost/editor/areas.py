@@ -45,10 +45,10 @@ class RoomEditor(ChildrenEditor):
     def create_exit(self):
         content = self._content()
         area, room = find_area_room(content.start_room, self.session)
-        new_dir = Direction.ref_map[content.direction]
-        if room.find_exit(new_dir):
-            raise DataError("Room already has " + new_dir.dbo_id + " exit.")
-        rev_dir = new_dir.rev_dir
+        new_dir = content.direction
+        if room.find_exit(content.direction):
+            raise DataError("Room already has " + new_dir + " exit.")
+        rev_dir = Direction.ref_map[new_dir].rev_key
         other_id = content.dest_id
         if content.is_new:
             other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
@@ -57,10 +57,11 @@ class RoomEditor(ChildrenEditor):
         else:
             other_area, other_room = find_area_room(other_id, self.session)
             if not content.one_way and other_room.find_exit(rev_dir):
-                raise DataError("Room " + other_id + " already has a " + rev_dir.obj_id + " exit.")
+                raise DataError("Room " + other_id + " already has a " + rev_dir + " exit.")
         this_exit = get_dbo_class('exit')()
         this_exit.direction = new_dir
         this_exit.destination = other_id
+        this_exit.on_loaded()
         room.exits.append(this_exit)
         save_object(room)
         publish_edit('update', room, self.session)
@@ -68,6 +69,7 @@ class RoomEditor(ChildrenEditor):
             other_exit = get_dbo_class('exit')()
             other_exit.direction = rev_dir
             other_exit.destination = room.dbo_id
+            other_exit.on_loaded()
             other_room.exits.append(other_exit)
             save_object(other_room)
             publish_edit('update', other_room, self.session, True)
@@ -76,8 +78,7 @@ class RoomEditor(ChildrenEditor):
     def delete_exit(self):
         content = self._content()
         area, room = find_area_room(content.start_room, self.session)
-        direction = Direction.ref_map[content.dir]
-        local_exit = room.find_exit(direction)
+        local_exit = room.find_exit(content.dir)
         if not local_exit:
             raise DataError('Exit does not exist')
         room.exits.remove(local_exit)
@@ -85,7 +86,7 @@ class RoomEditor(ChildrenEditor):
 
         if content.both_sides:
             other_room = local_exit.dest_room
-            other_exit = other_room.find_exit(direction.rev_dir)
+            other_exit = other_room.find_exit(Direction.ref_map[content.dir].rev_key)
             if other_exit:
                 other_room.exits.remove(other_exit)
                 if other_room.dbo_rev or other_room.exits:

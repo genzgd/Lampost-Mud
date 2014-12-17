@@ -269,13 +269,20 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
       if (lpCache.cacheValue(listKey, roomAreaId + ':' + newRoom.destId)) {
         $scope.hasError = true;
         $scope.lastError = "Room already exists";
-        newRoom.destId = prevDestId;
       } else {
         $scope.hasError = false;
         prevDestId = newRoom.destId;
         $scope.lastError = null;
       }
     };
+
+    $scope.clearError = function() {
+      $scope.hasError = false;
+      $scope.lastError = null;
+      if (prevDestId) {
+        newRoom.destId = prevDestId;
+      }
+    }
 
     $scope.changeArea = function () {
       lpCache.deref(listKey);
