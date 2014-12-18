@@ -4,6 +4,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import DBOField, RootDBO
 from lampost.gameops.action import obj_action, ActionError
+from lampost.model.item import BaseItem
 from lampost.mud.inventory import InvenContainer
 
 m_requires(__name__, 'dispatcher')
@@ -24,7 +25,7 @@ def buyback_gen(target_key, entity, action):
 buyback_gen.abs_msg = "{target} is not available to buy back"
 
 
-class Store(RootDBO):
+class Store(BaseItem):
     class_id = 'store'
 
     currency = DBOField(None, 'article')
@@ -76,7 +77,7 @@ class Store(RootDBO):
             target = target.template.create_instance()
         else:
             self.inven.remove(target)
-            self.room.dirty = True
+            self.dbo_owner.dirty = True
         target.enter_env(source)
         source.broadcast(s=self_msg,e="{n} buys {N}.", target=target)
 
@@ -139,7 +140,7 @@ class Store(RootDBO):
             if article.template == perm_article.template and article.save_value == perm_article.save_value:
                 return
         self.inven.append(article)
-        self.room.dirty = True
+        self.dbo_owner.dirty = True
 
     def on_created(self):
         self.perm_items = [template.create_instance() for template in self.perm_inven]

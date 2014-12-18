@@ -85,7 +85,7 @@ class Room(RootDBO, Scriptable):
     extras = DBOTField([], 'base_item')
     mobile_resets = DBOTField([], 'mobile_reset')
     article_resets = DBOTField([], 'article_reset')
-    features = DBOTField([], 'feature')
+    features = DBOTField([], 'base_item')
     title = DBOTField()
     instance_providers = AutoField([])
 

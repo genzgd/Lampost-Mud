@@ -7,7 +7,6 @@ import itertools
 
 _dbo_registry = {}
 _mixin_registry = {}
-_subclass_registry = defaultdict(list)
 _mixed_registry = {}
 
 log = logging.getLogger(__name__)
@@ -51,6 +50,7 @@ def get_mixed_class(class_id, mixins):
         mixin_class = type("_".join(mixin_key), mixin_bases, {'mixins': mixins})
         _mixed_registry[mixin_key] = mixin_class
         return mixin_class
+
 
 def cls_name(cls):
     return ".".join([cls.__module__, cls.__name__])

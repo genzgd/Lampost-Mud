@@ -10,6 +10,7 @@ class RootDBO(metaclass=CommonMeta):
     dbo_key_type = None
     dbo_key_sort = None
     dbo_parent_type = None
+    dbo_owner = None
     dbo_children_types = []
     dbo_indexes = ()
     template_id = None
@@ -17,9 +18,6 @@ class RootDBO(metaclass=CommonMeta):
     def __init__(self, dbo_id=None):
         if dbo_id:
             self.dbo_id = str(dbo_id).lower()
-
-    def set_owner(self, owner):
-        pass
 
     def _on_loaded(self):
         for load_func in reversed(self.load_funcs):
@@ -110,6 +108,10 @@ class RootDBO(metaclass=CommonMeta):
         def append(value, key):
             display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + str(value))
 
+        if getattr(self, 'class_id', None):
+            append(self.class_id, 'class_id')
+        if getattr(self,'dbo_key_type', None):
+            append(self.dbo_key_type, 'dbo_key_type')
         if getattr(self, 'dbo_id', None):
             append(self.dbo_id, 'dbo_id')
             level *= 99
@@ -130,7 +132,7 @@ class RootDBO(metaclass=CommonMeta):
         return display
 
 
-def load_ref(class_id, dbo_repr, owner=None):
+def load_ref(class_id, dbo_repr, dbo_owner=None):
     if not dbo_repr:
         return
 
@@ -142,7 +144,7 @@ def load_ref(class_id, dbo_repr, owner=None):
         return load_object(cls, dbo_repr)
     if cls.template_id:
         template = load_by_key(cls.template_id, dbo_repr['template_id'])
-        instance = template.create_instance(owner).hydrate(dbo_repr)
+        instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
         instance.on_created()
         return instance
     try:
@@ -150,7 +152,7 @@ def load_ref(class_id, dbo_repr, owner=None):
     except KeyError:
         pass
     instance = cls().hydrate(dbo_repr)
-    instance.set_owner(owner)
+    instance.dbo_owner = dbo_owner
     return instance
 
 

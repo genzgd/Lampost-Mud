@@ -105,7 +105,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
     };
 
     this.display = function (model) {
-      return model.name || model.title || model.dbo_id || '-new-';
+      return model.name || model.title || (model.dbo_id || model.dbo_id === 0) && model.dbo_id.toString() || '-new-';
     };
 
     lpEvent.register('modelDelete', function(delModel) {

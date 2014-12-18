@@ -121,7 +121,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     function editFeature(feature, isAdd) {
       $scope.closeAdd();
       $scope.activeFeature = feature;
-      $scope.setAddType(feature.sub_class_id, null, isAdd ? feature : undefined);
+      $scope.setAddType(feature.class_id, null, isAdd ? feature : undefined);
     }
 
     $scope.deleteExit = function (exit) {

@@ -13,7 +13,7 @@ inscription.desc = "An inscription written in the flowery letters of a time long
 inscription._on_loaded()
 
 
-class Touchstone(RootDBO):
+class Touchstone(BaseItem):
     class_id = 'touchstone'
 
     title = DBOField('Touchstone')
@@ -24,7 +24,7 @@ class Touchstone(RootDBO):
     @obj_action(target_class="func_owner")
     def touch(self, source, **_):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
-        source.touchstone = self.room.dbo_id
+        source.touchstone = self.dbo_owner.dbo_id
 
     def on_created(self):
         self.target_providers = [self.inscription]

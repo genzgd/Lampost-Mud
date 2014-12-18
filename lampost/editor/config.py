@@ -34,4 +34,6 @@ class DisplayEditor(MethodHandler):
 @requires('context')
 class Properties(SessionHandler):
     def main(self):
-        self._return(self.context.properties)
+        constants = copy.copy(self.context.properties)
+        constants['features'] = [get_dbo_class(feature_id)().dto_value for feature_id in ['touchstone', 'entrance', 'store']]
+        self._return(constants)
