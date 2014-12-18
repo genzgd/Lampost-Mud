@@ -1,11 +1,11 @@
 angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter', function($scope, $filter) {
 
   var noCurrency = {dbo_id: ':--None--'};
-  var noItems = {dbo_id: '--No Items--', invalid: true};
+  var noItems = {dbo_id: ':--No Items--'};
 
   $scope.store = $scope.activeFeature;
   $scope.currencyParent = $scope.store.currency ? $scope.store.currency.split(":")[0] : undefined;
-  $scope.newPerm = {};
+  $scope.newPerm = noItems.dbo_id;
 
   $scope.setCurrencyList = function(objects) {
     $scope.currencyList = $filter('filter')(objects, {divisible: true});
@@ -43,7 +43,7 @@ angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter
   };
 
   $scope.permExists = function() {
-    return $scope.newPerm.invalid || $scope.store.perm_inven.indexOf($scope.newPerm) > -1;
+    return $scope.newPerm === noItems.dbo_id || $scope.store.perm_inven.indexOf($scope.newPerm) > -1;
   };
 
   $scope.removePerm = function(perm) {
