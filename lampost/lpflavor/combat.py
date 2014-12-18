@@ -119,7 +119,8 @@ class Attack(metaclass=AutoMeta):
 
 
 class AttackTemplate(SkillTemplate):
-    class_id = 'attack'
+    dbo_key_type = 'attack'
+    dbo_set_key = 'attacks'
 
 
 class AttackSkill(BaseSkill):
@@ -167,7 +168,8 @@ class AttackSkill(BaseSkill):
 
 
 class DefenseTemplate(SkillTemplate):
-    class_id = 'defense'
+    dbo_key_type = 'defense'
+    dbo_set_key = 'defenses'
 
     def on_loaded(self):
         self.calc_damage_types = set()

@@ -102,6 +102,7 @@ class RedisStore():
 
     def delete_object(self, dbo):
         key = dbo.dbo_key
+        dbo.on_deleted()
         self.redis.delete(key)
         self._clear_old_refs(dbo)
         if dbo.dbo_set_key:
@@ -159,6 +160,9 @@ class RedisStore():
 
     def get_index(self, index_name, key):
         return self.redis.hget(index_name, key)
+
+    def get_full_index(self, index_name):
+        return self.redis.hgetall(index_name)
 
     def delete_index(self, index_name, key):
         return self.redis.hdel(index_name, key)

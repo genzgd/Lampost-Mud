@@ -4,7 +4,7 @@ from lampost.datastore.auto import TemplateField
 from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools
 from lampost.lpflavor.entity import EntityLP
-from lampost.lpflavor.skill import SkillTemplate
+from lampost.lpflavor.skill import add_skill
 from lampost.model.mobile import MobileTemplate
 from lampost.model.race import base_attr_value
 
@@ -37,13 +37,7 @@ class MobileTemplateLP(MobileTemplate):
     def config_instance(self, mobile, owner):
         mobile.skills = {}
         for skill_id, skill_status in self.default_skills.items():
-            skill_template = load_object(SkillTemplate, skill_id)
-            if not skill_template:
-                warn("Skill {} not found.", skill_id)
-                continue
-            skill = skill_template.create_instance(mobile)
-            skill.skill_level = skill_status['skill_level']
-            mobile.add_skill(skill)
+            add_skill(skill_id, mobile, skill_status['skill_level'])
         fill_pools(mobile)
         super().config_instance(mobile, owner)
 

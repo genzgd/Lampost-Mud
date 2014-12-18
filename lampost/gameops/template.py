@@ -1,7 +1,4 @@
-from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, RootDBO
-
-m_requires(__name__, 'datastore')
 
 
 class Template(RootDBO):

@@ -59,6 +59,9 @@ class RootDBO(metaclass=CommonMeta):
     def on_created(self):
         pass
 
+    def on_deleted(self):
+        pass
+
     def describe(self):
         return self._describe([], 0)
 

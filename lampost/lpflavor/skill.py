@@ -1,3 +1,4 @@
+from collections import defaultdict
 from random import randint
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, DBOTField, RootDBO
@@ -9,15 +10,20 @@ from lampost.mud.action import mud_action, imm_action
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
+skill_ids = {}
+
+
+def _post_init():
+    global skill_ids
+    skill_ids = get_full_index('skill_ids')
+
 
 def add_skill(skill_id, target, skill_level):
-    skill_template = load_object(SkillTemplate, skill_id)
-    if not skill_template:
-        warn("Skill {} not found.", skill_id)
-        raise ActionError("Skill not found")
-    skill_instance = skill_template.create_instance(target)
-    skill_instance.skill_level = skill_level
-    target.add_skill(skill_instance)
+    skill_template = load_by_key(skill_ids[skill_id], skill_id)
+    if skill_template:
+        skill_instance = skill_template.create_instance(target)
+        skill_instance.skill_level = skill_level
+        target.add_skill(skill_instance)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -36,19 +42,21 @@ def avg_calc(source, calc, skill_level=0):
 
 
 class SkillTemplate(Template):
-    dbo_key_type = 'skill'
-    dbo_set_key = 'skills'
 
     def on_loaded(self):
         if not self.auto_start:
             self.verbs = convert_verbs(self.verb)
 
-    @property
-    def name(self):
-        return self.template_id
+    def on_created(self):
+        set_index('skill_ids', self.dbo_id, self.dbo_key_type)
+        skill_ids[self.dbo_id] = self.dbo_key_type
+
+    def on_deleted(self):
+        delete_index('skill_ids', self.dbo_id)
+        del skill_ids[self.dbo_id]
 
 
-class BaseSkill(metaclass=CommonMeta):
+class BaseSkill(RootDBO):
 
     verb = DBOTField()
     desc = DBOTField()
