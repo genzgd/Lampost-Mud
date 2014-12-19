@@ -1,5 +1,5 @@
-angular.module('lampost_editor').service('lpEditorView', ['$window', '$filter', '$log', 'lpEvent', 'lpEditor', 'lpUtil',
-  function($window, $filter, $log, lpEvent, lpEditor, lpUtil) {
+angular.module('lampost_editor').service('lpEditorView', ['$window', '$q', '$filter', '$log', 'lpEvent', 'lpEditor', 'lpDialog', 'lpUtil',
+  function($window, $q, $filter, $log, lpEvent, lpEditor, lpDialog, lpUtil) {
 
     var mudWindow = $window.opener;
     var localData;
@@ -64,7 +64,16 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$filter', 
 
     views.mud = {
       social: {},
-      attack: {}
+      attack: {
+        preUpdate: function (attack) {
+          if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {
+            lpDialog.showOk("Invalid Weapon/Damage Types",
+              "Damage type of weapon with 'Unused' weapon is invalid.")
+            return $q.reject();
+          }
+          return $q.when();
+        }
+      }
     };
 
     cols.social = [new ColDef('dbo_id', 4), new ColDef('aliases', 8, 'model_prop join')];

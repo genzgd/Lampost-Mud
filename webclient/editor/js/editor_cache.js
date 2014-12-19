@@ -227,7 +227,11 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       }
 
       angular.forEach(refs, function(ref) {
-        childRefs(ref.type, ref.path, baseModel);
+        if (ref.path) {
+          childRefs(ref.type, ref.path, baseModel);
+        } else {
+          promises.push(lpCache(cache(ref.type)));
+        }
       });
 
       return promises;

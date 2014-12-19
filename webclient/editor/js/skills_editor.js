@@ -11,26 +11,13 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope',
     $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
       effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
 
-    this.preUpdate = function (attack) {
-      if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {
-        lpDialog.showOk("Invalid Weapon/Damage Types",
-          "Damage type of weapon with 'Unused' weapon is invalid.")
-        return $q.reject();
-      }
-      return $q.when();
-    }
+
 
   }]);
 
 
 angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter', 'lpDialog', '$scope', 'lmEditor',
   function ($q, $filter, lpDialog, $scope, lmEditor) {
-
-    this.subClassId = 'defense';
-
-    $scope.$watch('modelList', function(models) {
-      $scope.defenseList = $filter('filter')(models, {sub_class_id: 'defense'});
-    }, true);
 
     $scope.avoidList = {effectDesc: 'Chance to avoid attack based on attributes and roll', effectName: 'Avoid Calculation',
       calcWatch: 'avoid_calc', calcDefs: $scope.constants.calc_map};
@@ -53,10 +40,6 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter
       }
     };
 
-    this.preCreate = function (defense) {
-      defense.verb = defense.dbo_id;
-    };
-
     this.preUpdate = function (model) {
       if (!model.auto_start && !model.verb) {
         lpDialog.showOk("Start Method Required", "Either a command or 'autoStart' is required");
@@ -65,7 +48,6 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter
       return $q.when();
     };
 
-    lmEditor.prepare(this, $scope).prepareList('skill');
 
   }]);
 

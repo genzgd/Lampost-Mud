@@ -5,10 +5,10 @@ from lampost.editor.imports import ImportsEditor
 from lampost.editor.players import PlayerEditor
 from lampost.editor.scripts import ScriptEditor
 from lampost.editor.session import EditConnect, EditLogin, EditLogout
-from lampost.editor.socials import SocialsEditor
+from lampost.editor.shared import SocialsEditor, SkillsEditor
 from lampost.env.room import Room
 from lampost.gameops.script import Script
-from lampost.lpflavor.combat import AttackTemplate
+from lampost.lpflavor.combat import AttackTemplate, DefenseTemplate
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 from lampost.model.race import PlayerRace
@@ -31,7 +31,8 @@ def add_endpoints(web_server):
     web_server.add(r'/editor/social/(.*)', SocialsEditor)
     web_server.add(r'/editor/display/(.*)', DisplayEditor)
     web_server.add(r'/editor/race/(.*)', Editor, obj_class=PlayerRace)
-    web_server.add(r'/editor/attack/(.*)', Editor, obj_class=AttackTemplate)
+    web_server.add(r'/editor/attack/(.*)', SkillsEditor, obj_class=AttackTemplate)
+    web_server.add(r'/editor/defense/(.*)', SkillsEditor, obj_class=DefenseTemplate)
     web_server.add(r'/editor/script/list/(.*)', ChildList, obj_class=Script)
     web_server.add(r'/editor/script/(.*)', ScriptEditor, imm_level='creator')
     web_server.add(r'/editor/imports/(.*)', ImportsEditor)

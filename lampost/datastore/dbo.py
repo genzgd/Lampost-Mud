@@ -143,8 +143,7 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
 
     cls = get_dbo_class(class_id)
     if not cls:
-        error('Unable to load reference for {}', class_id)
-        return
+        return error('Unable to load reference for {}', class_id)
     if cls.dbo_key_type:
         return load_object(cls, dbo_repr)
 
@@ -157,13 +156,15 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
         template = load_by_key(cls.template_id, dbo_repr['template_id'])
         if template:
             instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
-            instance.on_created()
+            if instance:
+                instance.on_created()
             return instance
         else:
             warn("Missing template for template_id {}", cls.template_id)
             return
     instance = cls().hydrate(dbo_repr)
-    instance.dbo_owner = dbo_owner
+    if instance:
+        instance.dbo_owner = dbo_owner
     return instance
 
 
