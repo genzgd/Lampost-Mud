@@ -1,11 +1,6 @@
-angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope', '$filter', 'lmEditor', 'lpDialog',
-  function ($q, $scope, $filter, lmEditor, lpDialog) {
+angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope',
+  function ($scope) {
 
-    this.subClassId = 'attack';
-
-    $scope.$watch('modelList', function(models) {
-      $scope.attackList = $filter('filter')(models, {sub_class_id: 'attack'});
-    }, true);
 
     $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
       calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
@@ -15,12 +10,6 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$q', '$scope',
 
     $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
       effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
-
-    lmEditor.prepare(this, $scope).prepareList('skill');
-
-    this.preCreate = function (attack) {
-      attack.verb = attack.dbo_id;
-    };
 
     this.preUpdate = function (attack) {
       if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {

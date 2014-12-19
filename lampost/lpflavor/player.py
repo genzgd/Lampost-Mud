@@ -16,7 +16,7 @@ class PlayerLP(Player, EntityLP):
 
     race = DBOField('human')
     affinity = 'player'
-    skills = DBOField({}, 'skill_inst')
+    skills = DBOField({}, 'untyped')
     touchstone = DBOField()
     can_die = True
 
@@ -26,7 +26,7 @@ class PlayerLP(Player, EntityLP):
 
     def on_loaded(self):
         for skill in self.skills.values():
-            self.add_skill(skill)
+            self._apply_skill(skill)
 
     def check_logout(self):
         if self.last_opponent:

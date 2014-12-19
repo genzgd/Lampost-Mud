@@ -174,7 +174,7 @@ class Entity(BaseItem):
         pass
 
     def die(self):
-        self.exit_msg = Broadcast(s="{n} expires, permanently.")
+        self.exit_msg = BroadcastMap(s="{n} expires, permanently.")
         for article in reversed(self.inven):
             article.current_slot = None
             article.drop(self)

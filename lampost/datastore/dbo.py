@@ -1,4 +1,4 @@
-from lampost.datastore.classes import get_dbo_class
+from lampost.datastore.classes import get_dbo_class, set_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import TemplateField, AutoField
 from lampost.datastore.meta import CommonMeta
@@ -134,6 +134,8 @@ class RootDBO(metaclass=CommonMeta):
                     wrapper(append)(value, field)
         return display
 
+set_dbo_class('untyped', RootDBO)
+
 
 def load_ref(class_id, dbo_repr, dbo_owner=None):
     if not dbo_repr:
@@ -145,15 +147,21 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
         return
     if cls.dbo_key_type:
         return load_object(cls, dbo_repr)
-    if cls.template_id:
-        template = load_by_key(cls.template_id, dbo_repr['template_id'])
-        instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
-        instance.on_created()
-        return instance
+
     try:
         cls = get_dbo_class(dbo_repr['class_id'])
     except KeyError:
         pass
+
+    if cls.template_id:
+        template = load_by_key(cls.template_id, dbo_repr['template_id'])
+        if template:
+            instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
+            instance.on_created()
+            return instance
+        else:
+            warn("Missing template for template_id {}", cls.template_id)
+            return
     instance = cls().hydrate(dbo_repr)
     instance.dbo_owner = dbo_owner
     return instance

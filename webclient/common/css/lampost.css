@@ -283,6 +283,10 @@ div.player-msg {
   margin-top: 20px;
 }
 
+.sm-spacer {
+    margin-top: 10px;
+}
+
 .gen-close {
   font-size: 20px;
   font-weight: bold;

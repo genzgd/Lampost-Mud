@@ -291,6 +291,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       }
     }, $scope);
 
+    lpEvent.register('childUpdate', angular.noop, $scope);
+
     lpEvent.register('newEdit', function (type) {
       onOverwrite().then(function () {
         context = lpEditor.getContext(type);

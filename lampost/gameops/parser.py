@@ -162,10 +162,10 @@ class Parse():
             except ValueError:
                 if not hasattr(action, 'self_object'):
                     return MISSING_PREP
-        target_index, target_key = capture_index(target_key)
         if target_class == 'args':
             match.target = target_key
             return
+        target_index, target_key = capture_index(target_key)
         if target_key:
             targets = find_targets(self._entity, target_key, target_class, action)
             try:

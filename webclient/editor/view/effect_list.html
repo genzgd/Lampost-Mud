@@ -1,18 +1,24 @@
-<table class="table table-condensed span12">
-  <thead class="span12">
-  <th class="span10" colspan="2" title="{{effectDesc}}">{{effectName}}</th>
-  <th class="span2"></th>
-  </thead>
-  <tbody class="span12">
-  <tr class="table-bordered" ng-repeat="(calcId, value) in calcValues | orderBy: 'calcId'">
-    <td class="span5 edit-cell" title="{{calcDefs[calcId]}}">{{calcId}}</td>
-    <td class="span5 edit-cell"><input class="span12 edit-cell" type="number" ng-model="calcValues[calcId]"/></td>
-    <td class="span2 edit-cell"><a title="Delete Item" tabIndex="-1" ng-click="deleteRow(calcId)" class="icon-link"><i class="icon-remove"></i></a></td>
-  </tr>
+<div class="panel panel-warning">
+  <div class="panel-heading panel-condensed" title="{{effectDesc}}">{{effectName}}</div>
+  <div class="panel-body">
 
-  </tbody>
-</table>
-<select title="{{calcDefs[newId]}}" class="edit-cell span6" ng-model="newId" ng-options="valueId for valueId in unusedValues"></select>
-<button style="margin: 0;" class="btn btn-small btn-success" ng-click="addRow()">Add</button>
+    <div class="input-group input-group-sm" ng-repeat="(calcId, value) in calcValues | orderBy: 'calcId'"
+      title="{{calcDefs[calcId].desc}}">
+      <span class="input-group-addon">{{calcId}}</span>
+      <input type="number" class="form-control text-right" ng-change="childUpdate()" ng-model="calcValues[calcId]"
+        required>
+            <span class="input-group-btn">
+              <button title="Delete Alias" class="btn btn-default" type="button" ng-click="deleteRow(calcId)"><i
+                class="fa fa-minus-square" style="color: #b00;"></i></button>
+            </span>
+    </div>
+    <div class="sm-spacer"></div>
+    <div ng-if="unusedValues.length && $parent.model.can_write" class="pull-right">
+      <select title="{{calcDefs[newId].ddesc}}" class="input-sm" ng-model="vars.newId"
+        ng-options="valueId for valueId in unusedValues"></select>
+      <button type="button" class="btn btn-xs btn-warning" ng-click="addRow()">Add</button>
+      </span>
+    </div>
+  </div>
 
-
+</div>

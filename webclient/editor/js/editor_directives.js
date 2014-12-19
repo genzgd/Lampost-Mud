@@ -31,23 +31,17 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
   }
 }]);
 
-angular.module('lampost_editor').controller('EffectListController', ['$scope', function ($scope) {
+angular.module('lampost_editor').controller('EffectListCtrl', ['$scope', 'lpEvent',
+ function ($scope, lpEvent) {
 
-  $scope.$on('updateModel', updateModel);
-
-  function updateModel() {
-    if ($scope.$parent.model) {
-      $scope.calcValues = $scope.$parent.model[$scope.calcWatch];
-      updateUnused();
-    }
-  }
+  $scope.vars = {};
 
   function updateUnused() {
     $scope.unusedValues = [];
     angular.forEach($scope.calcDefs, function (value, key) {
       if (!$scope.calcValues.hasOwnProperty(key)) {
         if ($scope.unusedValues.length === 0) {
-          $scope.newId = key;
+          $scope.vars.newId = key;
         }
         $scope.unusedValues.push(key);
       }
@@ -56,26 +50,38 @@ angular.module('lampost_editor').controller('EffectListController', ['$scope', f
 
   $scope.deleteRow = function (rowId) {
     delete $scope.calcValues[rowId];
+    lpEvent.dispatch('childUpdate');
     updateUnused();
+  };
+
+  $scope.childUpdate = function() {
+     lpEvent.dispatch('childUpdate');
   };
 
   $scope.addRow = function () {
-    $scope.calcValues[$scope.newId] = 1;
+    $scope.calcValues[$scope.vars.newId] = 1;
+    lpEvent.dispatch('childUpdate');
     updateUnused();
   };
 
+  $scope.startEdit = function() {
+    $scope.calcValues = $scope.$parent.model[$scope.calcWatch];
+    updateUnused();
+  };
+
+  lpEvent.register('editStarting', $scope.startEdit, $scope);
+
 }]);
 
-angular.module('lampost_editor').directive('lmEffectList', [function () {
+angular.module('lampost_editor').directive('lpEffectList', [function () {
   return {
     restrict: 'A',
     scope: {},
     templateUrl: 'editor/view/effect_list.html',
-    controller: 'EffectListController',
+    controller: 'EffectListCtrl',
     link: function (scope, element, attrs) {
-      element.scope().$watch(attrs.lmEffectList, function () {
-        angular.extend(scope, element.scope().$eval(attrs.lmEffectList));
-      })
+      angular.extend(scope, element.scope().$eval(attrs.lpEffectList));
+      scope.startEdit();
     }
   }
 }]);
