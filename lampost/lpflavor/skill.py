@@ -19,6 +19,9 @@ def _post_init():
 
 
 def add_skill(skill_id, target, skill_level):
+    if skill_id not in skill_ids:
+        warn('Unable to add missing skill {}', skill_id)
+        return
     skill_template = load_by_key(skill_ids[skill_id], skill_id)
     if skill_template:
         skill_instance = skill_template.create_instance(target)
