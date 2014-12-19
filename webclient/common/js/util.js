@@ -14,7 +14,7 @@ angular.module('lampost_util').service('lpEvent', ['$log', function ($log) {
         })
       }
     } else {
-        callback.apply(this, args)
+      callback.apply(this, args)
     }
   }
 
@@ -192,4 +192,27 @@ angular.module('lampost_util').service('lpUtil', [function () {
     outer.detach();
     return [(w1 - w2), (h1 - h2)];
   };
+}]);
+
+
+angular.module('lampost_util').filter('cap', ['lpUtil', function(lpUtil) {
+  return lpUtil.capitalize;
+}]);
+
+angular.module('lampost_util').filter('idOnly', [function() {
+  return function (model) {
+    return model && model.dbo_id && model.dbo_id.split(':')[1];
+  };
+}]);
+
+angular.module('lampost_util').filter('model_prop', [function() {
+  return function(model, prop) {
+    return model[prop];
+  }
+}]);
+
+angular.module('lampost_util').filter('join', [function() {
+   return function (values, del) {
+      return values.join(del || ' ');
+    };
 }]);

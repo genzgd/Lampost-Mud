@@ -1,12 +1,12 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-3">
-      <ng-include src="'editor/view/area_list.html'"></ng-include>
-      <ng-include src="'editor/view/room_list.html'"></ng-include>
-      <ng-include src="'editor/view/mobile_list.html'"></ng-include>
-      <ng-include src="'editor/view/article_list.html'"></ng-include>
+      <div lp-edit-list="area"></div>
+      <div lp-edit-list="room"></div>
+      <div lp-edit-list="mobile"></div>
+      <div lp-edit-list="article"></div>
     </div>
-    <div ng-include="'editor/view/editor_main.html'">
+    <div class="col-md-9" ng-include="'editor/view/editor_main.html'">
     </div>
   </div>
 </div>

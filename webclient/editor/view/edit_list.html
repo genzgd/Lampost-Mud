@@ -1,4 +1,4 @@
-<div class="panel panel-info" lp-edit-list="mobile">
+<div class="panel panel-info">
   <div class="hand panel-heading panel-condensed">
     {{editorLabel}}: <strong>{{activeModel()}}</strong>
           <span class="pull-right"><a ng-show="addAllowed()" ng-click="newEditor(type, $event)"><i
@@ -10,14 +10,12 @@
       <table class="table table-condensed table-hover" style="padding-bottom: 0; margin: 0">
         <thead>
         <tr>
-          <th class="col-md-4">Id</th>
-          <th class="col-md-8">Title</th>
+          <th ng-repeat="col in colDefs track by $index" ng-class="col.hClass()">{{col.header}}</th>
         </tr>
         </thead>
         <tbody>
         <tr class="hand" ng-repeat="model in modelList" ng-click="selectModel(model)" ng-class="rowClass(model)">
-          <td class="col-md-4">{{idOnly(model)}}</td>
-          <td class="col-md-8">{{model.title}}</td>
+          <td ng-repeat="col in colDefs track by $index" ng-class="col.dClass()">{{col.data(model)}}</td>
         </tr>
         </tbody>
       </table>

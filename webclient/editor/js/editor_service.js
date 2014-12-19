@@ -350,11 +350,12 @@ angular.module('lampost_editor').controller('EditListCtrl',
   ['$scope', '$attrs', 'lpEvent', 'lpCache', 'lpEditor', 'lpEditorView',
   function ($scope, $attrs, lpEvent, lpCache, lpEditor, lpEditorView) {
 
-    var type =  $attrs.listType || $attrs.lpEditList;
+    var type =  $attrs.lpListType || $attrs.lpEditList;
     var context = lpEditor.getContext(type);
     var activeModel;
     var listKey;
 
+    $scope.colDefs = lpEditorView.cols(type);
     $scope.type = type;
     $scope.editorLabel = context.label;
     $scope.addAllowed = function () {

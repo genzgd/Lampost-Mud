@@ -6,3 +6,4 @@ angular.module('lampost_editor').filter('hasRooms', ['$filter', function($filter
         });
     }
 }]);
+

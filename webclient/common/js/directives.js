@@ -16,18 +16,6 @@ angular.module('lampost_dir').directive("enterKey", function () {
     }
 });
 
-angular.module('lampost_dir').directive('lmBlur', function () {
-    return {
-        restrict:'A',
-        link:function (scope, element, attrs) {
-            element.bind('blur', function () {
-                scope.$eval(attrs.lmBlur);
-            });
-        }
-    }
-
-});
-
 angular.module('lampost_dir').directive('autoComplete', function () {
     return {
         restrict:'A',
@@ -43,31 +31,6 @@ angular.module('lampost_dir').directive('autoComplete', function () {
     }
 });
 
-angular.module('lampost_dir').directive('popover', function () {
-    return {
-        restrict:'A',
-        link:function (scope, element, attrs) {
-            var args = attrs.popover.split('|');
-            var opts = {};
-            if (args.length > 1) {
-                opts.placement = args[1];
-            }
-            if (args.length > 2) {
-                opts.trigger = args[2];
-            }
-            element.popover(opts);
-
-            scope.$watch(attrs.popoverTitle + ' + ' + args[0],
-                configPopover);
-            configPopover();
-            function configPopover() {
-                var popover = element.data('popover');
-                popover.options.title = scope.$eval(attrs.popoverTitle);
-                popover.options.content = scope.$eval(args[0]);
-            }
-        }
-    }
-});
 
 angular.module('lampost_dir').directive('scrollBottom', ['$timeout', function ($timeout) {
     return {
@@ -126,16 +89,6 @@ angular.module('lampost_dir').directive("prefFocus", ['$rootScope', '$timeout', 
     }
 }]);
 
-angular.module('lampost_dir').directive("altText", [function () {
-    return {
-        restrict:"A",
-        link:function (scope, element, attrs) {
-            element.attr("title", scope.$eval(attrs.altText));
-        }
-    }
-
-}]);
-
 angular.module('lampost_dir').directive("lmStep", [function() {
   return {
     restrict: "A",
@@ -169,3 +122,5 @@ angular.module('lampost_dir').directive("colorPicker", [function () {
     }
 
 }]);
+
+angular.module('lampost_dir').filter()

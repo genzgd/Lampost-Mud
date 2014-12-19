@@ -24,9 +24,7 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
       return model && model.dbo_id && model.dbo_id.split(':')[1];
     };
     $rootScope.cap = lpUtil.capitalize;
-    $rootScope.join = function (values, del) {
-      return values.join(del || ' ');
-    };
+
     $rootScope.errors = {};
     $rootScope.siteTitle = lampost_config.title;
     $rootScope.appState = 'connecting';
@@ -43,13 +41,7 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
       }
     }
 
-    $rootScope.newEditor = function (editorId, event) {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      lpEvent.dispatch('newEdit', editorId);
-    }
+
 
   }]);
 

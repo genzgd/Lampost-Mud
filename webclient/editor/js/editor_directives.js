@@ -1,7 +1,9 @@
-angular.module('lampost_editor').directive('lpEditList', ['lpEditorView',  function(lpEditorView) {
+angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorView',  function(lpEvent, lpEditorView) {
 
   return {
+    scope: {},
     controller: 'EditListCtrl',
+    templateUrl: 'editor/view/edit_list.html',
     link: function(scope, element, attrs) {
 
       var parent = element.find('.panel-heading')[0];
@@ -17,6 +19,14 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEditorView',  funct
         scope.listOpen = !scope.listOpen;
         lpEditorView.toggleList(scope.type, scope.listOpen);
       });
+
+      scope.newEditor = function (editorId, event) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        lpEvent.dispatch('newEdit', editorId);
+      }
     }
   }
 }]);
