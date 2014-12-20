@@ -1,7 +1,6 @@
 angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope',
   function ($scope) {
 
-
     $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
       calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
 
@@ -11,13 +10,10 @@ angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope',
     $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
       effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
 
-
-
   }]);
 
 
-angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter', 'lpDialog', '$scope', 'lmEditor',
-  function ($q, $filter, lpDialog, $scope, lmEditor) {
+angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$scope', function ($scope) {
 
     $scope.avoidList = {effectDesc: 'Chance to avoid attack based on attributes and roll', effectName: 'Avoid Calculation',
       calcWatch: 'avoid_calc', calcDefs: $scope.constants.calc_map};
@@ -40,15 +36,6 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$q', '$filter
       }
     };
 
-    this.preUpdate = function (model) {
-      if (!model.auto_start && !model.verb) {
-        lpDialog.showOk("Start Method Required", "Either a command or 'autoStart' is required");
-        return $q.reject();
-      }
-      return $q.when();
-    };
-
-
   }]);
 
 
@@ -60,7 +47,5 @@ angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lmEdit
 
     $scope.defaultSkills = {effectDesc: "Default skills and levels assigned to this race", effectName: "Default Skills",
           attrWatch: "default_skills"};
-
-    lmEditor.prepare(this, $scope).prepareList('race');
 
   }]);

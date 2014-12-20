@@ -1,16 +1,24 @@
-<table class="table table-condensed span12">
-  <thead class="span12">
-  <th class="span10" colspan="2" title="{{selectDesc}}">{{selectName}}</th>
-  <th class="span2"></th>
-  </thead>
-  <tbody class="span12">
-  <tr class="table-bordered" ng-repeat="selection in selectValues | orderBy: 'selection'">
-    <td class="span10 edit-cell" title="{{selectDefs[selection]}}">{{selection}}</td>
-    <td class="span2 edit-cell"><a title="Delete Item" tabIndex="-1" ng-click="deleteRow(selection)" class="icon-link"><i class="icon-remove"></i></a></td>
-  </tr>
-  </tbody>
-</table>
-<select title="{{selectionDefs[newSelection]}}" class="edit-cell span6" ng-model="newSelection" ng-options="unused for unused in unusedValues"></select>
-<button style="margin: 0;" class="btn btn-small btn-success" ng-click="addRow()">Add</button>
+<div class="panel panel-warning">
+  <div class="panel-heading panel-condensed" title="{{selectDesc}}">{{selectName}}</div>
+
+    <table class="table table-condensed table-bordered">
+
+      <tbody>
+      <tr ng-repeat="selection in selectValues | orderBy: 'selection'">
+        <td class="col-md-10" title="{{selectDefs[selection]}}">{{selection}}</td>
+        <td class="col-md-2"><a title="Delete Item" tabIndex="-1" ng-click="deleteRow(selection)" class="icon-link"><i
+          class="fa fa-minus-square" style="color: #b00;"></i></a></td>
+      </tr>
+      </tbody>
+    </table>
+  <div class="panel-body panel-condensed">
+    <div ng-if="unusedValues.length && $parent.model.can_write" class="pull-right">
+      <select title="{{selectionDefs[vars.newSelection]}}" class="input-sm" ng-model="vars.newSelection"
+        ng-options="valueId for valueId in unusedValues"></select>
+      <button type="button" class="btn btn-xs btn-warning" ng-click="addRow()">Add</button>
+      </span>
+    </div>
+</div>
+</div>
 
 

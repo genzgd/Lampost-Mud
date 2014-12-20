@@ -64,12 +64,12 @@ angular.module('lampost_editor').controller('EffectListCtrl', ['$scope', 'lpEven
     updateUnused();
   };
 
-  $scope.startEdit = function() {
+  this.startEdit = function() {
     $scope.calcValues = $scope.$parent.model[$scope.calcWatch];
     updateUnused();
   };
 
-  lpEvent.register('editStarting', $scope.startEdit, $scope);
+  lpEvent.register('editStarting', this.startEdit, $scope);
 
 }]);
 
@@ -79,30 +79,23 @@ angular.module('lampost_editor').directive('lpEffectList', [function () {
     scope: {},
     templateUrl: 'editor/view/effect_list.html',
     controller: 'EffectListCtrl',
-    link: function (scope, element, attrs) {
+    link: function (scope, element, attrs, controller) {
       angular.extend(scope, element.scope().$eval(attrs.lpEffectList));
-      scope.startEdit();
+      controller.startEdit();
     }
   }
 }]);
 
-angular.module('lampost_editor').controller('SimpleListController', ['$scope', function ($scope) {
+angular.module('lampost_editor').controller('SimpleListCtrl', ['$scope', 'lpEvent', function ($scope, lpEvent) {
 
-  $scope.$on('updateModel', updateModel);
-
-  function updateModel() {
-    if ($scope.$parent.model) {
-      $scope.selectValues = $scope.$parent.model[$scope.selectWatch];
-      updateUnused();
-    }
-  }
+  $scope.vars = {};
 
   function updateUnused() {
     $scope.unusedValues = [];
     angular.forEach($scope.selectDefs, function (value, key) {
       if ($scope.selectValues.indexOf(key) === -1) {
         if ($scope.unusedValues.length === 0) {
-          $scope.newSelection = key;
+          $scope.vars.newSelection = key;
         }
         $scope.unusedValues.push(key);
       }
@@ -112,28 +105,34 @@ angular.module('lampost_editor').controller('SimpleListController', ['$scope', f
   $scope.deleteRow = function (selection) {
     var ix = $scope.selectValues.indexOf(selection);
     $scope.selectValues.splice(ix, 1);
+    lpEvent.dispatch('childUpdate');
     updateUnused();
   };
 
   $scope.addRow = function () {
-    $scope.selectValues.push($scope.newSelection);
+    $scope.selectValues.push($scope.vars.newSelection);
+    lpEvent.dispatch('childUpdate');
     updateUnused();
   };
 
-  updateModel();
+  this.startEdit = function () {
+     $scope.selectValues = $scope.$parent.model[$scope.selectWatch];
+     updateUnused();
+  }
+
+  lpEvent.register('editStarting', updateUnused, $scope);
 
 }]);
 
-angular.module('lampost_editor').directive('lmSimpleList', [function () {
+angular.module('lampost_editor').directive('lpSimpleList', [function () {
   return {
     restrict: 'A',
     scope: {},
     templateUrl: 'editor/view/simple_list.html',
-    controller: 'SimpleListController',
-    link: function (scope, element, attrs) {
-      element.scope().$watch(attrs.lmSimpleList, function () {
-        angular.extend(scope, element.scope().$eval(attrs.lmSimpleList));
-      })
+    controller: 'SimpleListCtrl',
+    link: function (scope, element, attrs, controller) {
+      angular.extend(scope, element.scope().$eval(attrs.lpSimpleList));
+      controller.startEdit();
     }
   }
 }]);

@@ -14,7 +14,7 @@
     </div>
     <div class="sm-spacer"></div>
     <div ng-if="unusedValues.length && $parent.model.can_write" class="pull-right">
-      <select title="{{calcDefs[newId].ddesc}}" class="input-sm" ng-model="vars.newId"
+      <select title="{{calcDefs[vars.newId].desc}}" class="input-sm" ng-model="vars.newId"
         ng-options="valueId for valueId in unusedValues"></select>
       <button type="button" class="btn btn-xs btn-warning" ng-click="addRow()">Add</button>
       </span>

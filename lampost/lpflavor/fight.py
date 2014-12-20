@@ -39,15 +39,15 @@ class Fight():
     def end(self, opponent, victory):
         try:
             del self.opponents[opponent]
-            if opponent.last_opponent == self:
+            if opponent.last_opponent == self.me:
                 opponent.last_opponent = None
         except KeyError:
             warn("Removing opponent not in fight")
 
     def end_all(self):
-        for opponent in self.opponents.keys():
+        for opponent in list(self.opponents.keys()):
+            self.end(opponent, False)
             opponent.end_combat(self.me, True)
-        self.opponents.clear()
         self.clear_hunt_timer()
 
     def check_follow(self, opponent, ex):

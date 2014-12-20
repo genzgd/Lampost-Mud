@@ -131,7 +131,6 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
      script: {label: "Script", url: "script"},
      display: {label: "Display", url: "display"},
      race: {label: "Races", objLabel: "Race", url: "race"},
-     attack: {label: "Attacks", objLabel: "Attack", url: "skill"},
      defense: {label: "Defenses", objLabel: "Defense", url: "skill"},
      imports: {label: "Imports"} */
 
@@ -211,7 +210,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
           }, dataError);
         }
         return lpRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
-      })
+      }, dataError);
     }
 
     function onCreated(created) {
@@ -423,7 +422,6 @@ angular.module('lampost_editor').controller('EditListCtrl',
         changeActive(null);
       }
     })
-
 
     $scope.selectModel = function (model, event) {
       if (event) {
