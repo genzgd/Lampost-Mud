@@ -52,9 +52,9 @@ class EntityLP(Entity):
         self.fight.update_skills()
 
     def add_skill(self, skill):
-        if skill.template_id in self.skills:
+        if skill.template_key in self.skills:
             raise ActionError("Skill already exists.")
-        self.skills[skill.template_id] = skill
+        self.skills[skill.template_key] = skill
         self._apply_skill(skill)
 
     def _apply_skill(self, skill):

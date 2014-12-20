@@ -131,7 +131,6 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
      script: {label: "Script", url: "script"},
      display: {label: "Display", url: "display"},
      race: {label: "Races", objLabel: "Race", url: "race"},
-     defense: {label: "Defenses", objLabel: "Defense", url: "skill"},
      imports: {label: "Imports"} */
 
 

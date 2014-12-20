@@ -7,7 +7,7 @@ class Template(RootDBO):
     def create_instance(self, owner=None):
         instance = self.instance_cls()
         instance.template = self
-        instance.template_id = self.dbo_id
+        instance.template_key = self.dbo_key
         self.config_instance(instance, owner)
         return instance
 

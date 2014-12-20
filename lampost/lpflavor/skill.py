@@ -1,6 +1,7 @@
 from collections import defaultdict
 from random import randint
 from lampost.context.resource import m_requires
+from lampost.datastore.classes import subclasses
 from lampost.datastore.dbo import DBOField, DBOTField, RootDBO
 from lampost.datastore.auto import TemplateField
 from lampost.datastore.meta import CommonMeta
@@ -8,25 +9,26 @@ from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template
 from lampost.mud.action import mud_action, imm_action
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher')
+m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 
-skill_ids = {}
+skill_ids = set()
 
 
 def _post_init():
     global skill_ids
-    skill_ids = get_full_index('skill_ids')
+    skill_ids = fetch_set_keys('skill_ids')
+    context.set('skill_types', list({subclass.dbo_key_type for subclass
+                                     in subclasses(SkillTemplate) if hasattr(subclass, 'dbo_key_type')}))
 
 
 def add_skill(skill_id, target, skill_level):
-    if skill_id not in skill_ids:
-        warn('Unable to add missing skill {}', skill_id)
-        return
-    skill_template = load_by_key(skill_ids[skill_id], skill_id)
+    skill_template = load_object(Untyped, skill_id)
     if skill_template:
         skill_instance = skill_template.create_instance(target)
         skill_instance.skill_level = skill_level
         target.add_skill(skill_instance)
+    else:
+        warn('Unable to add missing skill {}', skill_id)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -51,12 +53,12 @@ class SkillTemplate(Template):
             self.verbs = convert_verbs(self.verb)
 
     def on_created(self):
-        set_index('skill_ids', self.dbo_id, self.dbo_key_type)
-        skill_ids[self.dbo_id] = self.dbo_key_type
+        add_set_key('skill_ids', self.dbo_key)
+        skill_ids.add(self.dbo_key)
 
     def on_deleted(self):
         delete_index('skill_ids', self.dbo_id)
-        del skill_ids[self.dbo_id]
+        skill_ids.pop(self.dbo_key, None)
 
 
 class BaseSkill(RootDBO):

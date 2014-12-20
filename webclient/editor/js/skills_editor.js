@@ -1,3 +1,20 @@
+angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpEvent', 'lpRemote', 'lpEditor',
+ function($q, lpEvent, lpRemote, lpEditor) {
+
+    var skillMap;
+
+    this.skillMap = function() {
+        if (skillMap) {
+            return $q.when(skillMap);
+        }
+        return lpRemote.request('editor/skill_map').then(function(map) {
+            skillMap = map;
+            return $q.when(map);
+        })
+    }
+
+  }]);
+
 angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope',
   function ($scope) {
 

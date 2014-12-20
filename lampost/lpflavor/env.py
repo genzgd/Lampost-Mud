@@ -16,7 +16,6 @@ def find_cost(room):
 
 
 class ExitLP(lampost.env.room.Exit):
-    class_id = 'exit'
     prep_time = 1
 
     guarded = DBOField(False)

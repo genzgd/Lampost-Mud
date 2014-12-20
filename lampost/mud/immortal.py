@@ -78,17 +78,17 @@ def goto(source, args, **_):
     if session:
         new_env = session.player.env
     else:
-        area = load_by_key('area', dest, True)
+        area = load_object(Area, dest, True)
         if area:
             dest_rooms = area.dbo_child_keys('room')
             if dest_rooms:
-                new_env = load_by_key('room', dest_rooms[0], True)
+                new_env = load_object(Room, dest_rooms[0], True)
             else:
                 raise ActionError("No rooms in area {}.".format(args[0]))
         else:
             if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])
-            new_env = load_by_key("room", dest, True)
+            new_env = load_object(Room, dest, True)
     if new_env:
         source.change_env(new_env)
     else:
@@ -143,10 +143,7 @@ def patch_db(verb, args, command, **_):
         return "Value required."
     if new_value == "None":
         new_value = None
-    if obj_type == "player":
-        obj = load_object(Player, obj_id)
-    else:
-        obj = load_cached(obj_type, obj_id)
+    obj = load_object(Untyped, ':'.join([obj_type, obj_id]))
     if not obj:
         return "Object not found"
     patch_object(obj, prop, new_value)

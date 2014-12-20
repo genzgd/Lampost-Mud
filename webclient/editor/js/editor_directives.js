@@ -138,7 +138,7 @@ angular.module('lampost_editor').directive('lpSimpleList', [function () {
 }]);
 
 
-angular.module('lampost_editor').controller('AttrListController', ['$scope', function ($scope) {
+angular.module('lampost_editor').controller('AttrListCtrl', ['$scope', function ($scope) {
 
   $scope.$on('updateModel', updateModel);
 
@@ -152,7 +152,7 @@ angular.module('lampost_editor').controller('AttrListController', ['$scope', fun
 }]);
 
 
-angular.module('lampost_editor').directive('lmAttrList', [function () {
+angular.module('lampost_editor').directive('lpAttrList', [function () {
   return {
     restrict: 'A',
     scope: {},
@@ -167,12 +167,12 @@ angular.module('lampost_editor').directive('lmAttrList', [function () {
 }]);
 
 
-angular.module('lampost_editor').directive('lmSkillList', [function () {
+angular.module('lampost_editor').directive('lpSkillList', [function () {
   return {
     restrict: 'A',
     scope: {},
     templateUrl: 'editor/view/skill_list.html',
-    controller: 'SkillListController',
+    controller: 'SkillListCtrl',
     link: function (scope, element, attrs) {
       element.scope().$watch(attrs.lmSkillList, function () {
         angular.extend(scope, element.scope().$eval(attrs.lmSkillList));
@@ -182,18 +182,9 @@ angular.module('lampost_editor').directive('lmSkillList', [function () {
 }]);
 
 
-angular.module('lampost_editor').controller('SkillListController', ['$q', '$scope', 'lmEditor', 'lpEvent',
+angular.module('lampost_editor').controller('SkillListCtrl', ['$q', '$scope', 'lmEditor', 'lpEvent',
   function ($q, $scope, lmEditor, lpEvent) {
 
-
-    $scope.$on('updateModel', updateModel);
-
-    lmEditor.cache('skill').then(function (skills) {
-      $scope.allSkills = skills;
-      ;
-      $scope.ready = true;
-      updateModel();
-    });
 
     function updateModel() {
       if ($scope.$parent.model) {

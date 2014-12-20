@@ -116,9 +116,9 @@ def apply_script(host, script):
 
 def add_parent_globals(script_globals, host):
     if root_area:
-        add_globals(load_by_key('script', '{}:root'.format(root_area), True), script_globals)
+        add_globals(load_object(Script, '{}:root'.format(root_area), True), script_globals)
         if getattr(host, 'dbo_parent_type', None):
-            add_globals(load_by_key('script', '{}:{}'.format(root_area, host.dbo_parent_type), True), script_globals)
+            add_globals(load_object(Script, '{}:{}'.format(root_area, host.dbo_parent_type), True), script_globals)
 
 
 def add_globals(script, script_globals):

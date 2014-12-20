@@ -1,5 +1,5 @@
 from lampost.editor.areas import AreaEditor, RoomEditor
-from lampost.editor.config import ConfigEditor, DisplayEditor, Properties
+from lampost.editor.config import ConfigEditor, DisplayEditor, Properties, SkillMap
 from lampost.editor.editor import ChildrenEditor, Editor, ChildList
 from lampost.editor.imports import ImportsEditor
 from lampost.editor.players import PlayerEditor
@@ -31,6 +31,7 @@ def add_endpoints(web_server):
     web_server.add(r'/editor/social/(.*)', SocialsEditor)
     web_server.add(r'/editor/display/(.*)', DisplayEditor)
     web_server.add(r'/editor/race/(.*)', Editor, obj_class=PlayerRace)
+    web_server.add(r'/editor/skill_map', SkillMap)
     web_server.add(r'/editor/attack/(.*)', SkillsEditor, obj_class=AttackTemplate)
     web_server.add(r'/editor/defense/(.*)', SkillsEditor, obj_class=DefenseTemplate)
     web_server.add(r'/editor/script/list/(.*)', ChildList, obj_class=Script)

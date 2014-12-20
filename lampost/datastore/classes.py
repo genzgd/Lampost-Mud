@@ -39,14 +39,15 @@ def get_dbo_class(class_id):
         log.exception("No class found in registry for dbo class id: {}", class_id)
 
 
-def get_mixed_class(class_id, mixins):
+def get_mixed_type(class_id, mixins):
+    main_class = get_dbo_class(class_id)
     if not mixins:
-        return get_dbo_class(class_id)
+        return main_class
     mixin_key = frozenset(itertools.chain(mixins, (class_id,)))
     try:
         return _mixed_registry[mixin_key]
     except KeyError:
-        mixin_bases = (get_dbo_class(class_id),) + tuple(_mixin_registry[mixin] for mixin in mixins)
+        mixin_bases = (main_class,) + tuple(_mixin_registry[mixin] for mixin in mixins)
         mixin_class = type("_".join(mixin_key), mixin_bases, {'mixins': mixins})
         _mixed_registry[mixin_key] = mixin_class
         return mixin_class
@@ -54,3 +55,10 @@ def get_mixed_class(class_id, mixins):
 
 def cls_name(cls):
     return ".".join([cls.__module__, cls.__name__])
+
+
+def subclasses(cls):
+    for subclass in cls.__subclasses__():
+        yield subclass
+        for sub_sub in subclasses(subclass):
+            yield sub_sub

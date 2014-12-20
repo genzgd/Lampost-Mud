@@ -1,6 +1,7 @@
 from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.classes import get_dbo_class
+from lampost.datastore.dbo import Untyped
 from lampost.datastore.exceptions import DataError
 
 
@@ -33,14 +34,14 @@ class Editor(MethodHandler):
             raise DataError('Gone: Object with key {} does not exist'.format(raw['dbo_id']))
         check_perm(self.session, del_obj)
         self.pre_delete(del_obj)
-        holder_keys = fetch_holders(self.dbo_key_type, del_obj.dbo_id)
-        for key_type, dbo_id in holder_keys:
-            cached_holder = load_cached(key_type, dbo_id)
+        holder_keys = fetch_set_keys('{}:holders'.format(del_obj.dbo_key))
+        for dbo_key in holder_keys:
+            cached_holder = load_cached(dbo_key)
             if cached_holder:
                 save_object(cached_holder)
         delete_object(del_obj)
-        for key_type, dbo_id in holder_keys:
-            reloaded = reload_object(key_type, dbo_id)
+        for dbo_key in holder_keys:
+            reloaded = reload_object(dbo_key)
             if reloaded:
                 publish_edit('update', reloaded, self.session, True)
         self.post_delete(del_obj)
@@ -116,7 +117,7 @@ def find_parent(child, parent_type=None):
         parent_type = child.dbo_parent_type
     except AttributeError:
         dbo_id = child['dbo_id']
-    parent = load_by_key(parent_type, dbo_id.split(':')[0])
+    parent = load_object(get_dbo_class(parent_type), dbo_id.split(':')[0])
     if not parent:
         raise DataError("Parent Missing")
     return parent

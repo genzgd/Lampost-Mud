@@ -1,8 +1,9 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 from weakref import WeakValueDictionary
 from redis import ConnectionPool
 from redis.client import StrictRedis
-from lampost.datastore.classes import get_dbo_class, get_mixed_class
+from lampost.datastore.classes import get_dbo_class, get_mixed_type
+from lampost.datastore.dbo import Untyped
 from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 
 from lampost.util.log import logged
@@ -39,6 +40,7 @@ class RedisStore():
         self.redis.set(dbo.dbo_key, json_encode(self._save_root(dbo)))
         debug("db object {} {}saved", dbo.dbo_key, "auto" if autosave else "")
         self._object_map[dbo.dbo_key] = dbo
+        return dbo
 
     def save_raw(self, key, raw):
         self.redis.set(key, json_encode(raw))
@@ -49,12 +51,12 @@ class RedisStore():
             return json_decode(json)
         return default
 
-    def load_cached(self, key_type, key):
-        return self._object_map.get('{}:{}'.format(key_type, key))
+    def load_cached(self, dbo_key):
+        return self._object_map.get(dbo_key)
 
     @logged
-    def load_by_key(self, key_type, key, silent=False):
-        dbo_key = '{}:{}'.format(key_type, key)
+    def load_object(self, dbo_class, dbo_id, silent=False):
+        dbo_key, dbo_id, class_id = dbo_class.dbo_defs(dbo_id)
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
@@ -63,9 +65,11 @@ class RedisStore():
             if not silent:
                 warn("Failed to find {} in database", dbo_key)
             return None
+        return self.load_from_json(json_str, class_id, dbo_id)
+
+    def load_from_json(self, json_str, class_id, dbo_id):
         dbo_dict = json_decode(json_str)
-        dbo_class = get_mixed_class(key_type, dbo_dict.get('mixins'))
-        dbo = dbo_class(key)
+        dbo = get_mixed_type(class_id, dbo_dict.get('mixins'))(dbo_id)
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
         return dbo
@@ -73,20 +77,28 @@ class RedisStore():
     def object_exists(self, obj_type, obj_id):
         return self.redis.exists('{}:{}'.format(obj_type, obj_id))
 
-    def load_object(self, dbo_class, key):
-        return self.load_by_key(dbo_class.dbo_key_type, key)
-
     def load_object_set(self, dbo_class, set_key=None):
+        key_type = dbo_class.dbo_key_type
         if not set_key:
             set_key = dbo_class.dbo_set_key
-        results = []
-        for dbo_id in self.fetch_set_keys(set_key):
-            obj = self.load_object(dbo_class, dbo_id)
-            if obj:
-                results.append(obj)
-            else:
-                warn("Removing missing object from set {}", set_key)
-                self.delete_set_key(set_key, dbo_id)
+        results = set()
+        keys = deque()
+        pipeline = self.redis.pipeline()
+        for key in self.fetch_set_keys(set_key):
+            dbo_key = ':'.join([key_type, key])
+            try:
+                results.add(self._object_map[dbo_key])
+            except KeyError:
+                keys.append(key)
+                pipeline.get(dbo_key)
+        for dbo_id, json_str in zip(keys, pipeline.execute()):
+            if json_str:
+                obj = self.load_from_json(json_str, key_type, dbo_id)
+                if obj:
+                    results.add(obj)
+                continue
+            warn("Removing missing object from set {}", set_key)
+            self.delete_set_key(set_key, key)
         return results
 
     def delete_object_set(self, dbo_class, set_key=None):
@@ -98,7 +110,7 @@ class RedisStore():
 
     def update_object(self, dbo, dbo_dict):
         dbo.hydrate(dbo_dict)
-        self.save_object(dbo, True)
+        return self.save_object(dbo, True)
 
     def delete_object(self, dbo):
         key = dbo.dbo_key
@@ -116,32 +128,24 @@ class RedisStore():
         debug("object deleted: {}", key)
         self.evict_object(dbo)
 
-    def reload_object(self, key_type, key):
-        dbo = self.load_cached(key_type, key)
-        if not dbo:
-            return load_by_key(key_type, key)
-        json_str = self.redis.get('{}:{}'.format(key_type, key))
-        if not json_str:
-            warn("Failed to find {} in database for reload", dbo_key)
-            return None
-        self.update_object(dbo, json_decode(json_str))
-        return dbo
+    def reload_object(self, dbo_key):
+        dbo = self._object_map.get(dbo_key)
+        if dbo:
+            json_str = self.redis.get(dbo_key)
+            if not json_str:
+                warn("Failed to find {} in database for reload", dbo_key)
+                return None
+            return self.update_object(dbo, json_decode(json_str))
+        return self.load_object(Untyped, dbo_key)
 
     def evict_object(self, dbo):
         self._object_map.pop(dbo.dbo_key, None)
 
-    def fetch_holders(self, key_type, dbo_id):
-        holder_keys = []
-        for holder_key in self.fetch_set_keys(self._holder_key(key_type, dbo_id)):
-            key_split = holder_key.split(':')
-            holder_keys.append((key_split[0], ':'.join(key_split[1:])))
-        return holder_keys
-
     def fetch_set_keys(self, set_key):
         return self.redis.smembers(set_key)
 
-    def add_set_key(self, set_key, value):
-        self.redis.sadd(set_key, value)
+    def add_set_key(self, set_key, *values):
+        self.redis.sadd(set_key, *values)
 
     def delete_set_key(self, set_key, value):
         self.redis.srem(set_key, value)
@@ -212,18 +216,18 @@ class RedisStore():
 
     def _save_root(self, root_dbo):
         self._clear_old_refs(root_dbo)
-        new_refs = defaultdict(list)
+        new_refs = []
 
         def add_refs(dbo):
             if dbo.dbo_key_type and root_dbo != dbo:
-                for attr in ['dbo_id', 'template_id']:
-                    dbo_id = getattr(dbo, attr, None)
-                    if dbo_id:
-                        new_refs[dbo.dbo_key_type].append(dbo_id)
+                if hasattr(dbo, 'dbo_id'):
+                    new_refs.append(dbo.dbo_key)
+                elif getattr(dbo, 'template_key', None):
+                    new_refs.append(dbo.template_key)
 
-        def save_level(dbo, first=False):
+        def save_level(dbo, save_as_id=False):
             add_refs(dbo)
-            if getattr(dbo, 'dbo_id', None) and not first:
+            if save_as_id:
                 return dbo.dbo_id
             save_value = {}
             for field, dbo_field in dbo.dbo_fields.items():
@@ -231,34 +235,32 @@ class RedisStore():
                     field_value = dbo.__dict__[field]
                 except KeyError:
                     continue
-                if hasattr(dbo_field, 'dbo_class_id'):
-                    field_value = dbo_field.value_wrapper(save_level)(field_value)
+                class_id = getattr(dbo_field, 'dbo_class_id', None)
+                dbo_class = class_id and get_dbo_class(class_id)
+                if dbo_class:
+                    field_value = dbo_field.value_wrapper(save_level)(field_value, dbo_class.dbo_key_type)
                 try:
                     dbo_field.should_save(field_value, dbo)
                 except KeyError:
                     continue
                 save_value[field] = field_value
-            return dbo.metafields(save_value, ['class_id', 'template_id'])
+            return dbo.metafields(save_value, ['template_key'])
 
-        root_save = save_level(root_dbo, True)
+        root_save = save_level(root_dbo)
         self._set_new_refs(root_dbo, new_refs)
         return root_save
 
     def _clear_old_refs(self, dbo):
         dbo_key = dbo.dbo_key
-        ref_key = "{}:refs".format(dbo_key)
-        for key_type, refs in self.get_all_hash(ref_key).items():
-            for ref_id in refs:
-                self.delete_set_key(self._holder_key(key_type, ref_id), dbo_key)
+        ref_key = '{}:refs'.format(dbo_key)
+        for ref_id in self.fetch_set_keys(ref_key):
+            holder_key = '{}:holders'.format(ref_id)
+            self.delete_set_key(holder_key, dbo_key)
         self.delete_key(ref_key)
 
     def _set_new_refs(self, dbo, new_refs):
         dbo_key = dbo.dbo_key
-        ref_key = "{}:refs".format(dbo_key)
-        for key_type, refs in new_refs.items():
-            self.set_db_hash(ref_key, key_type, refs)
-            for ref_id in refs:
-                self.add_set_key(self._holder_key(key_type, ref_id), dbo_key)
-
-    def _holder_key(self, key_type, dbo_id):
-        return "{}:{}:hldrs".format(key_type, dbo_id)
+        self.add_set_key("{}:refs".format(dbo_key), new_refs)
+        for ref_id in new_refs:
+            holder_key = '{}:holders'.format(ref_id)
+            self.add_set_key(holder_key, dbo_key)

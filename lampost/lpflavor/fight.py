@@ -107,6 +107,3 @@ class Fight():
                 except ActionError:
                     pass
         self.hunt_timer = register_p(self.select_action, seconds=10)
-
-
-

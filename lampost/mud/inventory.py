@@ -28,7 +28,7 @@ def inven(source, **_):
 class InvenContainer(BaseItem):
     class_id = 'container'
 
-    contents = DBOField([], 'article_inst')
+    contents = DBOField([], 'untyped')
 
     def __iter__(self):
         for item in self.contents:

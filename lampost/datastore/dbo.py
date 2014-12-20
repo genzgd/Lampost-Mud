@@ -15,6 +15,10 @@ class RootDBO(metaclass=CommonMeta):
     dbo_indexes = ()
     template_id = None
 
+    @classmethod
+    def dbo_defs(cls, key):
+        return ':'.join([cls.dbo_key_type, key]), key, cls.dbo_key_type
+
     def __init__(self, dbo_id=None):
         if dbo_id:
             self.dbo_id = str(dbo_id).lower()
@@ -54,7 +58,7 @@ class RootDBO(metaclass=CommonMeta):
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
                 continue
-        return self.metafields(save_value, ['dbo_id', 'class_id', 'template_id'])
+        return self.metafields(save_value, ['template_key'])
 
     def on_created(self):
         pass
@@ -85,7 +89,7 @@ class RootDBO(metaclass=CommonMeta):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
         for child_type in self.dbo_children_types:
             dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
-        return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_id', 'dbo_key_type', 'dbo_parent_type',
+        return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
                                            'dbo_children_types'])
 
     def dbo_child_keys(self, child_type):
@@ -118,8 +122,8 @@ class RootDBO(metaclass=CommonMeta):
         if getattr(self, 'dbo_id', None):
             append(self.dbo_id, 'dbo_id')
             level *= 99
-        if getattr(self, 'template_id', None):
-            append(self.template_id, 'template_id')
+        if getattr(self, 'template_key', None):
+            append(self.template_key, 'template_key')
             level *= 99
         if level > 3:
             return
@@ -134,7 +138,23 @@ class RootDBO(metaclass=CommonMeta):
                     wrapper(append)(value, field)
         return display
 
-set_dbo_class('untyped', RootDBO)
+
+class Untyped():
+    dbo_key_type = None
+
+    @classmethod
+    def dbo_defs(cls, key):
+        try:
+            key_parts = key.split(':')
+        except Exception:
+            return
+        return key, ':'.join(key_parts[1:]), key_parts[0]
+
+    def hydrate(self, dto_repr):
+        warn("Attempting to hydrate invalid dto {}", dto_repr)
+
+
+set_dbo_class('untyped', Untyped)
 
 
 def load_ref(class_id, dbo_repr, dbo_owner=None):
@@ -144,23 +164,25 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
     cls = get_dbo_class(class_id)
     if not cls:
         return error('Unable to load reference for {}', class_id)
+
     if cls.dbo_key_type:
         return load_object(cls, dbo_repr)
 
     try:
-        cls = get_dbo_class(dbo_repr['class_id'])
+        return load_object(cls, dbo_repr['dbo_key'])
     except KeyError:
         pass
 
-    if cls.template_id:
-        template = load_by_key(cls.template_id, dbo_repr['template_id'])
+    template_key = dbo_repr.get('template_key')
+    if template_key:
+        template = load_object(Untyped, template_key)
         if template:
             instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
             if instance:
                 instance.on_created()
             return instance
         else:
-            warn("Missing template for template_id {}", cls.template_id)
+            warn("Missing template for template_key {}", template_key)
             return
     instance = cls().hydrate(dbo_repr)
     if instance:
@@ -227,10 +249,10 @@ class DBOTField(DBOField, TemplateField):
 
 
 def save_repr(value):
-    try:
-        return value.dbo_id
-    except AttributeError:
-        return value.save_value
+    if hasattr(value, 'dbo_id'):
+        return {'dbo_key': value.dbo_key}
+    return value.save_value
+
 
 
 def value_wrapper(value, for_dto=True):

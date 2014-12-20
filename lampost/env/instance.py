@@ -2,6 +2,7 @@ from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, RootDBO
 from lampost.env.movement import Direction
+from lampost.env.room import Room
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
 from lampost.gameops.display import EXIT_DISPLAY
@@ -44,7 +45,7 @@ class AreaInstance():
         try:
             room = self.rooms[room_id]
         except KeyError:
-            room = load_by_key('room', room_id).clone()
+            room = load_object(Room, room_id).clone()
             room.instance = self
             self.rooms[room_id] = room
         return room
@@ -80,7 +81,7 @@ class Entrance(RootDBO):
 
     @property
     def dest_room(self):
-        return load_by_key('room', self.destination)
+        return load_object(Room, self.destination)
 
     @property
     def name(self):

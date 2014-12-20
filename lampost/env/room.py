@@ -53,7 +53,7 @@ class Exit(RootDBO):
 
     @property
     def dest_room(self):
-        return load_by_key('room', self.destination)
+        return load_object(Room, self.destination)
 
     def examine(self, source, **_):
         source.display_line('Exit: {}  {}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
@@ -248,7 +248,7 @@ class Room(RootDBO, Scriptable):
             player.change_env(safe_room)
         self.clean_up()
         evict_object(self)
-        new_room = load_by_key(self.dbo_key_type, self.dbo_id)
+        new_room = load_object(Room, self.dbo_id)
         if new_room:
             for player in players:
                 player.change_env(new_room)
