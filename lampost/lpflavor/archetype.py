@@ -7,4 +7,5 @@ class Archetype(PlayerRace):
 
 
 class PLayerRaceLP(PlayerRace):
+    class_id = 'race'
     default_skills = DBOField({})

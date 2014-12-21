@@ -61,7 +61,7 @@ class Editor(MethodHandler):
         return {'parent_type': self.parent_type, 'new_object': get_dbo_class(self.dbo_key_type)().dto_value}
 
     def test_delete(self):
-        return ['{} - {}'.format(key_type, dbo_id) for key_type, dbo_id in fetch_holders(self.dbo_key_type, self.raw['dbo_id'])]
+        return ['{} - {}'.format(dbo_id) for dbo_id in fetch_set_keys('{}:{}_holders'.format(self.dbo_key_type, self.raw['dbo_id']))]
 
     def pre_delete(self, del_obj):
         pass

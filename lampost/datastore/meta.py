@@ -18,10 +18,16 @@ class CommonMeta(type):
         if getattr(cls, 'template_id', None):
             cls._template_init()
         cls._update_actions(new_attrs)
-        if 'class_id' in new_attrs:
+
+        if new_attrs.get('dbo_key_type', None):
+            # Override or set the class_id to the database key if present
+            cls.class_id = cls.dbo_key_type
             set_dbo_class(cls.class_id, cls)
-        elif getattr(cls, 'dbo_key_type', None):
-            set_dbo_class(cls.dbo_key_type, cls)
+
+        elif new_attrs.get('class_id', None):
+            # Override any existing class id reference with this child class
+            set_dbo_class(cls.class_id, cls)
+
         if 'mixin_id' in new_attrs:
             set_mixin(cls.mixin_id, cls)
 
@@ -60,16 +66,15 @@ class CommonMeta(type):
             cls.load_funcs.append(load_func)
 
     def _template_init(cls):
-        class_id = '{}_inst'.format(cls.template_id)
-        old_class = check_dbo_class(class_id)
+        template_cls = get_dbo_class(cls.template_id)
+        old_class = getattr(template_cls, 'instance_cls', None)
         if old_class:
             log.info("Overriding existing instance class {} with {} for template {}", old_class.__name__, cls.__name__, cls.template_id)
         else:
             log.info("Initializing instance class {} for template {}", cls.__name__, cls.template_id)
-        set_dbo_class(class_id, cls)
-        cls.template_cls = get_dbo_class(cls.template_id)
-        cls.template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
-        cls.template_cls.instance_cls = cls
+        template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
+        template_cls.instance_cls = cls
+        cls.template_cls = template_cls
 
 
     def _update_actions(cls, new_attrs):

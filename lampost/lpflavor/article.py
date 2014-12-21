@@ -6,6 +6,8 @@ from lampost.mud.action import mud_action
 
 
 class ArticleTemplateLP(ArticleTemplate):
+    class_id = 'article'
+
     remove_msg = BroadcastMap(s="You unequip {N}", e="{N} unequips {n}")
     equip_msg = BroadcastMap(s="You wear {N}", e="{n} wears {N}")
     wield_msg = BroadcastMap(s="You wield {N}", e="{n} wields {N}")

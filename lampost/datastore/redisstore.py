@@ -14,7 +14,8 @@ m_requires(__name__, 'log', 'json_encode', 'json_decode')
 
 class RedisStore():
     def __init__(self, db_host, db_port, db_num, db_pw):
-        self.pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw, decode_responses=True)
+        self.pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw,
+                                   decode_responses=True)
         self.redis = StrictRedis(connection_pool=self.pool)
         self._object_map = WeakValueDictionary()
 
@@ -120,7 +121,8 @@ class RedisStore():
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)
         for children_type in dbo.dbo_children_types:
-            self.delete_object_set(get_dbo_class(children_type), "{}_{}s:{}".format(dbo.dbo_key_type, children_type, dbo.dbo_id))
+            self.delete_object_set(get_dbo_class(children_type),
+                                   "{}_{}s:{}".format(dbo.dbo_key_type, children_type, dbo.dbo_id))
         for ix_name in dbo.dbo_indexes:
             ix_value = getattr(dbo, ix_name, None)
             if ix_value is not None and ix_value != '':
@@ -225,9 +227,20 @@ class RedisStore():
                 elif getattr(dbo, 'template_key', None):
                     new_refs.append(dbo.template_key)
 
-        def save_level(dbo, save_as_id=False):
+        def child_dbo(dbo, dbo_field_class):
+            class_id = getattr(dbo, 'class_id', dbo_field_class)
+            save_value = save_level(dbo, get_dbo_class(class_id).dbo_key_type)
+            if hasattr(dbo, 'template_key'):
+                save_value['template_key'] = dbo.template_key
+            elif class_id != dbo_field_class:
+                # If the object has a different class_id than field definition thinks it should have
+                # we need to save the actual class_id
+                save_value['class_id'] = class_id
+            return save_value
+
+        def save_level(dbo, save_as_ref=False):
             add_refs(dbo)
-            if save_as_id:
+            if save_as_ref:
                 return dbo.dbo_id
             save_value = {}
             for field, dbo_field in dbo.dbo_fields.items():
@@ -235,19 +248,20 @@ class RedisStore():
                     field_value = dbo.__dict__[field]
                 except KeyError:
                     continue
-                class_id = getattr(dbo_field, 'dbo_class_id', None)
-                dbo_class = class_id and get_dbo_class(class_id)
-                if dbo_class:
-                    field_value = dbo_field.value_wrapper(save_level)(field_value, dbo_class.dbo_key_type)
+
+                dbo_field_class = getattr(dbo_field, 'dbo_class_id', None)
+                if dbo_field_class:
+                    field_value = dbo_field.value_wrapper(child_dbo)(field_value, dbo_field_class)
                 try:
                     dbo_field.should_save(field_value, dbo)
                 except KeyError:
                     continue
                 save_value[field] = field_value
-            return dbo.metafields(save_value, ['template_key'])
+            return save_value
 
         root_save = save_level(root_dbo)
-        self._set_new_refs(root_dbo, new_refs)
+        if new_refs:
+            self._set_new_refs(root_dbo, new_refs)
         return root_save
 
     def _clear_old_refs(self, dbo):

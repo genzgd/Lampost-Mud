@@ -91,7 +91,10 @@ class BaseItem(RootDBO):
 
     def on_loaded(self):
         if not self.target_keys:
-            self.target_keys = target_keys(self)
+            try:
+                self.target_keys = target_keys(self)
+            except AttributeError:
+                pass
 
 
 class Readable(metaclass=CommonMeta):

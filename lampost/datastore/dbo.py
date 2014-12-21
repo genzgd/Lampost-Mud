@@ -151,6 +151,8 @@ class Untyped():
         return key, ':'.join(key_parts[1:]), key_parts[0]
 
     def hydrate(self, dto_repr):
+        # This should never get called, as 'untyped' fields should always hold
+        # templates or actual dbo_references with saved class_ids
         warn("Attempting to hydrate invalid dto {}", dto_repr)
 
 
@@ -161,18 +163,23 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
     if not dbo_repr:
         return
 
-    cls = get_dbo_class(class_id)
-    if not cls:
+    # The class_id passed in is what the field thinks it should hold
+    # This can be overridden in the actual stored dictionary
+    if 'class_id' in dbo_repr:
+        class_id = dbo_repr['class_id']
+
+    dbo_class = get_dbo_class(class_id)
+    if not dbo_class:
         return error('Unable to load reference for {}', class_id)
 
-    if cls.dbo_key_type:
-        return load_object(cls, dbo_repr)
+    # If this class has a key_type, it should always be a reference and we should load it from the database
+    # The dbo_representation in this case should always be a dbo_id
+    if dbo_class.dbo_key_type:
+        return load_object(dbo_class, dbo_repr)
 
-    try:
-        return load_object(cls, dbo_repr['dbo_key'])
-    except KeyError:
-        pass
 
+    # If this is a template, it should have a template key, so we load the template from the database using
+    # the full key, then hydrate any non-template fields from the dictionary
     template_key = dbo_repr.get('template_key')
     if template_key:
         template = load_object(Untyped, template_key)
@@ -184,10 +191,13 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
         else:
             warn("Missing template for template_key {}", template_key)
             return
-    instance = cls().hydrate(dbo_repr)
+
+    # Finally, it's not a template, it not a reference to an independent DB object, so it must be a child
+    # object of this class, just hydrate it and set the owner
+    instance = dbo_class().hydrate(dbo_repr)
     if instance:
         instance.dbo_owner = dbo_owner
-    return instance
+        return instance
 
 
 def to_dto_repr(value):
