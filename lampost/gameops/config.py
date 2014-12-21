@@ -13,7 +13,7 @@ class ConfigManager():
     def start_service(self):
         register('session_connect', self._session_connect)
         register('player_create', self._player_create)
-        self.config = load_object(Config, self.config_id)
+        self.config = load_object(self.config_id, Config)
         if self.config:
             self._dispatch_update()
         else:

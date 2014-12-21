@@ -45,7 +45,7 @@ class PlayerLP(Player, EntityLP):
 
     def die(self):
         if not self.can_die:
-            self.display_line("You die.  Fortunately, you\'re immortal.")
+            self.broadcast(s="You die.  Fortunately, you're immortal.", e="{n} examines {s} otherwise fatal wounds and shrugs.")
             self.health = 1
             self.start_refresh()
             return
@@ -62,9 +62,9 @@ class PlayerLP(Player, EntityLP):
         del self._bind_pulse
         res_room = None
         if self.touchstone:
-            res_room = load_object(Room, self.touchstone)
+            res_room = load_object(self.touchstone, Room)
         if not res_room:
-            res_room = load_object(Room, config_manager.start_room)
+            res_room = load_object(config_manager.start_room, Room)
         self.change_env(res_room)
         self.display_line("With a sick feeling, you return to consciousness")
         self.status = 'ok'

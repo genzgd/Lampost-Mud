@@ -20,7 +20,7 @@ class Settings(MethodHandler):
         user_id = self.raw['user_id']
         if self.session.user.dbo_id != user_id:
             check_perm(session, 'admin')
-        user_dto = load_object(User, user_id).dto_value
+        user_dto = load_object(user_id, User).dto_value
         user_dto['password'] = ''
         return user_dto
 
@@ -40,7 +40,7 @@ class Settings(MethodHandler):
 
         old_user = None
         if user_id:
-            old_user = datastore.load_object(User, user_id)
+            old_user = datastore.load_object(user_id, User)
             if not old_user:
                 raise ClientError(user_id + " does not exist!")
 
@@ -62,7 +62,7 @@ class Settings(MethodHandler):
 
     def create_player(self):
         content = self._content()
-        user = load_object(User, content.user_id)
+        user = load_object(content.user_id, User)
         if not user:
             raise DataError("User {0} does not exist".format(content.user_id))
         player_name = content.player_name.lower()
@@ -73,7 +73,7 @@ class Settings(MethodHandler):
         user_manager.attach_player(user, content.player_data)
 
     def get_players(self):
-        user = load_object(User, self.raw['user_id'])
+        user = load_object(self.raw['user_id'], User)
         if not user:
             raise ClientError("User {} does not exist".format(self.raw['user_id']))
         return player_list(user.player_ids)
@@ -96,7 +96,7 @@ class Settings(MethodHandler):
         user_id = get_index("ix:user:email", email)
         if not user_id:
             raise DataError("User Email Not Found")
-        user = load_object(User, user_id)
+        user = load_object(user_id, User)
         email_msg = "Your {} account name is {}.\nThe players on this account are {}."\
             .format(config_manager.name, user.user_name,
                     ','.join([player_id.capitalize() for player_id in user.player_ids]))
@@ -106,12 +106,12 @@ class Settings(MethodHandler):
         info = self.raw['info'].lower()
         user_id = get_index("ix:user:user_name", info)
         if not user_id:
-            player = load_object(Player, info)
+            player = load_object(info, Player)
             if player:
                 user_id = player.user_id
             else:
                 raise DataError("Unknown name or account {}".format(info))
-        user = load_object(User, user_id)
+        user = load_object(user_id, User)
         if not user.email:
             raise DataError("No Email On File For {}".format(info))
         temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(12))
@@ -138,6 +138,6 @@ class Settings(MethodHandler):
 def player_list(player_ids):
     players = []
     for player_id in player_ids:
-        player = load_object(Player, player_id)
+        player = load_object(player_id, Player)
         players.append({'name': player.name, 'dbo_id': player.dbo_id})
     return players

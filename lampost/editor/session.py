@@ -53,7 +53,7 @@ class EditLogin(SessionHandler):
             self.session.append({'login_failure': "Invalid user name or password."})
             return
         imm = None
-        for player in (load_object(Player, player_id) for player_id in user.player_ids):
+        for player in (load_object(player_id, Player) for player_id in user.player_ids):
             if player.dbo_id == user_name:
                 if player.imm_level:
                     imm = player

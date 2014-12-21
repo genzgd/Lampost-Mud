@@ -64,9 +64,9 @@ class MudNature():
     def _start_env(self, player):
         room = None
         if hasattr(player, "room_id"):
-            room = load_object(Room, player.room_id)
+            room = load_object(player.room_id, Room)
         if not room:
-            room = load_object(Room, self.config_manager.start_room)
+            room = load_object(self.config_manager.start_room, Room)
             if room:
                 player.room_id = room.dbo_id
                 save_object(player)

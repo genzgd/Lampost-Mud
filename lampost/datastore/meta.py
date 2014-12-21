@@ -19,13 +19,13 @@ class CommonMeta(type):
             cls._template_init()
         cls._update_actions(new_attrs)
 
-        if new_attrs.get('dbo_key_type', None):
-            # Override or set the class_id to the database key if present
-            cls.class_id = cls.dbo_key_type
+        if 'class_id' in new_attrs:
+            # Override any existing class id reference with this child class
             set_dbo_class(cls.class_id, cls)
 
-        elif new_attrs.get('class_id', None):
-            # Override any existing class id reference with this child class
+        elif 'dbo_key_type' in new_attrs:
+            # Override or set the class_id to the database key if present
+            cls.class_id = cls.dbo_key_type
             set_dbo_class(cls.class_id, cls)
 
         if 'mixin_id' in new_attrs:

@@ -7,17 +7,12 @@ m_requires(__name__, 'log', 'datastore')
 
 
 class RootDBO(metaclass=CommonMeta):
-    dbo_key_type = None
     dbo_key_sort = None
     dbo_parent_type = None
     dbo_owner = None
     dbo_children_types = []
     dbo_indexes = ()
     template_id = None
-
-    @classmethod
-    def dbo_defs(cls, key):
-        return ':'.join([cls.dbo_key_type, key]), key, cls.dbo_key_type
 
     def __init__(self, dbo_id=None):
         if dbo_id:
@@ -115,14 +110,14 @@ class RootDBO(metaclass=CommonMeta):
         def append(value, key):
             display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + str(value))
 
-        if getattr(self, 'class_id', None):
+        if hasattr(self, 'class_id'):
             append(self.class_id, 'class_id')
-        if getattr(self,'dbo_key_type', None):
+        if hasattr(self,'dbo_key_type'):
             append(self.dbo_key_type, 'dbo_key_type')
-        if getattr(self, 'dbo_id', None):
+        if hasattr(self, 'dbo_id'):
             append(self.dbo_id, 'dbo_id')
             level *= 99
-        if getattr(self, 'template_key', None):
+        if hasattr(self, 'template_key'):
             append(self.template_key, 'template_key')
             level *= 99
         if level > 3:
@@ -140,15 +135,6 @@ class RootDBO(metaclass=CommonMeta):
 
 
 class Untyped():
-    dbo_key_type = None
-
-    @classmethod
-    def dbo_defs(cls, key):
-        try:
-            key_parts = key.split(':')
-        except Exception:
-            return
-        return key, ':'.join(key_parts[1:]), key_parts[0]
 
     def hydrate(self, dto_repr):
         # This should never get called, as 'untyped' fields should always hold
@@ -165,8 +151,10 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
 
     # The class_id passed in is what the field thinks it should hold
     # This can be overridden in the actual stored dictionary
-    if 'class_id' in dbo_repr:
+    try:
         class_id = dbo_repr['class_id']
+    except (TypeError, KeyError):
+        pass
 
     dbo_class = get_dbo_class(class_id)
     if not dbo_class:
@@ -174,15 +162,19 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
 
     # If this class has a key_type, it should always be a reference and we should load it from the database
     # The dbo_representation in this case should always be a dbo_id
-    if dbo_class.dbo_key_type:
-        return load_object(dbo_class, dbo_repr)
-
+    if hasattr(dbo_class, 'dbo_key_type'):
+        return load_object(dbo_repr, dbo_class)
 
     # If this is a template, it should have a template key, so we load the template from the database using
     # the full key, then hydrate any non-template fields from the dictionary
-    template_key = dbo_repr.get('template_key')
+    try:
+        template_key = dbo_repr.get('tk')
+    except AttributeError:
+        error("Unexpected dbo_repr {}", dbo_repr)
+        return
+
     if template_key:
-        template = load_object(Untyped, template_key)
+        template = load_object(template_key)
         if template:
             instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
             if instance:

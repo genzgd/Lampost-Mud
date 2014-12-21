@@ -29,7 +29,7 @@ class Editor(MethodHandler):
         return publish_edit('create', new_obj, self.session)
 
     def delete(self):
-        del_obj = load_object(self.obj_class, self.raw['dbo_id'])
+        del_obj = load_object(self.raw['dbo_id'], self.obj_class)
         if not del_obj:
             raise DataError('Gone: Object with key {} does not exist'.format(raw['dbo_id']))
         check_perm(self.session, del_obj)
@@ -48,7 +48,7 @@ class Editor(MethodHandler):
         publish_edit('delete', del_obj, self.session)
 
     def update(self):
-        existing_obj = load_object(self.obj_class, self.raw['dbo_id'])
+        existing_obj = load_object(self.raw['dbo_id'], self.obj_class)
         if not existing_obj:
             raise DataError("GONE:  Object with key {} no longer exists.".format(self.raw['dbo.id']))
         check_perm(self.session, existing_obj)
@@ -117,7 +117,7 @@ def find_parent(child, parent_type=None):
         parent_type = child.dbo_parent_type
     except AttributeError:
         dbo_id = child['dbo_id']
-    parent = load_object(get_dbo_class(parent_type), dbo_id.split(':')[0])
+    parent = load_object(dbo_id.split(':')[0], parent_type)
     if not parent:
         raise DataError("Parent Missing")
     return parent

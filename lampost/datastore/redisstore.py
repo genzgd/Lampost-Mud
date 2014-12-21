@@ -55,9 +55,15 @@ class RedisStore():
     def load_cached(self, dbo_key):
         return self._object_map.get(dbo_key)
 
-    @logged
-    def load_object(self, dbo_class, dbo_id, silent=False):
-        dbo_key, dbo_id, class_id = dbo_class.dbo_defs(dbo_id)
+    def load_object(self, dbo_key, key_type=None, silent=False):
+        if key_type:
+            try:
+                key_type = key_type.dbo_key_type
+            except AttributeError:
+                pass
+            dbo_key, dbo_id = ':'.join([key_type, dbo_key]), dbo_key
+        else:
+            key_type, _, dbo_id = dbo_key.partition(':')
         cached_dbo = self._object_map.get(dbo_key)
         if cached_dbo:
             return cached_dbo
@@ -66,11 +72,11 @@ class RedisStore():
             if not silent:
                 warn("Failed to find {} in database", dbo_key)
             return None
-        return self.load_from_json(json_str, class_id, dbo_id)
+        return self.load_from_json(json_str, key_type, dbo_id)
 
-    def load_from_json(self, json_str, class_id, dbo_id):
+    def load_from_json(self, json_str, key_type, dbo_id):
         dbo_dict = json_decode(json_str)
-        dbo = get_mixed_type(class_id, dbo_dict.get('mixins'))(dbo_id)
+        dbo = get_mixed_type(key_type, dbo_dict.get('mixins'))(dbo_id)
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
         return dbo
@@ -99,7 +105,7 @@ class RedisStore():
                     results.add(obj)
                 continue
             warn("Removing missing object from set {}", set_key)
-            self.delete_set_key(set_key, key)
+            self.delete_set_key(set_key, dbo_id)
         return results
 
     def delete_object_set(self, dbo_class, set_key=None):
@@ -138,7 +144,7 @@ class RedisStore():
                 warn("Failed to find {} in database for reload", dbo_key)
                 return None
             return self.update_object(dbo, json_decode(json_str))
-        return self.load_object(Untyped, dbo_key)
+        return self.load_object(dbo_key)
 
     def evict_object(self, dbo):
         self._object_map.pop(dbo.dbo_key, None)
@@ -221,7 +227,7 @@ class RedisStore():
         new_refs = []
 
         def add_refs(dbo):
-            if dbo.dbo_key_type and root_dbo != dbo:
+            if root_dbo != dbo:
                 if hasattr(dbo, 'dbo_id'):
                     new_refs.append(dbo.dbo_key)
                 elif getattr(dbo, 'template_key', None):
@@ -229,9 +235,9 @@ class RedisStore():
 
         def child_dbo(dbo, dbo_field_class):
             class_id = getattr(dbo, 'class_id', dbo_field_class)
-            save_value = save_level(dbo, get_dbo_class(class_id).dbo_key_type)
+            save_value = save_level(dbo, hasattr(dbo, 'dbo_id'))
             if hasattr(dbo, 'template_key'):
-                save_value['template_key'] = dbo.template_key
+                save_value['tk'] = dbo.template_key
             elif class_id != dbo_field_class:
                 # If the object has a different class_id than field definition thinks it should have
                 # we need to save the actual class_id

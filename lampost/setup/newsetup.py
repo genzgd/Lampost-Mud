@@ -29,7 +29,7 @@ def new_setup(args):
     ChannelService()
     MudNature(args.flavor)
     user_manager = UserManager()
-    config = load_object(Config, args.config_id)
+    config = load_object(args.config_id, Config)
     if config:
         print("Error:  This instance is already set up")
         return

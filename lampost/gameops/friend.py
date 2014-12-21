@@ -62,7 +62,7 @@ class FriendService():
         logged_in_user_ids = {session_manager.player_session_map[player_id].player.user_id for player_id in logged_in_players}
         notify_user_ids = notify_user_ids.difference(logged_in_user_ids)
 
-        users = [load_object(User, user_id) for user_id in notify_user_ids]
+        users = [load_object(user_id, User) for user_id in notify_user_ids]
         if users:
             email_sender.send_targeted_email("{} Login".format(player.name),
                                              "Your friend {} just logged into {}.".

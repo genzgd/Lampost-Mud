@@ -45,7 +45,7 @@ class AreaInstance():
         try:
             room = self.rooms[room_id]
         except KeyError:
-            room = load_object(Room, room_id).clone()
+            room = load_object(room_id, Room).clone()
             room.instance = self
             self.rooms[room_id] = room
         return room
@@ -81,7 +81,7 @@ class Entrance(RootDBO):
 
     @property
     def dest_room(self):
-        return load_object(Room, self.destination)
+        return load_object(self.destination, Room)
 
     @property
     def name(self):

@@ -9,7 +9,6 @@ from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
 from lampost.env.movement import Direction
 from lampost.gameops.script import Scriptable
 from lampost.gameops.display import *
-from lampost.mud.inventory import InvenContainer
 
 
 m_requires(__name__, 'log', 'dispatcher', 'datastore')
@@ -53,7 +52,7 @@ class Exit(RootDBO):
 
     @property
     def dest_room(self):
-        return load_object(Room, self.destination)
+        return load_object(self.destination, Room)
 
     def examine(self, source, **_):
         source.display_line('Exit: {}  {}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
@@ -95,7 +94,7 @@ class Room(RootDBO, Scriptable):
 
     def __init__(self, dbo_id=None):
         super().__init__(dbo_id)
-        self.inven = InvenContainer()
+        self.inven = []
         self.denizens = []
         self.mobiles = defaultdict(set)
 
@@ -248,7 +247,7 @@ class Room(RootDBO, Scriptable):
             player.change_env(safe_room)
         self.clean_up()
         evict_object(self)
-        new_room = load_object(Room, self.dbo_id)
+        new_room = load_object(self.dbo_key)
         if new_room:
             for player in players:
                 player.change_env(new_room)

@@ -11,24 +11,19 @@ from lampost.mud.action import mud_action, imm_action
 
 m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 
-skill_ids = set()
-
 
 def _post_init():
-    global skill_ids
-    skill_ids = fetch_set_keys('skill_ids')
-    context.set('skill_types', list({subclass.dbo_key_type for subclass
-                                     in subclasses(SkillTemplate) if hasattr(subclass, 'dbo_key_type')}))
+    context.set('skill_types', list({skill.dbo_key_type for skill in subclasses(SkillTemplate) if hasattr(skill, 'dbo_key_type')}))
 
 
 def add_skill(skill_id, target, skill_level):
-    skill_template = load_object(Untyped, skill_id)
+    skill_template = load_object(skill_id)
     if skill_template:
         skill_instance = skill_template.create_instance(target)
         skill_instance.skill_level = skill_level
         target.add_skill(skill_instance)
-    else:
-        warn('Unable to add missing skill {}', skill_id)
+        return skill_instance
+    warn('Unable to add missing skill {}', skill_id)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -51,14 +46,6 @@ class SkillTemplate(Template):
     def on_loaded(self):
         if not self.auto_start:
             self.verbs = convert_verbs(self.verb)
-
-    def on_created(self):
-        add_set_key('skill_ids', self.dbo_key)
-        skill_ids.add(self.dbo_key)
-
-    def on_deleted(self):
-        delete_index('skill_ids', self.dbo_id)
-        skill_ids.pop(self.dbo_key, None)
 
 
 class BaseSkill(RootDBO):
@@ -118,17 +105,26 @@ def skills(source, target, **_):
 @imm_action("add skill", target_class="args", prep="to", obj_msg_class="skills", self_object=True)
 def add_skill_action(target, obj, **_):
     try:
-        skill_id = target[0]
+        skill_name = target[0]
     except IndexError:
-        raise ActionError("Skill id required")
+        raise ActionError("Skill name required")
     try:
         skill_level = int(target[1])
     except IndexError:
         skill_level = 1
-    add_skill(skill_id, obj, skill_level)
-    if getattr(obj, 'dbo_id', None):
-        save_object(obj)
-    return "Added {} to {}".format(target, obj.name)
+    if ':' in skill_name:
+        skill_id = skill_name
+    else:
+        skill_id = None
+        for skill_cls in subclasses(SkillTemplate):
+            if skill_cls.dbo_set_key and skill_name in fetch_set_keys(skill_cls.dbo_set_key):
+                skill_id = '{}:{}'.format(skill_cls.dbo_key_type, skill_name)
+                break
+    if skill_id and add_skill(skill_id, obj, skill_level):
+        if getattr(obj, 'dbo_id', None):
+            save_object(obj)
+        return "Added {} to {}".format(target, obj.name)
+    return "Skill {} not found ".format(skill_name)
 
 
 @imm_action("remove skill", target_class="args", prep="from", obj_msg_class="skills", self_object=True)

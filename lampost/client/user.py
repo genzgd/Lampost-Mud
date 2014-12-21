@@ -54,10 +54,10 @@ class UserManager():
         user_name = user_name.lower()
         user_id = get_index("ix:user:user_name", user_name)
         if user_id:
-            return load_object(User, user_id)
-        player = load_object(Player, user_name)
+            return load_object(user_id, User)
+        player = load_object(user_name, Player)
         if player:
-            return load_object(User, player.user_id)
+            return load_object(player.user_id, User)
         return None
 
     def delete_user(self, user):
@@ -82,7 +82,7 @@ class UserManager():
         return user
 
     def find_player(self, player_id):
-        return load_object(Player, player_id)
+        return load_object(player_id, Player)
 
     def create_user(self, user_name, password, email=""):
         user = {'dbo_id': db_counter('user_id'), 'user_name': user_name,
@@ -107,13 +107,13 @@ class UserManager():
     def user_imm_level(self, user):
         imm_levels = []
         for player_id in user.player_ids:
-            player = load_object(Player, player_id)
+            player = load_object(player_id, Player)
             imm_levels.append(player.imm_level)
         return max(imm_levels)
 
     def _user_connect(self, user, client_data):
         for player_id in user.player_ids:
-            player = load_object(Player, player_id)
+            player = load_object(player_id, Player)
             if player.imm_level:
                 client_data['imm_player'] = player_id
                 client_data['imm_level'] = player.imm_level
@@ -151,7 +151,7 @@ class UserManager():
         dispatch('player_deleted', player_id)
 
     def _player_delete(self, player_id):
-        player = load_object(Player, player_id)
+        player = load_object(player_id, Player)
         if player:
             delete_object(player)
         else:

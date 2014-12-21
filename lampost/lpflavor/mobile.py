@@ -25,7 +25,7 @@ class MobileTemplateLP(MobileTemplate):
 
     def on_loaded(self):
         if self.archetype:
-            arch = load_object(Archetype, self.archetype)
+            arch = load_object(self.archetype, Archetype)
             for attr_name, start_value in arch.base_attrs.items():
                 setattr(self.instance_cls, attr_name, start_value)
             self.desc = arch.desc

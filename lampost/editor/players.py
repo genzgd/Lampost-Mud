@@ -21,7 +21,7 @@ class PlayerEditor(Editor):
 
     def post_delete(self, player):
         user_manager.remove_player_indexes(player.dbo_id)
-        user = load_object(User, player.user_id)
+        user = load_object(player.user_id, User)
         user.player_ids.remove(player.dbo_id)
         if not user.player_ids:
             delete_object(user)
@@ -33,7 +33,7 @@ class PlayerEditor(Editor):
 
 
 def check_player_perm(player, session):
-    user = load_object(User, player.user_id)
+    user = load_object(player.user_id, User)
     if not user:
         error("Missing user for player delete.")
         return

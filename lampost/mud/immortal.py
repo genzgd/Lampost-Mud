@@ -17,7 +17,7 @@ m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'emai
 
 @imm_action('edit')
 def edit(source, **_):
-    check_perm(source, load_object(Area, source.env.parent_id))
+    check_perm(source, load_object(source.env.parent_id, Area))
     return {'start_room_edit': source.env.dbo_id}
 
 
@@ -78,17 +78,17 @@ def goto(source, args, **_):
     if session:
         new_env = session.player.env
     else:
-        area = load_object(Area, dest, True)
+        area = load_object(dest, Area, True)
         if area:
             dest_rooms = area.dbo_child_keys('room')
             if dest_rooms:
-                new_env = load_object(Room, dest_rooms[0], True)
+                new_env = load_object(dest_rooms[0], Room, True)
             else:
                 raise ActionError("No rooms in area {}.".format(args[0]))
         else:
             if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])
-            new_env = load_object(Room, dest, True)
+            new_env = load_object(dest, Room, True)
     if new_env:
         source.change_env(new_env)
     else:
@@ -143,7 +143,7 @@ def patch_db(verb, args, command, **_):
         return "Value required."
     if new_value == "None":
         new_value = None
-    obj = load_object(Untyped, ':'.join([obj_type, obj_id]))
+    obj = load_object(':'.join([obj_type, obj_id]))
     if not obj:
         return "Object not found"
     patch_object(obj, prop, new_value)
@@ -272,7 +272,7 @@ def email(verb, args, command, **_):
     player = user_manager.find_player(args[0])
     if not player:
         return "Player not found"
-    user = load_object(User, player.user_id)
+    user = load_object(player.user_id, User)
     message = find_extra(verb, 1, command)
     return email_sender.send_targeted_email('Lampost Message', message, [user])
 

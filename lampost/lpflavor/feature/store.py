@@ -1,11 +1,12 @@
 from collections import deque
 import itertools
+
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
-from lampost.datastore.dbo import DBOField, RootDBO
+from lampost.datastore.dbo import DBOField
 from lampost.gameops.action import obj_action, ActionError
 from lampost.model.item import BaseItem
-from lampost.mud.inventory import InvenContainer
+
 
 m_requires(__name__, 'dispatcher')
 
@@ -29,7 +30,7 @@ class Store(BaseItem):
     class_id = 'store'
 
     currency = DBOField(None, 'article')
-    inven = DBOField(InvenContainer(), 'container')
+    inven = DBOField([], 'untyped')
     perm_inven = DBOField([], 'article')
     title = DBOField('Vending Machine')
     desc = DBOField("A rickety vending machine.  It looks like you can both buy and sell pretty much anything here.")

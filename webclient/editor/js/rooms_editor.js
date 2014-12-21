@@ -337,7 +337,7 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEvent
         $scope.vars.areaId = origAreaId;
       } else {
         $scope.newAdd = true;
-        $scope.reset = {reset_key: 0, reset_ref: 0, reset_count: 1, reset_max: 1};
+        $scope.reset = {reset_key: 0, mobile_ref: 0, reset_count: 1, reset_max: 1};
         $scope.vars.areaId = $scope.model.dbo_id.split(':')[0];;
       }
 

@@ -36,7 +36,7 @@ class RoomEditor(ChildrenEditor):
     def visit(self):
         if not self.session.player.session:
             raise DataError("You are not logged in")
-        room = load_object(Room, self.raw['room_id'])
+        room = load_object(self.raw['room_id'], Room)
         if not room:
             raise DataError("ROOM_MISSING")
         room.reload()
@@ -123,7 +123,7 @@ def add_room(area, session):
 
 
 def find_area_room(room_id, session=None):
-    room = load_object(Room, room_id)
+    room = load_object(room_id, Room)
     if not room:
         raise DataError("ROOM_MISSING")
     area = find_parent(room)
@@ -133,7 +133,7 @@ def find_area_room(room_id, session=None):
 
 
 def room_clean_up(room, session, area_delete=None):
-    start_room = load_object(Room, config_manager.start_room)
+    start_room = load_object(config_manager.start_room, Room)
     if not start_room:
         start_room = safe_room
     for denizen in room.denizens:

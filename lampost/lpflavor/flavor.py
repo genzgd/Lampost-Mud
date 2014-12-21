@@ -55,7 +55,7 @@ def _post_init():
 
 
 def _player_create(player):
-    race = load_object(PlayerRace, player.race)
+    race = load_object(player.race, PlayerRace)
     for attr_name, start_value in race.base_attrs.items():
         setattr(player, attr_name, start_value)
         setattr(player, 'perm_{}'.format(attr_name), start_value)
@@ -63,7 +63,7 @@ def _player_create(player):
 
 
 def _player_baptise(player):
-    race = load_object(PlayerRace, player.race)
+    race = load_object(player.race, PlayerRace)
     if race:
         for skill_id, skill_status in race.default_skills.items():
             if not skill_id in iter(player.skills.keys()):
