@@ -216,3 +216,10 @@ angular.module('lampost_util').filter('join', [function() {
       return values.join(del || ' ');
     };
 }]);
+
+angular.module('lampost_util').filter('eval', ['$filter', function($filter) {
+    return function() {
+        var filterName = [].splice.call(arguments, 1, 1)[0];
+        return filterName ? $filter(filterName).apply(null, arguments) : arguments[0];
+    };
+}]);

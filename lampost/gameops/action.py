@@ -119,7 +119,8 @@ def action_handler(func):
 
 
 class ActionError(ClientError):
-    pass
+    def __init__(self, msg=None, display=None):
+        super().__init__(msg, display)
 
 
 class ActionProvider(metaclass=CommonMeta):

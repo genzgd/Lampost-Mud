@@ -22,3 +22,16 @@ class SocialsEditor(Editor):
 
     def post_delete(self, social):
         del mud_actions[(social.dbo_id,)]
+
+
+class SkillEditor(Editor):
+    def pre_create(self):
+        self._ensure_name()
+
+    def pre_update(self, _):
+        self._ensure_name()
+
+    def _ensure_name(self):
+        name = self.raw['name'] or self.raw['verb'] or self.raw['dbo_id']
+        self.raw['name'] = name.capitalize()
+

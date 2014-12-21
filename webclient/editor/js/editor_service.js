@@ -53,7 +53,9 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
     this.initView = function() {
       var requests = [];
       angular.forEach(contextMap, function(context) {
-        delete context.parent;
+        angular.forEach(context.preReqs, function(preReq) {
+          requests.push(preReq());
+        });
         if (!context.newObj) {
           requests.push(lpRemote.request('editor/' + context.url + '/metadata').then(function(data) {
             context.parentType = data.parent_type;

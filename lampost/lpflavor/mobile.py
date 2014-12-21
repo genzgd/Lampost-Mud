@@ -41,6 +41,10 @@ class MobileTemplateLP(MobileTemplate):
         fill_pools(mobile)
         super().config_instance(mobile, owner)
 
+    @property
+    def template_refs(self):
+        return self.default_skills.keys()
+
 
 class MobileLP(EntityLP):
     template_id = "mobile"

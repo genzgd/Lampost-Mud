@@ -13,6 +13,7 @@ class RootDBO(metaclass=CommonMeta):
     dbo_children_types = []
     dbo_indexes = ()
     template_id = None
+    template_refs = []
 
     def __init__(self, dbo_id=None):
         if dbo_id:
@@ -84,7 +85,7 @@ class RootDBO(metaclass=CommonMeta):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
         for child_type in self.dbo_children_types:
             dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
-        return self.metafields(dto_value, ['dbo_id', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
+        return self.metafields(dto_value, ['dbo_id', 'dbo_key', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
                                            'dbo_children_types'])
 
     def dbo_child_keys(self, child_type):

@@ -1,5 +1,6 @@
-angular.module('lampost_editor').service('lpEditorView', ['$window', '$q', '$filter', '$log', 'lpEvent', 'lpEditor','lpUtil',
-  function($window, $q, $filter, $log, lpEvent, lpEditor, lpUtil) {
+angular.module('lampost_editor').service('lpEditorView',
+  ['$window', '$q', '$filter', '$log', 'lpEvent', 'lpEditor','lpUtil', 'lpSkillService',
+  function($window, $q, $filter, $log, lpEvent, lpEditor, lpUtil, lpSkillService) {
 
     var mudWindow = $window.opener;
     var localData;
@@ -19,7 +20,6 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$q', '$fil
           this.header = lpUtil.capitalize(this.id);
         }
       }
-
     }
 
     ColDef.prototype.hClass = ColDef.prototype.dClass = function() {
@@ -54,16 +54,24 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$q', '$fil
           model.dbo_id = this.parent.next_room_id;
         }
       },
-      mobile: {},
-      article: {}
+      mobile: {
+        preReqs: [lpSkillService.loadMap]
+      },
+      article: {
+        preReqs: [lpSkillService.loadMap],
+      }
     };
 
     cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap')];
     cols.room = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 10, 'model_prop cap')];
     cols.article = cols.mobile = [new ColDef('dbo_id', 3, 'idOnly'), new ColDef('title', 9, 'model_prop cap')];
 
+
     views.mud = {
       social: {},
+      race: {
+        preReqs: [lpSkillService.loadMap],
+      },
       attack: {
         preUpdate: function (attack) {
           if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {
@@ -83,7 +91,8 @@ angular.module('lampost_editor').service('lpEditorView', ['$window', '$q', '$fil
     };
 
     cols.social = [new ColDef('dbo_id', 4), new ColDef('aliases', 8, 'model_prop join')];
-    cols.attack = cols.defense = [new ColDef('dbo_id', 12)];
+    cols.attack = cols.defense = [new ColDef('dbo_id', 5), new ColDef('verb', 7, null, {header: 'Command'})];
+    cols.race = [new ColDef('dbo_id', 5), new ColDef('name', 7)];
 
     views.player = {
       player: {invalidate: true}

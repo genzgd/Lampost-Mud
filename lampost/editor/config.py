@@ -45,5 +45,5 @@ class SkillMap(SessionHandler):
     def main(self):
         skill_map = {}
         for skill_type in {skill_type for skill_type in subclasses(SkillTemplate) if hasattr(skill_type, 'dbo_key_type')}:
-            skill_map.update({':'.join([skill_type, skill.dbo_id]): {'desc': skill_desc} for skill in load_object_set(skill_type)})
+            skill_map.update({skill.dbo_key: {'desc': skill.desc, 'name': skill.name} for skill in load_object_set(skill_type)})
         self._return(skill_map)

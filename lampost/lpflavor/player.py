@@ -30,7 +30,10 @@ class PlayerLP(Player, EntityLP):
 
     def check_logout(self):
         if self.last_opponent:
-            raise ActionError("You are in life threatening combat!  You can't log out right now.", COMBAT_DISPLAY)
+            self.display_line("You are in life threatening combat!  You can't log out right now.", COMBAT_DISPLAY)
+            if self.imm_level:
+                self.display_line("(You might want to consider imposing 'peace.')")
+            raise ActionError()
 
     def status_change(self):
         if not self.session:
@@ -70,3 +73,7 @@ class PlayerLP(Player, EntityLP):
         self.status = 'ok'
         self.heath = 1
         self.start_refresh()
+
+    @property
+    def template_refs(self):
+        return self.skills.keys()

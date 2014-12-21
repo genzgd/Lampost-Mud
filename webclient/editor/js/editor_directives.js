@@ -35,6 +35,11 @@ angular.module('lampost_editor').controller('EffectListCtrl', ['$scope', 'lpEven
  function ($scope, lpEvent) {
 
   $scope.vars = {};
+  $scope.effectLabel = function(calcId) {
+    return calcId;
+  }
+
+  var updateList;
 
   function updateUnused() {
     $scope.unusedValues = [];
@@ -51,7 +56,7 @@ angular.module('lampost_editor').controller('EffectListCtrl', ['$scope', 'lpEven
   $scope.deleteRow = function (rowId) {
     delete $scope.calcValues[rowId];
     lpEvent.dispatch('childUpdate');
-    updateUnused();
+    updateList();
   };
 
   $scope.childUpdate = function() {
@@ -61,12 +66,14 @@ angular.module('lampost_editor').controller('EffectListCtrl', ['$scope', 'lpEven
   $scope.addRow = function () {
     $scope.calcValues[$scope.vars.newId] = 1;
     lpEvent.dispatch('childUpdate');
-    updateUnused();
+    updateList();
   };
 
   this.startEdit = function() {
     $scope.calcValues = $scope.$parent.model[$scope.calcWatch];
-    updateUnused();
+    $scope.can_write = $scope.$parent.model.can_write;
+    updateList = $scope.fixed ? angular.noop : updateUnused;
+    updateList();
   };
 
   lpEvent.register('editStarting', this.startEdit, $scope);
@@ -86,7 +93,7 @@ angular.module('lampost_editor').directive('lpEffectList', [function () {
   }
 }]);
 
-angular.module('lampost_editor').controller('SimpleListCtrl', ['$scope', 'lpEvent', function ($scope, lpEvent) {
+angular.module('lampost_editor').controller('OptionsListCtrl', ['$scope', 'lpEvent', function ($scope, lpEvent) {
 
   $scope.vars = {};
 
@@ -116,56 +123,27 @@ angular.module('lampost_editor').controller('SimpleListCtrl', ['$scope', 'lpEven
   };
 
   this.startEdit = function () {
-     $scope.selectValues = $scope.$parent.model[$scope.selectWatch];
+     $scope.selectValues = $scope.$parent.model[$scope.optionsWatch];
+     $scope.can_write = $scope.$parent.model.can_write;
      updateUnused();
   }
 
-  lpEvent.register('editStarting', updateUnused, $scope);
+  lpEvent.register('editStarting', this.startEdit, $scope);
 
 }]);
 
-angular.module('lampost_editor').directive('lpSimpleList', [function () {
+angular.module('lampost_editor').directive('lpOptionsList', [function () {
   return {
     restrict: 'A',
     scope: {},
     templateUrl: 'editor/view/simple_list.html',
-    controller: 'SimpleListCtrl',
+    controller: 'OptionsListCtrl',
     link: function (scope, element, attrs, controller) {
-      angular.extend(scope, element.scope().$eval(attrs.lpSimpleList));
+      angular.extend(scope, element.scope().$eval(attrs.lpOptionsList));
       controller.startEdit();
     }
   }
 }]);
-
-
-angular.module('lampost_editor').controller('AttrListCtrl', ['$scope', function ($scope) {
-
-  $scope.$on('updateModel', updateModel);
-
-  function updateModel() {
-    if ($scope.$parent.model) {
-      $scope.attrValues = $scope.$parent.model[$scope.attrWatch];
-    }
-  }
-
-  updateModel();
-}]);
-
-
-angular.module('lampost_editor').directive('lpAttrList', [function () {
-  return {
-    restrict: 'A',
-    scope: {},
-    templateUrl: 'editor/view/attr_list.html',
-    controller: 'AttrListController',
-    link: function (scope, element, attrs) {
-      element.scope().$watch(attrs.lmAttrList, function () {
-        angular.extend(scope, element.scope().$eval(attrs.lmAttrList));
-      });
-    }
-  }
-}]);
-
 
 angular.module('lampost_editor').directive('lpSkillList', [function () {
   return {
@@ -174,9 +152,7 @@ angular.module('lampost_editor').directive('lpSkillList', [function () {
     templateUrl: 'editor/view/skill_list.html',
     controller: 'SkillListCtrl',
     link: function (scope, element, attrs) {
-      element.scope().$watch(attrs.lmSkillList, function () {
-        angular.extend(scope, element.scope().$eval(attrs.lmSkillList));
-      })
+      angular.extend(scope, element.scope().$eval(attrs.lmSkillList));
     }
   }
 }]);

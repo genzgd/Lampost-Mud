@@ -4,6 +4,8 @@ from lampost.gameops.action import ActionError
 
 exit_cost_map = {}
 
+prep_multiplier = 1
+
 
 def find_cost(room):
     if room and room.size:
@@ -16,10 +18,14 @@ def find_cost(room):
 
 
 class ExitLP(lampost.env.room.Exit):
-    prep_time = 1
+    class_id = 'exit'
 
     guarded = DBOField(False)
     door_key = DBOField()
+
+    @property
+    def prep_time(self):
+        return prep_multiplier * self.dbo_owner.size // 10
 
     def prepare_action(self, source, **_):
         if self.guarded:
@@ -29,5 +35,5 @@ class ExitLP(lampost.env.room.Exit):
         source.display_line("You head {}.".format(self._dir.desc))
 
     def _move_user(self, source):
-        source.apply_costs(find_cost(source.env))
+        source.apply_costs(find_cost(self.dbo_owner))
         super()._move_user(source)

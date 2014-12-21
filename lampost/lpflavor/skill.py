@@ -51,6 +51,7 @@ class SkillTemplate(Template):
 class BaseSkill(RootDBO):
 
     verb = DBOTField()
+    name = DBOTField()
     desc = DBOTField()
     prep_time = DBOTField(0)
     cool_down = DBOTField(0)
@@ -60,9 +61,10 @@ class BaseSkill(RootDBO):
     display = DBOTField('default')
     auto_start = DBOTField(False)
     skill_level = DBOField(1)
+    skill_source = DBOField()
     last_used = DBOField(0)
     verbs = TemplateField()
-    name = TemplateField()
+
 
     def prepare_action(self, source, target, **kwargs):
         if self.available > 0:
@@ -98,7 +100,7 @@ def skills(source, target, **_):
     source.display_line("{}'s Skills:".format(target.name))
 
     for skill_id, skill in target.skills.items():
-        source.display_line("{}:   Level: {}".format(skill.verb if skill.verb else skill.name, str(skill.skill_level)))
+        source.display_line("{}:   Level: {}".format(skill.name, str(skill.skill_level)))
         source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 
 
