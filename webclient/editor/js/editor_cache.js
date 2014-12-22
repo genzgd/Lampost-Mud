@@ -123,7 +123,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
           entry.data.push(model);
           entry.sort(entry.data);
           entry.map[model.dbo_id] = model;
-          lpEvent.dispatch('modelCreate', entry.data, model, outside);
+          lpEvent.dispatch('modelCreate', model, outside);
         }
       }
       var plist = parentList(model);

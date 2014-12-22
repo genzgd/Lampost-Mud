@@ -8,8 +8,4 @@ class Archetype(PlayerRace):
 
 class PLayerRaceLP(PlayerRace):
     class_id = 'race'
-    default_skills = DBOField({})
-
-    @property
-    def template_refs(self):
-        return self.default_skills.keys()
+    default_skills = DBOField([], 'default_skill')

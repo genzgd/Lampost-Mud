@@ -55,10 +55,10 @@ angular.module('lampost_editor').service('lpEditorView',
         }
       },
       mobile: {
-        preReqs: [lpSkillService.loadMap]
+        preReqs: [lpSkillService.preLoad]
       },
       article: {
-        preReqs: [lpSkillService.loadMap],
+        preReqs: [lpSkillService.preLoad],
       }
     };
 
@@ -70,7 +70,7 @@ angular.module('lampost_editor').service('lpEditorView',
     views.mud = {
       social: {},
       race: {
-        preReqs: [lpSkillService.loadMap],
+        preReqs: [lpSkillService.preLoad],
       },
       attack: {
         preUpdate: function (attack) {

@@ -1,38 +1,29 @@
-angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpEvent', 'lpRemote', 'lpEvent', 'lpEditor',
- function($q, lpEvent, lpRemote, lpEvent, lpEditor) {
+angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpCache', 'lpEditor',
+  function($q, lpCache, lpEditor) {
 
     var skillMap;
     var self = this;
-    var promise;;
+    var promise;
+    var skillLists = [];
 
-    this.loadMap = function() {
-        if (skillMap) {
-            return $q.when(skillMap);
+    this.preLoad = function() {
+      var promises = [];
+      var skillTypes = lpEditor.constants.skill_types;
+      if (!promise) {
+        for (var ix = 0; ix < skillTypes.length; ix++) {
+          promises.push(lpCache.cache(skillTypes[ix]).then(function(skills) {
+              skillLists.push(skills);
+            }
+          ));
         }
-        if (!promise) {
-            promise = lpRemote.request('editor/skill_map').then(function(map) {
-                self.skillMap = map;
-                return $q.when(map);
-            })
-        }
-        return promise;
-    }
+      }
+      promise = $q.all(promises);
+      return promise;
+    };
 
-    lpEvent.register('modelCreate', function(model) {
-        if (lpEditor.constants.skill_types.indexOf(model.dbo_key_type) > -1) {
-            skillMap[model.dbo_key] = model;
-        }
-    });
-
-    lpEvent.register('modelUpdate', function(model) {
-        if (skillMap.hasOwnProperty(model.dbo_key)) {
-            skillMap[model.dbo_key] = model;
-        }
-    });
-
-    lpEvent.register('modelDelete', function(model) {
-        delete skillMap[model.dbo_key];
-    });
+    this.allSkills = function() {
+      return [].concat.apply([], skillLists);
+    };
 
   }]);
 
@@ -77,17 +68,21 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$scope', func
   }]);
 
 
-angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lpEditor', 'lpSkillService',
-  function ($scope, lpEditor, lpSkillService) {
+angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lpEditor', 'lpEditorTypes', 'lpSkillService',
+  function ($scope, lpEditor, lpEditorTypes, lpSkillService) {
 
     var attr_map = lpEditor.constants.attr_map;
 
-    $scope.defaultAttrsList = {effectDesc: "Starting attributes for this race", effectName: "Starting Attributes",
-      calcWatch: 'base_attrs', calcDefs: attr_map, effectLabel: function(id) {
-        return attr_map[id].name;
-      }, fixed: true};
+    var attrSet = new lpEditorTypes.ValueMap('base_attrs', 'Starting Attributes');
+    attrSet.rowLabel = function(row) {
+      return attr_map[row.key].name;
+    };
 
-    $scope.defaultSkills = {effectDesc: "Default skills and levels assigned to this race", effectName: "Default Skills",
-          calcWatch: "default_skills", calcDefs: lpSkillService.skillMap};
+    $scope.attrSet = attrSet;
+
+    var skillSet = new lpEditorTypes.ValueObjList('default_skills', "Default Skills", 'skill_template', 'skill_level');
+    skillSet.options = lpSkillService.allSkills();
+    skillSet.optionKey = 'dbo_key';
+    $scope.skillSet = skillSet;
 
   }]);

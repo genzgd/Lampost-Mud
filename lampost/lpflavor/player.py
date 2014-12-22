@@ -73,7 +73,3 @@ class PlayerLP(Player, EntityLP):
         self.status = 'ok'
         self.heath = 1
         self.start_refresh()
-
-    @property
-    def template_refs(self):
-        return self.skills.keys()

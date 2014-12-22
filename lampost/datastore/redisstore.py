@@ -235,20 +235,21 @@ class RedisStore():
             new_refs.extend(dbo.template_refs)
 
         def child_dbo(dbo, dbo_field_class):
-            class_id = getattr(dbo, 'class_id', dbo_field_class)
-            save_value = save_level(dbo, hasattr(dbo, 'dbo_id'))
+            # If this child is a reference, save just the appropriate id
+            if hasattr(dbo, 'dbo_id'):
+                new_refs.append(dbo.dbo_key)
+                return dbo.dbo_key if dbo_field_class == 'untyped' else dbo.dbo_id
+            save_value = save_level(dbo)
             if hasattr(dbo, 'template_key'):
                 save_value['tk'] = dbo.template_key
-            elif class_id != dbo_field_class:
+            elif getattr(dbo, 'class_id', dbo_field_class) != dbo_field_class:
                 # If the object has a different class_id than field definition thinks it should have
                 # we need to save the actual class_id
-                save_value['class_id'] = class_id
+                save_value['class_id'] = dbo.class_id
             return save_value
 
-        def save_level(dbo, save_as_ref=False):
+        def save_level(dbo):
             add_refs(dbo)
-            if save_as_ref:
-                return dbo.dbo_id
             save_value = {}
             for field, dbo_field in dbo.dbo_fields.items():
                 try:

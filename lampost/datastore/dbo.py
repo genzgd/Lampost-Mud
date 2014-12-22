@@ -150,11 +150,16 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
     if not dbo_repr:
         return
 
+    dbo_ref_id = None
     # The class_id passed in is what the field thinks it should hold
     # This can be overridden in the actual stored dictionary
     try:
         class_id = dbo_repr['class_id']
-    except (TypeError, KeyError):
+    except TypeError:
+        # A dbo_repr is either a string or a dictionary.  If it's a string,
+        # it must be reference, so capture the reference id
+        dbo_ref_id = dbo_repr
+    except KeyError:
         pass
 
     dbo_class = get_dbo_class(class_id)
@@ -164,13 +169,19 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
     # If this class has a key_type, it should always be a reference and we should load it from the database
     # The dbo_representation in this case should always be a dbo_id
     if hasattr(dbo_class, 'dbo_key_type'):
-        return load_object(dbo_repr, dbo_class)
+        return load_object(dbo_ref_id, dbo_class)
+
+    # If we still have a dbo_ref_id, this must be part of an untyped collection, so the dbo_ref_id is a
+    # full value and we should be able to load it
+    if dbo_ref_id:
+        return load_object(dbo_ref_id)
 
     # If this is a template, it should have a template key, so we load the template from the database using
     # the full key, then hydrate any non-template fields from the dictionary
     try:
         template_key = dbo_repr.get('tk')
     except AttributeError:
+        # If there
         error("Unexpected dbo_repr {}", dbo_repr)
         return
 
@@ -185,7 +196,7 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
             warn("Missing template for template_key {}", template_key)
             return
 
-    # Finally, it's not a template, it not a reference to an independent DB object, so it must be a child
+    # Finally, it's not a template and it is not a reference to an independent DB object, it must be a child
     # object of this class, just hydrate it and set the owner
     instance = dbo_class().hydrate(dbo_repr)
     if instance:

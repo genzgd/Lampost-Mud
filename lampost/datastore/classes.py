@@ -58,7 +58,12 @@ def cls_name(cls):
 
 
 def subclasses(cls):
+    yield cls
     for subclass in cls.__subclasses__():
         yield subclass
         for sub_sub in subclasses(subclass):
             yield sub_sub
+
+
+def dbo_types(cls):
+    return {subclass.dbo_key_type for subclass in subclasses(cls) if hasattr(subclass, 'dbo_key_type')}

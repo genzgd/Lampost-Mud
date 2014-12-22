@@ -1,19 +1,19 @@
-from collections import defaultdict
 from random import randint
+
 from lampost.context.resource import m_requires
-from lampost.datastore.classes import subclasses
+from lampost.datastore.classes import dbo_types
 from lampost.datastore.dbo import DBOField, DBOTField, RootDBO
 from lampost.datastore.auto import TemplateField
-from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template
 from lampost.mud.action import mud_action, imm_action
+
 
 m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 
 
 def _post_init():
-    context.set('skill_types', list({skill.dbo_key_type for skill in subclasses(SkillTemplate) if hasattr(skill, 'dbo_key_type')}))
+    context.set('skill_types', list(dbo_types(SkillTemplate)))
 
 
 def add_skill(skill_id, target, skill_level):
@@ -46,6 +46,12 @@ class SkillTemplate(Template):
     def on_loaded(self):
         if not self.auto_start:
             self.verbs = convert_verbs(self.verb)
+
+
+class DefaultSkill(RootDBO):
+    class_id = 'default_skill'
+    skill_template = DBOField(dbo_class_id='untyped')
+    skill_level = DBOField(1)
 
 
 class BaseSkill(RootDBO):
@@ -118,9 +124,9 @@ def add_skill_action(target, obj, **_):
         skill_id = skill_name
     else:
         skill_id = None
-        for skill_cls in subclasses(SkillTemplate):
-            if skill_cls.dbo_set_key and skill_name in fetch_set_keys(skill_cls.dbo_set_key):
-                skill_id = '{}:{}'.format(skill_cls.dbo_key_type, skill_name)
+        for skill_type in dbo_types(SkillTemplate):
+            if skill_name in fetch_set_keys(skill_type):
+                skill_id = '{}:{}'.format(skill_type, skill_name)
                 break
     if skill_id and add_skill(skill_id, obj, skill_level):
         if getattr(obj, 'dbo_id', None):

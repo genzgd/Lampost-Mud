@@ -1,0 +1,24 @@
+<div class="panel panel-warning">
+  <div class="panel-heading panel-condensed" title="{{valueSet.desc}}">{{valueSet.name}}</div>
+  <div class="panel-body">
+
+    <div class="input-group" ng-class="groupClass" ng-repeat="row in valueSet.rows"
+      title="{{valueSet.rowDesc(row)}}">
+      <span class="input-group-addon">{{valueSet.rowLabel(row)}}</span>
+      <input type="number" class="form-control text-right" ng-change="change(row, $index)" ng-model="row.value"
+        required>
+            <span ng-if="valueSet.options && can_write" class="input-group-btn">
+              <button class="btn btn-default" type="button" ng-click="delete(row, $index)"><i
+                class="fa fa-minus-square" style="color: #b00;"></i></button>
+            </span>
+    </div>
+    <div class="sm-spacer"></div>
+    <div ng-if="valueSet.unused.length && can_write" class="pull-right">
+      <select title="valueSet.optionDesc(valueSet.newValue)" class="input-sm" ng-model="valueSet.newValue"
+        ng-options="value as value.name for value in valueSet.unused"></select>
+      <button type="button" class="btn btn-xs btn-warning" ng-click="insert()">Add</button>
+      </span>
+    </div>
+  </div>
+
+</div>

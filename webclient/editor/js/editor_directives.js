@@ -93,6 +93,50 @@ angular.module('lampost_editor').directive('lpEffectList', [function () {
   }
 }]);
 
+
+angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent',
+ function ($scope, lpEvent) {
+
+
+  $scope.delete = function (row, rowIx) {
+    $scope.valueSet.delete(row, rowIx);
+    lpEvent.dispatch('childUpdate');
+  };
+
+  $scope.change = function(row, rowIx) {
+     $scope.valueSet.onChange(row, rowIx);
+     lpEvent.dispatch('childUpdate');
+  };
+
+  $scope.insert = function () {
+    $scope.valueSet.insert();
+    lpEvent.dispatch('childUpdate');
+  };
+
+  this.startEdit= function(model) {
+    $scope.can_write = model.can_write;
+    $scope.valueSet.setSource(model);
+  };
+
+  lpEvent.register('editReady', this.startEdit, $scope);
+
+}]);
+
+angular.module('lampost_editor').directive('lpValueSet', [function () {
+  return {
+    restrict: 'A',
+    scope: {},
+    templateUrl: 'editor/view/value_set.html',
+    controller: 'ValueSetCtrl',
+    link: function (scope, element, attrs, controller) {
+      scope.valueSet = scope.$parent.$eval(attrs.lpValueSet);
+      controller.startEdit(scope.$parent.model);
+    }
+  }
+}]);
+
+
+
 angular.module('lampost_editor').controller('OptionsListCtrl', ['$scope', 'lpEvent', function ($scope, lpEvent) {
 
   $scope.vars = {};
@@ -145,53 +189,6 @@ angular.module('lampost_editor').directive('lpOptionsList', [function () {
   }
 }]);
 
-angular.module('lampost_editor').directive('lpSkillList', [function () {
-  return {
-    restrict: 'A',
-    scope: {},
-    templateUrl: 'editor/view/skill_list.html',
-    controller: 'SkillListCtrl',
-    link: function (scope, element, attrs) {
-      angular.extend(scope, element.scope().$eval(attrs.lmSkillList));
-    }
-  }
-}]);
-
-
-angular.module('lampost_editor').controller('SkillListCtrl', ['$q', '$scope', 'lmEditor', 'lpEvent',
-  function ($q, $scope, lmEditor, lpEvent) {
-
-
-    function updateModel() {
-      if ($scope.$parent.model) {
-        $scope.skillMap = $scope.$parent.model[$scope.attrWatch];
-        updateUnused();
-      }
-    }
-
-    function updateUnused() {
-      $scope.unusedValues = [];
-      angular.forEach($scope.allSkills, function (skill) {
-        if (!$scope.skillMap.hasOwnProperty(skill.dbo_id)) {
-          if ($scope.unusedValues.length === 0) {
-            $scope.newId = skill.dbo_id;
-          }
-          $scope.unusedValues.push(skill);
-        }
-      });
-    }
-
-    $scope.deleteRow = function (rowId) {
-      delete $scope.skillMap[rowId];
-      updateUnused();
-    };
-
-    $scope.addRow = function () {
-      $scope.skillMap[$scope.newId] = {skill_level: 1};
-      updateUnused();
-    };
-
-  }]);
 
 angular.module('lampost_editor').directive('lmOutsideEdit', [function () {
   return {
@@ -208,21 +205,6 @@ angular.module('lampost_editor').directive('lpDataError', [function () {
   }
 }]);
 
-angular.module('lampost_editor').directive('lmFormSubmit', [function () {
-  return {
-    restrict: 'A',
-    link: function (scope, element, attrs) {
-      element.bind('keypress', function (event) {
-        if (event.keyCode == 13) {
-          event.preventDefault();
-          this.form.submit();
-          return false;
-        }
-        return true;
-      })
-    }
-  }
-}]);
 
 angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   return {
