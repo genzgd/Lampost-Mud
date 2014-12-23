@@ -131,12 +131,21 @@ angular.module('lampost_util').service('lpEvent', ['$log', function ($log) {
 
 
 angular.module('lampost_util').service('lpUtil', [function () {
+
   this.stringSort = function (array, field) {
     array.sort(function (a, b) {
       var aField = a[field].toLowerCase();
       var bField = b[field].toLowerCase();
       return ((aField < bField) ? -1 : ((aField > bField) ? 1 : 0));
     });
+  };
+
+  this.stringSortFunc = function(field) {
+    return function (a, b) {
+      var aField = a[field].toLowerCase();
+      var bField = b[field].toLowerCase();
+      return ((aField < bField) ? -1 : ((aField > bField) ? 1 : 0));
+    }
   };
 
   this.intSort = function (array, field) {

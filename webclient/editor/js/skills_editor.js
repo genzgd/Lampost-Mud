@@ -83,7 +83,7 @@ angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lpEdit
 
     $scope.attrSet = attrSet;
 
-    var skillSet = new lpEditorTypes.ValueObjList('default_skills', "Default Skills", 'skill_template', 'skill_level');
+    var skillSet = new lpEditorTypes.ValueObjList('default_skills', "Default Skills [Level]", 'skill_template', 'skill_level');
     skillSet.options = lpSkillService.allSkills();
     skillSet.optionKey = 'dbo_key';
     $scope.skillSet = skillSet;

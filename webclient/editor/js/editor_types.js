@@ -4,6 +4,8 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     return row.name;
   }
 
+  var sortFunc = lpUtil.stringSortFunc('name');
+
   function updateUnused() {
 
     var ix;
@@ -19,7 +21,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
         this.unused.push(option);
       }
     }
-
+    this.unused.sort(this.sortFunc);
     this.newValue = this.unused[0];
   }
 
@@ -32,6 +34,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   ValueMap.prototype.updateUnused = updateUnused;
   ValueMap.prototype.optionKey = 'dbo_id';
   ValueMap.prototype.default = 1;
+  ValueMap.prototype.sortFunc = sortFunc;
   ValueMap.prototype.transform = function(key, value) {
       return this.rowMap[key] = {key: key, name: key, value: value};
     };
@@ -45,6 +48,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
           this.rows.push(this.transform(prop, this.sourceMap[prop]))
         }
       }
+      this.rows.sort(this.sortFunc);
       this.updateUnused();
     };
   ValueMap.prototype.onChange = function(row) {
@@ -52,29 +56,32 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     };
 
 
-
   function ValueObjList(source_prop, name, keyProp, valueProp) {
     this.source_prop = source_prop;
     this.desc = this.name = name;
     this.keyProp = keyProp;
     this.valueProp = valueProp;
+    this.sourceSort = lpUtil.stringSortFunc(keyProp);
   }
 
   ValueObjList.prototype.updateUnused = updateUnused;
   ValueObjList.prototype.optionKey = 'dbo_id';
   ValueObjList.prototype.default = 1;
   ValueObjList.prototype.rowLabel = rowLabel;
+  ValueObjList.prototype.sortFunc = sortFunc;
   ValueObjList.prototype.transform = function(source) {
     var key = source[this.keyProp];
     return this.rowMap[key] = {key: key, name: source[this.keyProp], value: source[this.valueProp]};
   }
   ValueObjList.prototype.setSource = function(model) {
       this.sourceList = model[this.source_prop];
+      this.sourceList.sort(this.sourceSort);
       this.rowMap = {};
       this.rows = [];
       for (var ix = 0; ix < this.sourceList.length; ix++) {
         this.rows.push(this.transform(this.sourceList[ix]));
       }
+      this.rows.sort(this.sortFunc);
       this.updateUnused();
     }
   ValueObjList.prototype.onChange = function(row, rowIx) {
@@ -85,7 +92,9 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       value[this.keyProp] = this.newValue[this.optionKey];
       value[this.valueProp] = this.default;
       this.sourceList.push(value);
+      this.sourceList.sort(this.sourceSort);
       this.rows.push(this.transform(value));
+      this.rows.sort(this.sortFunc);
       this.updateUnused();
     }
   ValueObjList.prototype.delete = function(row, rowIx) {
