@@ -232,7 +232,6 @@ class RedisStore():
                     new_refs.append(dbo.dbo_key)
                 elif getattr(dbo, 'template_key', None):
                     new_refs.append(dbo.template_key)
-            new_refs.extend(dbo.template_refs)
 
         def child_dbo(dbo, dbo_field_class):
             # If this child is a reference, save just the appropriate id

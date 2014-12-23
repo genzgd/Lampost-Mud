@@ -21,7 +21,7 @@ def _post_init():
 
 class MobileTemplateLP(MobileTemplate):
     class_id = 'mobile'
-    default_skills = DBOField({})
+    default_skills = DBOField([], 'default_skill')
 
     def on_loaded(self):
         if self.archetype:
@@ -40,10 +40,6 @@ class MobileTemplateLP(MobileTemplate):
             add_skill(skill_id, mobile, skill_status['skill_level'])
         fill_pools(mobile)
         super().config_instance(mobile, owner)
-
-    @property
-    def template_refs(self):
-        return self.default_skills.keys()
 
 
 class MobileLP(EntityLP):

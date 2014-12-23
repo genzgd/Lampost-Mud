@@ -13,7 +13,6 @@ class RootDBO(metaclass=CommonMeta):
     dbo_children_types = []
     dbo_indexes = ()
     template_id = None
-    template_refs = []
 
     def __init__(self, dbo_id=None):
         if dbo_id:
@@ -83,10 +82,12 @@ class RootDBO(metaclass=CommonMeta):
     @property
     def dto_value(self):
         dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
-        for child_type in self.dbo_children_types:
-            dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
-        return self.metafields(dto_value, ['dbo_id', 'dbo_key', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
+        if hasattr(self, 'dbo_id'):
+            for child_type in self.dbo_children_types:
+                dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
+            return self.metafields(dto_value, ['dbo_id', 'dbo_key', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
                                            'dbo_children_types'])
+        return self.metafields(dto_value, ['template_key'])
 
     def dbo_child_keys(self, child_type):
         if getattr(self, 'dbo_id', None):
@@ -178,13 +179,7 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
 
     # If this is a template, it should have a template key, so we load the template from the database using
     # the full key, then hydrate any non-template fields from the dictionary
-    try:
-        template_key = dbo_repr.get('tk')
-    except AttributeError:
-        # If there
-        error("Unexpected dbo_repr {}", dbo_repr)
-        return
-
+    template_key = dbo_repr.get('tk')
     if template_key:
         template = load_object(template_key)
         if template:
@@ -204,16 +199,6 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
         return instance
 
 
-def to_dto_repr(value):
-    try:
-        return value.dbo_id
-    except AttributeError:
-        try:
-            return value.dto_value
-        except AttributeError:
-            return None
-
-
 class DBOField(AutoField):
     def __init__(self, default=None, dbo_class_id=None, required=False):
         super().__init__(default)
@@ -223,7 +208,7 @@ class DBOField(AutoField):
             self.value_wrapper = value_wrapper(self.default)
             self.hydrate_value = value_wrapper(self.default, False)(self.hydrate_dbo_value)
             self.convert_save_value = value_wrapper(self.default)(save_repr)
-            self.dto_value = value_wrapper(self.default)(to_dto_repr)
+            self.dto_value = value_wrapper(self.default)(self.to_dto_repr)
         else:
             self.hydrate_value = lambda dto_repr, instance: dto_repr
             self.convert_save_value = lambda value: value
@@ -236,6 +221,15 @@ class DBOField(AutoField):
         value = self.convert_save_value(instance.__dict__[self.field])
         self.should_save(value, instance)
         return value
+
+    def to_dto_repr(self, value):
+        try:
+            return value.dbo_key if self.dbo_class_id == 'untyped' else value.dbo_id
+        except AttributeError:
+            try:
+                return value.dto_value
+            except AttributeError:
+                return None
 
     def should_save(self, value, instance):
         self.check_default(value)

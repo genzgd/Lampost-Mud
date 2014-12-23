@@ -25,7 +25,6 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
 
 
   function ValueMap(source_prop, name) {
-    this.rowMap = {};
     this.source_prop = source_prop;
     this.desc = this.name = name;
   }
@@ -40,6 +39,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   ValueMap.prototype.setSource = function(model) {
       this.sourceMap = model[this.source_prop];
       this.rows = [];
+      this.rowMap = {};
       for (var prop in this.sourceMap) {
         if (this.sourceMap.hasOwnProperty(prop)) {
           this.rows.push(this.transform(prop, this.sourceMap[prop]))
@@ -53,12 +53,11 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
 
 
 
-  function ValueObjList(source_prop, name, key_prop, value_prop) {
-    this.rowMap = {};
+  function ValueObjList(source_prop, name, keyProp, valueProp) {
     this.source_prop = source_prop;
     this.desc = this.name = name;
-    this.key_prop = key_prop;
-    this.value_prop = value_prop;
+    this.keyProp = keyProp;
+    this.valueProp = valueProp;
   }
 
   ValueObjList.prototype.updateUnused = updateUnused;
@@ -66,11 +65,12 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   ValueObjList.prototype.default = 1;
   ValueObjList.prototype.rowLabel = rowLabel;
   ValueObjList.prototype.transform = function(source) {
-    var key = source[this.key_prop];
-    return this.rowMap[key] = {key: key, name: source[this.key_prop], value: source[this.value_prop]};
+    var key = source[this.keyProp];
+    return this.rowMap[key] = {key: key, name: source[this.keyProp], value: source[this.valueProp]};
   }
   ValueObjList.prototype.setSource = function(model) {
       this.sourceList = model[this.source_prop];
+      this.rowMap = {};
       this.rows = [];
       for (var ix = 0; ix < this.sourceList.length; ix++) {
         this.rows.push(this.transform(this.sourceList[ix]));
@@ -78,12 +78,12 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       this.updateUnused();
     }
   ValueObjList.prototype.onChange = function(row, rowIx) {
-      this.sourceList[rowIx][value_prop] = row.value;
+      this.sourceList[rowIx][this.valueProp] = row.value;
     }
   ValueObjList.prototype.insert = function() {
       var value = {};
-      value[this.key_prop] = this.newValue[this.optionKey];
-      value[this.value_prop] = this.default;
+      value[this.keyProp] = this.newValue[this.optionKey];
+      value[this.valueProp] = this.default;
       this.sourceList.push(value);
       this.rows.push(this.transform(value));
       this.updateUnused();

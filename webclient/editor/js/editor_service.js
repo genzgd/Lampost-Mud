@@ -161,6 +161,12 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     }
 
     function initScope() {
+      if ($scope.detailTemplate != context.include) {
+        // Let everything load before sending out any events.  The initScope method should be called
+        // again once the correct content is available
+        $scope.detailTemplate = context.include;
+        return;
+      }
       lpEvent.dispatch('editStarting', originalModel);
       angular.copy(originalModel, activeModel);
       lpEditor.original = originalModel;
@@ -174,10 +180,12 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         $scope.parentType = null;
         $scope.parentLabel = 'MUD';
       }
-      $scope.detailTemplate = context.include;
+
       $rootScope.activeEditor = activeModel.dbo_key_type;
       lpEvent.dispatch('editReady', activeModel);
     }
+
+    $scope.$on('$includeContentLoaded', initScope);
 
     function init(orig) {
       baseUrl = context.baseUrl;
@@ -313,7 +321,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     $scope.revertModel = function () {
       angular.copy(originalModel, activeModel);
       lpEvent.dispatch('editStarting', originalModel);
-      lpEvent.dispatch('editReady', activeModel);
+      lpEvent.dispatch('editReady', activeModel)
     };
 
     $scope.addNewAlias = function () {

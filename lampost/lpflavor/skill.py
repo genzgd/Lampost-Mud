@@ -16,11 +16,12 @@ def _post_init():
     context.set('skill_types', list(dbo_types(SkillTemplate)))
 
 
-def add_skill(skill_id, target, skill_level):
+def add_skill(skill_id, target, skill_level, skill_source=None):
     skill_template = load_object(skill_id)
     if skill_template:
         skill_instance = skill_template.create_instance(target)
         skill_instance.skill_level = skill_level
+        skill_instance.skill_source = skill_source
         target.add_skill(skill_instance)
         return skill_instance
     warn('Unable to add missing skill {}', skill_id)
@@ -50,7 +51,7 @@ class SkillTemplate(Template):
 
 class DefaultSkill(RootDBO):
     class_id = 'default_skill'
-    skill_template = DBOField(dbo_class_id='untyped')
+    skill_template = DBOField(dbo_class_id='untyped', required=True)
     skill_level = DBOField(1)
 
 
@@ -128,7 +129,7 @@ def add_skill_action(target, obj, **_):
             if skill_name in fetch_set_keys(skill_type):
                 skill_id = '{}:{}'.format(skill_type, skill_name)
                 break
-    if skill_id and add_skill(skill_id, obj, skill_level):
+    if skill_id and add_skill(skill_id, obj, skill_level, 'immortal'):
         if getattr(obj, 'dbo_id', None):
             save_object(obj)
         return "Added {} to {}".format(target, obj.name)
