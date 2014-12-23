@@ -36,8 +36,8 @@ class MobileTemplateLP(MobileTemplate):
 
     def config_instance(self, mobile, owner):
         mobile.skills = {}
-        for skill_id, skill_status in self.default_skills.items():
-            add_skill(skill_id, mobile, skill_status['skill_level'])
+        for default_skill in self.default_skills:
+            add_skill(default_skill.skill_template, mobile, default_skill.skill_level, 'mobile')
         fill_pools(mobile)
         super().config_instance(mobile, owner)
 

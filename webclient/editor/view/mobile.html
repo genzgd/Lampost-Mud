@@ -1,58 +1,57 @@
-<div class="row">
-  <div class="col-md-4">
-    <div class="row">
-      <div class="col-md-8">
-        <div class="form-group">
-          <label class="control-label">Mobile Id</label>
-          <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id"/>
+<div ng-controller="MobileEditorCtrl">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="form-group">
+            <label class="control-label">Mobile Id</label>
+            <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id"/>
 
-          <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+            <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="control-label">DB Rev</label>
+            <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled/>
+          </div>
+        </div>
+
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="form-group">
+            <label class="control-label">Title</label>
+            <input class="form-control input-sm" type="text" ng-model="model.title" required="true"/>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="control-label">Level</label>
+            <input class="form-control input-sm" type="number" ng-model="model.level" min=0 required="true"/>
+          </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="form-group">
-          <label class="control-label">DB Rev</label>
-          <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled/>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label class="control-label">Description</label>
+            <textarea class="form-control" rows="6" ng-model="model.desc"></textarea>
+          </div>
         </div>
       </div>
-
+      <div class="row" ng-include="'editor/fragments/aliases.html'"></div>
     </div>
-    <div class="row">
-      <div class="col-md-8">
-        <div class="form-group">
-          <label class="control-label">Title</label>
-          <input class="form-control input-sm" type="text" ng-model="model.title" required="true"/>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="form-group">
-          <label class="control-label">Level</label>
-          <input class="form-control input-sm" type="number" ng-model="model.level" min=0 required="true"/>
-        </div>
+    <div class="col-md-2">
+      <div class="form-group">
+        <label class="control-label">Affinity</label>
+        <select class="form-control" ng-model="model.affinity"
+          ng-options="affinity as affinity for (affinity, data) in constants.affinities"></select>
       </div>
     </div>
-    <div class="row">
-      <div class="col-md-12">
-        <div class="form-group">
-          <label class="control-label">Description</label>
-          <textarea class="form-control" rows="6" ng-model="model.desc"></textarea>
-        </div>
-      </div>
-    </div>
-      <div class="row" ng-include="'editor/fragments/aliases.html'">
-      </div>
-  </div>
-  <div class="col-md-4">
-    <div class="row">
-      <div class="col-md-6">
-        <div class="form-group">
-          <label class="control-label">Affinity</label>
-          <select class="form-control" ng-model="model.affinity"
-                  ng-options="affinity as affinity for (affinity, data) in constants.affinities"></select>
-
-        </div>
-      </div>
+    <div class="col-md-3">
+      <div lp-value-set="skillSet"></div>
     </div>
   </div>
 </div>

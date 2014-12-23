@@ -13,11 +13,10 @@ m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 
 
 def _post_init():
-    context.set('skill_types', list(dbo_types(SkillTemplate)))
+    context.set('skill_types', [skill_template.dbo_key_type for skill_template in dbo_types(SkillTemplate)])
 
 
-def add_skill(skill_id, target, skill_level, skill_source=None):
-    skill_template = load_object(skill_id)
+def add_skill(skill_template, target, skill_level, skill_source=None):
     if skill_template:
         skill_instance = skill_template.create_instance(target)
         skill_instance.skill_level = skill_level
@@ -119,20 +118,23 @@ def add_skill_action(target, obj, **_):
         raise ActionError("Skill name required")
     try:
         skill_level = int(target[1])
-    except IndexError:
+    except (IndexError, ValueError):
         skill_level = 1
     if ':' in skill_name:
         skill_id = skill_name
     else:
         skill_id = None
         for skill_type in dbo_types(SkillTemplate):
-            if skill_name in fetch_set_keys(skill_type):
-                skill_id = '{}:{}'.format(skill_type, skill_name)
+            if skill_name in fetch_set_keys(skill_type.dbo_set_key):
+                skill_id = '{}:{}'.format(skill_type.dbo_key_type, skill_name)
                 break
-    if skill_id and add_skill(skill_id, obj, skill_level, 'immortal'):
-        if getattr(obj, 'dbo_id', None):
-            save_object(obj)
-        return "Added {} to {}".format(target, obj.name)
+    if skill_id:
+        skill_template = load_object(skill_id)
+        if skill_template:
+            add_skill(skill_template, obj, skill_level, 'immortal')
+            if getattr(obj, 'dbo_id', None):
+                save_object(obj)
+            return "Added {} to {}".format(target, obj.name)
     return "Skill {} not found ".format(skill_name)
 
 

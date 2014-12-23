@@ -66,7 +66,7 @@ def _player_baptise(player):
     if player.race:
         for default_skill in player.race.default_skills:
             if default_skill.skill_template.dbo_key not in player.skills.keys():
-                add_skill(default_skill.skill_template.dbo_key, player, default_skill.skill_level, 'race')
+                add_skill(default_skill.skill_template, player, default_skill.skill_level, 'race')
 
     base_pools(player)
     player.start_refresh()

@@ -66,4 +66,4 @@ def subclasses(cls):
 
 
 def dbo_types(cls):
-    return {subclass.dbo_key_type for subclass in subclasses(cls) if hasattr(subclass, 'dbo_key_type')}
+    return {subclass for subclass in subclasses(cls) if hasattr(subclass, 'dbo_key_type')}

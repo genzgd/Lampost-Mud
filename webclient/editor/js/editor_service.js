@@ -128,13 +128,10 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       lpEvent.dispatch('activeUpdated', activeModel);
     });
 
-
     /*  config: new lpEditContext({label: "Mud Config", url: "config"}),
      script: {label: "Script", url: "script"},
      display: {label: "Display", url: "display"},
-     race: {label: "Races", objLabel: "Race", url: "race"},
      imports: {label: "Imports"} */
-
 
   }]);
 

@@ -1,7 +1,10 @@
-angular.module('lampost_editor').controller('MobileEditorCtrl', [function () {
+angular.module('lampost_editor').controller('MobileEditorCtrl', ['$scope', 'lpEditorTypes', 'lpSkillService',
+  function ($scope, lpEditorTypes, lpSkillService) {
 
-    $scope.defaultSkills = {effectDesc: "Default skills and levels assigned to this mobile", effectName: "Default Skills",
-      attrWatch: "default_skills"};
+    var skillSet = new lpEditorTypes.ValueObjList('default_skills', "Default Skills [Level]", 'skill_template', 'skill_level');
+    skillSet.options = lpSkillService.allSkills();
+    skillSet.optionKey = 'dbo_key';
+    $scope.skillSet = skillSet;
 
   }]);
 
