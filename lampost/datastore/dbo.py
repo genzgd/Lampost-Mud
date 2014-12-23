@@ -19,7 +19,7 @@ class RootDBO(metaclass=CommonMeta):
             self.dbo_id = str(dbo_id).lower()
 
     def _on_loaded(self):
-        for load_func in reversed(self.load_funcs):
+        for load_func in self.load_funcs:
             load_func(self)
 
     def hydrate(self, dto):
@@ -109,30 +109,28 @@ class RootDBO(metaclass=CommonMeta):
 
     def _describe(self, display, level):
 
+        if level > 2:
+            return
+
         def append(value, key):
             display.append(4 * level * "&nbsp;" + key + ":" + (16 - len(key)) * "&nbsp;" + str(value))
 
-        if hasattr(self, 'class_id'):
-            append(self.class_id, 'class_id')
-        if hasattr(self,'dbo_key_type'):
-            append(self.dbo_key_type, 'dbo_key_type')
-        if hasattr(self, 'dbo_id'):
-            append(self.dbo_id, 'dbo_id')
-            level *= 99
-        if hasattr(self, 'template_key'):
-            append(self.template_key, 'template_key')
-            level *= 99
-        if level > 3:
-            return
+        for attr in ['class_id', 'dbo_key_type', 'dbo_id', 'template_key']:
+            if hasattr(self, attr):
+                append(getattr(self, attr), attr)
         for field, dbo_field in sorted(self.dbo_fields.items(), key=lambda field_value: field_value[0]):
             value = getattr(self, field)
-            if value:
+            try:
+                dbo_field.check_default(value)
                 wrapper = value_wrapper(value)
                 if hasattr(dbo_field, 'dbo_class_id'):
                     append('', field)
                     wrapper(lambda value : value._describe(display, level + 1))(value)
                 else:
                     wrapper(append)(value, field)
+            except KeyError:
+                pass
+
         return display
 
 

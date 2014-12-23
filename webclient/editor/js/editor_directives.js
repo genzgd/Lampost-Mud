@@ -9,15 +9,22 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
       var parent = element.find('.panel-heading')[0];
       var child = element.find('.panel-collapse')[0];
 
+      function update() {
+
+        scope.toggleClass = 'fa fa-chevron-' + (scope.listOpen ? 'up' : 'down');
+      }
+
       scope.listOpen = lpEditorView.listState(scope.type);
       if (scope.listOpen) {
         jQuery(child).addClass('in');
       }
+      update();
 
       jQuery(parent).bind('click', function() {
-        jQuery(child).collapse(!!scope.listOpen ? 'hide' : 'show');
         scope.listOpen = !scope.listOpen;
+        jQuery(child).collapse(scope.listOpen ? 'show' : 'hide');
         lpEditorView.toggleList(scope.type, scope.listOpen);
+        scope.$apply(update);
       });
 
       scope.newEditor = function (editorId, event) {

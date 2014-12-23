@@ -62,7 +62,8 @@ angular.module('lampost_editor').service('lpEditorView',
       }
     };
 
-    cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap')];
+    cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap',
+     {header: 'Owner'})];
     cols.room = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 10, 'model_prop cap')];
     cols.article = cols.mobile = [new ColDef('dbo_id', 3, 'idOnly'), new ColDef('title', 9, 'model_prop cap')];
 
@@ -149,8 +150,10 @@ angular.module('lampost_editor').service('lpEditorView',
     this.selectModel = function(type, value) {
       if (value && value.dbo_id) {
         viewState.models[type] = value.dbo_id;
-        updateLocal();
+      } else {
+        delete viewState.models[type];
       }
+      updateLocal();
     };
 
     this.mudWindow = function() {

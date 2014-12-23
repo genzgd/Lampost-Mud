@@ -1,7 +1,6 @@
 from lampost.client.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.classes import get_dbo_class
-from lampost.datastore.dbo import Untyped
 from lampost.datastore.exceptions import DataError
 
 
@@ -58,7 +57,8 @@ class Editor(MethodHandler):
         return publish_edit('update', existing_obj, self.session)
 
     def metadata(self):
-        return {'parent_type': self.parent_type, 'new_object': get_dbo_class(self.dbo_key_type)().dto_value}
+        return {'parent_type': self.parent_type, 'children_types': self.obj_class.dbo_children_types,
+                'new_object': get_dbo_class(self.dbo_key_type)().dto_value}
 
     def test_delete(self):
         return list(fetch_set_keys('{}:{}:holders'.format(self.dbo_key_type, self.raw['dbo_id'])))

@@ -52,8 +52,8 @@ angular.module('lampost_editor').controller('EditorNavController',
     var sessionId;
     var editNav = [
       {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
-      {id: 'mud', label: 'Shared', icon: 'fa-shield'},
-      {id: 'config', label: 'Admin', icon: 'fa-wrench'},
+      {id: 'mud', label: 'Global', icon: 'fa-globe'},
+      //{id: 'config', label: 'Admin', icon: 'fa-wrench'},
       {id: 'player', label: 'Players', icon: 'fa-user'}
     ];
 
