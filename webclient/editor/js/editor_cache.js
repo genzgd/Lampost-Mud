@@ -73,7 +73,8 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
 
     this.clearAll = function() {
       cacheHeap = [];
-      remoteCache = {}
+      remoteCache = {};
+      lpEvent.dispatch('cacheCleared');
     };
 
     this.invalidate = function (key) {

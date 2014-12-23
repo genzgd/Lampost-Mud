@@ -310,7 +310,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       });
     }, $scope);
 
-    lpEvent.register('startEdit', existingEdit);
+    lpEvent.register('startEdit', existingEdit, $scope);
 
     $scope.model = activeModel;
     $scope.saveModel = saveModel;
@@ -416,7 +416,7 @@ angular.module('lampost_editor').controller('EditListCtrl',
       if (context === updated) {
         updateList();
       }
-    });
+    }, $scope);
 
     lpEvent.register("activeUpdated", function (activated) {
       if (activated.dbo_key_type === type) {
@@ -426,13 +426,13 @@ angular.module('lampost_editor').controller('EditListCtrl',
         changeActive(null);
       }
 
-    });
+    }, $scope);
 
     lpEvent.register("modelDelete", function(delModel) {
       if (activeModel == delModel) {
         changeActive(null);
       }
-    })
+    }, $scope);
 
     $scope.selectModel = function (model, event) {
       if (event) {

@@ -1,10 +1,13 @@
-angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpCache', 'lpEditor',
-  function($q, lpCache, lpEditor) {
+angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpEvent', 'lpCache', 'lpEditor',
+  function($q, lpEvent, lpCache, lpEditor) {
 
-    var skillMap;
-    var self = this;
     var promise;
     var skillLists = [];
+
+    lpEvent.register('cacheCleared', function() {
+      promise = null;
+      skillList = [];
+    });
 
     this.preLoad = function() {
       var promises = [];
