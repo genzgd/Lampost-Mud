@@ -281,6 +281,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       } else {
         $scope.outsideEdit = outside;
         angular.copy(originalModel, activeModel);
+        lpEvent.dispatch('editReady', activeModel);
       }
     }, $scope);
 

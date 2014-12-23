@@ -113,11 +113,9 @@ angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent'
     lpEvent.dispatch('childUpdate');
   };
 
-  this.startEdit= function(model) {
-    if (model) {
+  this.startEdit = function(model) {
       $scope.can_write = model.can_write;
       $scope.valueSet.setSource(model);
-    }
   };
 
   lpEvent.register('editReady', this.startEdit, $scope);

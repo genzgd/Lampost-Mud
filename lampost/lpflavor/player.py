@@ -14,7 +14,7 @@ m_requires(__name__, 'dispatcher', 'datastore', 'config_manager')
 class PlayerLP(Player, EntityLP):
     dbo_key_type = 'player'
 
-    race = DBOField('human')
+    race = DBOField(dbo_class_id='race')
     affinity = 'player'
     skills = DBOField({}, 'untyped')
     touchstone = DBOField()

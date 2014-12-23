@@ -122,7 +122,7 @@ class RedisStore():
     def delete_object(self, dbo):
         key = dbo.dbo_key
         dbo.on_deleted()
-        self.redis.delete(key)
+        self.delete_key(key)
         self._clear_old_refs(dbo)
         if dbo.dbo_set_key:
             self.redis.srem(dbo.dbo_set_key, dbo.dbo_id)

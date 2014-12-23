@@ -63,9 +63,8 @@ def _player_create(player):
 
 
 def _player_baptise(player):
-    race = load_object(player.race, PlayerRace)
-    if race:
-        for default_skill in race.default_skills:
+    if player.race:
+        for default_skill in player.race.default_skills:
             if default_skill.skill_template.dbo_key not in player.skills.keys():
                 add_skill(default_skill.skill_template.dbo_key, player, default_skill.skill_level, 'race')
 
