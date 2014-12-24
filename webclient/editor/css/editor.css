@@ -1,3 +1,7 @@
 body {
-    padding-top: 70px;
+    padding-top: 50px;
+}
+
+layout-bar {
+  height: 20px;
 }

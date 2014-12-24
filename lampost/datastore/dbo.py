@@ -56,7 +56,7 @@ class RootDBO(metaclass=CommonMeta):
         return self.metafields(save_value, ['template_key'])
 
     def on_created(self):
-        pass
+        return self
 
     def on_deleted(self):
         pass
@@ -225,7 +225,11 @@ class DBOField(AutoField):
             return value.dbo_key if self.dbo_class_id == 'untyped' else value.dbo_id
         except AttributeError:
             try:
-                return value.dto_value
+                save_value = value.dto_value
+                field_class = getattr(self, 'dbo_class_id', None)
+                if getattr(value, 'class_id', field_class) != field_class:
+                    save_value['class_id'] = value.class_id
+                return save_value
             except AttributeError:
                 return None
 

@@ -266,7 +266,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
     };
 
     $scope.changeId = function () {
-      if (lpCache.cacheValue(listKey + newRoom.destId)) {
+      if (lpCache.cacheValue(listKey + ':' + newRoom.destId)) {
         $scope.hasError = true;
         $scope.lastError = "Room already exists";
       } else {

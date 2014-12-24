@@ -2,8 +2,7 @@ from importlib import import_module
 
 from lampost.datastore.dbo import DBOField
 from lampost.lpflavor import setup
-from lampost.lpflavor.attributes import ATTR_LIST, ATTR_MAP, \
-    fill_pools, base_pools, POOL_MAP
+from lampost.lpflavor.attributes import ATTR_LIST, fill_pools, base_pools, RESOURCE_POOLS, ATTRIBUTES
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, WEAPON_TYPES
 from lampost.lpflavor.skill import add_skill
 from lampost.lpflavor.player import PlayerLP
@@ -29,22 +28,21 @@ def _post_init():
     PlayerRace.attr_list = ATTR_LIST
 
     PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in ATTR_LIST})
-    PlayerLP.add_dbo_fields({attr: DBOField(0) for attr in POOL_MAP.keys()})
+    PlayerLP.add_dbo_fields({pool['dbo_id']: DBOField(0) for pool in RESOURCE_POOLS})
 
     context.set('equip_slots', equip_slots)
     context.set('equip_types', equip_types)
-    context.set('attr_map', ATTR_MAP)
+    context.set('attributes', ATTRIBUTES)
     context.set('damage_types', DAMAGE_TYPES)
     context.set('defense_damage_types', DEFENSE_DAMAGE_TYPES)
     context.set('damage_delivery', DAMAGE_DELIVERY)
-    context.set('resource_pools', POOL_MAP)
+    context.set('resource_pools', RESOURCE_POOLS)
     context.set('weapon_types', WEAPON_TYPES)
     context.set('weapon_options', WEAPON_OPTIONS)
 
-    calc_map = {key: value['name'] for key, value in ATTR_MAP.items()}
-    calc_map.update({'roll': "Dice roll adjust (20 sided)",
-                     'skill': "Skill level adjust"})
-    context.set('calc_map', calc_map)
+    skill_calculation = ATTRIBUTES[:]
+    skill_calculation.extend([{'dbo_id': 'roll', 'name': 'Dice Roll'}, {'dbo_id': 'skill', 'name': 'Skill Level'}])
+    context.set('skill_calculation', skill_calculation)
 
     register('first_time_setup', setup.first_time_setup)
     register('first_room_setup', setup.first_room_setup)

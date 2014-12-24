@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.css">
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="common/css/lampost.css">
-  <link rel="stylesheet" href="editor/css/editor.css" >
-  <link rel="stylesheet" href="common/css/spectrum.css" >
+  <link rel="stylesheet" href="editor/css/editor.css">
+  <link rel="stylesheet" href="common/css/spectrum.css">
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
@@ -34,14 +34,16 @@
     </div>
     <div class="collapse navbar-collapse" id="lampost-navbar-collapse">
       <ul class="nav navbar-nav">
+
         <li ng-repeat="link in links" ng-class="link.active">
           <a ng-href ng-click="changeNav(link.id)">{{link.label}} <i class="fa" ng-class="link.icon"></i></a>
         </li>
-        <li><a ng-click="mudWindow()">Mud <i class="fa fa-tree"></i></a>
-        </li>
+         <li style="margin-right: 40px;"></li>
       </ul>
       <ul class="nav navbar-nav navbar-right active">
         <li><p class="navbar-text">{{welcome}}</p></li>
+        <li><a ng-click="mudWindow()">Mud <i class="fa fa-tree"></i></a>
+        </li>
         <li ng-if="appState == 'loggedIn'"><a ng-href ng-click="editorLogout()">Logout <i
           class="fa fa-external-link"></i></a></li>
         <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost"
@@ -90,7 +92,16 @@
     </div>
   </div>
 </div>
-<ng-include ng-if="appState == 'loggedIn'" src="mainTemplate"></ng-include>
+<div ng-if="appState == 'loggedIn'" class="container-fluid" ng-controller="EditLayoutCtrl">
+  <div class="row">
+    <div ng-class="listPaneClass()">
+      <div ng-repeat="editList in editLists" lp-edit-list="editList"></div>
+    </div>
+    <div ng-class="editPaneClass()" ng-include="'editor/view/editor_main.html'">
+    </div>
+  </div>
+</div>
+
 
 <script src="common/lib/spectrum.js"></script>
 

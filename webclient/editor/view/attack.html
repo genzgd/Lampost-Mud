@@ -38,7 +38,7 @@
           <div class="form-group">
             <label class="control-label">Attack Effect</label>
             <select class="form-control input-sm" ng-model="model.damage_pool"
-              ng-options="pool_id as pool_id for (pool_id, pool_data) in constants.resource_pools"></select>
+              ng-options="pool.dbo_id as pool.name for pool in constants.resource_pools"></select>
           </div>
           <div class="form-group">
             <label class="control-label">Delivery</label>
@@ -61,9 +61,9 @@
       </div>
 
     </div>
-    <div class="col-md-2" lp-effect-list="costList"></div>
-    <div class="col-md-2" lp-effect-list="damageList"></div>
-    <div class="col-md-2" lp-effect-list="accuracyList"></div>
+    <div class="col-md-2" lp-value-set="costList"></div>
+    <div class="col-md-2" lp-value-set="damageList"></div>
+    <div class="col-md-2" lp-value-set="accuracyList"></div>
   </div>
 
 </div>

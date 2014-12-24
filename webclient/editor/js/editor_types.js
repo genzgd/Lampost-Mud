@@ -54,6 +54,20 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   ValueMap.prototype.onChange = function(row) {
       this.sourceMap[row.key] = row.value;
     };
+  ValueMap.prototype.insert = function() {
+      var key = this.newValue[this.optionKey];
+      this.sourceMap[key] = this.default;
+      this.rows.push(this.transform(key, this.default));
+      this.rows.sort(this.sortFunc);
+      this.updateUnused();
+    };
+  ValueMap.prototype.remove = function(row, rowIx) {
+      delete this.rowMap[row.key];
+      this.rows.splice(rowIx, 1);
+      delete this.sourceMap[row.key];
+      this.updateUnused();
+    };
+
 
 
   function ValueObjList(source_prop, name, keyProp, valueProp) {
@@ -97,7 +111,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       this.rows.sort(this.sortFunc);
       this.updateUnused();
     }
-  ValueObjList.prototype.delete = function(row, rowIx) {
+  ValueObjList.prototype.remove = function(row, rowIx) {
       delete this.rowMap[row.key];
       this.rows.splice(rowIx, 1);
       this.sourceList.splice(rowIx, 1);

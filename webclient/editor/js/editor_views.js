@@ -5,8 +5,10 @@ angular.module('lampost_editor').service('lpEditorView',
     var mudWindow = $window.opener;
     var localData;
     var views = {};
+    var viewLists = {};
     var viewState = {};
     var cols = {};
+    var currentView;
 
     function ColDef(id, size, filter, options) {
       this.id = id;
@@ -62,6 +64,7 @@ angular.module('lampost_editor').service('lpEditorView',
       }
     };
 
+    viewLists.build = ['area', 'room', 'mobile', 'article'];
     cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap',
      {header: 'Owner'})];
     cols.room = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 10, 'model_prop cap')];
@@ -94,11 +97,13 @@ angular.module('lampost_editor').service('lpEditorView',
     cols.social = [new ColDef('dbo_id', 4), new ColDef('aliases', 8, 'model_prop join')];
     cols.attack = cols.defense = [new ColDef('dbo_id', 5), new ColDef('verb', 7, null, {header: 'Command'})];
     cols.race = [new ColDef('dbo_id', 5), new ColDef('name', 7)];
+    viewLists.mud = ['social', 'race', 'attack', 'defense'];
 
     views.player = {
       player: {invalidate: true}
     }
-
+    cols.player = [new ColDef('dbo_id', 3, 'model_prop cap', {header: 'Name'})];
+    viewLists.player = ['player'];
 
     this.lastView = function() {
         loadLocal();
@@ -110,6 +115,7 @@ angular.module('lampost_editor').service('lpEditorView',
     };
 
     this.prepareView = function(viewType) {
+      currentView = viewType;
       loadLocal();
       localData.lastView = viewType;
       localData.viewStates = localData.viewStates || {};
@@ -117,14 +123,44 @@ angular.module('lampost_editor').service('lpEditorView',
       viewState.models = viewState.models || {}
       viewState.openLists = viewState.openLists || {}
       localData.viewStates[viewType] = viewState;
+      this.viewState = viewState;
       updateLocal();
 
       angular.forEach(views[viewType], function(contextDef, key) {
         lpEditor.registerContext(key, contextDef);
       });
 
-      return lpEditor.initView();
+      lpEditor.initView().then(finalizeView);
     };
+
+    function finalizeView() {
+      lpEvent.dispatchLater("startViewLayout");
+      var promises = [];
+      promises.push($http.get('editor/view/edit_list.html'));
+      promises.push($http.get('editor/view/editor_main.html'));
+      angular.forEach(viewState.models, function(dbo_id, type) {
+        promises.push(lpCache.seedCacheId(type + ':'+ dbo_id));
+      })
+      if (viewState.lastType) {
+        promises.push(lpCache.seedCacheId(viewState.lastType + ':' + viewState.lastEdit));
+        promises.push($http.get('editor/view/' + viewState.lastType + '.html'));
+      }
+      $q.all(promises).then(function() {
+        angular.forEach(viewState.models, function(dbo_id, type) {
+          var selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
+          if (selectedModel) {
+            lpEvent.dispatchLater('modelSelected', selectedModel, 'load');
+          }
+        })
+        if (viewState.lastType) {
+          var editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
+          if (editModel) {
+            lpEvent.dispatchLater('startEdit', editModel);
+          }
+        }
+      });
+    }
+
 
     this.toggleList = function(type, value) {
         if (value) {
@@ -138,6 +174,10 @@ angular.module('lampost_editor').service('lpEditorView',
     this.listState = function(type) {
         return viewState.openLists[type];
     };
+
+    this.editLists = function() {
+      return viewLists[currentView];
+    }
 
     this.selectModel = function(type, value, selectType) {
       if (selectType === 'load') {
@@ -172,40 +212,34 @@ angular.module('lampost_editor').service('lpEditorView',
       }
     };
 
-    lpEvent.register('editViewReady', function() {
-      var promises = [];
-      promises.push($http.get('editor/view/edit_list.html'));
-      angular.forEach(viewState.models, function(dbo_id, type) {
-        promises.push(lpCache.seedCacheId(type + ':'+ dbo_id));
-      })
-      if (viewState.lastType) {
-        promises.push(lpCache.seedCacheId(viewState.lastType + ':' + viewState.lastEdit));
-        promises.push($http.get('editor/view/' + viewState.lastType + '.html'));
-      }
-      $q.all(promises).then(function() {
-        angular.forEach(viewState.models, function(dbo_id, type) {
-          var selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
-          if (selectedModel) {
-            lpEvent.dispatchLater('modelSelected', selectedModel, 'load');
-          }
-        })
-        if (viewState.lastType) {
-          var editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
-          if (editModel) {
-            lpEvent.dispatchLater('startEdit', editModel);
-          }
-        }
-      });
-
-    })
 
     lpEvent.register('editReady', function(model) {
       if (model.dbo_key_type && model.dbo_id) {
         viewState.lastEdit = model.dbo_id
         viewState.lastType = model.dbo_key_type;
+        updateLocal();
       }
-      updateLocal();
+
     });
 
   }]);
 
+
+angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEvent', 'lpEditorView',
+  function($scope, lpEvent, lpEditorView) {
+
+  var viewState = {};
+
+  $scope.listPaneClass = function() {
+    return 'col-md-' + (viewState.listPaneSize === undefined ? '3' : viewState.listPaneSize);
+  }
+
+  $scope.editPaneClass = function() {
+    return 'col-md-' + (viewState.editPaneSize === undefined ? '9' : viewState.editPaneSize);
+  }
+
+  lpEvent.register('startViewLayout', function() {
+    $scope.editLists = lpEditorView.editLists();
+    viewState = lpEditorView.viewState;
+    }, $scope);
+}]);

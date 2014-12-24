@@ -4,10 +4,12 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
     scope: {},
     controller: 'EditListCtrl',
     templateUrl: 'editor/view/edit_list.html',
-    link: function(scope, element, attrs) {
+    link: function(scope, element, attrs, controller) {
 
       var parent = element.find('.panel-heading')[0];
       var child = element.find('.panel-collapse')[0];
+
+      controller.initType(element.scope().$eval(attrs.lpEditList));
 
       function update() {
 
@@ -38,75 +40,13 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
   }
 }]);
 
-angular.module('lampost_editor').controller('EffectListCtrl', ['$scope', 'lpEvent',
- function ($scope, lpEvent) {
-
-  $scope.vars = {};
-  $scope.effectLabel = function(calcId) {
-    return calcId;
-  }
-
-  var updateList;
-
-  function updateUnused() {
-    $scope.unusedValues = [];
-    angular.forEach($scope.calcDefs, function (value, key) {
-      if (!$scope.calcValues.hasOwnProperty(key)) {
-        if ($scope.unusedValues.length === 0) {
-          $scope.vars.newId = key;
-        }
-        $scope.unusedValues.push(key);
-      }
-    });
-  }
-
-  $scope.deleteRow = function (rowId) {
-    delete $scope.calcValues[rowId];
-    lpEvent.dispatch('childUpdate');
-    updateList();
-  };
-
-  $scope.childUpdate = function() {
-     lpEvent.dispatch('childUpdate');
-  };
-
-  $scope.addRow = function () {
-    $scope.calcValues[$scope.vars.newId] = 1;
-    lpEvent.dispatch('childUpdate');
-    updateList();
-  };
-
-  this.startEdit = function() {
-    $scope.calcValues = $scope.$parent.model[$scope.calcWatch];
-    $scope.can_write = $scope.$parent.model.can_write;
-    updateList = $scope.fixed ? angular.noop : updateUnused;
-    updateList();
-  };
-
-  lpEvent.register('editStarting', this.startEdit, $scope);
-
-}]);
-
-angular.module('lampost_editor').directive('lpEffectList', [function () {
-  return {
-    restrict: 'A',
-    scope: {},
-    templateUrl: 'editor/view/effect_list.html',
-    controller: 'EffectListCtrl',
-    link: function (scope, element, attrs, controller) {
-      angular.extend(scope, element.scope().$eval(attrs.lpEffectList));
-      controller.startEdit();
-    }
-  }
-}]);
-
 
 angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent',
  function ($scope, lpEvent) {
 
 
-  $scope.delete = function (row, rowIx) {
-    $scope.valueSet.delete(row, rowIx);
+  $scope.remove = function (row, rowIx) {
+    $scope.valueSet.remove(row, rowIx);
     lpEvent.dispatch('childUpdate');
   };
 
@@ -123,6 +63,7 @@ angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent'
   this.startEdit = function(model) {
       $scope.can_write = model.can_write;
       $scope.valueSet.setSource(model);
+      $scope.groupClass = $scope.valueSet.size ? 'input-group-' + $scope.valueSet.size : '';
   };
 
   lpEvent.register('editReady', this.startEdit, $scope);
@@ -236,7 +177,6 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
     var type = $attrs.lpChildType;
     var context = lpEditor.getContext(type);
 
-
     $scope.$on('$destroy', function () {
       lpCache.deref(listKey);
       lpCache.deref(parentKey);
@@ -251,7 +191,7 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
       parentKey = context.parentType;
       lpCache.cache(parentKey).then(function (parents) {
         $scope.sourceList = parentFilter ? $filter(parentFilter)(parents) : parents;
-        $scope.vars.parent = lpCache.cacheValue(parentKey, parentId);
+        $scope.vars.parent = lpCache.cacheValue(parentKey + ':' + parentId);
         loadChildren();
       });
     }

@@ -126,15 +126,7 @@ angular.module('lampost_editor').controller('EditorNavController',
             link.active = '';
           }
         }
-        lpEditorView.prepareView(activeNav).then(function () {
-          $rootScope.mainTemplate = 'editor/view/' + activeNav + '_view.html';
-          var removeFn = $rootScope.$on('$includeContentLoaded', function(event, included) {
-            if (included === $rootScope.mainTemplate) {
-              lpEvent.dispatch('editViewReady');
-              removeFn();
-            }
-          });
-        });
+        lpEditorView.prepareView(activeNav);
       });
     };
 

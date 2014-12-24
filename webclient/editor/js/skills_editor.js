@@ -30,31 +30,48 @@ angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpEvent', 'lp
 
   }]);
 
-angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope',
-  function ($scope) {
+angular.module('lampost_editor').controller('AttackEditorCtrl', ['$scope', 'lpEditor', 'lpEditorTypes',
+  function ($scope, lpEditor, lpEditorTypes) {
 
-    $scope.damageList = {effectDesc: 'Calculation of Damage based on attributes and roll', effectName: 'Damage Calculation',
-      calcWatch: 'damage_calc', calcDefs: $scope.constants.calc_map};
+    var damageList = new lpEditorTypes.ValueMap('damage_calc', 'Damage Calculation');
+    damageList.desc = 'Calculation of Damage based on attributes and roll';
+    damageList.options = lpEditor.constants.skill_calculation;
+    damageList.size = 'sm';
+    $scope.damageList = damageList;
 
-    $scope.accuracyList = {effectDesc: 'Calculation of Accuracy based on attributes and roll', effectName: 'Accuracy Calculation',
-      calcWatch: 'accuracy_calc', calcDefs: $scope.constants.calc_map};
+    var accuracyList = new lpEditorTypes.ValueMap('accuracy_calc', 'Accuracy Calculation');
+    accuracyList.desc = 'Calculation of Accuracy based on attributes and roll';
+    accuracyList.options = lpEditor.constants.skill_calculation;
+    accuracyList.size = 'sm';
+    $scope.accuracyList = accuracyList;
 
-    $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
-      effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
+    var costList = new lpEditorTypes.ValueMap('costs', 'Skill Costs');
+    costList.options = lpEditor.constants.resource_pools;
+    costList.size = 'sm';
+    $scope.costList = costList;
 
   }]);
 
 
-angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$scope', function ($scope) {
+angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$scope', 'lpEditor', 'lpEditorTypes',
+  function ($scope, lpEditor, lpEditorTypes) {
 
-    $scope.avoidList = {effectDesc: 'Chance to avoid attack based on attributes and roll', effectName: 'Avoid Calculation',
-      calcWatch: 'avoid_calc', calcDefs: $scope.constants.calc_map};
+    var absorbList = new lpEditorTypes.ValueMap('absorb_calc', 'Absorb Calculation');
+    absorbList.desc = 'Calculation of absorb amount based on attributes and roll';
+    absorbList.options = lpEditor.constants.skill_calculation;
+    absorbList.size = 'sm';
+    $scope.absorbList = absorbList;
 
-    $scope.absorbList = {effectDesc: 'Absorb calculation based on attributes and roll', effectName: 'Absorb Calculation',
-      calcWatch: 'absorb_calc', calcDefs: $scope.constants.calc_map};
+    var avoidList = new lpEditorTypes.ValueMap('avoid_calc', 'Avoid Calculation');
+    avoidList.desc = 'Calculation of avoid chance based on attributes and roll';
+    avoidList.options = lpEditor.constants.skill_calculation;
+    avoidList.size = 'sm';
+    $scope.avoidList = avoidList;
 
-    $scope.costList = {effectDesc: 'Calculation of Pool costs based on attributes and skill level',
-      effectName: 'Cost calculation', calcWatch: 'costs', calcDefs: $scope.constants.resource_pools};
+    var costList = new lpEditorTypes.ValueMap('costs', 'Skill Costs');
+    costList.options = lpEditor.constants.resource_pools;
+    costList.size = 'sm';
+    $scope.costList = costList;
 
     $scope.damageTypeList = {selectDesc: 'List of damage types this defense is effective against',
       selectName: 'Damage Types', optionsWatch: 'damage_type', selectDefs: $scope.constants.defense_damage_types};
@@ -74,7 +91,11 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$scope', func
 angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lpEditor', 'lpEditorTypes', 'lpSkillService',
   function ($scope, lpEditor, lpEditorTypes, lpSkillService) {
 
-    var attr_map = lpEditor.constants.attr_map;
+    var attr_map = {};
+
+    angular.forEach(lpEditor.constants.attributes, function(attr) {
+      attr_map[attr.dbo_id] = attr;
+    });
 
     var attrSet = new lpEditorTypes.ValueMap('base_attrs', 'Starting Attributes');
     attrSet.rowLabel = function(row) {

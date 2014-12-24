@@ -1,7 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
 from lampost.lpflavor.fight import Fight
-from lampost.lpflavor.attributes import need_refresh, POOL_LIST
+from lampost.lpflavor.attributes import need_refresh, POOL_KEYS
 from lampost.lpflavor.combat import calc_consider
 from lampost.model.entity import Entity
 
@@ -144,7 +144,7 @@ class EntityLP(Entity):
             unregister(self._refresh_pulse)
             del self._refresh_pulse
             return
-        for pool_id, base_pool_id in POOL_LIST:
+        for pool_id, base_pool_id in POOL_KEYS:
             new_value = getattr(self, pool_id) + self._refresher[pool_id]
             setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
         self.status_change()
@@ -295,11 +295,11 @@ class EntityLP(Entity):
     @property
     def display_status(self):
         display_status = super().display_status
-        for pool_id, base_pool_id in POOL_LIST:
+        for pool_id, base_pool_id in POOL_KEYS:
             display_status[pool_id] = getattr(self, pool_id)
             display_status[base_pool_id] = getattr(self, base_pool_id)
         return display_status
 
     def combat_status(self):
         return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
-                                                 for pool_id, _ in POOL_LIST])])
+                                                 for pool_id, _ in POOL_KEYS])])

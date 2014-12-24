@@ -18,4 +18,4 @@ class PlayerRace(RootDBO):
     def on_created(self):
         if not self.base_attrs:
             self.base_attrs = {attr_name: base_attr_value for attr_name in self.attr_list}
-        self.autosave()
+        return self

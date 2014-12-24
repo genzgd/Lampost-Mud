@@ -60,6 +60,10 @@ def javascript_safe(value):
     return value
 
 
+def tuples_to_list(keys, tuples):
+    return [{name: value[ix] for ix, name in enumerate(keys)} for value in tuples]
+
+
 class Blank():
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)

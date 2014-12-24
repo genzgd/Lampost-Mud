@@ -15,7 +15,7 @@ class PlayerEditor(Editor):
     def pre_delete(self, player):
         if player.imm_level >= perm_level('supreme'):
             raise DataError("Cannot delete root user.")
-        if hasattr(player, 'session'):
+        if player.session:
             raise DataError("Player is logged in.")
         check_player_perm(player, self.session)
 
@@ -29,7 +29,7 @@ class PlayerEditor(Editor):
             save_object(user)
 
     def metadata(self):
-        return {'new_object': get_dbo_class(self.dbo_key_type)('-new-').dto_value}
+        return {'perms' : {'add': False, 'refresh': True}}
 
 
 def check_player_perm(player, session):

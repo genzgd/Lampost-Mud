@@ -1,43 +1,44 @@
-ATTR_MAP = {'con': {'name': 'Constitution', 'category': 'Brawn', 'hidden': False},
-            'str': {'name': 'Strength', 'category': 'Brawn', 'hidden': False},
-            'agi': {'name': 'Agility', 'category': 'Brawn', 'hidden': False},
-            'adv': {'name': 'Adventuresome', 'category': 'Brawn', 'hidden': True},
-
-            'int': {'name': 'Intelligence', 'category': 'Brain', 'hidden': False},
-            'wis': {'name': 'Wisdom', 'category': 'Brain', 'hidden': False},
-            'kno': {'name': 'Knowledge', 'category': 'Brain', 'hidden': False},
-            'cur': {'name': 'Curiosity', 'category': 'Brain', 'hidden': True},
-
-            'cha': {'name': 'Charm', 'category': 'Bravado', 'hidden': False},
-            'bal': {'name': 'Balance', 'category': 'Bravado', 'hidden': False},
-            'gui': {'name': 'Guile', 'category': 'Bravado', 'hidden': False},
-            'inq': {'name': 'Inquiry', 'category': 'Bravado', 'hidden': True}}
-
-ATTR_LIST = tuple(ATTR_MAP.keys())
+from lampost.util.lputil import tuples_to_list
 
 
-POOL_MAP = {'health': {'name': 'Health', 'desc': 'Physical well being resource',
-                       'calc': [['con', 11],['str', 3], ['adv', 1], ['agi', 1]]},
-            'mental': {'name': 'Mana', 'desc': 'Mental energy resource',
-                       'calc': [['int', 7],['wis', 5], ['kno', 2], ['cur', 2]]},
-            'stamina': {'name': 'Stamina', 'desc': 'Physical energy resource',
-                        'calc': [['con', 10],['str', 2], ['wis', 2], ['bal', 2]]},
-            'action': {'name': 'Action', 'desc': 'Action points pool',
-                       'calc': [['con', 5],['bal', 5], ['wis', 3], ['agi', 2]]}}
+ATTRIBUTES = tuples_to_list(('dbo_id', 'name', 'category', 'hidden'), [
+    ('con', 'Constitution', 'Brawn', False),
+    ('str', 'Strength', 'Brawn', False),
+    ('agi', 'Agility', 'Brawn', False),
+    ('adv', 'Adventuresome', 'Brawn', True),
+    ('int', 'Intelligence', 'Brain', False),
+    ('wis', 'Wisdom', 'Brain', False),
+    ('kno', 'Knowledge', 'Brain', False),
+    ('cur', 'Curiosity', 'Brain', True),
+    ('cha', 'Charm', 'Bravado', False),
+    ('bal', 'Balance', 'Bravado', False),
+    ('gui', 'Guile', 'Bravado', False),
+    ('inq', 'Inquiry', 'Bravado', True)
+])
 
-POOL_LIST = tuple([(key, 'base_{}'.format(key)) for key in POOL_MAP.keys()])
+ATTR_LIST = tuple([attr['dbo_id'] for attr in ATTRIBUTES])
+
+RESOURCE_POOLS = tuples_to_list(('dbo_id', 'name', 'desc', 'calc'), [
+    ('health', 'Health', 'Physical well being resource', [['con', 11], ['str', 3], ['adv', 1], ['agi', 1]]),
+    ('mental', 'Mana', 'Mental energy resource', [['int', 7], ['wis', 5], ['kno', 2], ['cur', 2]]),
+    ('stamina', 'Stamina', 'Physical energy resource', [['con', 10], ['str', 2], ['wis', 2], ['bal', 2]]),
+    ('action', 'Action', 'Action points pool', [['con', 5], ['bal', 5], ['wis', 3], ['agi', 2]])
+
+])
+
+POOL_KEYS = tuple([(pool['dbo_id'], 'base_{}'.format(pool['dbo_id'])) for pool in RESOURCE_POOLS])
 
 
 def base_pools(entity):
-    for pool_id, base_pool_id in POOL_LIST:
-        calc = POOL_MAP[pool_id]['calc']
+    for pool in RESOURCE_POOLS:
+        calc = pool['calc']
         total = sum(getattr(entity, calc[0]) * calc[1] for calc in calc)
-        setattr(entity, base_pool_id, total)
+        setattr(entity, 'base_{}'.format(pool['dbo_id']), total)
 
 
 def fill_pools(entity):
     base_pools(entity)
-    for pool_id, base_pool_id in POOL_LIST:
+    for pool_id, base_pool_id in POOL_KEYS:
         setattr(entity, pool_id, getattr(entity, base_pool_id))
 
 
@@ -47,7 +48,7 @@ def restore_attrs(entity):
 
 
 def need_refresh(entity):
-    for pool_id, base_pool_id in POOL_LIST:
+    for pool_id, base_pool_id in POOL_KEYS:
         if getattr(entity, pool_id) < getattr(entity, base_pool_id):
             return True
 

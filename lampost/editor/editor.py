@@ -57,8 +57,8 @@ class Editor(MethodHandler):
         return publish_edit('update', existing_obj, self.session)
 
     def metadata(self):
-        return {'parent_type': self.parent_type, 'children_types': self.obj_class.dbo_children_types,
-                'new_object': get_dbo_class(self.dbo_key_type)().dto_value}
+        return {'perms': self.permissions(), 'parent_type': self.parent_type, 'children_types': self.obj_class.dbo_children_types,
+                'new_object': get_dbo_class(self.dbo_key_type)().on_created().dto_value}
 
     def test_delete(self):
         return list(fetch_set_keys('{}:{}:holders'.format(self.dbo_key_type, self.raw['dbo_id'])))
@@ -80,6 +80,9 @@ class Editor(MethodHandler):
 
     def post_update(self, existing_obj):
         pass
+
+    def permissions(self):
+        return {'add': True}
 
 
 class ChildList(SessionHandler):

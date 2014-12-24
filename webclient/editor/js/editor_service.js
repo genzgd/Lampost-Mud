@@ -63,6 +63,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
               context.childrenTypes = data.children_types;
             }
             context.newObj = data.new_object;
+            context.perms = data.perms;
           }));
         }
         if (context.invalidate) {
@@ -199,7 +200,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     }
 
     function reset() {
-      context = {label: 'Get Started'};
+      context = {label: 'Get Started', include: 'editor/view/no_item.html'};
       init({});
     }
 
@@ -366,15 +367,34 @@ angular.module('lampost_editor').controller('EditListCtrl',
   ['$scope', '$timeout', '$attrs', 'lpEvent', 'lpCache', 'lpEditor', 'lpEditorView',
   function ($scope, $timeout, $attrs, lpEvent, lpCache, lpEditor, lpEditorView) {
 
-    var type =  $attrs.lpListType || $attrs.lpEditList;
-    var context = lpEditor.getContext(type);
+    var type;
+    var context;
     var activeModel;
     var listKey;
 
-    $scope.colDefs = lpEditorView.cols(type);
-    $scope.type = type;
+    this.initType = function(listType) {
+      type = listType;
+      context = lpEditor.getContext(type);
+      $scope.colDefs = lpEditorView.cols(type);
+      $scope.type = type;
+      updateList();
+    }
+
     $scope.addAllowed = function () {
-      return (context.parent && context.parent.can_write) || !context.parentType;
+      return ((context.parent && context.parent.can_write) || !context.parentType) && context.perms.add;
+    };
+
+    $scope.refreshAllowed = function() {
+      return context.perms.refresh;
+    };
+
+    $scope.doRefresh = function(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      lpCache.invalidate(listKey);
+      updateList();
     };
 
     function changeActive(active, selectType) {
@@ -459,7 +479,5 @@ angular.module('lampost_editor').controller('EditListCtrl',
     $scope.$on('$destroy', function() {
       lpCache.deref(listKey)}
     );
-
-    updateList();
 
   }]);
