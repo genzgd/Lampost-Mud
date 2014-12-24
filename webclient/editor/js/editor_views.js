@@ -1,6 +1,6 @@
 angular.module('lampost_editor').service('lpEditorView',
-  ['$window', '$q', '$filter', '$log', 'lpEvent', 'lpCache', 'lpEditor','lpUtil', 'lpSkillService',
-  function($window, $q, $filter, $log, lpEvent, lpCache, lpEditor, lpUtil, lpSkillService) {
+  ['$window', '$q', '$filter', '$log', '$http', 'lpEvent', 'lpCache', 'lpEditor','lpUtil', 'lpSkillService',
+  function($window, $q, $filter, $log, $http, lpEvent, lpCache, lpEditor, lpUtil, lpSkillService) {
 
     var mudWindow = $window.opener;
     var localData;
@@ -174,11 +174,13 @@ angular.module('lampost_editor').service('lpEditorView',
 
     lpEvent.register('editViewReady', function() {
       var promises = [];
+      promises.push($http.get('editor/view/edit_list.html'));
       angular.forEach(viewState.models, function(dbo_id, type) {
         promises.push(lpCache.seedCacheId(type + ':'+ dbo_id));
       })
       if (viewState.lastType) {
         promises.push(lpCache.seedCacheId(viewState.lastType + ':' + viewState.lastEdit));
+        promises.push($http.get('editor/view/' + viewState.lastType + '.html'));
       }
       $q.all(promises).then(function() {
         angular.forEach(viewState.models, function(dbo_id, type) {

@@ -62,6 +62,7 @@ angular.module('lampost_editor').controller('EditorNavController',
     lpEvent.register('connect', function (data) {
       sessionId = data;
       $rootScope.appState = 'connected';
+      $rootScope.mainTemplate = null;
       $scope.welcome = 'Please log in.';
     });
 
@@ -97,7 +98,9 @@ angular.module('lampost_editor').controller('EditorNavController',
 
     lpEvent.register('editor_logout', function () {
       sessionStorage.removeItem('editSessionId');
+
       $rootScope.appState = 'connected';
+      $rootScope.mainTemplate = null;
       $scope.welcome = 'Please Log In';
       $scope.links = [];
     }, $scope);
