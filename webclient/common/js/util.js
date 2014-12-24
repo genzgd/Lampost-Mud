@@ -1,6 +1,6 @@
 angular.module('lampost_util', []);
 
-angular.module('lampost_util').service('lpEvent', ['$log', function ($log) {
+angular.module('lampost_util').service('lpEvent', ['$log', '$timeout', function ($log, $timeout) {
   var self = this;
   var registry = {};
 
@@ -104,6 +104,13 @@ angular.module('lampost_util').service('lpEvent', ['$log', function ($log) {
       }
     }
   };
+
+  this.dispatchLater = function() {
+    var originalArgs = arguments;
+    $timeout(function() {
+      self.dispatch.apply(self, originalArgs);
+    })
+  }
 
   this.dispatch = function () {
     var event_type = arguments[0];

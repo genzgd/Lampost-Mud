@@ -148,4 +148,4 @@ class Store(BaseItem):
 
     @property
     def target_providers(self):
-        return itertools.chain(self.inven.contents, self.perm_items)
+        return itertools.chain(self.inven, self.perm_items)

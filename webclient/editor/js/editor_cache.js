@@ -81,8 +81,14 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       deleteEntry(key)
     };
 
-    this.cacheValue = function (key, dbo_id) {
-      return remoteCache[key].map[dbo_id];
+    this.cacheValue = function (dbo_id) {
+      var parts = dbo_id.split(':');
+      var size = parts.length;
+      var list_key = parts.slice(0, size - 1).join(':');
+      var item_key = parts.slice(1, size).join(':');
+      if (remoteCache[list_key]) {
+        return remoteCache[list_key].map[item_key];
+      }
     };
 
     this.deref = function (key) {
@@ -198,6 +204,16 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       });
       return entry.promise;
     };
+
+    this.seedCacheId = function(dboId, promises) {
+
+      var parts = dboId.split(':');
+      var size = parts.length;
+      if (size == 2) {
+        return lpCache.cache(parts[0]);
+      }
+      return lpCache.cache(parts[0] + ':' + parts[1]);
+    }
 
     this.seedCache = function (refs, baseModel, cacheKeys) {
 

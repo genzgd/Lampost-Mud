@@ -1,12 +1,12 @@
 angular.module('lampost_editor').service('lpEditorView',
-  ['$window', '$q', '$filter', '$log', 'lpEvent', 'lpEditor','lpUtil', 'lpSkillService',
-  function($window, $q, $filter, $log, lpEvent, lpEditor, lpUtil, lpSkillService) {
+  ['$window', '$q', '$filter', '$log', 'lpEvent', 'lpCache', 'lpEditor','lpUtil', 'lpSkillService',
+  function($window, $q, $filter, $log, lpEvent, lpCache, lpEditor, lpUtil, lpSkillService) {
 
     var mudWindow = $window.opener;
     var localData;
     var views = {};
     var viewState = {};
-    var cols = {}
+    var cols = {};
 
     function ColDef(id, size, filter, options) {
       this.id = id;
@@ -139,15 +139,10 @@ angular.module('lampost_editor').service('lpEditorView',
         return viewState.openLists[type];
     };
 
-    this.selectedId = function(type) {
-        return viewState.models[type];
-    };
-
-    this.lastEdit = function(type) {
-        return type == viewState.lastType ? viewState.lastEdit : undefined;
-    };
-
-    this.selectModel = function(type, value) {
+    this.selectModel = function(type, value, selectType) {
+      if (selectType === 'load') {
+        return;
+      }
       if (value && value.dbo_id) {
         viewState.models[type] = value.dbo_id;
       } else {
@@ -176,6 +171,31 @@ angular.module('lampost_editor').service('lpEditorView',
         }
       }
     };
+
+    lpEvent.register('editViewReady', function() {
+      var promises = [];
+      angular.forEach(viewState.models, function(dbo_id, type) {
+        promises.push(lpCache.seedCacheId(type + ':'+ dbo_id));
+      })
+      if (viewState.lastType) {
+        promises.push(lpCache.seedCacheId(viewState.lastType + ':' + viewState.lastEdit));
+      }
+      $q.all(promises).then(function() {
+        angular.forEach(viewState.models, function(dbo_id, type) {
+          var selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
+          if (selectedModel) {
+            lpEvent.dispatchLater('modelSelected', selectedModel, 'load');
+          }
+        })
+        if (viewState.lastType) {
+          var editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
+          if (editModel) {
+            lpEvent.dispatchLater('startEdit', editModel);
+          }
+        }
+      });
+
+    })
 
     lpEvent.register('editReady', function(model) {
       if (model.dbo_key_type && model.dbo_id) {

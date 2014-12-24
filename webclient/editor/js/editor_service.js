@@ -122,13 +122,13 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       })
     });
 
-    lpEvent.register('modelSelected', function (activeModel) {
+    lpEvent.register('modelSelected', function (activeModel, selectType) {
       angular.forEach(contextMap, function (context) {
         if (context.parentType === activeModel.dbo_key_type) {
           context.parent = activeModel;
         }
       });
-      lpEvent.dispatch('activeUpdated', activeModel);
+      lpEvent.dispatch('activeUpdated', activeModel, selectType);
     });
 
     /*  config: new lpEditContext({label: "Mud Config", url: "config"}),
@@ -185,7 +185,11 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       lpEvent.dispatch('editReady', activeModel);
     }
 
-    $scope.$on('$includeContentLoaded', initScope);
+    $scope.$on('$includeContentLoaded', function(event, included) {
+        if (included === $scope.detailTemplate) {
+          initScope();
+        }
+      });
 
     function init(orig) {
       baseUrl = context.baseUrl;
@@ -373,9 +377,9 @@ angular.module('lampost_editor').controller('EditListCtrl',
       return (context.parent && context.parent.can_write) || !context.parentType;
     };
 
-    function changeActive(active) {
+    function changeActive(active, selectType) {
       activeModel = active;
-      lpEditorView.selectModel(type, active);
+      lpEditorView.selectModel(type, active, selectType);
     }
 
     function updateList() {
@@ -393,23 +397,6 @@ angular.module('lampost_editor').controller('EditListCtrl',
       }
       lpCache.cache(listKey).then(function (objs) {
         $scope.modelList = objs;
-        var editId = lpEditorView.lastEdit(type);
-        if (editId) {
-          var editModel = lpCache.cacheValue(listKey, editId);
-          if (editModel) {
-            activeModel = editModel;
-            lpEditor.savedModel = activeModel;
-            return;
-          }
-        }
-        var selectedId = lpEditorView.selectedId(type);
-        if (selectedId) {
-          var selected = lpCache.cacheValue(listKey, selectedId);
-          if (selected) {
-            activeModel = selected;
-            lpEvent.dispatch("modelSelected", activeModel);
-          }
-        }
       });
     }
 
@@ -423,14 +410,14 @@ angular.module('lampost_editor').controller('EditListCtrl',
       }
     }, $scope);
 
-    lpEvent.register("activeUpdated", function (activated) {
+    lpEvent.register("activeUpdated", function (activated, selectType) {
       if (activated.dbo_key_type === type) {
         changeActive(activated);
       } else if (context.parent === activated) {
         updateList();
-        changeActive(null);
+        changeActive(null, selectType);
       } else if (!context.childrenTypes) {
-        changeActive(null);
+        changeActive(null, selectType);
       }
 
     }, $scope);
@@ -473,6 +460,6 @@ angular.module('lampost_editor').controller('EditListCtrl',
       lpCache.deref(listKey)}
     );
 
-    updateList()
+    updateList();
 
   }]);
