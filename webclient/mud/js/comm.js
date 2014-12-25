@@ -55,7 +55,7 @@ angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lpData', 'lpRemote'
     }
 
     this.requestNotificationPermission = function (notify_data) {
-        lpDialog.showConfirm("Allow Notifications", "You must grant permission to allow notifications from " + lampost_config.title, function () {
+        lpDialog.showConfirm("Allow Notifications", "You must grant permission to allow notifications from " + lampost_config.title).then(function () {
             window.webkitNotifications.requestPermission(function () {
                 self.notify(notify_data);
             })

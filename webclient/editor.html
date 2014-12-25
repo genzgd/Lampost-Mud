@@ -94,10 +94,38 @@
 </div>
 <div ng-if="appState == 'loggedIn'" class="container-fluid" ng-controller="EditLayoutCtrl">
   <div class="row">
-    <div ng-class="listPaneClass()">
-      <div ng-repeat="editList in editLists" lp-edit-list="editList"></div>
+    <div ng-class="paneClass(0)">
+       <div ng-show="!settings.showCheats" class="pull-left" style="padding-bottom: 4px;">
+         <a title="Show Cheat Sheets" ng-click="swapCheats()"><i class="fa fa-lg fa-question"></i></a>
+       </div>
+       <div ng-show="settings.showCheats" class="pull-left" style="padding-bottom: 4px;">
+         <a title="Show Item Lists" ng-click="swapCheats()"><i class="fa fa-lg fa-reorder"></i></a>
+       </div>
+      <div class="pull-right" style="padding-bottom: 4px;">
+         <a ng-click="changeSize(0, 1, -1)"><i class="fa fa-lg fa-angle-double-left"></i></a>
+       </div>
+      <div class="clearfix"></div>
+      <div ng-show="!settings.showCheats" ng-repeat="editList in editLists" lp-edit-list="editList"></div>
+      <div ng-show="settings.showCheats" ng-repeat="cheatSheet in cheatSheets" ng-include="cheatSheet">
+
+      </div>
     </div>
-    <div ng-class="editPaneClass()" ng-include="'editor/view/editor_main.html'">
+    <div ng-class="paneClass(1)">
+       <div class="pull-left" style="padding-bottom: 4px;">
+        <a ng-click="changeSize(0, 1, 1)"><i class="fa fa-lg fa-angle-double-right"></i></a>
+      </div>
+      <div ng-if="selectListAvail" class="pull-right" style="padding-bottom: 4px;">
+        <a ng-click="changeSize(2, 1, 1)"><i class="fa fa-lg fa-angle-double-left"></i></a>
+      </div>
+        <div class="clearfix"></div>
+      <ng-include src="'editor/view/editor_main.html'"></ng-include>
+    </div>
+    <div ng-class="paneClass(2)">
+       <div class="pull-left" style="padding-bottom: 4px;">
+         <a ng-click="changeSize(2, 1, -1)"><i class="fa fa-lg fa-angle-double-right"></i></a>
+      </div>
+        <div class="clearfix"></div>
+      <div id="futureSelectContent"></div>
     </div>
   </div>
 </div>

@@ -1,5 +1,5 @@
-angular.module('lampost_dlg', []).service('lpDialog', ['$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
-  function ($rootScope, $compile, $controller, $templateCache, $timeout, $http) {
+angular.module('lampost_dlg', []).service('lpDialog', ['$q', '$rootScope', '$compile', '$controller', '$templateCache', '$timeout', '$http',
+  function ($q, $rootScope, $compile, $controller, $templateCache, $timeout, $http) {
 
     var dialogMap = {};
     var nextId = 0;
@@ -144,11 +144,13 @@ angular.module('lampost_dlg', []).service('lpDialog', ['$rootScope', '$compile',
           buttons: [{label: 'OK', default: true, dismiss: true, class: "btn-primary"}]});
     };
 
-    this.showConfirm = function (title, body, confirm, onCancel) {
-      this.showAlert({title: title, body: body, onCancel: onCancel,
-        buttons: [{label: 'Yes', dismiss: true, class: 'btn-danger', click: confirm},
+    this.showConfirm = function (title, body) {
+      var deferred = $q.defer();
+      this.showAlert({title: title, body: body, onCancel: deferred.reject,
+        buttons: [{label: 'Yes', dismiss: true, class: 'btn-danger', click: deferred.resolve},
         {label: "No", class: 'btn-primary', default: true, cancel: true}]
       }, true);
+      return deferred.promise;
     };
 
     this.showPrompt = function (args) {

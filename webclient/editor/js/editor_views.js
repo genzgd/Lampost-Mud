@@ -4,8 +4,10 @@ angular.module('lampost_editor').service('lpEditorView',
 
     var mudWindow = $window.opener;
     var localData;
-    var views = {};
+    var localVersion = 1;
+    var viewTypes = {};
     var viewLists = {};
+    var viewDefaults = {};
     var viewState = {};
     var cols = {};
     var currentView;
@@ -38,13 +40,16 @@ angular.module('lampost_editor').service('lpEditorView',
 
     function loadLocal() {
         localData = JSON.parse(localStorage.getItem(lpEditor.playerId + '*editData')) || {};
+        if (localData.version != localVersion) {
+          localData = {version: localVersion};
+        }
     }
 
     function updateLocal() {
         localStorage.setItem(lpEditor.playerId + '*editData', JSON.stringify(localData));
     }
 
-    views.build = {
+    viewTypes.build = {
       area: {},
       room:  {
         refs: [
@@ -64,14 +69,15 @@ angular.module('lampost_editor').service('lpEditorView',
       }
     };
 
-    viewLists.build = ['area', 'room', 'mobile', 'article'];
     cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap',
      {header: 'Owner'})];
     cols.room = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 10, 'model_prop cap')];
     cols.article = cols.mobile = [new ColDef('dbo_id', 3, 'idOnly'), new ColDef('title', 9, 'model_prop cap')];
+    viewLists.build = ['area', 'room', 'mobile', 'article'];
+    viewDefaults.build = {paneSizes: [3, 9, 0]};
 
 
-    views.mud = {
+    viewTypes.mud = {
       social: {},
       race: {
         preReqs: [lpSkillService.preLoad],
@@ -98,12 +104,14 @@ angular.module('lampost_editor').service('lpEditorView',
     cols.attack = cols.defense = [new ColDef('dbo_id', 5), new ColDef('verb', 7, null, {header: 'Command'})];
     cols.race = [new ColDef('dbo_id', 5), new ColDef('name', 7)];
     viewLists.mud = ['social', 'race', 'attack', 'defense'];
+    viewDefaults.mud = {paneSizes: [2, 10, 0]};
 
-    views.player = {
+    viewTypes.player = {
       player: {invalidate: true}
     }
     cols.player = [new ColDef('dbo_id', 3, 'model_prop cap', {header: 'Name'})];
     viewLists.player = ['player'];
+    viewDefaults.player = {paneSizes: [5, 7, 0]};
 
     this.lastView = function() {
         loadLocal();
@@ -120,13 +128,14 @@ angular.module('lampost_editor').service('lpEditorView',
       localData.lastView = viewType;
       localData.viewStates = localData.viewStates || {};
       viewState = localData.viewStates[viewType] || {};
-      viewState.models = viewState.models || {}
-      viewState.openLists = viewState.openLists || {}
+      viewState.models = viewState.models || {};
+      viewState.openLists = viewState.openLists || {};
+      viewState.settings = viewState.settings || viewDefaults[viewType];
       localData.viewStates[viewType] = viewState;
       this.viewState = viewState;
       updateLocal();
 
-      angular.forEach(views[viewType], function(contextDef, key) {
+      angular.forEach(viewTypes[viewType], function(contextDef, key) {
         lpEditor.registerContext(key, contextDef);
       });
 
@@ -146,18 +155,18 @@ angular.module('lampost_editor').service('lpEditorView',
         promises.push($http.get('editor/view/' + viewState.lastType + '.html', {cache: $templateCache}));
       }
       $q.all(promises).then(function() {
+        var selectedModel;
+        var editModel;
         angular.forEach(viewState.models, function(dbo_id, type) {
-          var selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
+          selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
           if (selectedModel) {
             lpEvent.dispatchLater('modelSelected', selectedModel, 'load');
           }
         })
         if (viewState.lastType) {
-          var editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
-          if (editModel) {
-            lpEvent.dispatchLater('startEdit', editModel);
-          }
+          editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
         }
+        lpEvent.dispatchLater('startEdit', editModel || selectedModel || {dbo_key_type: 'no_item'});
       });
     }
 
@@ -212,6 +221,7 @@ angular.module('lampost_editor').service('lpEditorView',
       }
     };
 
+    this.update = updateLocal;
 
     lpEvent.register('editReady', function(model) {
       if (model.dbo_key_type && model.dbo_id) {
@@ -228,18 +238,47 @@ angular.module('lampost_editor').service('lpEditorView',
 angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEvent', 'lpEditorView',
   function($scope, lpEvent, lpEditorView) {
 
-  var viewState = {};
+  var settings = {paneSizes: []};
 
-  $scope.listPaneClass = function() {
-    return 'col-md-' + (viewState.listPaneSize === undefined ? '3' : viewState.listPaneSize);
+  $scope.paneClass = function(pane) {
+    return settings.paneSizes[pane] ? 'col-md-' + settings.paneSizes[pane] : 'hidden';
   }
 
-  $scope.editPaneClass = function() {
-    return 'col-md-' + (viewState.editPaneSize === undefined ? '9' : viewState.editPaneSize);
+  $scope.swapCheats = function() {
+    settings.showCheats = !settings.showCheats;
+    lpEditorView.update();
+  }
+
+  $scope.cheatSheets = ["editor/view/social_cheat.html"];
+
+   $scope.changeSize = function(pane, other, size) {
+
+    var newSize = settings.paneSizes[pane] + size;
+    var otherSize = settings.paneSizes[other] - size;
+    var availSize = newSize + otherSize;
+
+    if (newSize < 2 && size < 0) {
+      newSize = 0;
+      otherSize = availSize;
+    } else if (newSize < 2 && size > 0) {
+      newSize = 2;
+      otherSize = availSize - 2;
+    } else if (otherSize < 2 && size > 0) {
+      newSize = availSize;
+      otherSize = 0;
+    } else if (otherSize < 2 && size < 0) {
+      otherSize = 2;
+      newSize = availSize - 2;
+    }
+    settings.paneSizes[pane] = newSize;
+    settings.paneSizes[other] = otherSize;
+
+    lpEditorView.update();
   }
 
   lpEvent.register('startViewLayout', function() {
     $scope.editLists = lpEditorView.editLists();
-    viewState = lpEditorView.viewState;
+    settings = lpEditorView.viewState.settings;
+    $scope.settings = settings;
     }, $scope);
 }]);

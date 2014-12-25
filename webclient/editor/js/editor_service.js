@@ -44,6 +44,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
     this.init = function (data) {
       this.playerId = data.playerId;
+      this.registerContext('no_item', {metadata: true});
       lpCache.clearAll();
       return lpRemote.request('editor/constants').then(function (constants) {
         lpEditor.constants = constants;
@@ -102,7 +103,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
           extra = "<br/><br/>This object will be removed from:<br/><br/><div> " + holders.join(' ') + "</div>";
         }
         lpDialog.showConfirm("Delete " + context.objLabel,
-            "Are you certain you want to delete " + context.objLabel + " " + model.dbo_id + "?" + extra,
+            "Are you certain you want to delete " + context.objLabel + " " + model.dbo_id + "?" + extra).then(
           function () {
             lpRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
               lpCache.deleteModel(model);
@@ -201,7 +202,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     }
 
     function reset() {
-      context = {label: 'Get Started', include: 'editor/view/no_item.html'};
+      context = lpEditor.getContext('no_item');
       init({});
     }
 
@@ -240,11 +241,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       return intercept('postUpdate', activeModel);
     }
 
-    function checkUnsaved() {
-      return lpDialog.showConfirm("Unsaved Changes", "You have unsaved changes to " + $scope.objLabel +
-        ": " + display() + ".  Save changes now?", saveModel);
-    }
-
     function onOverwrite() {
       if (!$scope.isDirty) {
         return $q.when();
@@ -281,7 +277,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       }
       if ($scope.isDirty && outside) {
         lpDialog.showConfirm("Outside Edit", "Warning -- This object has been updated by another user.  " +
-          "Do you want to load the new object and lose your changes?", function () {
+          "Do you want to load the new object and lose your changes?").then(function () {
           angular.copy(originalModel, activeModel);
         });
       } else {
@@ -302,7 +298,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
 
     lpEvent.register('editorClosing', function (handlers) {
       if ($scope.isDirty) {
-        handlers.push(checkUnsaved);
+        handlers.push(onOverwrite());
       }
     }, $scope);
 
@@ -353,7 +349,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         lpEditor.deleteModel(context, originalModel, dataError);
       } else if ($scope.isDirty) {
         lpDialog.showConfirm("Delete " + context.objLabel,
-            "Are you sure you want to abandon this new " + context.objLabel + "?", reset);
+            "Are you sure you want to abandon this new " + context.objLabel + "?").then(reset);
       } else {
         reset();
       }

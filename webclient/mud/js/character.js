@@ -13,7 +13,7 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lpData'
 
     $scope.tryCancel = function () {
       if (lpData.playerIds.length == 0) {
-        lpDialog.showConfirm("No Characters", "This account has no characters and will be deleted.  Do you still wish to continue?",
+        lpDialog.showConfirm("No Characters", "This account has no characters and will be deleted.  Do you still wish to continue?").then(
           function () {
             lpRemote.request("settings/delete_account").then(function (response) {
               lpEvent.dispatchMap(response);

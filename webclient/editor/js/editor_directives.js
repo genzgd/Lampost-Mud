@@ -13,7 +13,7 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
 
       function update() {
 
-        scope.toggleClass = 'fa fa-chevron-' + (scope.listOpen ? 'up' : 'down');
+        scope.toggleClass = 'fa fa-lg fa-caret-' + (scope.listOpen ? 'up' : 'down');
       }
 
       scope.listOpen = lpEditorView.listState(scope.type);
