@@ -1,5 +1,5 @@
-angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '$q', '$log', 'lpEvent', 'lpDialog',
-  function ($timeout, $http, $q, $log, lpEvent, lpDialog) {
+angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '$templateCache', '$q', '$log', 'lpEvent', 'lpDialog',
+  function ($timeout, $http, $templateCache, $q, $log, lpEvent, lpDialog) {
 
     var sessionId = '';
     var connectEndpoint = '';
@@ -152,7 +152,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     };
 
     this.request = function (resource, args) {
-      return $http.get('common/dialogs/loading.html').then(function (template) {
+      return $http.get('common/dialogs/loading.html', {cache: $templateCache}).then(function (template) {
         loadingTemplate = template.data;
       }).then(function () {
         return resourceRequest(resource, args)

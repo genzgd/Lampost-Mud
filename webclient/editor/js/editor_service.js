@@ -56,7 +56,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
         angular.forEach(context.preReqs, function(preReq) {
           requests.push(preReq());
         });
-        if (!context.newObj) {
+        if (!context.metadata) {
           requests.push(lpRemote.request('editor/' + context.url + '/metadata').then(function(data) {
             context.parentType = data.parent_type;
             if (data.children_types && data.children_types.length) {
@@ -64,6 +64,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
             }
             context.newObj = data.new_object;
             context.perms = data.perms;
+            context.metadata = true;
           }));
         }
         if (context.invalidate) {

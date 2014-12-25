@@ -47,7 +47,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       });
     }
 
-    lpEvent.register('childListUpdated', loadAreas, $scope);
+    lpEvent.register('childListUpdate', loadAreas, $scope);
 
     loadAreas();
 
