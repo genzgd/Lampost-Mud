@@ -34,7 +34,9 @@ class User(RootDBO):
 
     @property
     def imm_level(self):
-        return max([perm.immortals.get(player_id, 0) for player_id in self.player_ids])
+        if self.player_ids:
+            return max([perm.immortals.get(player_id, 0) for player_id in self.player_ids])
+        return 0
 
 
 @provides('user_manager')
