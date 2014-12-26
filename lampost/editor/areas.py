@@ -11,7 +11,7 @@ m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_update_serv
 
 class AreaEditor(Editor):
     def initialize(self):
-        super().initialize(Area, 'creator')
+        super().initialize(Area)
 
     def _pre_create(self):
         if object_exists('player', self.raw['dbo_id']):
@@ -31,7 +31,7 @@ class AreaEditor(Editor):
 
 class RoomEditor(ChildrenEditor):
     def initialize(self):
-        super().initialize(Room, 'creator')
+        super().initialize(Room)
 
     def visit(self):
         if not self.session.player.session:

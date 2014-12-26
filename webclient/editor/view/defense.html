@@ -14,8 +14,7 @@
         <div class="col-md-5">
           <div class="form-group">
             <label class="control-label">Defense Command</label>
-            <input ng-disabled="model.auto_start" class="form-control input-sm" type="text" ng-model="model.verb"
-              required="true"/>
+            <input ng-disabled="model.auto_start" class="form-control input-sm" type="text" ng-model="model.verb"/>
           </div>
         </div>
         <div class="col-md-3">
@@ -45,8 +44,8 @@
       </div>
     </div>
     <div class="col-md-2">
-      <div lp-options-list="damageTypeList"></div>
-      <div lp-options-list="deliveryTypeList"></div>
+      <div lp-options-list="damageTypes"></div>
+      <div lp-options-list="deliveryTypes"></div>
     </div>
     <div class="col-md-2" lp-value-set="costList"></div>
     <div class="col-md-2" lp-value-set="avoidList"></div>

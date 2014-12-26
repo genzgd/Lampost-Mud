@@ -10,8 +10,8 @@ from lampost.util.encrypt import make_hash
 from lampost.util.lputil import ClientError
 
 
-m_requires(__name__, 'datastore', 'user_manager', 'perm', 'email_sender', 'config_manager', 'friend_service')
-
+m_requires(__name__, 'datastore', 'user_manager', 'perm', 'email_sender', 'config_manager',
+           'friend_service', 'edit_update_service')
 
 @requires('session_manager')
 class Settings(MethodHandler):
@@ -24,7 +24,8 @@ class Settings(MethodHandler):
 
     def create_account(self):
         account_name = self.raw['account_name'].lower()
-        if get_index("ix:user:name", account_name) or object_exists('player', account_name) or object_exists('area', account_name):
+        if get_index("ix:user:name", account_name) or object_exists('player', account_name) or\
+                config_manager.reserved(account_name) or object_exists('area', account_name):
             raise DataError("InUse: {}".format(account_name))
         user = user_manager.create_user(account_name, self.raw['password'], self.raw['email'].lower())
         self.session.connect_user(user)
@@ -50,6 +51,8 @@ class Settings(MethodHandler):
             update_dict['password'] = old_user.password
         update_dict['email'] = update_dict['email'].lower()
         update_object(user, update_dict)
+        publish_edit('update', user)
+
 
     def delete_account(self):
         user = self.session.user
@@ -65,7 +68,8 @@ class Settings(MethodHandler):
             raise DataError("User {0} does not exist".format(content.user_id))
         player_name = content.player_name.lower()
         if (player_name != user.user_name and get_index("ix:user:user_name", player_name))\
-                or object_exists('player', player_name) or object_exists('area', player_name):
+                or object_exists('player', player_name) or object_exists('area', player_name)\
+                or config_manager.reserved(player_name):
             raise DataError(content.player_name.capitalize() + " is in use.")
         content.player_data['dbo_id'] = player_name
         user_manager.attach_player(user, content.player_data)

@@ -17,6 +17,7 @@ class Social(RootDBO):
 
     b_map = DBOField({})
     aliases = DBOField([])
+    owner_id = DBOField('lampost')
 
     msg_class = 'social'
 

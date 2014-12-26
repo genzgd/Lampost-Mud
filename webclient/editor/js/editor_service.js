@@ -241,6 +241,11 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       return intercept('postUpdate', activeModel);
     }
 
+    function discard() {
+      angular.copy(originalModel, activeModel);
+      $scope.$isDirty = false;
+    }
+
     function onOverwrite() {
       if (!$scope.isDirty) {
         return $q.when();
@@ -253,7 +258,9 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
           {label: "Save Changes", class: "btn-default", dismiss: true, click: function () {
             deferred.resolve(saveModel())
           }},
-          {label: "Discard Changes", class: "btn-danger", dismiss: true, click: deferred.resolve},
+          {label: "Discard Changes", class: "btn-danger", dismiss: true, click: function() {
+            deferred.resolve(discard())
+          }},
           {label: "Continue Previous Edit", class: "btn-info", default: true, cancel: true}
         ],
         onCancel: deferred.reject}, true);

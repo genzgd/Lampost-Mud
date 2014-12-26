@@ -73,11 +73,13 @@ angular.module('lampost_editor').controller('DefenseEditorCtrl', ['$scope', 'lpE
     costList.size = 'sm';
     $scope.costList = costList;
 
-    $scope.damageTypeList = {selectDesc: 'List of damage types this defense is effective against',
-      selectName: 'Damage Types', optionsWatch: 'damage_type', selectDefs: $scope.constants.defense_damage_types};
+    $scope.damageTypes = new lpEditorTypes.OptionsList('damage_type', 'Damage Types');
+    $scope.damageTypes.desc = 'List of damage types this defense is effective against';
+    $scope.damageTypes.setOptions(lpEditor.constants.defense_damage_types);
 
-    $scope.deliveryTypeList = {selectDesc: 'List of delivery methods this defense is effective against',
-      selectName: 'Delivery Methods', optionsWatch: 'delivery', selectDefs: $scope.constants.damage_delivery};
+    $scope.deliveryTypes = new lpEditorTypes.OptionsList('delivery', 'Delivery Methods');
+    $scope.deliveryTypes.desc = 'List of delivery methods this defense is effective against';
+    $scope.deliveryTypes.setOptions(lpEditor.constants.damage_delivery);
 
     $scope.onAutoStart = function () {
       if ($scope.model.auto_start) {

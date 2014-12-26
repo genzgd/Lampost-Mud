@@ -10,7 +10,7 @@ m_requires(__name__, 'log', 'datastore', 'perm', 'user_manager', 'edit_update_se
 
 class PlayerEditor(Editor):
     def initialize(self):
-        super().initialize(Player)
+        super().initialize(Player, 'admin')
 
     def metadata(self):
         return {'perms': {'add': False, 'refresh': True}}
@@ -50,7 +50,7 @@ def check_player_perm(player, session):
 
 class UserEditor(Editor):
     def initialize(self):
-        super().initialize(User)
+        super().initialize(User, 'admin')
 
     def _pre_delete(self, user):
         if user.imm_level:

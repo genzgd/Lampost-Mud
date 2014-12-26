@@ -52,7 +52,7 @@ def _post_init():
     register('game_settings', _game_settings)
 
 
-def _player_create(player):
+def _player_create(player, user):
     for attr_name, start_value in player.race.base_attrs.items():
         setattr(player, attr_name, start_value)
         setattr(player, 'perm_{}'.format(attr_name), start_value)

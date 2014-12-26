@@ -33,7 +33,7 @@ angular.module('lampost_dlg', []).service('lpDialog', ['$q', '$rootScope', '$com
     }
 
     function enableUI() {
-      enabledElements.removeAttr('disabled');
+      enabledElements.filter(':not([_lp_disabled])').removeAttr('disabled');
       enabledLinks.each(function () {
         $(this).attr("href", $(this).attr("data-oldhref"));
         $(this).removeAttr("data-oldhref");

@@ -139,6 +139,33 @@ angular.module('lampost_util').service('lpEvent', ['$log', '$timeout', function 
 
 angular.module('lampost_util').service('lpUtil', [function () {
 
+  function rawCmp(a, b) {
+    return a > b ? 1 : a < b ? -1 : 0;
+  }
+
+  function naturalCmp(a, b) {
+      var x = [], y = [];
+
+      a.replace(/(\d+)|(\D+)/g, function($0, $1, $2) { x.push([$1 || 0, $2]) })
+      b.replace(/(\d+)|(\D+)/g, function($0, $1, $2) { y.push([$1 || 0, $2]) })
+
+      while(x.length && y.length) {
+          var xx = x.shift();
+          var yy = y.shift();
+          var nn = (xx[0] - yy[0]) || rawCmp(xx[1], yy[1]);
+          if(nn) return nn;
+      }
+
+      if(x.length) return -1;
+      if(y.length) return 1;
+
+      return 0;
+  }
+
+  this.naturalSort = function(array) {
+    return array.sort(naturalCmp);
+  };
+
   this.stringSort = function (array, field) {
     array.sort(function (a, b) {
       var aField = a[field].toLowerCase();
@@ -147,11 +174,11 @@ angular.module('lampost_util').service('lpUtil', [function () {
     });
   };
 
-  this.stringSortFunc = function(field) {
-    return function (a, b) {
-      var aField = a[field].toLowerCase();
-      var bField = b[field].toLowerCase();
-      return ((aField < bField) ? -1 : ((aField > bField) ? 1 : 0));
+  this.fieldSortFunc = function(field) {
+    return function(array) {
+      array.sort(function(a, b) {
+        return naturalCmp(a[field], b[field]);
+      });
     }
   };
 

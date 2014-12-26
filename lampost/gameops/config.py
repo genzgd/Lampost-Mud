@@ -2,7 +2,7 @@ from lampost.context.resource import provides, m_requires
 from lampost.datastore.dbo import RootDBO, DBOField
 from lampost.util.lputil import javascript_safe
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher')
+m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'message_service')
 
 
 @provides('config_manager')
@@ -36,9 +36,13 @@ class ConfigManager():
         config_settings = getattr(self.config, setting_type)
         config_settings[setting_id] = setting_value
 
-    def _player_create(self, player):
-        if not player.imm_level:
-            player.imm_level = self.config.auto_imm_level
+    def reserved(self, name):
+        return name in self.config.system_accounts
+
+    def _player_create(self, player, user):
+        if len(user.player_ids) == 1:
+            player.imm_level = perm_level('creator')
+            message_service.add_message('system', "Welcome!  Your first player has been given creator powers.  Check out the 'Editor' window on the top menu.", player.dbo_id)
         player.room_id = self.config.start_room
 
     def _session_connect(self, session):
@@ -68,6 +72,7 @@ class Config(RootDBO):
 
     title = DBOField('Lampost (New Install)')
     description = DBOField('A fresh install of Lampost Mud')
+    system_accounts = DBOField([], ['lampost'])
     auto_imm_level = DBOField(0)
     start_room = DBOField()
     default_displays = DBOField({})

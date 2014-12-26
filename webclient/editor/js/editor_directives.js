@@ -79,66 +79,57 @@ angular.module('lampost_editor').directive('lpValueSet', [function () {
     link: function (scope, element, attrs, controller) {
       scope.valueSet = scope.$parent.$eval(attrs.lpValueSet);
       controller.startEdit(scope.$parent.model);
+      scope.$parent.$emit('lpDirectiveLoaded');
     }
   }
 }]);
 
-
-
-angular.module('lampost_editor').controller('OptionsListCtrl', ['$scope', 'lpEvent', function ($scope, lpEvent) {
-
-  $scope.vars = {};
-
-  function updateUnused() {
-    $scope.unusedValues = [];
-    angular.forEach($scope.selectDefs, function (value, key) {
-      if ($scope.selectValues.indexOf(key) === -1) {
-        if ($scope.unusedValues.length === 0) {
-          $scope.vars.newSelection = key;
-        }
-        $scope.unusedValues.push(key);
-      }
-    });
-  }
-
-  $scope.deleteRow = function (selection) {
-    var ix = $scope.selectValues.indexOf(selection);
-    $scope.selectValues.splice(ix, 1);
-    lpEvent.dispatch('childUpdate');
-    updateUnused();
-  };
-
-  $scope.addRow = function () {
-    $scope.selectValues.push($scope.vars.newSelection);
-    lpEvent.dispatch('childUpdate');
-    updateUnused();
-  };
-
-  this.startEdit = function () {
-     $scope.selectValues = $scope.$parent.model[$scope.optionsWatch];
-     $scope.can_write = $scope.$parent.model.can_write;
-     updateUnused();
-  }
-
-  lpEvent.register('editStarting', this.startEdit, $scope);
-
-}]);
 
 angular.module('lampost_editor').directive('lpOptionsList', [function () {
   return {
     restrict: 'A',
     scope: {},
     templateUrl: 'editor/view/simple_list.html',
-    controller: 'OptionsListCtrl',
+    controller: 'ValueSetCtrl',
     link: function (scope, element, attrs, controller) {
-      angular.extend(scope, element.scope().$eval(attrs.lpOptionsList));
-      controller.startEdit();
+      scope.valueSet = scope.$parent.$eval(attrs.lpOptionsList);
+      controller.startEdit(scope.$parent.model);
+      scope.$parent.$emit('lpDirectiveLoaded');
     }
   }
 }]);
 
 
-angular.module('lampost_editor').directive('lmOutsideEdit', [function () {
+angular.module('lampost_editor').directive('lpDisabled', ['$timeout', function($timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+
+      var disabled = false;
+      function disableIt() {
+        $timeout(function () {
+          var elements = element.find(':input').not('.never-disable').not('[ng-disabled]');
+          elements.prop('disabled', disabled);
+          // This keeps the 'EnableUI' method of the dialog service from re-enabling these elements
+          if (disabled) {
+            elements.attr('_lp_disabled', 'true')
+          } else {
+            elements.removeAttr('_lp_disabled');
+          }
+        });
+      }
+      scope.$watch(attrs.lpDisabled, function(value) {
+        disabled = value;
+        disableIt();
+      });
+
+      scope.$on('$includeContentLoaded', disableIt);
+      scope.$on('lpDirectiveLoaded', disableIt);
+    }
+  }
+}]);
+
+angular.module('lampost_editor').directive('lpOutsideEdit', [function () {
   return {
     restrict: 'E',
     replace: true,

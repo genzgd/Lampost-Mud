@@ -1,4 +1,3 @@
-
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOTField
 from lampost.datastore.auto import TemplateField, AutoMeta
@@ -8,45 +7,55 @@ from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_KEYS
 from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
-from lampost.util.lputil import args_print
+from lampost.util.lputil import args_print, tuples_to_list
 
 m_requires(__name__, 'log', 'tools', 'dispatcher')
 
-WEAPON_TYPES = {'sword': {'damage': 'slash', 'delivery': 'melee'},
-                'axe': {'damage': 'slash', 'delivery': 'melee'},
-                'mace': {'damage': 'blunt', 'delivery': 'melee'},
-                'bow': {'damage': 'pierce', 'delivery': 'ranged'},
-                'sling': {'damage': 'blunt', 'delivery': 'ranged'},
-                'spear': {'damage': 'pierce', 'delivery': 'ranged'},
-                'polearm': {'damage': 'pierce', 'delivery': 'melee'}}
+WEAPON_TYPES = tuples_to_list(('dbo_id', 'damage', 'delivery'), [
+    ('sword', 'slash', 'melee'),
+    ('axe', 'slash', 'melee'),
+    ('mace', 'blunt', 'melee'),
+    ('bow', 'pierce', 'ranged'),
+    ('sling', 'blunt', 'ranged'),
+    ('spear', 'pierce', 'ranged'),
+    ('polearm', 'pierce', 'melee')
+])
 
-WEAPON_OPTIONS = ['unused', 'unarmed', 'any'] + list(WEAPON_TYPES.keys())
+WEAPON_OPTIONS = [{'dbo_id': 'unused'}, {'dbo_id': 'unarmed'}, {'dbo_id': 'any'}] + WEAPON_TYPES
 
-DAMAGE_TYPES = {'weapon': {'desc': 'Use weapon damage type'},
-                'blunt': {'desc': 'Blunt trauma (clubs, maces)'},
-                'pierce': {'desc': 'Piercing damage (spears, arrows)'},
-                'slash': {'desc': 'Slash damage (swords, knives)'},
-                'cold': {'desc': 'Cold'},
-                'fire': {'desc': 'Fire'},
-                'shock': {'desc': 'Electric'},
-                'acid': {'desc': 'Acid'},
-                'poison': {'desc': 'Poison'},
-                'psych': {'desc': 'Mental/psychic damage'},
-                'spirit': {'desc': 'Spiritual damage'}}
+DAMAGE_TYPES = tuples_to_list(('dbo_id', 'desc'), [
+    ('weapon', 'Use weapon damage type'),
+    ('blunt', 'Blunt trauma (clubs, maces)'),
+    ('pierce', 'Piercing damage (spears, arrows)'),
+    ('slash', 'Slash damage (swords, knives)'),
+    ('cold', 'Cold'),
+    ('fire', 'Fire'),
+    ('shock', 'Electric'),
+    ('acid', 'Acid'),
+    ('poison', 'Poison'),
+    ('psych', 'Mental/psychic damage'),
+    ('spirit', 'Spiritual damage')
+])
 
-DAMAGE_CATEGORIES = {'any': {'desc': 'All possible damage types', 'types': [damage_type for damage_type in DAMAGE_TYPES.keys()]},
-                     'physical': {'desc': 'All physical damage types', 'types': ['blunt', 'piece', 'slash']},
-                     'elemental': {'desc': 'All elemental damage types', 'types': ['fire', 'shock', 'cold', 'acid', 'poison']}}
+DAMAGE_CATEGORIES = [
+    {'dbo_id': 'any', 'desc': 'All possible damage types', 'types': [d_type['dbo_id'] for d_type in DAMAGE_TYPES]},
+    {'dbo_id': 'physical', 'desc': 'All physical damage types', 'types': ['blunt', 'piece', 'slash']},
+    {'dbo_id': 'elemental', 'desc': 'All elemental damage types', 'types': ['fire', 'shock', 'cold', 'acid', 'poison']}
+]
 
-DEFENSE_DAMAGE_TYPES = DAMAGE_TYPES.copy()
-DEFENSE_DAMAGE_TYPES.update(DAMAGE_CATEGORIES)
+DAMAGE_CATEGORY_MAP = {d_cat['dbo_id']: set(d_cat['types']) for d_cat in DAMAGE_CATEGORIES}
 
-DAMAGE_DELIVERY = {'weapon': {'desc': 'Use weapon delivery type'},
-                   'melee': {'desc': 'Delivered in hand to combat'},
-                   'ranged': {'desc': 'Delivered via bow, spell, or equivalent'},
-                   'psych': {'desc': 'Delivered via psychic or other non-physical means'}}
+DEFENSE_DAMAGE_TYPES = DAMAGE_TYPES + DAMAGE_CATEGORIES
 
-CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome', 'Evenly Matched',
+DAMAGE_DELIVERY = tuples_to_list(('dbo_id', 'desc'), [
+    ('weapon', 'Use weapon delivery type'),
+    ('melee', 'Delivered in hand to combat'),
+    ('ranged', 'Delivered via bow, spell, or equivalent'),
+    ('psych', 'Delivered via psychic or other non-physical means')
+])
+
+CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome',
+              'Evenly Matched',
               'Threatening', 'Difficult', 'Intimidating', 'Imposing', 'Frightening', 'Terrifying', 'Unassailable']
 CON_RANGE = int((len(CON_LEVELS) - 1) / 2)
 
@@ -77,11 +86,13 @@ def validate_dam_type(ability, damage_type):
 
 def calc_consider(entity):
     try:
-        best_attack = max([skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'attack'])
+        best_attack = max(
+            [skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'attack'])
     except ValueError:
         best_attack = 0
     try:
-        best_defense = max([skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'defense'])
+        best_defense = max(
+            [skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'defense'])
     except ValueError:
         best_defense = 0
     pool_levels = sum(getattr(entity, base_pool_id, 0) for pool_id, base_pool_id in POOL_KEYS)
@@ -95,7 +106,6 @@ def consider_level(source_con, target_con):
 
 
 class Attack(metaclass=AutoMeta):
-
     success_map = TemplateField()
     fail_map = TemplateField()
     delivery = TemplateField()
@@ -136,9 +146,12 @@ class AttackSkill(BaseSkill):
     damage_pool = DBOTField('health')
     accuracy_calc = DBOTField({})
     weapon_type = DBOTField('any')
-    prep_map = DBOTField({'s': 'You prepare to {v} {N}.', 't' : '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
-    success_map = DBOTField({'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
-    fail_map = DBOTField({'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
+    prep_map = DBOTField(
+        {'s': 'You prepare to {v} {N}.', 't': '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
+    success_map = DBOTField(
+        {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
+    fail_map = DBOTField(
+        {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
 
     def validate(self, source, target, **kwargs):
         if source == target:
@@ -162,7 +175,8 @@ class AttackSkill(BaseSkill):
         target_method(source, attack)
 
     def points_per_pulse(self, owner):
-        effect = avg_calc(owner, self.accuracy_calc, self.skill_level) + avg_calc(owner, self.damage_calc, self.skill_level)
+        effect = avg_calc(owner, self.accuracy_calc, self.skill_level) + avg_calc(owner, self.damage_calc,
+                                                                                  self.skill_level)
         cost = avg_calc(owner, self.costs, self.skill_level)
         return int((effect - cost) / max(self.prep_time, 1))
 
@@ -175,7 +189,7 @@ class DefenseTemplate(SkillTemplate):
         self.calc_damage_types = set()
         for damage_type in self.damage_type:
             try:
-                self.calc_damage_types |= set(DAMAGE_CATEGORIES[damage_type]['types'])
+                self.calc_damage_types |= DAMAGE_CATEGORY_MAP[damage_type]
             except KeyError:
                 self.calc_damage_types.add(damage_type)
 
@@ -189,7 +203,8 @@ class DefenseSkill(BaseSkill):
     weapon_type = DBOTField('unused')
     absorb_calc = DBOTField({})
     avoid_calc = DBOTField({})
-    success_map = DBOTField({'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
+    success_map = DBOTField(
+        {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
     calc_damage_types = TemplateField([])
 
     def invoke(self, source, **_):
@@ -207,7 +222,8 @@ class DefenseSkill(BaseSkill):
         except ActionError:
             return
         adj_accuracy = roll_calc(owner, self.avoid_calc, self.skill_level)
-        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.name, ' adj_accuracy: ', str(adj_accuracy)]), self)
+        combat_log(attack.source, lambda: ''.join(['{N} defense: ', self.name, ' adj_accuracy: ', str(adj_accuracy)]),
+                   self)
         attack.adj_accuracy -= adj_accuracy
         if attack.adj_accuracy < 0:
             return
@@ -216,7 +232,8 @@ class DefenseSkill(BaseSkill):
         attack.adj_damage -= absorb
 
     def points_per_pulse(self, owner):
-        effect = avg_calc(owner, self.avoid_calc, self.skill_level) + avg_calc(owner, self.absorb_calc, self.skill_level)
+        effect = avg_calc(owner, self.avoid_calc, self.skill_level) + avg_calc(owner, self.absorb_calc,
+                                                                               self.skill_level)
         cost = avg_calc(owner, self.costs, self.skill_level)
         return int((effect - cost) / max(self.prep_time, 1))
 
@@ -231,6 +248,7 @@ def consider(target_method, source, target, **_):
     source.status_change()
     source.last_opponent = saved_last
     return "At first glance, {} looks {}.".format(target.name, con_string)
+
 
 @mud_action('peace')
 def peace(source, **_):

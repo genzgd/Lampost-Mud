@@ -1,16 +1,8 @@
 angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lpUtil) {
 
-  function rowLabel(row) {
-    return row.name;
-  }
-
-  var sortFunc = lpUtil.stringSortFunc('name');
-
-  function updateUnused() {
-
+ function updateUnused() {
     var ix;
     var option;
-
     if (!this.options) {
       return;
     }
@@ -21,26 +13,46 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
         this.unused.push(option);
       }
     }
-    this.unused.sort(this.sortFunc);
+    this.optionSort(this.unused);
     this.newValue = this.unused[0];
   }
 
+  var valProto = {
+    updateUnused: updateUnused,
+    rowSort:  lpUtil.fieldSortFunc('name'),
+    optionKey: 'dbo_id',
+    optionSort: lpUtil.fieldSortFunc('dbo_id'),
+    default: 1,
+    options: [],
+    rowLabel: function(row) {
+      return row.name;
+    },
+    setOptions: function(options, optionKey) {
+      this.options = options;
+      if (optionKey && optionKey != this.optionKey) {
+        this.optionKey = optionKey;
+        this.optionSort = lpUtil.fieldSortFunc(optionKey);
+      }
+      for (var ix = 0; ix < options.length; ix++) {
+        var option = options[ix];
+        option.name = option.name || option[this.optionKey];
+      }
+    }
+  }
 
-  function ValueMap(source_prop, name) {
-    this.source_prop = source_prop;
+
+  function ValueMap(sourceProp, name) {
+    this.sourceProp = sourceProp;
     this.desc = this.name = name;
   }
 
-  ValueMap.prototype.updateUnused = updateUnused;
-  ValueMap.prototype.optionKey = 'dbo_id';
-  ValueMap.prototype.default = 1;
-  ValueMap.prototype.sortFunc = sortFunc;
+  angular.extend(ValueMap.prototype, valProto);
+
   ValueMap.prototype.transform = function(key, value) {
       return this.rowMap[key] = {key: key, name: key, value: value};
     };
-  ValueMap.prototype.rowLabel = rowLabel;
   ValueMap.prototype.setSource = function(model) {
-      this.sourceMap = model[this.source_prop];
+      this.sourceMap = model[this.sourceProp];
       this.rows = [];
       this.rowMap = {};
       for (var prop in this.sourceMap) {
@@ -48,7 +60,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
           this.rows.push(this.transform(prop, this.sourceMap[prop]))
         }
       }
-      this.rows.sort(this.sortFunc);
+      this.rowSort(this.rows);
       this.updateUnused();
     };
   ValueMap.prototype.onChange = function(row) {
@@ -58,7 +70,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       var key = this.newValue[this.optionKey];
       this.sourceMap[key] = this.default;
       this.rows.push(this.transform(key, this.default));
-      this.rows.sort(this.sortFunc);
+      this.rowSort(this.rows)
       this.updateUnused();
     };
   ValueMap.prototype.remove = function(row, rowIx) {
@@ -69,33 +81,29 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     };
 
 
-
-  function ValueObjList(source_prop, name, keyProp, valueProp) {
-    this.source_prop = source_prop;
+  function ValueObjList(sourceProp, name, keyProp, valueProp) {
+    this.sourceProp = sourceProp;
     this.desc = this.name = name;
     this.keyProp = keyProp;
     this.valueProp = valueProp;
-    this.sourceSort = lpUtil.stringSortFunc(keyProp);
+    this.sourceSort = lpUtil.fieldSortFunc(keyProp);
   }
 
-  ValueObjList.prototype.updateUnused = updateUnused;
-  ValueObjList.prototype.optionKey = 'dbo_id';
-  ValueObjList.prototype.default = 1;
-  ValueObjList.prototype.rowLabel = rowLabel;
-  ValueObjList.prototype.sortFunc = sortFunc;
+  angular.extend(ValueObjList.prototype, valProto);
+
   ValueObjList.prototype.transform = function(source) {
     var key = source[this.keyProp];
     return this.rowMap[key] = {key: key, name: source[this.keyProp], value: source[this.valueProp]};
   }
   ValueObjList.prototype.setSource = function(model) {
-      this.sourceList = model[this.source_prop];
-      this.sourceList.sort(this.sourceSort);
+      this.sourceList = model[this.sourceProp];
+      this.sourceSort(this.sourceList);
       this.rowMap = {};
       this.rows = [];
       for (var ix = 0; ix < this.sourceList.length; ix++) {
         this.rows.push(this.transform(this.sourceList[ix]));
       }
-      this.rows.sort(this.sortFunc);
+      this.rowSort(this.rows);
       this.updateUnused();
     }
   ValueObjList.prototype.onChange = function(row, rowIx) {
@@ -106,9 +114,9 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       value[this.keyProp] = this.newValue[this.optionKey];
       value[this.valueProp] = this.default;
       this.sourceList.push(value);
-      this.sourceList.sort(this.sourceSort);
+      this.sourceSort(this.sourceList);
       this.rows.push(this.transform(value));
-      this.rows.sort(this.sortFunc);
+      this.rowSort(this.rows);
       this.updateUnused();
     }
   ValueObjList.prototype.remove = function(row, rowIx) {
@@ -117,10 +125,43 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       this.sourceList.splice(rowIx, 1);
       this.updateUnused();
     }
+    
+    
+  function OptionsList(sourceProp, name) {
+    this.sourceProp = sourceProp;
+    this.name = name;
+  }
+
+  angular.extend(OptionsList.prototype, valProto);
+
+  OptionsList.prototype.rowSort = lpUtil.naturalSort;
+  OptionsList.prototype.setSource = function(model) {
+    this.rows = model[this.sourceProp];
+    this.rowMap = {};
+    for (var ix = 0; ix < this.rows.length; ix++) {
+      var value = this.rows[ix];
+      this.rowMap[value] = value;
+    }
+    this.rowSort(this.rows);
+    this.updateUnused();
+  }
+  OptionsList.prototype.insert = function() {
+    var value = this.newValue[this.optionKey];
+    this.rows.push(value);
+    this.rowMap[value] = value;
+    this.rowSort(this.rows);
+    this.updateUnused();
+  }
+  OptionsList.prototype.remove = function(row, rowIx) {
+    delete this.rowMap[row];
+    this.rows.splice(rowIx, 1);
+    this.updateUnused();
+  }
 
   return {
     ValueMap: ValueMap,
-    ValueObjList: ValueObjList
+    ValueObjList: ValueObjList,
+    OptionsList: OptionsList
   }
 
 }]);

@@ -14,11 +14,11 @@
             class="fa fa-trash"></i></button>
         </div>
       </div>
-      <fieldset class="panel-body" ng-disabled="!model.can_write">
+      <div class="panel-body" lp-disabled="!model.can_write">
         <lp-data-error></lp-data-error>
-        <lm-outside-edit></lm-outside-edit>
+        <lp-outside-edit></lp-outside-edit>
         <div ng-include="detailTemplate"></div>
-      </fieldset>
+      </div>
     </div>
   </form>
 </div>

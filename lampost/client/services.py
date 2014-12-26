@@ -53,10 +53,13 @@ class AnyLoginService(ClientService):
 @provides('edit_update_service', True)
 class EditUpdateService(ClientService):
 
-    def publish_edit(self, edit_type, edit_obj, source_session, local=False):
+    def publish_edit(self, edit_type, edit_obj, source_session=None, local=False):
         edit_dto = edit_obj.edit_dto
-        local_dto = edit_dto.copy()
-        local_dto['can_write'] = has_perm(source_session.player, edit_obj)
+        if source_session:
+            local_dto = edit_dto.copy()
+            local_dto['can_write'] = has_perm(source_session.player, edit_obj)
+        else:
+            local_dto = None
         edit_update  = {'edit_update': {'edit_type': edit_type}}
 
         for session in self.sessions:
@@ -67,6 +70,7 @@ class EditUpdateService(ClientService):
                     event['edit_update']['model'] = local_dto
                     session.append(event)
             else:
+                event = edit_update.copy()
                 event_dto = edit_dto.copy()
                 event_dto['can_write'] = has_perm(session.player, edit_obj)
                 event['edit_update']['model'] = event_dto

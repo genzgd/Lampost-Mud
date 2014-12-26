@@ -8,7 +8,7 @@ from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lputil import ClientError
 
-m_requires(__name__, 'log', 'perm', 'datastore', 'dispatcher')
+m_requires(__name__, 'log', 'perm', 'datastore', 'dispatcher', 'edit_update_service')
 
 
 class User(RootDBO):
@@ -77,6 +77,7 @@ class UserManager():
         for player_id in user.player_ids:
             self._player_delete(player_id)
         delete_object(user)
+        publish_edit('delete', user)
 
     def delete_player(self, user, player_id):
         if user:
@@ -88,7 +89,7 @@ class UserManager():
         player = create_object(Player, player_dto)
         user.player_ids.append(player.dbo_id)
         set_index('ix:player:user', player.dbo_id, user.dbo_id)
-        dispatch('player_create', player)
+        dispatch('player_create', player, user)
         player.user_id = user.dbo_id
         save_object(player)
         save_object(user)
@@ -98,10 +99,12 @@ class UserManager():
         return load_object(player_id, Player)
 
     def create_user(self, user_name, password, email=""):
-        user = {'dbo_id': db_counter('user_id'), 'user_name': user_name,
+        user_raw = {'dbo_id': db_counter('user_id'), 'user_name': user_name,
                 'email': email, 'password': make_hash(password),
                 'notifies': ['friendSound', 'friendDesktop']}
-        return create_object(User, user)
+        user = create_object(User, user_raw)
+        publish_edit('create', user)
+        return user
 
     def check_name(self, account_name, old_user):
         account_name = account_name.lower()
@@ -159,6 +162,7 @@ class UserManager():
     def _player_delete(self, player_id):
         player = load_object(player_id, Player)
         if player:
+            publish_edit('delete', player)
             delete_object(player)
         else:
             warn("Attempting to delete player {} who does not exist.".format(player_id))

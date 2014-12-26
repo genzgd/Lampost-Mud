@@ -51,19 +51,19 @@
           <div class="form-group">
             <label class="control-label">Delivery</label>
             <select class="form-control input-sm" ng-model="model.delivery"
-              ng-options="deliveryId as deliveryId for (deliveryId, value) in constants.damage_delivery"></select>
+              ng-options="delivery.dbo_id as delivery.dbo_id for delivery in constants.damage_delivery"></select>
           </div>
 
           <div class="form-group">
             <label class="control-label">Damage Type</label>
             <select class="form-control input-sm" ng-model="model.damage_type"
-              ng-options="typeId as typeId for (typeId, value) in constants.damage_types"></select>
+              ng-options="damageType.dbo_id as damageType.dbo_id for damageType in constants.damage_types"></select>
           </div>
 
           <div class="form-group">
             <label class="control-label">Weapon Type</label>
             <select class="form-control input-sm" ng-model="model.weapon_type"
-              ng-options="weapon_type for weapon_type in constants.weapon_options"></select>
+              ng-options="weaponType.dbo_id as weaponType.dbo_id for weaponType in constants.weapon_options"></select>
           </div>
         </div>
       </div>

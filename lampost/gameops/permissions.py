@@ -1,7 +1,7 @@
 from lampost.context.resource import provides, m_requires
 from lampost.util.lputil import PermError
 
-m_requires(__name__, 'datastore', 'context')
+m_requires(__name__, 'datastore', 'context', 'config_manager')
 
 
 @provides('perm', True)
@@ -40,8 +40,7 @@ class Permissions():
             return False
 
     def check_perm(self, player, action):
-        if getattr(action, 'unprotected', None):
-            return
+
         if isinstance(action, int):
             perm_required = action
         elif action in self.levels:
@@ -53,9 +52,14 @@ class Permissions():
             parent = action.parent_dbo
             if parent:
                 action = parent
+        if getattr(action, 'unprotected', None):
+            return
         owner_id = getattr(action, 'owner_id', None)
         if owner_id:
-            perm_required = max(self.immortals.get(owner_id, self.levels['admin']) + 1, perm_required)
+            if owner_id in config_manager.config.system_accounts:
+                perm_required = max(perm_required, self.levels['admin'])
+            else:
+                perm_required = max(self.immortals.get(owner_id, self.levels['admin']) + 1, perm_required)
         if not perm_required:
             return
         try:

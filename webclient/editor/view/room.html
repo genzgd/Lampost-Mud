@@ -32,11 +32,11 @@
         </div>
         <div class="form-group col-md-4">
           <label class="control-label">DB Rev</label>
-          <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled>
+          <div  isabled class="form-control input-sm uneditable-input">{{model.dbo_rev}}</div>
         </div>
         <div class="form-group col-md-3">
           <label class="control-label">&nbsp;</label>
-          <button type="button" class="form-control input-sm btn btn-xs btn-success" ng-click="visit()">Visit</button>
+          <button type="button" class="form-control never-disable input-sm btn btn-xs btn-success" ng-click="visit()">Visit</button>
         </div>
       </div>
 

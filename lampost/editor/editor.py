@@ -12,7 +12,7 @@ obj_defaults = {}
 class Editor(MethodHandler):
     parent_type = None
 
-    def initialize(self, obj_class, imm_level='admin'):
+    def initialize(self, obj_class, imm_level='creator'):
         self.obj_class = obj_class
         self.imm_level = imm_level
         self.dbo_key_type = obj_class.dbo_key_type
@@ -112,7 +112,7 @@ class ChildList(SessionHandler):
 
 
 class ChildrenEditor(Editor):
-    def initialize(self, obj_class, imm_level='admin'):
+    def initialize(self, obj_class, imm_level='creator'):
         super().initialize(obj_class, imm_level)
         self.parent_type = obj_class.dbo_parent_type
 
