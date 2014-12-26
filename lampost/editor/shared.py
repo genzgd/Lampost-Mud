@@ -16,19 +16,19 @@ class SocialsEditor(Editor):
         broadcast = Broadcast(BroadcastMap(**content.b_map), content.source, content.source if content.self_source else content.target)
         return {broadcast_type['id']: broadcast.substitute(broadcast_type['id']) for broadcast_type in broadcast_types}
 
-    def pre_create(self):
+    def _pre_create(self):
         if (self.raw['dbo_id'],) in mud_actions:
             raise DataError("Verb already in use")
 
-    def post_delete(self, social):
+    def _post_delete(self, social):
         del mud_actions[(social.dbo_id,)]
 
 
 class SkillEditor(Editor):
-    def pre_create(self):
+    def _pre_create(self):
         self._ensure_name()
 
-    def pre_update(self, _):
+    def _pre_update(self, _):
         self._ensure_name()
 
     def _ensure_name(self):

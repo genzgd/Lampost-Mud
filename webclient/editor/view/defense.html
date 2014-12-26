@@ -9,6 +9,7 @@
 
             <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{model.dbo_id}}</div>
           </div>
+
         </div>
         <div class="col-md-5">
           <div class="form-group">
@@ -23,6 +24,14 @@
               <input type="checkbox" ng-model="model.auto_start" ng-change="onAutoStart()">
               Auto Start
             </label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+           <div class="form-group">
+            <label class="control-label">Name</label>
+            <input class="form-control input-sm" type="text" ng-model="model.name" />
           </div>
         </div>
       </div>
@@ -45,42 +54,3 @@
   </div>
 
 </div>
-
-<!--
-    <div class="row-fluid scrollable">
-      <div class="span5">
-        <div class="row-fluid">
-          <div class="span6">
-            <label>Defense Command</label>
-            <input class="input input-medium" ng-disabled="model.auto_start" type="text" ng-model="model.verb" required="true"/>
-          </div>
-          <div class="span6">
-            <label>AutoStart</label>
-            <input type="checkbox" ng-model="model.auto_start" ng-change="onAutoStart()">
-          </div>
-        </div>
-        <div class="row-fluid">
-          <div class="span12">
-            <label>Description</label>
-            <textarea class="span12" rows="8" ng-model="model.desc"></textarea>
-          </div>
-        </div>
-        <div class="row-fluid">
-          <div class="span6">
-            <div lm-simple-list="damageTypeList"></div>
-          </div>
-          <div class="span6">
-            <div lm-simple-list="deliveryTypeList"></div>
-          </div>
-        </div>
-      </div>
-      <div class="offset1 span4">
-        <div lm-effect-list="costList"></div>
-        <div class="spacer" lm-effect-list="avoidList"></div>
-        <div class="spacer" lm-effect-list="absorbList"></div>
-      </div>
-    </div>
-  </div>
-  -->
-
-

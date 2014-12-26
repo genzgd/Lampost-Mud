@@ -74,27 +74,37 @@ class RootDBO(metaclass=CommonMeta):
             return self.dbo_id.split(':')[0]
 
     @property
+    def parent_dbo(self):
+        if self.dbo_parent_type and self.dbo_id:
+            return load_object(self.parent_id, self.dbo_parent_type)
+
+    @property
     def dbo_set_key(self):
         if self.dbo_parent_type:
             return "{}_{}s:{}".format(self.dbo_parent_type, self.dbo_key_type, self.parent_id)
 
-
     @property
     def dto_value(self):
-        dto_value = {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
-        if hasattr(self, 'dbo_id'):
-            for child_type in self.dbo_children_types:
-                dto_value['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
-            return self.metafields(dto_value, ['dbo_id', 'dbo_key', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
-                                           'dbo_children_types'])
-        return self.metafields(dto_value, ['template_key'])
+        return {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
+
+    @property
+    def edit_dto(self):
+        dto = self.dto_value
+        for child_type in self.dbo_children_types:
+            dto['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
+        return self.metafields(dto, ['dbo_id', 'dbo_key', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
+                                     'dbo_children_types', 'imm_level'])
+    
+    @property
+    def new_dto(self):
+        dto = self.dto_value
+        dto['can_write'] = True
+        return self.metafields(dto, ['class_id', 'dbo_key_type', 'dbo_parent_type', 'dbo_children_types'])
 
     def dbo_child_keys(self, child_type):
-        if getattr(self, 'dbo_id', None):
-            child_class = get_dbo_class(child_type)
-            return sorted(fetch_set_keys("{}_{}s:{}".format(self.dbo_key_type, child_type, self.dbo_id)),
-                          key=child_class.dbo_key_sort)
-        return []
+        child_class = get_dbo_class(child_type)
+        return sorted(fetch_set_keys("{}_{}s:{}".format(self.dbo_key_type, child_type, self.dbo_id)),
+                      key=child_class.dbo_key_sort)
 
     def autosave(self):
         save_object(self, autosave=True)
@@ -125,7 +135,7 @@ class RootDBO(metaclass=CommonMeta):
                 wrapper = value_wrapper(value)
                 if hasattr(dbo_field, 'dbo_class_id'):
                     append('', field)
-                    wrapper(lambda value : value._describe(display, level + 1))(value)
+                    wrapper(lambda value: value._describe(display, level + 1))(value)
                 else:
                     wrapper(append)(value, field)
             except KeyError:
@@ -135,7 +145,6 @@ class RootDBO(metaclass=CommonMeta):
 
 
 class Untyped():
-
     def hydrate(self, dto_repr):
         # This should never get called, as 'untyped' fields should always hold
         # templates or actual dbo_references with saved class_ids
@@ -225,11 +234,13 @@ class DBOField(AutoField):
             return value.dbo_key if self.dbo_class_id == 'untyped' else value.dbo_id
         except AttributeError:
             try:
-                save_value = value.dto_value
+                dto = value.dto_value
                 field_class = getattr(self, 'dbo_class_id', None)
                 if getattr(value, 'class_id', field_class) != field_class:
-                    save_value['class_id'] = value.class_id
-                return save_value
+                    dto['class_id'] = value.class_id
+                if hasattr(value, 'template_key'):
+                    dto['template_key'] = value.template_key
+                return dto
             except AttributeError:
                 return None
 
@@ -262,7 +273,6 @@ def save_repr(value):
     if hasattr(value, 'dbo_id'):
         return {'dbo_key': value.dbo_key}
     return value.save_value
-
 
 
 def value_wrapper(value, for_dto=True):

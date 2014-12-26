@@ -44,7 +44,8 @@ class SessionHandler(RequestHandler):
 
     def prepare(self):
         self._find_session()
-        check_perm(self.session, self)
+        self.player = self.session.player
+        check_perm(self.player, self)
 
     def post(self, *args):
         self.raw = json_decode(self.request.body.decode())
@@ -58,6 +59,9 @@ class SessionHandler(RequestHandler):
 
 class MethodHandler(SessionHandler):
     def main(self, path, *args):
+        if path.startswith('_'):
+            self.send_error(404)
+            return
         method = getattr(self, path, None)
         if method:
             self._return(method(*args))

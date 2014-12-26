@@ -30,10 +30,10 @@ class Player(RootDBO):
         self.session = None
 
     @property
-    def dto_value(self):
-        dto_value = super().dto_value
-        dto_value['logged_in'] = "Yes" if self.session else "No"
-        return dto_value
+    def edit_dto(self):
+        dto = super().edit_dto
+        dto['logged_in'] = "Yes" if self.session else "No"
+        return dto
 
     @property
     def name(self):

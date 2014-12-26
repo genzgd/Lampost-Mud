@@ -1,0 +1,51 @@
+<div ng-controller="UserEditorCtrl">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Account Name</label>
+            <input class="form-control input-sm" type="text" ng-model="model.user_name" required/>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="control-label">User Id</label>
+            <div  disabled class="form-control input-sm uneditable-input">{{model.dbo_id}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Email</label>
+            <input class="form-control input-sm" type="email" ng-model="model.email"/>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">New Password</label>
+            <input class="form-control input-sm" type="text" ng-model="model.password"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3">
+        <div class="panel panel-default">
+        <div class="panel-heading panel-condensed" >
+          Players <strong>({{model.player_ids.length}})</strong></div>
+
+          <table class="table table-condensed table-hover hand">
+            <tr ng-repeat="playerId in model.player_ids" ng-click="editPlayer(playerId)">
+              <td class="col-md-12">{{cap(playerId)}}</td>
+            </tr>
+          </table>
+      </div>
+    </div>
+
+  </div>
+</div>

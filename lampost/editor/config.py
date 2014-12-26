@@ -36,5 +36,5 @@ class DisplayEditor(MethodHandler):
 class Properties(SessionHandler):
     def main(self):
         constants = copy.copy(context.properties)
-        constants['features'] = [get_dbo_class(feature_id)('-new-').dto_value for feature_id in ['touchstone', 'entrance', 'store']]
+        constants['features'] = [get_dbo_class(feature_id)().edit_dto for feature_id in ['touchstone', 'entrance', 'store']]
         self._return(constants)

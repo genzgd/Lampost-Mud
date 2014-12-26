@@ -18,13 +18,13 @@ class Editor(MethodHandler):
         self.dbo_key_type = obj_class.dbo_key_type
 
     def list(self):
-        return [edit_dto(self.session.player, obj) for obj in load_object_set(self.obj_class)]
+        return [self._edit_dto(obj) for obj in load_object_set(self.obj_class)]
 
     def create(self):
         self.raw['owner_id'] = self.session.player.dbo_id
-        self.pre_create()
+        self._pre_create()
         new_obj = create_object(self.obj_class, self.raw)
-        self.post_create(new_obj)
+        self._post_create(new_obj)
         return publish_edit('create', new_obj, self.session)
 
     def delete(self):
@@ -32,7 +32,7 @@ class Editor(MethodHandler):
         if not del_obj:
             raise DataError('Gone: Object with key {} does not exist'.format(raw['dbo_id']))
         check_perm(self.session, del_obj)
-        self.pre_delete(del_obj)
+        self._pre_delete(del_obj)
         holder_keys = fetch_set_keys('{}:holders'.format(del_obj.dbo_key))
         for dbo_key in holder_keys:
             cached_holder = load_cached(dbo_key)
@@ -43,7 +43,7 @@ class Editor(MethodHandler):
             reloaded = reload_object(dbo_key)
             if reloaded:
                 publish_edit('update', reloaded, self.session, True)
-        self.post_delete(del_obj)
+        self._post_delete(del_obj)
         publish_edit('delete', del_obj, self.session)
 
     def update(self):
@@ -51,37 +51,42 @@ class Editor(MethodHandler):
         if not existing_obj:
             raise DataError("GONE:  Object with key {} no longer exists.".format(self.raw['dbo.id']))
         check_perm(self.session, existing_obj)
-        self.pre_update(existing_obj)
+        self._pre_update(existing_obj)
         update_object(existing_obj, self.raw)
-        self.post_update(existing_obj)
+        self._post_update(existing_obj)
         return publish_edit('update', existing_obj, self.session)
 
     def metadata(self):
-        return {'perms': self.permissions(), 'parent_type': self.parent_type, 'children_types': self.obj_class.dbo_children_types,
-                'new_object': get_dbo_class(self.dbo_key_type)().on_created().dto_value}
+        return {'perms': self._permissions(), 'parent_type': self.parent_type, 'children_types': self.obj_class.dbo_children_types,
+                'new_object': get_dbo_class(self.dbo_key_type)().on_created().new_dto}
 
     def test_delete(self):
         return list(fetch_set_keys('{}:{}:holders'.format(self.dbo_key_type, self.raw['dbo_id'])))
 
-    def pre_delete(self, del_obj):
+    def _edit_dto(self, dbo):
+        dto = dbo.edit_dto
+        dto['can_write'] = has_perm(self.player, dbo)
+        return dto
+
+    def _pre_delete(self, del_obj):
         pass
 
-    def post_delete(self, del_obj):
+    def _post_delete(self, del_obj):
         pass
 
-    def pre_create(self):
+    def _pre_create(self):
         pass
 
-    def post_create(self, new_obj):
+    def _post_create(self, new_obj):
         pass
 
-    def pre_update(self, existing_obj):
+    def _pre_update(self, existing_obj):
         pass
 
-    def post_update(self, existing_obj):
+    def _post_update(self, existing_obj):
         pass
 
-    def permissions(self):
+    def _permissions(self):
         return {'add': True}
 
 
@@ -93,7 +98,17 @@ class ChildList(SessionHandler):
 
     def main(self, parent_id):
         set_key = '{}_{}s:{}'.format(self.parent_type, self.dbo_key_type, parent_id)
-        self._return([edit_dto(self.session.player, obj) for obj in load_object_set(self.obj_class, set_key)])
+        parent = load_object(parent_id, self.parent_type)
+        if parent:
+            can_write = has_perm(self.player, parent)
+            child_list = []
+            for child in load_object_set(self.obj_class, set_key):
+                child_dto = child.edit_dto
+                child_dto['can_write'] = can_write
+                child_list.append(child_dto)
+            self._return(child_list)
+        else:
+            self.send_error(404)
 
 
 class ChildrenEditor(Editor):
@@ -104,13 +119,13 @@ class ChildrenEditor(Editor):
     def _check_perm(self, obj):
         check_perm(self.session, find_parent(obj, self.parent_type))
 
-    def pre_delete(self, del_obj):
+    def _pre_delete(self, del_obj):
         self._check_perm(del_obj)
 
-    def pre_create(self):
+    def _pre_create(self):
         self._check_perm(self.raw)
 
-    def pre_update(self, existing_obj):
+    def _pre_update(self, existing_obj):
         self._check_perm(existing_obj)
 
 

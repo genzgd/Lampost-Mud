@@ -1,8 +1,12 @@
+from collections import defaultdict
+import logging
 import sys
 import inspect
 
+log = logging.getLogger(__name__)
+
 _registry = {}
-_consumer_map = {}
+_consumer_map = defaultdict(list)
 _methods = {}
 _registered_modules = []
 
@@ -17,7 +21,7 @@ def register(name, service, export_methods=False):
                 _methods[name][attr] = value.__get__(service, service.__class__)
     for cls in _consumer_map.get(name, []):
         _inject(cls, name, service)
-    if _consumer_map.get(name, None):
+    if name in _consumer_map:
         del _consumer_map[name]
     return service
 
@@ -30,7 +34,6 @@ def inject(cls, name):
     if service:
         _inject(cls, name, service)
         return
-    _consumer_map[name] = _consumer_map.get(name, [])
     _consumer_map[name].append(cls)
 
 
@@ -67,6 +70,9 @@ def get_resource(name):
 
 
 def context_post_init():
+    for name, consumers in _consumer_map.items():
+        for consumer in consumers:
+            log.error("{} dependency not found for consumer {}", name, getattr(consumer, '__name__', consumer))
     for module in sorted(_registered_modules, key=_priority_sort):
         if hasattr(module, '_post_init'):
             module._post_init()

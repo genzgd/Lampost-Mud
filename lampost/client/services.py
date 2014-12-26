@@ -53,20 +53,25 @@ class AnyLoginService(ClientService):
 @provides('edit_update_service', True)
 class EditUpdateService(ClientService):
 
-    def edit_dto(self, player, dbo):
-        dto = dbo.dto_value
-        dto['can_write'] = has_perm(player, dbo)
-        return dto
+    def publish_edit(self, edit_type, edit_obj, source_session, local=False):
+        edit_dto = edit_obj.edit_dto
+        local_dto = edit_dto.copy()
+        local_dto['can_write'] = has_perm(source_session.player, edit_obj)
+        edit_update  = {'edit_update': {'edit_type': edit_type}}
 
-    def publish_edit(self, edit_type, model, source_session, local=False):
-        event_dto = None
         for session in self.sessions:
-            event = {'edit_update': {'edit_type': edit_type, 'model': self.edit_dto(session.player, model)}}
             if session == source_session:
                 if local:
-                    event['edit_update']['local'] = True
+                    event = edit_update.copy()
+                    local_dto['local'] = True
+                    event['edit_update']['model'] = local_dto
                     session.append(event)
-                event_dto = event['edit_update']['model']
             else:
+                event_dto = edit_dto.copy()
+                event_dto['can_write'] = has_perm(session.player, edit_obj)
+                event['edit_update']['model'] = event_dto
                 session.append(event)
-        return event_dto
+
+        return local_dto
+
+

@@ -1,12 +1,12 @@
 from lampost.context.resource import provides, m_requires
 from lampost.util.lputil import PermError
 
-m_requires(__name__, 'datastore')
+m_requires(__name__, 'datastore', 'context')
 
 
 @provides('perm', True)
 class Permissions():
-    levels = {'supreme': 100000, 'admin': 10000, 'creator': 1000, 'none': 0, 'player': 0}
+    levels = {'supreme': 100000, 'admin': 10000, 'senior': 2000, 'creator': 1000, 'none': 0, 'player': 0}
 
     def __init__(self):
         self.rev_levels = {}
@@ -16,6 +16,7 @@ class Permissions():
 
     def _post_init(self):
         self.immortals = get_all_hash('immortals')
+        context.set('imm_titles', self.levels)
 
     def perm_name(self, num_level):
         return self.rev_levels.get(num_level, 'none')
@@ -48,6 +49,10 @@ class Permissions():
         else:
             imm_level = getattr(action, 'imm_level', 0)
             perm_required = self.levels.get(imm_level, imm_level)
+        if hasattr(action, 'parent_dbo'):
+            parent = action.parent_dbo
+            if parent:
+                action = parent
         owner_id = getattr(action, 'owner_id', None)
         if owner_id:
             perm_required = max(self.immortals.get(owner_id, self.levels['admin']) + 1, perm_required)

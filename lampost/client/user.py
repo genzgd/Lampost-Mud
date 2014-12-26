@@ -8,7 +8,7 @@ from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lputil import ClientError
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher')
+m_requires(__name__, 'log', 'perm', 'datastore', 'dispatcher')
 
 
 class User(RootDBO):
@@ -20,10 +20,21 @@ class User(RootDBO):
     password = DBOField()
     password_reset = DBOField(False)
     email = DBOField('')
+    notes = DBOField('')
 
     player_ids = DBOField([])
     displays = DBOField({})
     notifies = DBOField([])
+
+    @property
+    def edit_dto(self):
+        dto = super().edit_dto
+        dto['password'] = ''
+        return dto
+
+    @property
+    def imm_level(self):
+        return max([perm.immortals.get(player_id, 0) for player_id in self.player_ids])
 
 
 @provides('user_manager')
@@ -103,13 +114,6 @@ class UserManager():
 
     def player_exists(self, player_id):
         return object_exists(Player.dbo_key_type, player_id)
-
-    def user_imm_level(self, user):
-        imm_levels = []
-        for player_id in user.player_ids:
-            player = load_object(player_id, Player)
-            imm_levels.append(player.imm_level)
-        return max(imm_levels)
 
     def _user_connect(self, user, client_data):
         for player_id in user.player_ids:

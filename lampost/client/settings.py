@@ -20,9 +20,7 @@ class Settings(MethodHandler):
         user_id = self.raw['user_id']
         if self.session.user.dbo_id != user_id:
             check_perm(session, 'admin')
-        user_dto = load_object(user_id, User).dto_value
-        user_dto['password'] = ''
-        return user_dto
+        return load_object(user_id, User).edit_dto
 
     def create_account(self):
         account_name = self.raw['account_name'].lower()

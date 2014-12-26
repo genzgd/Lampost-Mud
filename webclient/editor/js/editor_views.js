@@ -21,7 +21,7 @@ angular.module('lampost_editor').service('lpEditorView',
         if (this.id === 'dbo_id') {
           this.header = 'Id';
         } else {
-          this.header = lpUtil.capitalize(this.id);
+          this.header = lpUtil.capitalize(this.id.replace('_', ' '));
         }
       }
     }
@@ -107,10 +107,14 @@ angular.module('lampost_editor').service('lpEditorView',
     viewDefaults.mud = {paneSizes: [2, 10, 0]};
 
     viewTypes.player = {
+      user: {invalidate: true},
       player: {invalidate: true}
     }
-    cols.player = [new ColDef('dbo_id', 3, 'model_prop cap', {header: 'Name'})];
-    viewLists.player = ['player'];
+    cols.user = [new ColDef('user_name', 4, null, {header: 'Name'}),  new ColDef('imm_level', 3, 'immTitle'), new ColDef('email', 5)];
+    cols.player = [new ColDef('dbo_id', 4, 'model_prop cap', {header: 'Name'}), new ColDef('last_login', 5,
+      null, {data: function(model) {return (model.logged_in == 'Yes' ? '*' : '') + $filter('date')(model.last_login * 1000, 'short')}}),
+      new ColDef('imm_level', 3, 'immTitle')];
+    viewLists.player = ['player', 'user'];
     viewDefaults.player = {paneSizes: [5, 7, 0]};
 
     this.lastView = function() {

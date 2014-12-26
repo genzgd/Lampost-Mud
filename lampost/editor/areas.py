@@ -13,17 +13,17 @@ class AreaEditor(Editor):
     def initialize(self):
         super().initialize(Area, 'creator')
 
-    def pre_create(self):
+    def _pre_create(self):
         if object_exists('player', self.raw['dbo_id']):
             raise DataError("Area name should not match any player name.")
 
-    def pre_delete(self, del_obj):
+    def _pre_delete(self, del_obj):
         if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
             raise DataError("Cannot delete root area.")
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, self.session, del_obj.dbo_id)
 
-    def pre_update(self, existing_obj):
+    def _pre_update(self, existing_obj):
         if not check_perm(self.session, 'supreme') and existing_obj.unprotected and not self.raw[
             'unprotected'] and self.session.player.dbo_id != existing_obj.owner_id:
             raise DataError("Only the owner can change edit permissions.")
@@ -98,13 +98,13 @@ class RoomEditor(ChildrenEditor):
                     publish_edit('delete', other_room, self.session, True)
 
 
-    def post_create(self, room):
+    def _post_create(self, room):
         add_room(find_parent(room), self.session)
 
-    def post_delete(self, room):
+    def _post_delete(self, room):
         room_clean_up(room, self.session)
 
-    def post_update(self, room):
+    def _post_update(self, room):
         room.reload()
 
 

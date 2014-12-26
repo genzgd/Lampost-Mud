@@ -1,0 +1,38 @@
+<div ng-controller="PlayerEditorCtrl">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Player Id</label>
+
+            <div  disabled class="form-control input-sm uneditable-input">{{model.dbo_id | cap}}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="control-label">User Id</label>
+            <div  disabled class="form-control input-sm uneditable-input">{{model.user_id}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Last Login</label>
+
+            <div  disabled class="form-control input-sm uneditable-input">{{model.last_login * 1000 | date: 'short'}}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Last Logout</label>
+            <div  disabled class="form-control input-sm uneditable-input">{{model.last_logout * 1000 | date: 'short'}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

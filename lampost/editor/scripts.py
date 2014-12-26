@@ -10,7 +10,7 @@ class ScriptEditor(ChildrenEditor):
     def initialize(self):
         super().initialize(Script)
 
-    def pre_update(self, script):
+    def _pre_update(self, script):
         self._check_perm(script)
         new_script = self.raw
         if new_script['from_file'] and not script.from_file:
@@ -30,10 +30,10 @@ class ScriptEditor(ChildrenEditor):
         else:
             new_script['text'] = new_script['live_text']
 
-    def post_update(self, script):
+    def _post_update(self, script):
         script.compile()
 
-    def post_delete(self, del_obj):
+    def _post_delete(self, del_obj):
         script_manager.delete_script(del_obj)
 
 
