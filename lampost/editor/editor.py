@@ -30,7 +30,7 @@ class Editor(MethodHandler):
     def delete(self):
         del_obj = load_object(self.raw['dbo_id'], self.obj_class)
         if not del_obj:
-            raise DataError('Gone: Object with key {} does not exist'.format(raw['dbo_id']))
+            raise DataError('Gone: Object with key {} does not exist'.format(self.raw['dbo_id']))
         check_perm(self.session, del_obj)
         self._pre_delete(del_obj)
         holder_keys = fetch_set_keys('{}:holders'.format(del_obj.dbo_key))

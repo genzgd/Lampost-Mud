@@ -31,8 +31,10 @@ class PlayerEditor(Editor):
         user.player_ids.remove(player.dbo_id)
         if not user.player_ids:
             delete_object(user)
+            publish_edit('delete', user, self.session, True)
         else:
             save_object(user)
+            publish_edit('update', user, self.session, True)
 
 
 def check_player_perm(player, session):
