@@ -16,7 +16,7 @@ def editor_login(session):
     if has_perm(player, 'admin'):
         edit_perms.extend(['player'])
     if has_perm(player, 'supreme'):
-        edit_perms.extend(['config'])
+        edit_perms.extend(['admin', 'config'])
     session.append({'editor_login': {'edit_perms': edit_perms, 'playerId': player.dbo_id, 'playerName': player.name}})
     edit_update_service.register(session)
 
@@ -39,6 +39,8 @@ class EditConnect(RequestHandler):
         session.append({'connect': session_id})
         if session.player:
             editor_login(session)
+        else:
+            session.append({'connect_only': True})
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         self.write(json_encode(session.pull_output()))
 

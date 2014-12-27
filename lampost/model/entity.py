@@ -1,7 +1,7 @@
 from collections import defaultdict
 import itertools
 
-from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.comm.broadcast import Broadcast, BroadcastMap
 from lampost.context.resource import m_requires
@@ -24,8 +24,7 @@ class Entity(BaseItem):
     entry_msg = BroadcastMap(e='{n} materializes.', ea="{n} arrives from the {N}.")
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
-    def __init__(self, dbo_id=None):
-        super().__init__(dbo_id)
+    def __init__(self):
         self.soul = defaultdict(set)
         self.inven_actions = defaultdict(set)
         self.followers = set()

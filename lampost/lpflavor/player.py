@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbofield import DBOField
 from lampost.env.room import Room
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
@@ -20,8 +20,8 @@ class PlayerLP(Player, EntityLP):
     touchstone = DBOField()
     can_die = True
 
-    def __init__(self, dbo_id):
-        super().__init__(dbo_id)
+    def __init(self):
+        super().__init__()
         self.auto_fight = False
 
     def on_loaded(self):

@@ -2,16 +2,18 @@ from base64 import b64decode
 import time
 
 from lampost.context.resource import provides, m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import KeyDBO
+from lampost.datastore.dbofield import DBOField
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash, check_password
 from lampost.util.lputil import ClientError
 
+
 m_requires(__name__, 'log', 'perm', 'datastore', 'dispatcher', 'edit_update_service')
 
 
-class User(RootDBO):
+class User(KeyDBO):
     dbo_key_type = "user"
     dbo_set_key = "users"
     dbo_indexes = "user_name", "email"

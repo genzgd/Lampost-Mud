@@ -24,7 +24,7 @@ class AreaEditor(Editor):
             room_clean_up(room, self.session, del_obj.dbo_id)
 
     def _pre_update(self, existing_obj):
-        if not check_perm(self.session, 'supreme') and existing_obj.unprotected and not self.raw[
+        if not check_perm(self.player, 'supreme') and existing_obj.unprotected and not self.raw[
             'unprotected'] and self.session.player.dbo_id != existing_obj.owner_id:
             raise DataError("Only the owner can change edit permissions.")
 
@@ -44,7 +44,7 @@ class RoomEditor(ChildrenEditor):
 
     def create_exit(self):
         content = self._content()
-        area, room = find_area_room(content.start_room, self.session)
+        area, room = find_area_room(content.start_room, self.player)
         new_dir = content.direction
         if room.find_exit(content.direction):
             raise DataError("Room already has " + new_dir + " exit.")
@@ -55,7 +55,7 @@ class RoomEditor(ChildrenEditor):
             publish_edit('create', other_room, self.session, True)
             add_room(area, self.session)
         else:
-            other_area, other_room = find_area_room(other_id, self.session)
+            other_area, other_room = find_area_room(other_id, self.player)
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir + " exit.")
         this_exit = get_dbo_class('exit')()
@@ -77,7 +77,7 @@ class RoomEditor(ChildrenEditor):
 
     def delete_exit(self):
         content = self._content()
-        area, room = find_area_room(content.start_room, self.session)
+        area, room = find_area_room(content.start_room, self.player)
         local_exit = room.find_exit(content.dir)
         if not local_exit:
             raise DataError('Exit does not exist')
@@ -122,13 +122,12 @@ def add_room(area, session):
     publish_edit('update', area, session, True)
 
 
-def find_area_room(room_id, session=None):
+def find_area_room(room_id, player):
     room = load_object(room_id, Room)
     if not room:
         raise DataError("ROOM_MISSING")
     area = find_parent(room)
-    if session:
-        check_perm(session, area)
+    check_perm(player, area)
     return area, room
 
 

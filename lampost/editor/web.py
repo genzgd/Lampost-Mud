@@ -1,8 +1,9 @@
+from lampost.editor.admin import AdminHandler
 from lampost.editor.areas import AreaEditor, RoomEditor
 from lampost.editor.config import ConfigEditor, DisplayEditor, Properties
 from lampost.editor.editor import ChildrenEditor, Editor, ChildList
 from lampost.editor.imports import ImportsEditor
-from lampost.editor.players import PlayerEditor, UserEditor
+from lampost.editor.players import PlayerEditor, UserEditor, ImmortalsList
 from lampost.editor.scripts import ScriptEditor
 from lampost.editor.session import EditConnect, EditLogin, EditLogout
 from lampost.editor.shared import SocialsEditor, SkillEditor
@@ -19,6 +20,7 @@ def add_endpoints(web_server):
     web_server.add(r'/editor/edit_login', EditLogin)
     web_server.add(r'/editor/edit_logout', EditLogout)
     web_server.add(r'/editor/constants', Properties)
+    web_server.add(r'/editor/immortal/list', ImmortalsList)
     web_server.add(r'/editor/area/(.*)', AreaEditor)
     web_server.add(r'/editor/room/list/(.*)', ChildList, obj_class=Room)
     web_server.add(r'/editor/room/(.*)', RoomEditor)
@@ -37,3 +39,4 @@ def add_endpoints(web_server):
     web_server.add(r'/editor/script/(.*)', ScriptEditor)
     web_server.add(r'/editor/imports/(.*)', ImportsEditor)
     web_server.add(r'/editor/user/(.*)', UserEditor)
+    web_server.add(r'/editor/admin/(.*)', AdminHandler)

@@ -36,7 +36,7 @@
       <ul class="nav navbar-nav">
 
         <li ng-repeat="link in links" ng-class="link.active">
-          <a ng-href ng-click="changeNav(link.id)">{{link.label}} <i class="fa" ng-class="link.icon"></i></a>
+          <a ng-href ng-click="changeNav(link)">{{link.label}} <i class="fa" ng-class="link.icon"></i></a>
         </li>
          <li style="margin-right: 40px;"></li>
       </ul>
@@ -92,7 +92,7 @@
     </div>
   </div>
 </div>
-<div ng-if="appState == 'loggedIn'" class="container-fluid" ng-controller="EditLayoutCtrl">
+<div ng-if="appState == 'edit'" class="container-fluid" ng-controller="EditLayoutCtrl">
   <div class="row">
     <div ng-class="paneClass(0)">
        <div ng-show="!settings.showCheats" class="pull-left" style="padding-bottom: 4px;">

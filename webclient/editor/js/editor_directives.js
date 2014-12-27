@@ -144,6 +144,23 @@ angular.module('lampost_editor').directive('lpDataError', [function () {
   }
 }]);
 
+angular.module('lampost_editor').controller('OwnerIdCtrl', ['$scope', 'lpEditor', function($scope, lpEditor) {
+
+
+}])
+
+angular.module('lampost_editor').directive('lpOwnerId', ['lpEditor', function(lpEditor) {
+  return {
+    restrict: 'A',
+    templateUrl: 'editor/fragments/owner_id.html',
+    controller: 'OwnerIdCtrl',
+    link: function(scope, element, attrs) {
+
+    }
+  }
+
+}]);
+
 
 angular.module('lampost_editor').directive('lmObjectSelector', [function () {
   return {

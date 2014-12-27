@@ -16,10 +16,10 @@
         <div class="form-group">
           <label class="control-label">Mode</label>
           <div class="input-group" ng-hide="isNew">
-            <button ng-class="editMode ? 'active' : ''" type="button" class="btn btn-sm btn-default"
+            <button ng-class="editMode ? 'active' : ''" type="button" class="btn never-disable btn-sm btn-default"
               ng-click="startEditMode()">Edit
             </button>
-            <button ng-class="editMode ? '' : 'active'" type="button" class="btn btn-sm btn-default"
+            <button ng-class="editMode ? '' : 'active'" type="button" class="btn never-disable btn-sm btn-default"
               ng-click="previewSocial()">View
             </button>
           </div>
@@ -54,7 +54,7 @@
 
       <div class="form-group">
         <label class="control-label h5"><em>{{broadcast_type.label}}</em></label>
-        <textarea ng-disabled="!editMode" ng-change="updateSocial(broadcast_type.id)"
+        <textarea ng-disabled="!editMode || !model.can_write" ng-change="updateSocial(broadcast_type.id)"
           ng-model="displayMap[broadcast_type.id]" rows="3" class="form-control"></textarea>
       </div>
 

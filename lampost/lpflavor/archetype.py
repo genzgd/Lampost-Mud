@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbofield import DBOField
 from lampost.model.race import PlayerRace
 
 

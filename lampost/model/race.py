@@ -1,9 +1,10 @@
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import KeyDBO, DBOAccess
+from lampost.datastore.dbofield import DBOField
 
 base_attr_value = 5
 
 
-class PlayerRace(RootDBO):
+class PlayerRace(KeyDBO, DBOAccess):
     dbo_key_type = "race"
     dbo_set_key = "races"
 
@@ -14,7 +15,6 @@ class PlayerRace(RootDBO):
     base_attrs = DBOField({})
     start_room = DBOField()
     start_room_instanced = DBOField(False)
-    owner_id = DBOField('lampost')
 
     def on_created(self):
         if not self.base_attrs:

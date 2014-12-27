@@ -1,7 +1,8 @@
 import os
 
 from lampost.context.resource import m_requires, inject, provides
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import ChildDBO
+from lampost.datastore.dbofield import DBOField
 from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
 from lampost.mud.action import imm_action
@@ -137,7 +138,7 @@ def add_globals(script, script_globals):
             warn("Error applying global script {}", script.dbo_id, exc_info=True)
 
 
-class Script(RootDBO):
+class Script(ChildDBO):
     dbo_key_type = 'script'
     dbo_parent_type = 'area'
 

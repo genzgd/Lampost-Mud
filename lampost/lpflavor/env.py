@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbofield import DBOField
 import lampost.env.room
 from lampost.gameops.action import ActionError
 

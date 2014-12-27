@@ -38,7 +38,7 @@ angular.module('lampost_util').service('lpEvent', ['$log', '$timeout', function 
     });
     if (scope) {
       registration.scope = scope;
-      if (!scope['lpRegs']) {
+      if (!scope.hasOwnProperty('lpRegs')) {
         scope.lpRegs = [];
         scope.$on('$destroy', function (event) {
           var copy = event.currentScope.lpRegs.slice();
@@ -162,6 +162,8 @@ angular.module('lampost_util').service('lpUtil', [function () {
       return 0;
   }
 
+  this.naturalCmp = naturalCmp;
+
   this.naturalSort = function(array) {
     return array.sort(naturalCmp);
   };
@@ -192,6 +194,14 @@ angular.module('lampost_util').service('lpUtil', [function () {
     array.sort(function (a, b) {
       return b[field] - a[field];
     })
+  };
+
+  this.fieldCmpSort = function(field, cmp) {
+    return function(array) {
+      array.sort(function(a, b) {
+        return cmp(a[field], b[field]);
+      });
+    }
   };
 
   this.urlVars = function () {

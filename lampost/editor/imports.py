@@ -19,7 +19,7 @@ def _remove_db(session):
 class ImportsEditor(MethodHandler):
 
     def set_db(self):
-        check_perm(self.session, 'admin')
+        check_perm(self.player, 'admin')
         content = self._content()
         db = RedisStore(content.db_host, content.db_port, content.db_num, content.db_pw)
         copy_dbs[session] = db

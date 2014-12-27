@@ -1,22 +1,14 @@
 from lampost.datastore.classes import get_dbo_class, set_dbo_class
 from lampost.context.resource import m_requires
-from lampost.datastore.auto import TemplateField, AutoField
+from lampost.datastore.dbofield import DBOField, value_wrapper
 from lampost.datastore.meta import CommonMeta
 
-m_requires(__name__, 'log', 'datastore')
+m_requires(__name__, 'log', 'perm', 'datastore')
 
 
-class RootDBO(metaclass=CommonMeta):
-    dbo_key_sort = None
-    dbo_parent_type = None
+class CoreDBO(metaclass=CommonMeta):
     dbo_owner = None
-    dbo_children_types = []
-    dbo_indexes = ()
     template_id = None
-
-    def __init__(self, dbo_id=None):
-        if dbo_id:
-            self.dbo_id = str(dbo_id).lower()
 
     def _on_loaded(self):
         for load_func in self.load_funcs:
@@ -55,33 +47,8 @@ class RootDBO(metaclass=CommonMeta):
                 continue
         return self.metafields(save_value, ['template_key'])
 
-    def on_created(self):
-        return self
-
-    def on_deleted(self):
-        pass
-
     def describe(self):
         return self._describe([], 0)
-
-    @property
-    def dbo_key(self):
-        return ":".join([self.dbo_key_type, self.dbo_id])
-
-    @property
-    def parent_id(self):
-        if self.dbo_id:
-            return self.dbo_id.split(':')[0]
-
-    @property
-    def parent_dbo(self):
-        if self.dbo_parent_type and self.dbo_id:
-            return load_object(self.parent_id, self.dbo_parent_type)
-
-    @property
-    def dbo_set_key(self):
-        if self.dbo_parent_type:
-            return "{}_{}s:{}".format(self.dbo_parent_type, self.dbo_key_type, self.parent_id)
 
     @property
     def dto_value(self):
@@ -89,25 +56,7 @@ class RootDBO(metaclass=CommonMeta):
 
     @property
     def edit_dto(self):
-        dto = self.dto_value
-        for child_type in self.dbo_children_types:
-            dto['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
-        return self.metafields(dto, ['dbo_id', 'dbo_key', 'class_id', 'template_key', 'dbo_key_type', 'dbo_parent_type',
-                                     'dbo_children_types', 'imm_level'])
-    
-    @property
-    def new_dto(self):
-        dto = self.dto_value
-        dto['can_write'] = True
-        return self.metafields(dto, ['class_id', 'dbo_key_type', 'dbo_parent_type', 'dbo_children_types'])
-
-    def dbo_child_keys(self, child_type):
-        child_class = get_dbo_class(child_type)
-        return sorted(fetch_set_keys("{}_{}s:{}".format(self.dbo_key_type, child_type, self.dbo_id)),
-                      key=child_class.dbo_key_sort)
-
-    def autosave(self):
-        save_object(self, autosave=True)
+        return self.metafields(self.dto_value, ['class_id'])
 
     def metafields(self, dto_repr, field_names):
         for metafield in field_names:
@@ -118,7 +67,6 @@ class RootDBO(metaclass=CommonMeta):
         return dto_repr
 
     def _describe(self, display, level):
-
         if level > 2:
             return
 
@@ -143,6 +91,110 @@ class RootDBO(metaclass=CommonMeta):
 
         return display
 
+    def can_read(self, immortal):
+        return True
+
+    def can_write(self, immortal):
+        return is_supreme(immortal) or immortal.imm_level > getattr(self, 'imm_level', 0)
+
+
+class DBOAccess(metaclass=CommonMeta):
+    owner_id = DBOField('lampost')
+    read_access = DBOField(0)
+    write_access = DBOField(0)
+
+    @property
+    def imm_level(self):
+        try:
+            return perm.immortals[self.owner_id] + 1
+        except KeyError:
+            return perm_to_level('admin')
+
+    def can_read(self, immortal):
+        return immortal.imm_level >= self.read_access
+
+    def can_write(self, immortal):
+        if is_supreme(immortal) or immortal.dbo_id == self.owner_id:
+            return True
+        if self.write_access:
+            return immortal.imm_level >= self.write_access
+        return immortal.imm_level >= self.imm_level
+
+
+class KeyDBO(CoreDBO):
+    dbo_key_sort = None
+    dbo_indexes = ()
+    dbo_children_types = ()
+
+    dbo_rev = DBOField(0)
+
+    @property
+    def dbo_key(self):
+        return ":".join([self.dbo_key_type, self.dbo_id])
+
+    @property
+    def edit_dto(self):
+        return self.metafields(self.dto_value, ['dbo_id', 'dbo_key', 'class_id',  'dbo_key_type', 'imm_level'])
+
+    @property
+    def new_dto(self):
+        dto = self.dto_value
+        dto['can_write'] = True
+        return self.metafields(dto, ['class_id', 'dbo_key_type', 'dbo_parent_type', 'dbo_children_types'])
+
+    def on_created(self):
+        return self
+
+    def on_deleted(self):
+        pass
+
+    def autosave(self):
+        save_object(self, autosave=True)
+
+
+class ParentDBO(KeyDBO, DBOAccess):
+
+    @property
+    def edit_dto(self):
+        dto = self.dto_value
+        for child_type in self.dbo_children_types:
+            dto['{}_list'.format(child_type)] = self.dbo_child_keys(child_type)
+        return self.metafields(dto, ['dbo_id', 'dbo_key', 'class_id', 'dbo_key_type', 'dbo_children_types'])
+
+    def dbo_child_keys(self, child_type):
+        child_class = get_dbo_class(child_type)
+        return sorted(fetch_set_keys("{}_{}s:{}".format(self.dbo_key_type, child_type, self.dbo_id)),
+                      key=child_class.dbo_key_sort)
+
+
+class ChildDBO(KeyDBO):
+
+    @property
+    def parent_id(self):
+        return self.dbo_id.split(':')[0]
+
+    @property
+    def parent_dbo(self):
+        return load_object(self.parent_id, self.dbo_parent_type)
+
+    @property
+    def dbo_set_key(self):
+        return "{}_{}s:{}".format(self.dbo_parent_type, self.dbo_key_type, self.parent_id)
+
+    @property
+    def edit_dto(self):
+        return self.metafields(self.dto_value, ['dbo_id', 'dbo_key', 'class_id',  'dbo_key_type', 'dbo_parent_type'])
+
+    @property
+    def imm_level(self):
+        return self.parent_dbo.imm_level
+
+    def can_read(self, immortal):
+        return self.parent_dbo.can_read(immortal)
+
+    def can_write(self, immortal):
+        return self.parent_dbo.can_write(immortal)
+
 
 class Untyped():
     def hydrate(self, dto_repr):
@@ -152,158 +204,3 @@ class Untyped():
 
 
 set_dbo_class('untyped', Untyped)
-
-
-def load_ref(class_id, dbo_repr, dbo_owner=None):
-    if not dbo_repr:
-        return
-
-    dbo_ref_id = None
-    # The class_id passed in is what the field thinks it should hold
-    # This can be overridden in the actual stored dictionary
-    try:
-        class_id = dbo_repr['class_id']
-    except TypeError:
-        # A dbo_repr is either a string or a dictionary.  If it's a string,
-        # it must be reference, so capture the reference id
-        dbo_ref_id = dbo_repr
-    except KeyError:
-        pass
-
-    dbo_class = get_dbo_class(class_id)
-    if not dbo_class:
-        return error('Unable to load reference for {}', class_id)
-
-    # If this class has a key_type, it should always be a reference and we should load it from the database
-    # The dbo_representation in this case should always be a dbo_id
-    if hasattr(dbo_class, 'dbo_key_type'):
-        return load_object(dbo_ref_id, dbo_class)
-
-    # If we still have a dbo_ref_id, this must be part of an untyped collection, so the dbo_ref_id is a
-    # full value and we should be able to load it
-    if dbo_ref_id:
-        return load_object(dbo_ref_id)
-
-    # If this is a template, it should have a template key, so we load the template from the database using
-    # the full key, then hydrate any non-template fields from the dictionary
-    template_key = dbo_repr.get('tk')
-    if template_key:
-        template = load_object(template_key)
-        if template:
-            instance = template.create_instance(dbo_owner).hydrate(dbo_repr)
-            if instance:
-                instance.on_created()
-            return instance
-        else:
-            warn("Missing template for template_key {}", template_key)
-            return
-
-    # Finally, it's not a template and it is not a reference to an independent DB object, it must be a child
-    # object of this class, just hydrate it and set the owner
-    instance = dbo_class().hydrate(dbo_repr)
-    if instance:
-        instance.dbo_owner = dbo_owner
-        return instance
-
-
-class DBOField(AutoField):
-    def __init__(self, default=None, dbo_class_id=None, required=False):
-        super().__init__(default)
-        self.required = required
-        if dbo_class_id:
-            self.dbo_class_id = dbo_class_id
-            self.value_wrapper = value_wrapper(self.default)
-            self.hydrate_value = value_wrapper(self.default, False)(self.hydrate_dbo_value)
-            self.convert_save_value = value_wrapper(self.default)(save_repr)
-            self.dto_value = value_wrapper(self.default)(self.to_dto_repr)
-        else:
-            self.hydrate_value = lambda dto_repr, instance: dto_repr
-            self.convert_save_value = lambda value: value
-            self.dto_value = lambda value: value
-
-    def hydrate_dbo_value(self, dto_repr, instance):
-        return load_ref(self.dbo_class_id, dto_repr, instance)
-
-    def save_value(self, instance):
-        value = self.convert_save_value(instance.__dict__[self.field])
-        self.should_save(value, instance)
-        return value
-
-    def to_dto_repr(self, value):
-        try:
-            return value.dbo_key if self.dbo_class_id == 'untyped' else value.dbo_id
-        except AttributeError:
-            try:
-                dto = value.dto_value
-                field_class = getattr(self, 'dbo_class_id', None)
-                if getattr(value, 'class_id', field_class) != field_class:
-                    dto['class_id'] = value.class_id
-                if hasattr(value, 'template_key'):
-                    dto['template_key'] = value.template_key
-                return dto
-            except AttributeError:
-                return None
-
-    def should_save(self, value, instance):
-        self.check_default(value)
-
-    def check_default(self, value):
-        if hasattr(self.default, 'save_value'):
-            if value == self.default.save_value:
-                raise KeyError
-        elif value == self.default:
-            raise KeyError
-
-
-class DBOTField(DBOField, TemplateField):
-    def should_save(self, value, instance):
-        self.check_default(value)
-        try:
-            template_value = getattr(instance.template, self.field)
-        except AttributeError:
-            return
-        if hasattr(template_value, 'save_value'):
-            if value == template_value:
-                raise KeyError
-        elif value == template_value:
-            raise KeyError
-
-
-def save_repr(value):
-    if hasattr(value, 'dbo_id'):
-        return {'dbo_key': value.dbo_key}
-    return value.save_value
-
-
-def value_wrapper(value, for_dto=True):
-    if isinstance(value, set):
-        return list_wrapper if for_dto else set_wrapper
-    if isinstance(value, dict):
-        return dict_wrapper
-    if isinstance(value, list):
-        return list_wrapper
-    return lambda x: x
-
-
-def set_wrapper(func):
-    def wrapper(*args):
-        return {value for value in [func(single, *args[1:]) for single in args[0]]
-                if value is not None}
-
-    return wrapper
-
-
-def list_wrapper(func):
-    def wrapper(*args):
-        return [value for value in [func(single, *args[1:]) for single in args[0]]
-                if value is not None]
-
-    return wrapper
-
-
-def dict_wrapper(func):
-    def wrapper(*args):
-        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].items()]
-                if value is not None}
-
-    return wrapper

@@ -77,5 +77,3 @@ class EditUpdateService(ClientService):
                 session.append(event)
 
         return local_dto
-
-

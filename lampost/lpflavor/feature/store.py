@@ -3,7 +3,7 @@ import itertools
 
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbofield import DBOField
 from lampost.gameops.action import obj_action, ActionError
 from lampost.model.item import BaseItem
 

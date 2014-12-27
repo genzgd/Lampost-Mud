@@ -10,7 +10,7 @@ from lampost.util.encrypt import make_hash
 from lampost.util.lputil import ClientError
 
 
-m_requires(__name__, 'datastore', 'user_manager', 'perm', 'email_sender', 'config_manager',
+m_requires(__name__, 'datastore', 'dispatcher', 'user_manager', 'perm', 'email_sender', 'config_manager',
            'friend_service', 'edit_update_service')
 
 @requires('session_manager')
@@ -19,7 +19,7 @@ class Settings(MethodHandler):
     def get(self):
         user_id = self.raw['user_id']
         if self.session.user.dbo_id != user_id:
-            check_perm(session, 'admin')
+            check_perm(self.player, 'admin')
         return load_object(user_id, User).edit_dto
 
     def create_account(self):
@@ -35,7 +35,7 @@ class Settings(MethodHandler):
         update_dict = self.raw['user']
         user_id = self.raw['user_id']
         if self.session.user.dbo_id != user_id:
-            check_perm(self.session, 'admin')
+            check_perm(self.player, 'admin')
 
         old_user = None
         if user_id:

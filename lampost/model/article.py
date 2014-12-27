@@ -3,7 +3,8 @@ import itertools
 from lampost.datastore.auto import TemplateField
 from lampost.model.item import BaseItem, target_keys
 from lampost.gameops.action import ActionError
-from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
+from lampost.datastore.dbo import CoreDBO, ChildDBO
+from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.gameops.template import Template
 from lampost.util.lputil import plural
 
@@ -11,7 +12,7 @@ from lampost.util.lputil import plural
 VOWELS = {'a', 'e', 'i', 'o', 'u'}
 
 
-class ArticleTemplate(Template):
+class ArticleTemplate(ChildDBO, Template):
     dbo_key_type = "article"
     dbo_parent_type = "area"
 
@@ -113,7 +114,7 @@ class Article(BaseItem):
         new_env.add_inven(self)
 
 
-class ArticleReset(RootDBO):
+class ArticleReset(CoreDBO):
     class_id = 'article_reset'
     article = DBOField(dbo_class_id='article', required=True)
     reset_count = DBOField(1)

@@ -1,5 +1,6 @@
 from lampost.context.resource import provides, m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import KeyDBO
+from lampost.datastore.dbofield import DBOField
 from lampost.util.lputil import javascript_safe
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'message_service')
@@ -15,6 +16,7 @@ class ConfigManager():
         register('player_create', self._player_create)
         self.config = load_object(self.config_id, Config)
         if self.config:
+            perm.immortals.update({account: perm_to_level['supreme'] - 1 for account in self.system_accounts})
             self._dispatch_update()
         else:
             error("No configuration found")
@@ -39,9 +41,15 @@ class ConfigManager():
     def reserved(self, name):
         return name in self.config.system_accounts
 
+    @property
+    def system_accounts(self):
+        return self.config.system_accounts
+
     def _player_create(self, player, user):
         if len(user.player_ids) == 1:
             player.imm_level = perm_level('creator')
+            update_immortal_list(player)
+            dispatch('imm_level_change', player, 0)
             message_service.add_message('system', "Welcome!  Your first player has been given creator powers.  Check out the 'Editor' window on the top menu.", player.dbo_id)
         player.room_id = self.config.start_room
 
@@ -67,7 +75,7 @@ class ConfigManager():
         return self.config.dto_value
 
 
-class Config(RootDBO):
+class Config(KeyDBO):
     dbo_key_type = "config"
 
     title = DBOField('Lampost (New Install)')

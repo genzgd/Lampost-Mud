@@ -24,7 +24,8 @@ class RedisStore():
         dbo_id = dbo_dict['dbo_id']
         if self.object_exists(dbo_class.dbo_key_type, dbo_id):
             raise ObjectExistsError(dbo_id)
-        dbo = dbo_class(dbo_id)
+        dbo = dbo_class()
+        dbo.dbo_id = str(dbo_id).lower()
         dbo.hydrate(dbo_dict)
         dbo.on_created()
         if dbo.dbo_set_key:
@@ -76,7 +77,8 @@ class RedisStore():
 
     def load_from_json(self, json_str, key_type, dbo_id):
         dbo_dict = json_decode(json_str)
-        dbo = get_mixed_type(key_type, dbo_dict.get('mixins'))(dbo_id)
+        dbo = get_mixed_type(key_type, dbo_dict.get('mixins'))()
+        dbo.dbo_id = dbo_id
         self._object_map[dbo.dbo_key] = dbo
         dbo.hydrate(dbo_dict)
         return dbo

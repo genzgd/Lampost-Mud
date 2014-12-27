@@ -1,11 +1,12 @@
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import KeyDBO
+from lampost.datastore.dbofield import DBOField
 
 m_requires(__name__, 'log', 'dispatcher')
 
 
-class Player(RootDBO):
+class Player(KeyDBO):
     dbo_key_type = "player"
     dbo_set_key = "players"
 
@@ -22,13 +23,6 @@ class Player(RootDBO):
     is_player = True
     can_die = True
 
-    def __init__(self, dbo_id):
-        super().__init__(dbo_id)
-        self.target_keys = {(self.dbo_id,)}
-        self.last_tell = None
-        self.active_channels = set()
-        self.session = None
-
     @property
     def edit_dto(self):
         dto = super().edit_dto
@@ -40,6 +34,10 @@ class Player(RootDBO):
         return self.dbo_id.capitalize()
 
     def on_loaded(self):
+        self.target_keys = {(self.dbo_id,)}
+        self.last_tell = None
+        self.active_channels = set()
+        self.session = None
         if not self.desc:
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
 

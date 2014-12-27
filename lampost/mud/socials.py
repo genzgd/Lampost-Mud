@@ -1,6 +1,7 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import CoreDBO, KeyDBO, DBOAccess
+from lampost.datastore.dbofield import DBOField
 from lampost.mud.action import mud_action
 
 m_requires(__name__, 'datastore')
@@ -11,7 +12,7 @@ def _post_init():
     socials = load_object_set(Social)
 
 
-class Social(RootDBO):
+class Social(KeyDBO, DBOAccess):
     dbo_key_type = 'social'
     dbo_set_key = 'socials'
 

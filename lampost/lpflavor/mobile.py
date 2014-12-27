@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, DBOTField
+from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField
 from lampost.lpflavor.archetype import Archetype
 from lampost.lpflavor.attributes import fill_pools

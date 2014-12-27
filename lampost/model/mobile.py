@@ -1,10 +1,11 @@
-from lampost.datastore.dbo import RootDBO, DBOField
+from lampost.datastore.dbo import CoreDBO, ChildDBO
+from lampost.datastore.dbofield import DBOField
 from lampost.gameops.template import Template
 from lampost.model.entity import Entity
 from lampost.model.item import target_keys
 
 
-class MobileTemplate(Template):
+class MobileTemplate(ChildDBO, Template):
     dbo_key_type = "mobile"
     dbo_parent_type = "area"
 
@@ -26,7 +27,7 @@ class Mobile(Entity):
         self.original_env.mobiles[self.template].remove(self)
 
 
-class MobileReset(RootDBO):
+class MobileReset(CoreDBO):
     class_id = 'mobile_reset'
     mobile = DBOField(dbo_class_id='mobile', required=True)
     reset_key = DBOField(0)

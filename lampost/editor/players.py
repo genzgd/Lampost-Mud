@@ -1,3 +1,4 @@
+from lampost.client.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.client.user import User
@@ -5,7 +6,38 @@ from lampost.editor.editor import Editor
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash
 
-m_requires(__name__, 'log', 'datastore', 'perm', 'user_manager', 'edit_update_service')
+m_requires(__name__, 'log', 'dispatcher', 'datastore', 'perm', 'user_manager', 'edit_update_service')
+
+
+def _post_init():
+    register('imm_level_change', imm_level_change)
+
+
+class EditorImmortal():
+    def __init__(self, player):
+        self.edit_dto = {'dbo_key_type': 'immortal', 'dbo_id': player.dbo_id, 'imm_level': player.imm_level}
+
+    def can_write(self, *_):
+        return False
+
+    def can_read(self, *_):
+        return False
+
+
+def imm_level_change(player, old_level, session=None):
+    immortal = EditorImmortal(player)
+    if not old_level and player.imm_level:
+        update_type = 'create'
+    elif old_level and not player_imm_level:
+        update_type = 'delete'
+    else:
+        update_type = 'update'
+    publish_edit(update_type, immortal, session)
+
+
+class ImmortalsList(SessionHandler):
+    def main(self):
+        self._return([{'dbo_id': key, 'imm_level': value, 'dbo_key_type': 'immortal'} for key, value in perm.immortals.items()])
 
 
 class PlayerEditor(Editor):
@@ -20,7 +52,7 @@ class PlayerEditor(Editor):
             raise DataError("Cannot delete root user.")
         if player.session:
             raise DataError("Player is logged in.")
-        check_player_perm(player, self.session)
+        check_player_perm(player, self.player)
 
     def _post_delete(self, player):
         user_manager.remove_player_indexes(player.dbo_id)
@@ -37,15 +69,15 @@ class PlayerEditor(Editor):
             publish_edit('update', user, self.session, True)
 
 
-def check_player_perm(player, session):
+def check_player_perm(player, immortal):
     user = load_object(player.user_id, User)
     if not user:
         error("Missing user for player delete.")
         return
     if user.imm_level > 0:
-        check_perm(session, 'supreme')
+        check_perm(immortal, 'supreme')
     else:
-        check_perm(session, 'admin')
+        check_perm(immortal, 'admin')
 
 
 class UserEditor(Editor):

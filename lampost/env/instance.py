@@ -1,6 +1,7 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOField, RootDBO
+from lampost.datastore.dbo import CoreDBO
+from lampost.datastore.dbofield import DBOField
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops import target_gen
@@ -57,7 +58,7 @@ verb_entry = BroadcastMap(ea='{n} arrives {N}')
 dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
 
 
-class Entrance(RootDBO):
+class Entrance(CoreDBO):
     class_id = 'entrance'
 
     verb = DBOField('enter')

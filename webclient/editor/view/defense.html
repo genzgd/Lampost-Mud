@@ -14,7 +14,7 @@
         <div class="col-md-5">
           <div class="form-group">
             <label class="control-label">Defense Command</label>
-            <input ng-disabled="model.auto_start" class="form-control input-sm" type="text" ng-model="model.verb"/>
+            <input ng-disabled="model.auto_start || !model.can_write" class="form-control input-sm" type="text" ng-model="model.verb"/>
           </div>
         </div>
         <div class="col-md-3">

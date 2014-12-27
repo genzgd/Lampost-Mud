@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import DBOField, RootDBO
+from lampost.datastore.dbofield import DBOField
 from lampost.gameops.action import obj_action
 from lampost.model.item import Readable, BaseItem
 

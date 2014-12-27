@@ -5,7 +5,8 @@ import random
 from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
-from lampost.datastore.dbo import RootDBO, DBOField, DBOTField
+from lampost.datastore.dbo import CoreDBO, ChildDBO
+from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.env.movement import Direction
 from lampost.gameops.script import Scriptable
 from lampost.gameops.display import *
@@ -26,7 +27,7 @@ def tell(listeners, msg_type, *args):
         receiver(*args)
 
 
-class Exit(RootDBO):
+class Exit(CoreDBO):
     class_id = 'exit'
 
     target_class = None
@@ -72,7 +73,7 @@ class Exit(RootDBO):
         self._dir = Direction.ref_map.get(self.direction)
 
 
-class Room(RootDBO, Scriptable):
+class Room(ChildDBO, Scriptable):
     dbo_key_type = 'room'
     dbo_parent_type = 'area'
     dbo_key_sort = lambda key: int(key.split(":")[1])
@@ -92,8 +93,7 @@ class Room(RootDBO, Scriptable):
 
     _garbage_pulse = None
 
-    def __init__(self, dbo_id=None):
-        super().__init__(dbo_id)
+    def __init__(self):
         self.inven = []
         self.denizens = []
         self.mobiles = defaultdict(set)
@@ -253,7 +253,8 @@ class Room(RootDBO, Scriptable):
                 player.change_env(new_room)
 
 
-safe_room = Room('temp:safe')
+safe_room = Room()
+safe_room.dbo_id = '_safe_:0'
 safe_room.title = "Safe Room"
 safe_room.desc = "A temporary safe room when room is being updated."
 safe_room.first_look = lambda source: None

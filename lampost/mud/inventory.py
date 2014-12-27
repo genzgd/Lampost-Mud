@@ -1,4 +1,4 @@
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbofield import DBOField
 
 from lampost.gameops.display import EXIT_DISPLAY
 from lampost.model.item import BaseItem

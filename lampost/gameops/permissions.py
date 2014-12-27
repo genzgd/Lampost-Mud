@@ -1,25 +1,22 @@
 from lampost.context.resource import provides, m_requires
 from lampost.util.lputil import PermError
 
-m_requires(__name__, 'datastore', 'context', 'config_manager')
+m_requires(__name__, 'datastore', 'context')
 
+imm_levels = {'supreme': 100000, 'admin': 10000, 'senior': 2000, 'creator': 1000, 'player': 0}
 
 @provides('perm', True)
 class Permissions():
-    levels = {'supreme': 100000, 'admin': 10000, 'senior': 2000, 'creator': 1000, 'none': 0, 'player': 0}
 
     def __init__(self):
-        self.rev_levels = {}
-        self.immortals = {}
-        for name, level in self.levels.items():
-            self.rev_levels[level] = name
+        self.rev_levels = {level: name for name, level in imm_levels.items()}
 
     def _post_init(self):
         self.immortals = get_all_hash('immortals')
-        context.set('imm_titles', self.levels)
+        context.set('imm_titles', imm_levels)
 
     def perm_name(self, num_level):
-        return self.rev_levels.get(num_level, 'none')
+        return self.rev_levels.get(num_level, 'player')
 
     def update_immortal_list(self, player):
         if player.imm_level:
@@ -32,54 +29,35 @@ class Permissions():
             except KeyError:
                 pass
 
-    def has_perm(self, player, action):
+    def has_perm(self, immortal, action):
         try:
-            self.check_perm(player, action)
+            self.check_perm(immortal, action)
             return True
         except PermError:
             return False
 
-    def check_perm(self, player, action):
-
+    def check_perm(self, immortal, action):
+        if immortal.imm_level >= imm_levels['supreme']:
+            return
         if isinstance(action, int):
             perm_required = action
-        elif action in self.levels:
-            perm_required = self.levels[action]
+        elif action in imm_levels:
+            perm_required = imm_levels[action]
+        elif hasattr(action, 'can_write'):
+            if action.can_write(immortal):
+                return
+            raise PermError
         else:
             imm_level = getattr(action, 'imm_level', 0)
-            perm_required = self.levels.get(imm_level, imm_level)
-        if hasattr(action, 'parent_dbo'):
-            parent = action.parent_dbo
-            if parent:
-                action = parent
-        if getattr(action, 'unprotected', None):
-            return
-        owner_id = getattr(action, 'owner_id', None)
-        if owner_id:
-            if owner_id in config_manager.config.system_accounts:
-                perm_required = max(perm_required, self.levels['admin'])
-            else:
-                perm_required = max(self.immortals.get(owner_id, self.levels['admin']) + 1, perm_required)
-        if not perm_required:
-            return
-        try:
-            player_level = player.imm_level
-        except AttributeError:
-            try:
-                player = player.player
-                player_level = player.imm_level
-            except AttributeError:
-                raise PermError
-        if player_level >= self.levels['supreme']:
-            return
-        if player_level >= perm_required:
-            return
-        if player.dbo_id == owner_id:
-            return
-        raise PermError
+            perm_required = imm_levels.get(imm_level, imm_level)
+        if immortal.imm_level < perm_required:
+            raise PermError
 
     def perm_level(self, label):
-        return self.levels.get(label, self.levels['admin'])
+        return imm_levels.get(label, imm_levels['admin'])
 
     def perm_to_level(self, label):
-        return self.levels.get(label)
+        return imm_levels.get(label)
+
+    def is_supreme(self, immortal):
+        return immortal.imm_level >= imm_levels['supreme']

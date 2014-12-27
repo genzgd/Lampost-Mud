@@ -1,7 +1,7 @@
-from lampost.datastore.dbo import RootDBO
+from lampost.datastore.dbo import CoreDBO
 
 
-class Direction(RootDBO):
+class Direction(CoreDBO):
     class_id = 'direction'
     ref_map = {}
     ordered = []

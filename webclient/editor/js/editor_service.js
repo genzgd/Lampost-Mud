@@ -46,9 +46,14 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       this.playerId = data.playerId;
       this.registerContext('no_item', {metadata: true});
       lpCache.clearAll();
-      return lpRemote.request('editor/constants').then(function (constants) {
+      var promises = [];
+      promises.push(lpRemote.request('editor/constants').then(function (constants) {
         lpEditor.constants = constants;
-      });
+      }));
+      promises.push(lpCache.cache('immortal').then(function(immortals) {
+        this.immortals = immortals;
+      }));
+      return $q.all(promises);
     };
 
     this.initView = function() {

@@ -51,24 +51,27 @@ angular.module('lampost_editor').controller('EditorNavController',
 
     var sessionId;
     var editNav = [
-      {id: 'build', label: 'Areas', icon: 'fa-share-alt'},
-      {id: 'mud', label: 'Global', icon: 'fa-globe'},
-      //{id: 'config', label: 'Admin', icon: 'fa-wrench'},
-      {id: 'player', label: 'Players', icon: 'fa-user'}
+      {id: 'build', label: 'Areas', icon: 'fa-share-alt', mode: 'edit'},
+      {id: 'mud', label: 'Global', icon: 'fa-globe', mode: 'edit'},
+      {id: 'player', label: 'Players', icon: 'fa-user', mode: 'edit'},
+      //{id: 'config', label: 'Config', icon: 'fa-gears', mode: 'edit'},
+      {id: 'admin', label: 'Admin', icon: 'fa-wrench', mode: 'admin'}
     ];
 
-    var activeNav = '';
+    var activeNav;
 
     lpEvent.register('connect', function (data) {
       sessionId = data;
+    });
+
+    lpEvent.register('connect_only', function() {
       $rootScope.appState = 'connected';
       $rootScope.mainTemplate = null;
       $scope.welcome = 'Please log in.';
     });
 
     lpEvent.register('editor_login', function (data) {
-      activeNav = '';
-      $rootScope.appState = 'loggedIn';
+      activeNav = undefined;
       $rootScope.playerName = data.playerName;
       sessionStorage.setItem('editSessionId', sessionId);
       $scope.welcome = "Immortal " + data.playerName;
@@ -86,12 +89,13 @@ angular.module('lampost_editor').controller('EditorNavController',
         $rootScope.constants = lpEditor.constants;
         var lastView = lpEditorView.lastView();
         for (var ix = 0; ix < $scope.links.length; ix++) {
-          if ($scope.links[ix].id === lastView ) {
-            $scope.changeNav(lastView);
+          var link = $scope.links[ix];
+          if (link.id === lastView ) {
+            $scope.changeNav(link);
             return;
           }
         }
-        $scope.changeNav($scope.links[0].id);
+        $scope.changeNav($scope.links[0]);
       });
 
     });
@@ -117,16 +121,17 @@ angular.module('lampost_editor').controller('EditorNavController',
       var handlers = [];
       lpEvent.dispatch('editorClosing', handlers);
       $q.all(handlers).then(function () {
+        $rootScope.appState = newNav.mode;
         activeNav = newNav;
         for (var i = 0; i < $scope.links.length; i++) {
           var link = $scope.links[i];
-          if (link.id === activeNav) {
+          if (link.id === activeNav.id) {
             link.active = 'active';
           } else {
             link.active = '';
           }
         }
-        lpEditorView.prepareView(activeNav);
+        lpEditorView.prepareView(activeNav.id);
       });
     };
 

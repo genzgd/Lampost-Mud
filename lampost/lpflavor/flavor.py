@@ -1,6 +1,6 @@
 from importlib import import_module
 
-from lampost.datastore.dbo import DBOField
+from lampost.datastore.dbofield import DBOField
 from lampost.lpflavor import setup
 from lampost.lpflavor.attributes import ATTR_LIST, fill_pools, base_pools, RESOURCE_POOLS, ATTRIBUTES
 from lampost.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, WEAPON_TYPES

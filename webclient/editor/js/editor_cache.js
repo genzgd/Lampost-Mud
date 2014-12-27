@@ -7,7 +7,8 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     var remoteCache = {};
 
     var cacheSorts = {
-      room: numericIdSort
+      room: numericIdSort,
+      immortal: lpUtil.fieldCmpSort('dbo_id', lpUtil.naturalCmp)
     };
 
     function cacheEntry(key) {

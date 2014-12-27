@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import DBOTField
+from lampost.datastore.dbofield import DBOTField
 from lampost.datastore.auto import TemplateField, AutoMeta
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError

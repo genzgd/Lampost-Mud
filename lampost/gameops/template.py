@@ -1,8 +1,7 @@
-from lampost.datastore.dbo import DBOField, RootDBO
+from lampost.datastore.meta import CommonMeta
 
 
-class Template(RootDBO):
-    dbo_rev = DBOField(0)
+class Template(metaclass=CommonMeta):
 
     def create_instance(self, owner=None):
         instance = self.instance_cls()

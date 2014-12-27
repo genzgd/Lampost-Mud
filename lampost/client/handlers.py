@@ -26,11 +26,6 @@ class SessionHandler(RequestHandler):
             exception("Handler Exception", e)
         self.finish()
 
-    def _find_session(self):
-        self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
-        if not self.session:
-            raise LinkError('session_not_found')
-
     def _content(self):
         return Blank(**self.raw)
 
@@ -43,9 +38,10 @@ class SessionHandler(RequestHandler):
         self.finish()
 
     def prepare(self):
-        self._find_session()
+        self.session = session_manager.get_session(self.request.headers.get('X-Lampost-Session'))
+        if not self.session:
+            raise LinkError('session_not_found')
         self.player = self.session.player
-        check_perm(self.player, self)
 
     def post(self, *args):
         self.raw = json_decode(self.request.body.decode())
