@@ -1,7 +1,7 @@
 from lampost.datastore.classes import get_dbo_class, set_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.dbofield import DBOField, value_wrapper
-from lampost.datastore.meta import CommonMeta
+from lampost.datastore.meta import CommonMeta, call_mro
 
 m_requires(__name__, 'log', 'perm', 'datastore')
 
@@ -120,6 +120,18 @@ class DBOAccess(metaclass=CommonMeta):
             return immortal.imm_level >= self.write_access
         return immortal.imm_level >= self.imm_level
 
+    def on_created(self):
+        info("{} created new object {}", self.owner_id, self.dbo_key)
+        add_set_key('owned:{}'.format(self.owner_id), self.dbo_key)
+
+    def on_deleted(self):
+        delete_set_key('owned:{}'.format(self.owner_id), self.dbo_key)
+
+    def change_owner(self, new_owner=None):
+        self.on_deleted()
+        self.owner_id = new_owner or 'lampost'
+        self.on_created()
+
 
 class KeyDBO(CoreDBO):
     dbo_key_sort = None
@@ -142,17 +154,17 @@ class KeyDBO(CoreDBO):
         dto['can_write'] = True
         return self.metafields(dto, ['class_id', 'dbo_key_type', 'dbo_parent_type', 'dbo_children_types'])
 
-    def on_created(self):
-        return self
+    def db_created(self):
+        call_mro(self, 'on_created')
 
-    def on_deleted(self):
-        pass
+    def db_deleted(self):
+        call_mro(self, 'on_deleted')
 
     def autosave(self):
         save_object(self, autosave=True)
 
 
-class ParentDBO(KeyDBO, DBOAccess):
+class ParentDBO(DBOAccess, KeyDBO):
 
     @property
     def edit_dto(self):

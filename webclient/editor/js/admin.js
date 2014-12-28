@@ -1,6 +1,8 @@
-angular.module('lampost_editor').controller('MainAdminCtrl', ['$scope', 'lpRemote', function($scope, lpRemote) {
+angular.module('lampost_editor').controller('MainAdminCtrl', ['$scope', 'lpRemote', 'lpUtil',
+  function($scope, lpRemote, lpUtil) {
 
   lpRemote.request('editor/admin/operations').then(function(operations) {
+    lpUtil.stringSort(operations, 'name');
     $scope.operations = operations;
   });
 

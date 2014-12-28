@@ -6,7 +6,6 @@ log = logging.getLogger(__name__)
 
 
 class CommonMeta(type):
-
     dbo_fields = {}
     load_funcs = []
     class_providers = set()
@@ -69,13 +68,25 @@ class CommonMeta(type):
         template_cls = get_dbo_class(cls.template_id)
         old_class = getattr(template_cls, 'instance_cls', None)
         if old_class:
-            log.info("Overriding existing instance class {} with {} for template {}", old_class.__name__, cls.__name__, cls.template_id)
+            log.info("Overriding existing instance class {} with {} for template {}", old_class.__name__, cls.__name__,
+                     cls.template_id)
         else:
             log.info("Initializing instance class {} for template {}", cls.__name__, cls.template_id)
-        template_cls.add_dbo_fields({name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
+        template_cls.add_dbo_fields(
+            {name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
         template_cls.instance_cls = cls
         cls.template_cls = template_cls
 
 
     def _update_actions(cls, new_attrs):
         cls.class_providers.update({func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')})
+
+
+def call_mro(self, func_name, *args, **kwargs):
+    for cls in reversed(self.__class__.__mro__):
+        try:
+            cls.__dict__[func_name](self, *args, **kwargs)
+        except KeyError:
+            pass
+
+

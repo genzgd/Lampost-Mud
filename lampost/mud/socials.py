@@ -12,13 +12,12 @@ def _post_init():
     socials = load_object_set(Social)
 
 
-class Social(KeyDBO, DBOAccess):
+class Social(DBOAccess, KeyDBO):
     dbo_key_type = 'social'
     dbo_set_key = 'socials'
 
     b_map = DBOField({})
     aliases = DBOField([])
-    owner_id = DBOField('lampost')
 
     msg_class = 'social'
 

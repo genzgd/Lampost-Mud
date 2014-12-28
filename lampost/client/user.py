@@ -157,8 +157,14 @@ class UserManager():
     def name_to_id(self, player_name):
         return player_name.lower()
 
-    def remove_player_indexes(self, player_id):
+    def player_cleanup(self, player_id):
         delete_index('ix:player:user', player_id)
+        for dbo_id in fetch_set_keys('owned:{}'.player_id):
+            dbo = load_object(dbo_id)
+            if dbo and dbo.owner_id == player_id:
+                dbo.change_owner()
+                save_object(dbo)
+                publish_update('update', dbo)
         dispatch('player_deleted', player_id)
 
     def _player_delete(self, player_id):
@@ -168,5 +174,5 @@ class UserManager():
             delete_object(player)
         else:
             warn("Attempting to delete player {} who does not exist.".format(player_id))
-        self.remove_player_indexes(player_id)
+        self.player_cleanup(player_id)
 

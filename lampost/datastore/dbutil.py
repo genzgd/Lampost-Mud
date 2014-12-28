@@ -1,6 +1,7 @@
 from lampost.context.resource import m_requires
 from lampost.datastore import classes
 from lampost.editor.admin import admin_op
+from lampost.model.player import Player
 
 m_requires(__name__, 'log', 'datastore', 'perm', 'config_manager')
 
@@ -22,9 +23,9 @@ def rebuild_indexes(dbo_cls):
 
 @admin_op
 def rebuild_owner_refs():
-    system_default = config_manager.system_accounts[0]
-    for immortal_id in perm.immortals.keys():
-        delete_key('owned:{}'.format(immortal_id))
+    # Yes, we're abusing the keys command.  If we required a later version of Redis (2.8) we could use SCAN
+    for owned_key in datastore.redis.keys('owned:*'):
+        delete_key(owned_key)
     for dbo_cls in classes._dbo_registry.values():
         dbo_key_type = getattr(dbo_cls, 'dbo_key_type', None)
         if not dbo_key_type:
@@ -32,20 +33,17 @@ def rebuild_owner_refs():
         owner_field = dbo_cls.dbo_fields.get('owner_id', None)
         if not owner_field:
             continue
-        owner_default = owner_field.default
-        for dbo_id in fetch_set_keys(dbo_cls.dbo_set_key):
-            try:
-                dbo_key = '{}:{}'.format(dbo_cls.dbo_key_type, dbo_id)
-                dbo_dict = load_raw(dbo_key)
-                owner_id = dbo_dict.get('owner_id', owner_default)
-                if owner_id not in perm.immortals:
-                    warn("owner id {} not found, setting owner of {} to system default {}", owner_id, dbo_key, system_default)
-                    owner_id = system_default
-                    if owner_id == owner_default:
-                        del dbo_dict['owner_id']
-                    else:
-                        dbo_dict['owner_id'] = owner_id
-                    save_raw(dbo_key, dbo_dict)
-                add_set_key('owned:{}'.format(owner_id), dbo_key)
-            except (ValueError, TypeError):
-                warn("Missing dbo object {} from set key {}", dbo_id, dbo_cls.dbo_set_key)
+        for dbo in load_object_set(dbo_cls):
+            if dbo.owner_id in perm.immortals:
+                dbo.db_created()
+            else:
+                warn("owner id {} not found, setting owner of {} to default {}", owner_id, dbo_key, owner_field.default)
+                dbo.change_owner()
+
+@admin_op
+def rebuild_immortal_list():
+    delete_key('immortals')
+    for player in load_object_set(Player):
+        if player.imm_level:
+            set_db_hash('immortals', player.dbo_id, player.imm_level)
+

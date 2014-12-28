@@ -122,5 +122,3 @@ angular.module('lampost_dir').directive("colorPicker", [function () {
     }
 
 }]);
-
-angular.module('lampost_dir').filter()

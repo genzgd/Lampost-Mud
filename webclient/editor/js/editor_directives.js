@@ -140,38 +140,43 @@ angular.module('lampost_editor').directive('lpOutsideEdit', [function () {
 angular.module('lampost_editor').directive('lpDataError', [function () {
   return {
     restrict: 'E',
-    templateUrl: 'editor/view/data_error.html'
+    scope: {},
+    templateUrl: 'editor/view/data_error.html',
+    link: function(scope, element, attrs) {
+      scope.errors = element.scope().errors;
+      scope.type = attrs.type || 'dataError';
+    }
   }
 }]);
 
-angular.module('lampost_editor').controller('OwnerIdCtrl', ['$scope', 'lpEditor', function($scope, lpEditor) {
+angular.module('lampost_editor').controller('OwnerIdCtrl', ['$scope', 'lpCache', 'lpEditor',
+  function($scope, lpCache, lpEditor) {
 
+    var origOwner = $scope.model.owner_id;
 
+    $scope.checkOwner = function() {
+      var newImm = lpCache.cacheValue('immortal:' + $scope.model.owner_id);
+      if (newImm.imm_level > lpEditor.immLevel) {
+        $scope.errors.owner = "Owner is higher level than you.";
+        $scope.model.owner_id = origOwner;
+      } else {
+        origOwner = $scope.model.owner_id;
+        $scope.errors.owner = null;
+      }
+    }
 }])
 
-angular.module('lampost_editor').directive('lpOwnerId', ['lpEditor', function(lpEditor) {
-  return {
-    restrict: 'A',
-    templateUrl: 'editor/fragments/owner_id.html',
-    controller: 'OwnerIdCtrl',
-    link: function(scope, element, attrs) {
-
-    }
-  }
-
-}]);
-
-
-angular.module('lampost_editor').directive('lmObjectSelector', [function () {
+angular.module('lampost_editor').directive('lpOwnerId', [function() {
   return {
     restrict: 'AE',
-    templateUrl: 'editor/view/object_selector.html',
-    controller: 'objSelectorController',
-    link: function (scope, element, attrs) {
-      scope.objType = attrs.lmObjectSelector;
+    controller: 'OwnerIdCtrl',
+    templateUrl: 'editor/fragments/owner_id.html',
+    link: function(scope, element, attrs) {
+      scope.$parent.$emit('lpDirectiveLoaded');
     }
   }
 }]);
+
 
 angular.module('lampost_editor').controller('ChildSelectCtrl',
   ['$scope', '$attrs', '$filter', 'lpCache', 'lpEvent', 'lpEditor',
@@ -228,4 +233,3 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
     initialize();
 
   }]);
-

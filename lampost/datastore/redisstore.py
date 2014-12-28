@@ -27,7 +27,7 @@ class RedisStore():
         dbo = dbo_class()
         dbo.dbo_id = str(dbo_id).lower()
         dbo.hydrate(dbo_dict)
-        dbo.on_created()
+        dbo.db_created()
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
         self.save_object(dbo, True)
@@ -123,7 +123,7 @@ class RedisStore():
 
     def delete_object(self, dbo):
         key = dbo.dbo_key
-        dbo.on_deleted()
+        dbo.db_deleted()
         self.delete_key(key)
         self._clear_old_refs(dbo)
         if dbo.dbo_set_key:

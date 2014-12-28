@@ -42,7 +42,7 @@ def avg_calc(source, calc, skill_level=0):
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
-class SkillTemplate(KeyDBO, DBOAccess, Template):
+class SkillTemplate(DBOAccess, KeyDBO, Template):
 
     def on_loaded(self):
         if not self.auto_start:

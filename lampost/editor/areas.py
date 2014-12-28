@@ -1,7 +1,7 @@
 from lampost.datastore.classes import get_dbo_class
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
-from lampost.editor.editor import Editor, ChildrenEditor, find_parent
+from lampost.editor.editor import Editor, ChildrenEditor
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.model.area import Area
@@ -23,11 +23,6 @@ class AreaEditor(Editor):
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, self.session, del_obj.dbo_id)
 
-    def _pre_update(self, existing_obj):
-        if not check_perm(self.player, 'supreme') and existing_obj.unprotected and not self.raw[
-            'unprotected'] and self.session.player.dbo_id != existing_obj.owner_id:
-            raise DataError("Only the owner can change edit permissions.")
-
 
 class RoomEditor(ChildrenEditor):
     def initialize(self):
@@ -44,7 +39,7 @@ class RoomEditor(ChildrenEditor):
 
     def create_exit(self):
         content = self._content()
-        area, room = find_area_room(content.start_room, self.player)
+        room = find_area_room(content.start_room, self.player)
         new_dir = content.direction
         if room.find_exit(content.direction):
             raise DataError("Room already has " + new_dir + " exit.")
@@ -99,7 +94,7 @@ class RoomEditor(ChildrenEditor):
 
 
     def _post_create(self, room):
-        add_room(find_parent(room), self.session)
+        add_room(room.parent_dbo, self.session)
 
     def _post_delete(self, room):
         room_clean_up(room, self.session)
@@ -126,7 +121,7 @@ def find_area_room(room_id, player):
     room = load_object(room_id, Room)
     if not room:
         raise DataError("ROOM_MISSING")
-    area = find_parent(room)
+    area = room.parent_dbo
     check_perm(player, area)
     return area, room
 

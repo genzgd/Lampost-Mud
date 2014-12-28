@@ -4,7 +4,7 @@ from lampost.datastore.dbofield import DBOField
 base_attr_value = 5
 
 
-class PlayerRace(KeyDBO, DBOAccess):
+class PlayerRace(DBOAccess, KeyDBO):
     dbo_key_type = "race"
     dbo_set_key = "races"
 
@@ -16,7 +16,8 @@ class PlayerRace(KeyDBO, DBOAccess):
     start_room = DBOField()
     start_room_instanced = DBOField(False)
 
-    def on_created(self):
-        if not self.base_attrs:
-            self.base_attrs = {attr_name: base_attr_value for attr_name in self.attr_list}
-        return self
+    @property
+    def new_dto(self):
+        dto = super().new_dto
+        dto['base_attrs'] = {attr_name: base_attr_value for attr_name in self.attr_list}
+        return dto

@@ -59,13 +59,16 @@ class Editor(MethodHandler):
             raise DataError("GONE:  Object with key {} no longer exists.".format(self.raw['dbo.id']))
         check_perm(self.player, existing_obj)
         self._pre_update(existing_obj)
+        if hasattr(existing_obj, 'change_owner') and self.raw['owner_id'] != existing_obj.owner_id:
+            existing_obj.change_owner(self.raw['owner_id'])
         update_object(existing_obj, self.raw)
         self._post_update(existing_obj)
         return publish_edit('update', existing_obj, self.session)
 
     def metadata(self):
+        new_object = get_dbo_class(self.dbo_key_type)()
         return {'perms': self._permissions(), 'parent_type': self.parent_type, 'children_types': self.children_types,
-                'new_object': get_dbo_class(self.dbo_key_type)().on_created().new_dto}
+                'new_object': new_object.new_dto}
 
     def test_delete(self):
         return list(fetch_set_keys('{}:{}:holders'.format(self.dbo_key_type, self.raw['dbo_id'])))
@@ -125,26 +128,8 @@ class ChildrenEditor(Editor):
         super().initialize(obj_class, imm_level)
         self.parent_type = obj_class.dbo_parent_type
 
-    def _check_perm(self, obj):
-        check_perm(self.player, find_parent(obj, self.parent_type))
-
-    def _pre_delete(self, del_obj):
-        self._check_perm(del_obj)
-
     def _pre_create(self):
-        self._check_perm(self.raw)
+        parent_id = self.raw['dbo_id'].split(':')[0]
+        parent = load_object(parent_id, self.parent_type)
+        check_perm(self.player, parent)
 
-    def _pre_update(self, existing_obj):
-        self._check_perm(existing_obj)
-
-
-def find_parent(child, parent_type=None):
-    try:
-        dbo_id = child.dbo_id
-        parent_type = child.dbo_parent_type
-    except AttributeError:
-        dbo_id = child['dbo_id']
-    parent = load_object(dbo_id.split(':')[0], parent_type)
-    if not parent:
-        raise DataError("Parent Missing")
-    return parent

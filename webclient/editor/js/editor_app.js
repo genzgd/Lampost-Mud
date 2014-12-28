@@ -41,13 +41,11 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
       }
     }
 
-
-
   }]);
 
 angular.module('lampost_editor').controller('EditorNavController',
-  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpEditor', 'lpEditorView',
-  function ($q, $rootScope,  $scope, lpEvent, lpEditor, lpEditorView) {
+  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpUtil', 'lpEditor', 'lpEditorView',
+  function ($q, $rootScope,  $scope, lpEvent, lpUtil, lpEditor, lpEditorView) {
 
     var sessionId;
     var editNav = [
@@ -87,6 +85,17 @@ angular.module('lampost_editor').controller('EditorNavController',
 
       lpEditor.init(data).then(function () {
         $rootScope.constants = lpEditor.constants;
+        $rootScope.immortals = lpEditor.immortals;
+        var access = [];
+        angular.forEach(lpEditor.constants.imm_titles, function(value, key) {
+          if (value > 0 && value <= data.imm_level) {
+            access.push({name: lpUtil.capitalize(key), value: value});
+          }
+        });
+        lpUtil.descIntSort(access, 'value');
+        access.unshift({name: 'Default', value: 0});
+        $rootScope.accessLevels = access;
+
         var lastView = lpEditorView.lastView();
         for (var ix = 0; ix < $scope.links.length; ix++) {
           var link = $scope.links[ix];

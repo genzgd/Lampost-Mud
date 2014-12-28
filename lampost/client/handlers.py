@@ -55,7 +55,7 @@ class SessionHandler(RequestHandler):
 
 class MethodHandler(SessionHandler):
     def main(self, path, *args):
-        if path.startswith('_'):
+        if path.startswith('_') or hasattr(SessionHandler, path):
             self.send_error(404)
             return
         method = getattr(self, path, None)

@@ -37,7 +37,7 @@ def imm_level_change(player, old_level, session=None):
 
 class ImmortalsList(SessionHandler):
     def main(self):
-        self._return([{'dbo_id': key, 'imm_level': value, 'dbo_key_type': 'immortal'} for key, value in perm.immortals.items()])
+        self._return([{'dbo_id': key, 'name': key, 'imm_level': value, 'dbo_key_type': 'immortal'} for key, value in perm.immortals.items()])
 
 
 class PlayerEditor(Editor):
@@ -55,7 +55,7 @@ class PlayerEditor(Editor):
         check_player_perm(player, self.player)
 
     def _post_delete(self, player):
-        user_manager.remove_player_indexes(player.dbo_id)
+        user_manager.player_cleanup(player.dbo_id)
         user = load_object(player.user_id, User)
         if not user:
             warn("Removed player without user")

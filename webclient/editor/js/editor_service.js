@@ -44,6 +44,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
 
     this.init = function (data) {
       this.playerId = data.playerId;
+      this.immLevel = data.imm_level;
       this.registerContext('no_item', {metadata: true});
       lpCache.clearAll();
       var promises = [];
@@ -51,7 +52,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
         lpEditor.constants = constants;
       }));
       promises.push(lpCache.cache('immortal').then(function(immortals) {
-        this.immortals = immortals;
+        lpEditor.immortals = immortals;
       }));
       return $q.all(promises);
     };
@@ -153,6 +154,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
 
     var activeModel = {};
     var originalModel = {};
+    var origAccess = {};
     var cacheKeys = [];
     var context;
     var baseUrl;
@@ -168,6 +170,12 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       }
     }
 
+    function initActive() {
+      angular.copy(originalModel, activeModel);
+      origAccess.read = originalModel.read_access;
+      origAccess.write = originalModel.write_access;
+    }
+
     function initScope() {
       if ($scope.detailTemplate != context.include) {
         // Let everything load before sending out any events.  The initScope method should be called
@@ -176,7 +184,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         return;
       }
       lpEvent.dispatch('editStarting', originalModel);
-      angular.copy(originalModel, activeModel);
+      initActive();
       lpEditor.original = originalModel;
       lpEditor.context = context;
       $scope.isDirty = false;
@@ -329,12 +337,28 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     $scope.model = activeModel;
     $scope.saveModel = saveModel;
 
+    $scope.checkAccess = function(type) {
+      var error;
+      var key = type + '_access';
+      if (activeModel[key] > lpEditor.immLevel) {
+        error = "Access should not be higher than your level.";
+      } else if ($scope.model.read_access > $scope.model.write_access) {
+        error = "Read access should not be higher than write access."
+      }
+      $scope.errors[key] = error;
+      if (error) {
+        activeModel[key] = origAccess[type];
+      } else {
+        origAccess[type] = activeModel[key];
+      }
+    }
+
     $scope.$watch('model', function () {
       $scope.isDirty = !angular.equals(originalModel, activeModel);
     }, true);
 
     $scope.revertModel = function () {
-      angular.copy(originalModel, activeModel);
+      initActive();
       lpEvent.dispatch('editStarting', originalModel);
       lpEvent.dispatch('editReady', activeModel)
     };

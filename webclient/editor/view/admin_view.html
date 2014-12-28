@@ -15,7 +15,7 @@
                 <input class="form-control" type="text" ng-model="op.params[$index]">
               </div>
             </td>
-            <td class="col-md-2" ng-repeat="bl in blanks(op)"></td>
+            <td class="col-md-2" ng-repeat="bl in blanks(op)"><input class="form-control input-sm" disabled style="visibility: hidden;"></td>
             <td clas="col-md-1">
               <button type="button" ng-click="executeOp(op)" class="btn btn-xs btn-primary">Execute</button>
             </td>
