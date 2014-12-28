@@ -1,0 +1,33 @@
+<div class="container-fluid" ng-controller="MainAdminCtrl">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading panel-condensed">Available Operations</div>
+        <table class="table table-condensed">
+          <tr ng-repeat="op in operations">
+
+            <td class="col-md-3">
+              {{op.name}}
+            </td>
+            <td class="col-md-2" ng-repeat="arg in op.args">
+              <div class="input-group input-group-sm">
+                <span class="input-group-addon ">{{arg}}</span>
+                <input class="form-control" type="text" ng-model="op.params[$index]">
+              </div>
+            </td>
+            <td class="col-md-2" ng-repeat="bl in blanks(op)"></td>
+            <td clas="col-md-1">
+              <button type="button" ng-click="executeOp(op)" class="btn btn-xs btn-primary">Execute</button>
+            </td>
+          </tr>
+        </table>
+        <div class="panel-body" ng-show="operationResult">
+          <div class="alert alert-info">
+          {{operationResult}}
+            </div>
+          <button ng-show="operationResult" type="button" ng-click="operationResult = null" class="btn btn-xs btn-default pull-right">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
