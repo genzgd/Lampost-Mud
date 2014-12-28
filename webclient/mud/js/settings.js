@@ -31,7 +31,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
     $scope.emailInUse = false;
     $scope.passwordMismatch = false;
 
-    lpRemote.request("settings/get", {user_id: lpData.userId}).then(updateSettings);
+    lpRemote.request("settings/get_account", {user_id: lpData.userId}).then(updateSettings);
 
     function updateSettings(data) {
       $scope.user = data;

@@ -98,6 +98,8 @@ class CoreDBO(metaclass=CommonMeta):
         return is_supreme(immortal) or immortal.imm_level > getattr(self, 'imm_level', 0)
 
 
+# DBOAccess should always be first in the superclass list so that its can_read and can_write methods
+# are used instead of those in CoreDBO
 class DBOAccess(metaclass=CommonMeta):
     owner_id = DBOField('lampost')
     read_access = DBOField(0)
@@ -208,10 +210,11 @@ class ChildDBO(KeyDBO):
         return self.parent_dbo.can_write(immortal)
 
 
+#  This class is here to catch possible errors in 'untyped' collections
 class Untyped():
     def hydrate(self, dto_repr):
         # This should never get called, as 'untyped' fields should always hold
-        # templates or actual dbo_references with saved class_ids
+        # templates or actual dbo_references with saved class_ids.
         warn("Attempting to hydrate invalid dto {}", dto_repr)
 
 

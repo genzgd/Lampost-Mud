@@ -16,7 +16,7 @@ m_requires(__name__, 'datastore', 'dispatcher', 'user_manager', 'perm', 'email_s
 @requires('session_manager')
 class Settings(MethodHandler):
 
-    def get(self):
+    def get_account(self):
         user_id = self.raw['user_id']
         if self.session.user.dbo_id != user_id:
             check_perm(self.player, 'admin')

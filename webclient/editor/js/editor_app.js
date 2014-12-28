@@ -88,7 +88,7 @@ angular.module('lampost_editor').controller('EditorNavController',
         $rootScope.immortals = lpEditor.immortals;
         var access = [];
         angular.forEach(lpEditor.constants.imm_titles, function(value, key) {
-          if (value > 0 && value <= data.imm_level) {
+          if (value > 0) {
             access.push({name: lpUtil.capitalize(key), value: value});
           }
         });
