@@ -1,61 +1,73 @@
 <div ng-controller="SocialEditorCtrl">
   <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="form-group">
         <label class="control-label">Social</label>
         <input ng-disabled="!isNew" type="text" class="form-control input-sm" ng-model="model.dbo_id" required="true"/>
       </div>
+      <div class="form-group">
+        <label class="control-label">Edit Mode</label>
+        <div class="button-group">
+          <button ng-class="editMode ? 'active' : ''" type="button" class="btn never-disable btn-sm btn-info"
+            ng-click="startEditMode()">Edit
+          </button>
+          <button ng-class="editMode ? '' : 'active'" type="button" class="btn never-disable btn-sm btn-info"
+            ng-click="previewSocial()">Preview
+          </button>
+        </div>
+      </div>
+
     </div>
-    <div ng-show="isNew">
-      <div class="col-md-offset-2 col-md-4 alert alert-warning">
-        Please create the social before editing.
+
+    <div class="col-md-5">
+      <div class="row">
+        <div class="col-md-4">
+          <lp-owner_id></lp-owner_id>
+        </div>
+        <div class="col-md-4">
+          <ng-include src="'editor/fragments/read_access.html'"></ng-include>
+
+        </div>
+        <div class="col-md-4">
+          <ng-include src="'editor/fragments/write_access.html'"></ng-include>
+        </div>
       </div>
     </div>
-    <div ng-hide="isNew">
-      <div class="col-md-2">
-        <div class="form-group">
-          <label class="control-label">Mode</label>
-          <div class="input-group" ng-hide="isNew">
-            <button ng-class="editMode ? 'active' : ''" type="button" class="btn never-disable btn-sm btn-default"
-              ng-click="startEditMode()">Edit
-            </button>
-            <button ng-class="editMode ? '' : 'active'" type="button" class="btn never-disable btn-sm btn-default"
-              ng-click="previewSocial()">View
-            </button>
+
+    <div class="col-md-5">
+      <div class="row">
+
+        <div class="col-md-offset-5 col-md-7">
+          <div class="panel panel-warning">
+            <div class="panel-heading panel-condensed">Adjust Preview Values</div>
+
+            <div class="panel-body">
+              <div class="input-group input-group-sm">
+                <span class="input-group-addon">Player</span>
+                <input class="form-control" type="text" ng-model="source" ng-blur="previewSocial()"/>
+              </div>
+              <div class="input-group input-group-sm">
+                <span class="input-group-addon">Target</span>
+                <input class="form-control" type="text" ng-model="target" ng-blur="previewSocial()"/>
+                  <span class="input-group-btn" title="{{targetTitle}}">
+                    <button class="btn" ng-click="toggleTarget()" type="button"><i ng-class="targetClass"></i></button>
+                  </span>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="form-group">
-          <label class="control-label">Player</label>
-          <input ng-model="source" class="col-md-5 form-control input-sm" ng-blur="previewSocial()"
-            enter-key="previewSocial()"/>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="form-group">
-          <label class="control-label">Target</label>
-          <input ng-model="target" class="col-md-5 form-control input-sm" ng-blur="previewSocial()"
-            enter-key="previewSocial()"/>
-        </div>
-      </div>
-      <div class="col-md-1">
-        `
-        <label class="checkbox">
-          <input type="checkbox" ng-model="sourceSelf" ng-change="previewSocial()">
-          (Self)
-        </label>
       </div>
     </div>
   </div>
 
-  <div class="row" ng-if="!isNew" ng-repeat="$index in bTypeGrid">
+  <div class="row" ng-repeat="$index in bTypeGrid">
     <div class="col-md-4" ng-repeat="broadcast_type in bTypeGrid[$index]">
 
       <div class="form-group">
         <label class="control-label h5"><em>{{broadcast_type.label}}</em></label>
         <textarea ng-disabled="!editMode || !model.can_write" ng-change="updateSocial(broadcast_type.id)"
-          ng-model="displayMap[broadcast_type.id]" rows="3" class="form-control"></textarea>
+          ng-model="displayMap[broadcast_type.id]" rows="2" class="form-control"></textarea>
       </div>
 
     </div>

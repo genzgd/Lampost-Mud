@@ -111,7 +111,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
         lpDialog.showConfirm("Delete " + context.objLabel,
             "Are you certain you want to delete " + context.objLabel + " " + model.dbo_id + "?" + extra).then(
           function () {
-            lpRemote.request(context.baseUrl + 'delete', {dbo_id: model.dbo_id}).then(function () {
+            lpRemote.request(context.baseUrl + 'delete_obj', {dbo_id: model.dbo_id}).then(function () {
               lpCache.deleteModel(model);
             }, error);
           });

@@ -11,21 +11,21 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
 
       controller.initType(element.scope().$eval(attrs.lpEditList));
 
-      function update() {
+      var listOpen = lpEditorView.listState(scope.type);
 
-        scope.toggleClass = 'fa fa-lg fa-caret-' + (scope.listOpen ? 'up' : 'down');
+      function update() {
+        scope.toggleClass = 'fa fa-lg fa-caret-' + (listOpen ? 'up' : 'down');
       }
 
-      scope.listOpen = lpEditorView.listState(scope.type);
-      if (scope.listOpen) {
+      if (listOpen) {
         jQuery(child).addClass('in');
       }
       update();
 
       jQuery(parent).bind('click', function() {
-        scope.listOpen = !scope.listOpen;
-        jQuery(child).collapse(scope.listOpen ? 'show' : 'hide');
-        lpEditorView.toggleList(scope.type, scope.listOpen);
+        listOpen = !listOpen;
+        jQuery(child).collapse(listOpen ? 'show' : 'hide');
+        lpEditorView.toggleList(scope.type, listOpen);
         scope.$apply(update);
       });
 
@@ -39,6 +39,33 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
     }
   }
 }]);
+
+angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorView', function(lpEditorView) {
+  return {
+    link: function(scope, element, attrs) {
+      var parent = element.find('.panel-heading')[0];
+      var child = element.find('.panel-collapse')[0];
+      var panelId = attrs.lpEditPanel;
+      var panelOpen = lpEditorView.listState(panelId);
+
+      function update() {
+        scope.toggleClass = 'fa fa-lg fa-caret-' + (panelOpen ? 'up' : 'down');
+      }
+
+      if (panelOpen) {
+        jQuery(child).addClass('in');
+      }
+      update();
+
+      jQuery(parent).bind('click', function() {
+        panelOpen = !panelOpen;
+        jQuery(child).collapse(panelOpen ? 'show' : 'hide');
+        lpEditorView.toggleList(panelId, panelOpen);
+        scope.$apply(update);
+      });
+    }
+  }
+}])
 
 
 angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent',

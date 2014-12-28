@@ -34,7 +34,7 @@ class Editor(MethodHandler):
         self._post_create(new_obj)
         return publish_edit('create', new_obj, self.session)
 
-    def delete(self):
+    def delete_obj(self):
         del_obj = load_object(self.raw['dbo_id'], self.obj_class)
         if not del_obj:
             raise DataError('Gone: Object with key {} does not exist'.format(self.raw['dbo_id']))

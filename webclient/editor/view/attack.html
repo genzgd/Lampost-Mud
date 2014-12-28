@@ -29,6 +29,11 @@
             <label class="control-label">Name</label>
             <input class="form-control input-sm" type="text" ng-model="model.name" />
           </div>
+          <lp-owner_id></lp-owner_id>
+        </div>
+        <div class="col-md-6">
+          <ng-include src="'editor/fragments/read_access.html'"></ng-include>
+          <ng-include src="'editor/fragments/write_access.html'"></ng-include>
         </div>
       </div>
       <div class="row">

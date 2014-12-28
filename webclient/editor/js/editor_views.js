@@ -100,7 +100,7 @@ angular.module('lampost_editor').service('lpEditorView',
       }
     };
 
-    cols.social = [new ColDef('dbo_id', 4), new ColDef('aliases', 8, 'model_prop join')];
+    cols.social = [new ColDef('dbo_id', 12)];
     cols.attack = cols.defense = [new ColDef('dbo_id', 5), new ColDef('verb', 7, null, {header: 'Command'})];
     cols.race = [new ColDef('dbo_id', 5), new ColDef('name', 7)];
     viewLists.mud = ['social', 'race', 'attack', 'defense'];

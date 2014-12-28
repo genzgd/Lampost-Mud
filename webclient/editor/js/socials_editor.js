@@ -3,6 +3,7 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
 
     var preview = {};
     var bTypeIds = [];
+    var sourceSelf = false;
 
     $scope.bTypeGrid = [];
 
@@ -15,7 +16,6 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
     $scope.editMode = true;
     $scope.source = 'Player';
     $scope.target = 'Target';
-    $scope.sourceSelf = false;
     $scope.displayMap = {};
 
     $scope.startEditMode = function() {
@@ -23,8 +23,14 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
       updateDisplayMap();
     }
 
+    $scope.toggleTarget = function() {
+      sourceSelf = !sourceSelf;
+      $scope.targetTitle = sourceSelf ? "Target is self." : 'Target is other.';
+      $scope.targetClass = 'fa ' + (sourceSelf ? 'fa-reply-all' : 'fa-long-arrow-right')
+    }
+
     $scope.previewSocial = function () {
-      lpRemote.request('editor/social/preview', {target: $scope.target, self_source: $scope.sourceSelf,
+      lpRemote.request('editor/social/preview', {target: $scope.target, self_source: sourceSelf,
         source: $scope.source, b_map: $scope.model.b_map})
         .then(function (data) {
           preview = data;
@@ -55,6 +61,7 @@ angular.module('lampost_editor').controller('SocialEditorCtrl', ['$scope', 'lpRe
     }, $scope);
 
     updateDisplayMap();
+    $scope.toggleTarget();
 
   }]);
 
