@@ -1,13 +1,13 @@
 angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCache', 'lpEditor',
   function ($scope, lpCache, lpEditor) {
 
-    lpCache.cache('race', function(races) {
+    lpCache.cache('race').then(function(races) {
       $scope.races = races;
-    })
+    });
 
     $scope.$on('$destroy', function() {
       lpCache.deref('race');
-    })
+    });
 
 
   }]);

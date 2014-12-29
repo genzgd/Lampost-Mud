@@ -13,10 +13,11 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     };
 
     function cacheEntry(key) {
-      var keyParts = key.split(':');
-      var keyType = keyParts[0];
-      var url = keyType + '/list' + (keyParts[1] ? '/' + keyParts[1] : '');
-      var entry = {ref: 0, sort: cacheSorts[keyType] || idSort, url: url};
+      var keyParts, keyType, url, entry;
+      keyParts = key.split(':');
+      keyType = keyParts[0];
+      url = keyType + '/list' + (keyParts[1] ? '/' + keyParts[1] : '');
+      entry = {ref: 0, sort: cacheSorts[keyType] || idSort, url: url};
       remoteCache[key] = entry;
       return entry;
     }
@@ -46,6 +47,31 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       delete remoteCache[key];
     }
 
+    function modelInsert(entry, model, outside) {
+      var cacheModel;
+      if (cacheModel = entry.map[model.dbo_id]) {
+        modelUpdate(model, cacheModel, outside);
+      } else {
+        entry.data.push(model);
+        entry.map[model.dbo_id] = model;
+        lpEvent.dispatch('modelCreate', model, outside);
+      }
+    }
+
+    function modelUpdate(model, cacheModel, outside) {
+       angular.copy(model, cacheModel);
+       lpEvent.dispatch('modelUpdate', cacheModel, outside);
+    }
+
+    function modelDelete(entry, model, outside) {
+      var cacheModel;
+      if (cacheModel = entry.map[model.dbo_id]) {
+        entry.data.splice(entry.data.indexOf(cacheModel), 1);
+        delete entry.map[model.dbo_id];
+        lpEvent.dispatch('modelDelete', model, outside);
+      }
+    }
+
     function parentList(model) {
       if (model.dbo_parent_type) {
         entry = remoteCache[model.dbo_parent_type];
@@ -56,6 +82,22 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
           }
         }
       }
+    }
+
+    function deleteChildren(model) {
+      angular.forEach(model.dbo_children_types, function (cType) {
+        var ix, childList, key, ic, childModel;
+        childList = model[cType + "_list"];
+        for (ix = 0; ix < childList.length; ix++) {
+          key = childList[ix];
+          if (childModels = remoteCache[key]) {
+            for (ic = 0; ic < childModels.length; ic++) {
+              lpEvent.dispatch('modelDelete', childModels[ic], outside);
+            }
+          }
+          deleteEntry[key];
+        }
+      });
     }
 
     lpEvent.register('edit_update', function (event) {
@@ -84,10 +126,11 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     };
 
     this.cacheValue = function (dbo_id) {
-      var parts = dbo_id.split(':');
-      var size = parts.length;
-      var list_key = parts.slice(0, size - 1).join(':');
-      var item_key = parts.slice(1, size).join(':');
+      var parts, size, list_key, item_key;
+      parts = dbo_id.split(':');
+      size = parts.length;
+      list_key = parts.slice(0, size - 1).join(':');
+      item_key = parts.slice(1, size).join(':');
       if (remoteCache[list_key]) {
         return remoteCache[list_key].map[item_key];
       }
@@ -113,29 +156,23 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     };
 
     this.updateModel = function (model, outside) {
-      var entry = remoteCache[cacheKey(model)];
+      var entry, cacheModel;
+      entry = remoteCache[cacheKey(model)];
       if (entry) {
-        var cacheModel = entry.map[model.dbo_id];
-        if (cacheModel) {
-          angular.copy(model, cacheModel);
-          lpEvent.dispatch('modelUpdate', cacheModel, outside);
+        if (cacheModel = entry.map[model.dbo_id]) {
+          modelUpdate(model, cacheModel, outside);
         }
       }
     };
 
     this.insertModel = function (model, outside) {
-      var entry = remoteCache[cacheKey(model)];
+      var entry, plist;
+      entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
-        if (entry.map[model.dbo_id]) {
-          lpCache.updateModel(model, outside);
-        } else {
-          entry.data.push(model);
-          entry.sort(entry.data);
-          entry.map[model.dbo_id] = model;
-          lpEvent.dispatch('modelCreate', model, outside);
-        }
+        modelInsert(entry, model, outside);
+        entry.sort(entry.data);
       }
-      var plist = parentList(model);
+      plist = parentList(model);
       if (plist) {
         plist.push(model.dbo_id);
         plist.sort();
@@ -144,33 +181,13 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
     };
 
     this.deleteModel = function (model, outside) {
-      var ix;
-      var entry = remoteCache[cacheKey(model)];
+      var entry, plist;
+      entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
-        var cacheModel = entry.map[model.dbo_id];
-        if (cacheModel) {
-          entry.data.splice(entry.data.indexOf(cacheModel), 1);
-          delete entry.map[model.dbo_id];
-          lpEvent.dispatch('modelDelete', model, outside);
-        }
+        modelDelete(entry, model, outside);
       }
-
-      angular.forEach(model.dbo_children_types, function (cType) {
-        var childList = model[cType + "_list"];
-        for (ix = 0; ix < childList.length; ix++) {
-          var key = childList[ix];
-          var childModels = remoteCache[key];
-          if (childModels) {
-            for (var ic = 0; ic < childModels.length; ic++) {
-              lpEvent.dispatch('modelDelete', childModels[ic], outside);
-            }
-          }
-          deleteEntry[key];
-        }
-      });
-
-      var plist = parentList(model);
-      if (plist) {
+      deleteChildren(model);
+      if (plist = parentList(model)) {
         ix = plist.indexOf(model.dbo_id);
         if (ix > -1) {
           plist.splice(ix, 1);
@@ -206,6 +223,32 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       });
       return entry.promise;
     };
+
+    this.refresh = function(key) {
+      var entry = remoteCache[key];
+      if (!entry || entry.promise) {
+        return lpCache.cache(key);
+      }
+      entry.promise = lpRemote.request('editor/' + entry.url).then(function(data) {
+        delete entry.promise;
+        var model, dataKeys, delModels, ix;
+        dataKeys = {}, delModels = [];
+        for (ix = 0; ix < data.length; ix++) {
+          model = data[ix];
+          modelInsert(entry, model);
+          dataKeys[model.dbo_id] = model;
+        }
+        for (ix = 0; ix < entry.data.length; ix++) {
+          model = entry.data[ix];
+          if (!dataKeys.hasOwnProperty(model.dbo_id)) {
+            delModels.push(model);
+          }
+        }
+        for (ix = 0; ix < delModels.length; ix++) {
+          modelDelete(entry, delModels[ix], true);
+        }
+      });
+    }
 
     this.seedCacheId = function(dboId, promises) {
 

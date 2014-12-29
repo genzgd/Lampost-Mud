@@ -75,9 +75,6 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
             context.metadata = true;
           }));
         }
-        if (context.invalidate) {
-          lpCache.invalidate(context.id);
-        }
       });
       return $q.all(requests);
     }
@@ -427,7 +424,7 @@ angular.module('lampost_editor').controller('EditListCtrl',
         event.preventDefault();
         event.stopPropagation();
       }
-      lpCache.invalidate(listKey);
+      lpCache.refresh(listKey);
       updateList();
     };
 
@@ -507,11 +504,6 @@ angular.module('lampost_editor').controller('EditListCtrl',
       }
       return $scope.modelList && $scope.modelList.length;
     };
-
-    $scope.refreshList = function () {
-      lpCache.invalidate(listKey);
-      updateList();
-    }
 
     $scope.$on('$destroy', function() {
       lpCache.deref(listKey)}

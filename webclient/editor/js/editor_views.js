@@ -108,8 +108,8 @@ angular.module('lampost_editor').service('lpEditorView',
     viewDefaults.mud = {paneSizes: [2, 10, 0]};
 
     viewTypes.player = {
-      user: {invalidate: true, nameProp: 'user_name'},
-      player: {invalidate: true}
+      user: {nameProp: 'user_name'},
+      player: {}
     }
     cols.user = [new ColDef('dbo_id', 1), new ColDef('user_name', 4, null, {header: 'Name'}),  new ColDef('imm_level', 3, 'immTitle'), new ColDef('email', 4)];
     cols.player = [new ColDef('dbo_id', 4, 'model_prop cap', {header: 'Name'}), new ColDef('last_login', 5,
