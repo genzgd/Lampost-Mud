@@ -159,7 +159,7 @@ class UserManager():
 
     def player_cleanup(self, player_id):
         delete_index('ix:player:user', player_id)
-        for dbo_id in fetch_set_keys('owned:{}'.player_id):
+        for dbo_id in fetch_set_keys('owned:{}'.format(player_id)):
             dbo = load_object(dbo_id)
             if dbo and dbo.owner_id == player_id:
                 dbo.change_owner()

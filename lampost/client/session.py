@@ -94,6 +94,9 @@ class SessionManager():
             player.parse('look')
         else:
             player = self.user_manager.find_player(player_id)
+            if not player:
+                session.append('logout')
+                return
             self._connect_session(session, player, 'Welcome {}'.format(player.name))
             self.user_manager.login_player(player)
         client_data = {}

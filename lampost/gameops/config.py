@@ -76,7 +76,8 @@ class ConfigManager():
 
 
 class Config(KeyDBO):
-    dbo_key_type = "config"
+    dbo_key_type = 'config'
+    dbo_set_key = 'configs'
 
     title = DBOField('Lampost (New Install)')
     description = DBOField('A fresh install of Lampost Mud')

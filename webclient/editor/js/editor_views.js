@@ -110,7 +110,7 @@ angular.module('lampost_editor').service('lpEditorView',
       user: {invalidate: true},
       player: {invalidate: true}
     }
-    cols.user = [new ColDef('user_name', 4, null, {header: 'Name'}),  new ColDef('imm_level', 3, 'immTitle'), new ColDef('email', 5)];
+    cols.user = [new ColDef('dbo_id', 1), new ColDef('user_name', 4, null, {header: 'Name'}),  new ColDef('imm_level', 3, 'immTitle'), new ColDef('email', 4)];
     cols.player = [new ColDef('dbo_id', 4, 'model_prop cap', {header: 'Name'}), new ColDef('last_login', 5,
       null, {data: function(model) {return (model.logged_in == 'Yes' ? '*' : '') + $filter('date')(model.last_login * 1000, 'short')}}),
       new ColDef('imm_level', 3, 'immTitle')];

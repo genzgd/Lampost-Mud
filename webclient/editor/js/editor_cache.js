@@ -8,6 +8,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
 
     var cacheSorts = {
       room: numericIdSort,
+      user: lpUtil.fieldCmpSort('dbo_id', lpUtil.naturalCmp),
       immortal: lpUtil.fieldCmpSort('dbo_id', lpUtil.naturalCmp)
     };
 
@@ -126,7 +127,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       var entry = remoteCache[cacheKey(model)];
       if (entry && !entry.promise) {
         if (entry.map[model.dbo_id]) {
-          updateModel(model, outside);
+          lpCache.updateModel(model, outside);
         } else {
           entry.data.push(model);
           entry.sort(entry.data);

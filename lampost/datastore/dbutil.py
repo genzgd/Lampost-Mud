@@ -1,3 +1,4 @@
+import time
 from lampost.context.resource import m_requires
 from lampost.datastore import classes
 from lampost.editor.admin import admin_op
@@ -46,4 +47,21 @@ def rebuild_immortal_list():
     for player in load_object_set(Player):
         if player.imm_level:
             set_db_hash('immortals', player.dbo_id, player.imm_level)
+
+
+@admin_op
+def rebuild_all_fks():
+    start_time = time.time()
+    updated = 0
+    for holder_key in datastore.redis.keys('*:holders'):
+        delete_key(holder_key)
+    for ref_key in datastore.redis.keys('*:refs'):
+        delete_key(ref_key)
+    for dbo_cls in classes._dbo_registry.values():
+        dbo_key_type = getattr(dbo_cls, 'dbo_key_type', None)
+        if dbo_key_type:
+            for dbo in load_object_set(dbo_cls):
+                save_object(dbo)
+                updated += 1
+    return "{} objects updated in {} seconds".format(updated, time.time() - start_time)
 

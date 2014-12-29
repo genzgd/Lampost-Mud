@@ -49,7 +49,7 @@ angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorView', funct
       var panelOpen = lpEditorView.listState(panelId);
 
       function update() {
-        scope.toggleClass = 'fa fa-lg fa-caret-' + (panelOpen ? 'up' : 'down');
+        scope.togglePanel = 'fa fa-lg fa-caret-' + (panelOpen ? 'up' : 'down');
       }
 
       if (panelOpen) {

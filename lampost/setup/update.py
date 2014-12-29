@@ -1,11 +1,27 @@
 from lampost.context.resource import m_requires
+from lampost.editor.admin import admin_op
 from lampost.env.room import Room
 from lampost.model.area import Area
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
+from lampost.model.player import Player
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'config_manager')
 
+
+@admin_op
+def assign_race(race_id):
+    race = load_object(race_id, 'race')
+    updates = 0
+    if not race:
+        return "Invalid race specified"
+    for player in load_object_set(Player):
+        if not player.race:
+            info("Assigning race {} to {}", race_id, player.name)
+            player.race = race
+            save_object(player)
+            updates += 1
+    return "{} players updated.".format(updates)
 
 def add_display(source, display_key, display_desc, display_color):
     display_desc = str.title(display_desc.replace('_', ' '))

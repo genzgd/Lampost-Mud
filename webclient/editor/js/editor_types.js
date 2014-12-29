@@ -23,7 +23,6 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     optionKey: 'dbo_id',
     optionSort: lpUtil.fieldSortFunc('dbo_id'),
     default: 1,
-    options: [],
     rowLabel: function(row) {
       return row.name;
     },

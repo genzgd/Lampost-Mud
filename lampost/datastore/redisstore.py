@@ -283,7 +283,7 @@ class RedisStore():
 
     def _set_new_refs(self, dbo, new_refs):
         dbo_key = dbo.dbo_key
-        self.add_set_key("{}:refs".format(dbo_key), new_refs)
+        self.add_set_key("{}:refs".format(dbo_key), *new_refs)
         for ref_id in new_refs:
             holder_key = '{}:holders'.format(ref_id)
             self.add_set_key(holder_key, dbo_key)

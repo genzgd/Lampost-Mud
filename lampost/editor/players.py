@@ -89,7 +89,7 @@ class UserEditor(Editor):
             raise DataError("Please remove all immortals from this account before deleting.")
         for player_id in user.player_ids:
             player = load_object(player_id, Player)
-            if player.session:
+            if player and player.session:
                 raise DataError("{} is logged in.".format(player.name))
 
     def _post_delete(self, user):
