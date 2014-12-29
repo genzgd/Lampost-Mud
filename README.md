@@ -37,7 +37,7 @@ and user scripts.
 
 #### Seamless Persistence
 
-Lampost game objects are persisted in back end data store.  Adding, subclassing, and combining persistent objects is all
+Lampost game objects are persisted in back end data storage.  Adding, subclassing, and combining persistent objects is all
 but invisible to the developer.  Say goodbye to table definitions, xml configuration, lifecycle management, and all of the 
 other annoying overhead of most persistence frameworks.  
 
@@ -80,7 +80,8 @@ Redis connectivity.
 In the works:
 
 * An expanded demo world showcasing user scripts and instanced areas
-* An upgrade in the web client and editor to Bootstrap 3.3
+* ~~An upgrade in the web client and editor to Bootstrap 3.3~~ Done!
+* A reworked, more flexible configuration framework
 * The ability to export and import areas between Lampost instances
 * Some super secret projects
 
