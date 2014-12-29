@@ -148,8 +148,8 @@ angular.module('lampost_editor').service('lpEditorView',
     };
 
     function finalizeView() {
-      lpEvent.dispatchLater("startViewLayout");
       var promises = [];
+      lpEvent.dispatchLater("startViewLayout");
       promises.push($http.get('editor/view/edit_list.html', {cache: $templateCache}));
       promises.push($http.get('editor/view/editor_main.html', {cache: $templateCache}));
       angular.forEach(viewState.models, function(dbo_id, type) {
@@ -162,6 +162,7 @@ angular.module('lampost_editor').service('lpEditorView',
       $q.all(promises).then(function() {
         var selectedModel;
         var editModel;
+
         angular.forEach(viewState.models, function(dbo_id, type) {
           selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
           if (selectedModel) {
@@ -171,6 +172,7 @@ angular.module('lampost_editor').service('lpEditorView',
         if (viewState.lastType) {
           editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
         }
+
         lpEvent.dispatchLater('startEdit', editModel || selectedModel || {dbo_key_type: 'no_item'});
       });
     }

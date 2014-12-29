@@ -135,7 +135,7 @@ angular.module('lampost_editor').directive('lpDisabled', ['$timeout', function($
       var disabled = false;
       var disablePending = false;
       function disableIt() {
-        if (disabledPending) {
+        if (disablePending) {
           return;
         }
         disablePending = true;
