@@ -133,7 +133,12 @@ angular.module('lampost_editor').directive('lpDisabled', ['$timeout', function($
     link: function(scope, element, attrs) {
 
       var disabled = false;
+      var disablePending = false;
       function disableIt() {
+        if (disabledPending) {
+          return;
+        }
+        disablePending = true;
         $timeout(function () {
           var elements = element.find(':input').not('.never-disable').not('[ng-disabled]');
           elements.prop('disabled', disabled);
@@ -143,6 +148,7 @@ angular.module('lampost_editor').directive('lpDisabled', ['$timeout', function($
           } else {
             elements.removeAttr('_lp_disabled');
           }
+          disablePending = false;
         });
       }
       scope.$watch(attrs.lpDisabled, function(value) {
