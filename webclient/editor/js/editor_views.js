@@ -52,6 +52,7 @@ angular.module('lampost_editor').service('lpEditorView',
     viewTypes.build = {
       area: {},
       room:  {
+        nameProp: 'title',
         refs: [
           {type: 'room', path: 'exits.destination'},
           {type: 'mobile', path: 'mobile_resets.mobile'},
@@ -107,7 +108,7 @@ angular.module('lampost_editor').service('lpEditorView',
     viewDefaults.mud = {paneSizes: [2, 10, 0]};
 
     viewTypes.player = {
-      user: {invalidate: true},
+      user: {invalidate: true, nameProp: 'user_name'},
       player: {invalidate: true}
     }
     cols.user = [new ColDef('dbo_id', 1), new ColDef('user_name', 4, null, {header: 'Name'}),  new ColDef('imm_level', 3, 'immTitle'), new ColDef('email', 4)];

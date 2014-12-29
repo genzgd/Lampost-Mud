@@ -9,6 +9,7 @@ angular.module('lampost_editor').service('lpEditor', ['$q', 'lpUtil', 'lpRemote'
       this.id = id;
       this.url = this.url || id;
       this.label = this.label || lpUtil.capitalize(id);
+      this.plural = this.plural || this.label + 's';
       this.baseUrl = 'editor/' + this.url + '/';
       this.objLabel = this.objLabel || this.label;
       this.include = this.include || 'editor/view/' + id + '.html';
@@ -494,14 +495,17 @@ angular.module('lampost_editor').controller('EditListCtrl',
     };
 
     $scope.editorLabel = function() {
-      return context.parentType ? (context.plural || context.label + 's') : context.label;
+      return activeModel ? context.label : context.plural;
     }
 
     $scope.editorTitle = function () {
+      if (activeModel) {
+        return context.nameProp ? activeModel[context.nameProp] : lpEditor.display(activeModel);
+      }
       if (context.parentType) {
         return $scope.modelList && $scope.modelList.length;
       }
-      return activeModel ? lpEditor.display(activeModel) : $scope.modelList && $scope.modelList.length;
+      return $scope.modelList && $scope.modelList.length;
     };
 
     $scope.refreshList = function () {
