@@ -1,12 +1,12 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import CoreDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
 from lampost.gameops.display import EXIT_DISPLAY
+from lampost.model.item import BaseItem
 
 m_requires(__name__, 'datastore')
 
@@ -58,7 +58,7 @@ verb_entry = BroadcastMap(ea='{n} arrives {N}')
 dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
 
 
-class Entrance(CoreDBO):
+class Entrance(BaseItem):
     class_id = 'entrance'
 
     verb = DBOField('enter')
@@ -75,6 +75,7 @@ class Entrance(CoreDBO):
             self.verbs = (self._dir.obj_id,), (self._dir.desc,)
             self.target_class = 'no_args'
         else:
+            self._dir = None
             self.verbs = convert_verbs(self.verb)
             self.target_class = [target_gen.action]
         if not self.title and self.verb:

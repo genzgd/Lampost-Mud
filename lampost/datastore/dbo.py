@@ -32,7 +32,9 @@ class CoreDBO(metaclass=CommonMeta):
         return self
 
     def clone(self):
-        clone = self.__class__(getattr(self, 'dbo_id', None))
+        clone = self.__class__()
+        if hasattr(self, 'dbo_id'):
+            setattr(clone, 'dbo_id', self.dbo_id)
         clone.template = self
         clone._on_loaded()
         return clone
@@ -210,7 +212,7 @@ class ChildDBO(KeyDBO):
         return self.parent_dbo.can_write(immortal)
 
 
-#  This class is here to catch possible errors in 'untyped' collections
+#  This class is here to catch possible errors in 'untyped' colle
 class Untyped():
     def hydrate(self, dto_repr):
         # This should never get called, as 'untyped' fields should always hold
