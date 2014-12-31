@@ -46,7 +46,6 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   }
 
   angular.extend(ValueMap.prototype, valProto);
-
   ValueMap.prototype.transform = function(key, value) {
       return this.rowMap[key] = {key: key, name: key, value: value};
     };
@@ -89,7 +88,6 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   }
 
   angular.extend(ValueObjList.prototype, valProto);
-
   ValueObjList.prototype.transform = function(source) {
     var key = source[this.keyProp];
     return this.rowMap[key] = {key: key, name: source[this.keyProp], value: source[this.valueProp]};
@@ -132,7 +130,6 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   }
 
   angular.extend(OptionsList.prototype, valProto);
-
   OptionsList.prototype.rowSort = lpUtil.naturalSort;
   OptionsList.prototype.setSource = function(model) {
     this.rows = model[this.sourceProp];
@@ -157,10 +154,28 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     this.updateUnused();
   }
 
+
+  function ChildSelect(sourceProp, type) {
+    this.sourceProp = sourceProp;
+    this.type = type;
+  }
+  ChildSelect.prototype.parentFilter = ChildSelect.prototype.childFilter = ['filter', {}];
+  ChildSelect.prototype.parentSelect = ChildSelect.prototype.childSelect = angular.noop;
+  ChildSelect.prototype.setSource = function(model) {
+    this.initial = true;
+    this.model = model;
+    this.value = model[this.sourceProp];
+  }
+  ChildSelect.prototype.setValue = function(value) {
+    this.initial = false;
+    this.model[this.sourceProp] = value;
+  }
+
   return {
     ValueMap: ValueMap,
     ValueObjList: ValueObjList,
-    OptionsList: OptionsList
+    OptionsList: OptionsList,
+    ChildSelect: ChildSelect
   }
 
 }]);

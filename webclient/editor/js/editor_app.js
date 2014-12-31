@@ -44,8 +44,8 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
   }]);
 
 angular.module('lampost_editor').controller('EditorNavController',
-  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpUtil', 'lpEditor', 'lpEditorView',
-  function ($q, $rootScope,  $scope, lpEvent, lpUtil, lpEditor, lpEditorView) {
+  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpUtil', 'lpEditor', 'lpEditorLayout',
+  function ($q, $rootScope,  $scope, lpEvent, lpUtil, lpEditor, lpEditorLayout) {
 
     var sessionId;
     var editNav = [
@@ -96,7 +96,7 @@ angular.module('lampost_editor').controller('EditorNavController',
         access.unshift({name: 'Default', value: 0});
         $rootScope.accessLevels = access;
 
-        var lastView = lpEditorView.lastView();
+        var lastView = lpEditorLayout.lastView();
         for (var ix = 0; ix < $scope.links.length; ix++) {
           var link = $scope.links[ix];
           if (link.id === lastView ) {
@@ -140,11 +140,11 @@ angular.module('lampost_editor').controller('EditorNavController',
             link.active = '';
           }
         }
-        lpEditorView.prepareView(activeNav.id);
+        lpEditorLayout.prepareView(activeNav.id);
       });
     };
 
-    $scope.mudWindow = lpEditorView.mudWindow;
+    $scope.mudWindow = lpEditorLayout.mudWindow;
 
   }]);
 

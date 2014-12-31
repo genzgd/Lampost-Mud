@@ -1,30 +1,11 @@
-angular.module('lampost_editor').service('lpSkillService', ['$q', 'lpEvent', 'lpCache', 'lpEditor',
-  function($q, lpEvent, lpCache, lpEditor) {
-
-    var promise;
-    var skillLists = [];
-
-    lpEvent.register('cacheCleared', function() {
-      promise = null;
-      skillList = [];
-    });
-
-    this.preLoad = function() {
-      var promises = [];
-      var skillTypes = lpEditor.constants.skill_types;
-      if (!promise) {
-        for (var ix = 0; ix < skillTypes.length; ix++) {
-          promises.push(lpCache.cache(skillTypes[ix]).then(function(skills) {
-              skillLists.push(skills);
-            }
-          ));
-        }
-      }
-      promise = $q.all(promises);
-      return promise;
-    };
+angular.module('lampost_editor').service('lpSkillService', [ 'lpCache', 'lpEditor',
+  function(lpCache, lpEditor) {
 
     this.allSkills = function() {
+      var skillLists = [];
+      angular.forEach(lpEditor.constants.skill_types, function(skillType) {
+        skillLists.push(lpCache.cachedList(skillType));
+      });
       return [].concat.apply([], skillLists);
     };
 
@@ -110,5 +91,7 @@ angular.module('lampost_editor').controller('RaceEditorCtrl', ['$scope', 'lpEdit
     skillSet.options = lpSkillService.allSkills();
     skillSet.optionKey = 'dbo_key';
     $scope.skillSet = skillSet;
+
+    $scope.startRoomSelect = new lpEditorTypes.ChildSelect('start_room', 'room');
 
   }]);

@@ -1,6 +1,6 @@
 angular.module('lampost_editor').controller('RoomEditorCtrl',
- ['$q', '$scope', '$timeout', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog', 'lpEditorView',
-  function ($q, $scope, $timeout, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog, lpEditorView) {
+ ['$q', '$scope', '$timeout', 'lpRemote', 'lpEvent', 'lpEditor', 'lpCache', '$timeout', 'lpDialog', 'lpEditorLayout',
+  function ($q, $scope, $timeout, lpRemote, lpEvent, lpEditor, lpCache, $timeout, lpDialog, lpEditorLayout) {
 
     var mobileOptions = {addLabel: 'Mobile', addId: 'mobile', resetType: 'mobile', resetInclude: null};
     var articleOptions = {addLabel: 'Article', addId: 'article', resetType: 'article',
@@ -57,12 +57,12 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     });
 
     $scope.visit = function() {
-      lpEditorView.mudWindow();
+      lpEditorLayout.mudWindow();
       lpRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id});
     };
 
     $scope.exitRoom = function (exit) {
-      return lpCache.cacheValue('room:' + exit.destination);
+      return lpCache.cachedValue('room:' + exit.destination);
     };
 
     $scope.exitTwoWay = function (exit) {
@@ -96,7 +96,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     };
 
     $scope.resetMobile = function (mobileReset) {
-      return lpCache.cacheValue('mobile:' + mobileReset.mobile);
+      return lpCache.cachedValue('mobile:' + mobileReset.mobile);
     };
 
     $scope.modifyMobile = function(mobileReset) {
@@ -105,7 +105,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
     };
 
     $scope.resetArticle = function (mobileReset) {
-      return lpCache.cacheValue('article:' + mobileReset.article);
+      return lpCache.cachedValue('article:' + mobileReset.article);
     };
 
     $scope.modifyArticle = function(articleReset) {
@@ -266,7 +266,7 @@ angular.module('lampost_editor').controller('NewExitCtrl', ['$q', '$scope', 'lpE
     };
 
     $scope.changeId = function () {
-      if (lpCache.cacheValue(listKey + ':' + newRoom.destId)) {
+      if (lpCache.cachedValue(listKey + ':' + newRoom.destId)) {
         $scope.hasError = true;
         $scope.lastError = "Room already exists";
       } else {
@@ -366,7 +366,7 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEvent
     }
 
     function loadResetObj() {
-       $scope.resetObj = lpCache.cacheValue($scope.resetType + ':' + $scope.reset[$scope.addId]);
+       $scope.resetObj = lpCache.cachedValue($scope.resetType + ':' + $scope.reset[$scope.addId]);
     }
 
     $scope.changeArea = function () {

@@ -1,4 +1,4 @@
-angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorView',  function(lpEvent, lpEditorView) {
+angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorLayout',  function(lpEvent, lpEditorLayout) {
 
   return {
     scope: {},
@@ -11,7 +11,7 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
 
       controller.initType(element.scope().$eval(attrs.lpEditList));
 
-      var listOpen = lpEditorView.listState(scope.type);
+      var listOpen = lpEditorLayout.listState(scope.type);
 
       function update() {
         scope.toggleClass = 'fa fa-lg fa-caret-' + (listOpen ? 'up' : 'down');
@@ -25,7 +25,7 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
       jQuery(parent).bind('click', function() {
         listOpen = !listOpen;
         jQuery(child).collapse(listOpen ? 'show' : 'hide');
-        lpEditorView.toggleList(scope.type, listOpen);
+        lpEditorLayout.toggleList(scope.type, listOpen);
         scope.$apply(update);
       });
 
@@ -40,13 +40,13 @@ angular.module('lampost_editor').directive('lpEditList', ['lpEvent', 'lpEditorVi
   }
 }]);
 
-angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorView', function(lpEditorView) {
+angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorLayout', function(lpEditorLayout) {
   return {
     link: function(scope, element, attrs) {
       var parent = element.find('.panel-heading')[0];
       var child = element.find('.panel-collapse')[0];
       var panelId = attrs.lpEditPanel;
-      var panelOpen = lpEditorView.listState(panelId);
+      var panelOpen = lpEditorLayout.listState(panelId);
 
       function update() {
         scope.togglePanel = 'fa fa-lg fa-caret-' + (panelOpen ? 'up' : 'down');
@@ -60,7 +60,7 @@ angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorView', funct
       jQuery(parent).bind('click', function() {
         panelOpen = !panelOpen;
         jQuery(child).collapse(panelOpen ? 'show' : 'hide');
-        lpEditorView.toggleList(panelId, panelOpen);
+        lpEditorLayout.toggleList(panelId, panelOpen);
         scope.$apply(update);
       });
     }
@@ -70,8 +70,6 @@ angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorView', funct
 
 angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent',
  function ($scope, lpEvent) {
-
-
   $scope.remove = function (row, rowIx) {
     $scope.valueSet.remove(row, rowIx);
     lpEvent.dispatch('childUpdate');
@@ -188,7 +186,7 @@ angular.module('lampost_editor').controller('OwnerIdCtrl', ['$scope', 'lpCache',
     var origOwner = $scope.model.owner_id;
 
     $scope.checkOwner = function() {
-      var newImm = lpCache.cacheValue('immortal:' + $scope.model.owner_id);
+      var newImm = lpCache.cachedValue('immortal:' + $scope.model.owner_id);
       if (newImm.imm_level > lpEditor.immLevel) {
         $scope.errors.owner = "Owner is higher level than you.";
         $scope.model.owner_id = origOwner;
@@ -208,6 +206,100 @@ angular.module('lampost_editor').directive('lpOwnerId', [function() {
       scope.$parent.$emit('lpDirectiveLoaded');
     }
   }
+}]);
+
+
+angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$attrs', '$filter', 'lpEvent', 'lpCache', 'lpEditor',
+  function($scope, $attrs, $filter, lpEvent, lpCache, lpEditor) {
+
+  var childSelect, selectId, context, parentKey, childKey, cacheObj, invalid;
+
+  invalid = {dbo_id: "--N/A--", invalid: true};
+  selectId = $attrs.lpChildSelect;
+  childSelect = $scope.$eval(selectId);
+  context = lpEditor.getContext(childSelect.type);
+  parentKey = context.parentType;
+
+  $scope.$on('$destroy', function () {
+    lpCache.deref(childKey);
+    lpCache.deref(parentKey);
+  });
+
+  function parentList() {
+    lpCache.deref(parentKey);
+    lpCache.cache(parentKey).then(function(parents) {
+      $scope.parentList = $filter(childSelect.parentFilter[0]).apply(null, [parents].concat(childSelect.parentFilter.slice(1)));
+      if ($scope.parentList.length) {
+        $scope.parent = $scope.parentList[0];
+        if (childSelect.value) {
+          cacheObj = lpCache.cachedValue(parentKey + ':' + childSelect.value.dbo_id.split(':')[0]);
+          if (cacheObj && $scope.parentList.indexOf(cacheObj) > -1) {
+            $scope.parent = cacheObj;
+          } else {
+            $scope.errors[selectId] = "Original value " + childSelect.value.dbo_id + " is no long valid.";
+          }
+        }
+      } else {
+        $scope.errors[selectId] = "No valid values.";
+        $scope.parentList = [invalid];
+        $scope.parent = invalid;
+      }
+      $scope.selectParent();
+    });
+  }
+
+  function childList() {
+    lpCache.deref(childKey);
+    childKey = childSelect.type + ':' + $scope.parent.dbo_id;
+    lpCache.cache(childKey).then(function(children) {
+      $scope.childList = $filter(childSelect.childFilter[0]).apply(null, [children].concat(childSelect.childFilter.slice(1)));
+      if ($scope.childList.length) {
+        $scope.child = $scope.childList[0];
+        if (childSelect.initial) {
+          cacheObj = childSelect.value && lpCache.cachedValue(childSelect.value.dbo_key);
+          if (cacheObj && $scope.childList.indexOf(cacheObj) > -1) {
+            $scope.child = cacheObj;
+          } else {
+            $scope.errors[selectId] = childSelect.value ? "Original value " + childSelect.value + " not found." : "Original value not set";
+          }
+        }
+        $scope.selectChild();
+      } else {
+        $scope.childList = [invalid];
+        $scope.child = invalid;
+        $scope.errors[selectId] = "No child found for " + $scope.parent.dbo_id + ".";
+      }
+    })
+  }
+
+  $scope.selectParent = function() {
+    if ($scope.parent.invalid) {
+      $scope.childList = [invalid];
+      $scope.child = invalid;
+    } else {
+      childSelect.parentSelect();
+      childList();
+    }
+  }
+
+  $scope.selectChild = function() {
+    if (!$scope.child.invalid) {
+      childSelect.childSelect();
+      childSelect.setValue($scope.child);
+      lpEvent.dispatch('childUpdate');
+    }
+  }
+
+  this.startEdit = function() {
+    $scope.can_write = $scope.model.can_write;
+    childSelect.setSource($scope.model);
+    parentList();
+  };
+
+  lpEvent.register("modelDeleted", parentList, $scope);
+  lpEvent.register("modelUpdated", parentList, $scope);
+  lpEvent.register("modelInserted", parentList, $scope);
+  lpEvent.register('editReady', this.startEdit, $scope);
 }]);
 
 
@@ -237,7 +329,7 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
       parentKey = context.parentType;
       lpCache.cache(parentKey).then(function (parents) {
         $scope.sourceList = parentFilter ? $filter(parentFilter)(parents) : parents;
-        $scope.vars.parent = lpCache.cacheValue(parentKey + ':' + parentId);
+        $scope.vars.parent = lpCache.cachedValue(parentKey + ':' + parentId);
         loadChildren();
       });
     }

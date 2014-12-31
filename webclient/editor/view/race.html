@@ -22,7 +22,7 @@
           <lp-owner_id></lp-owner_id>
         </div>
         <div class="col-md-6">
-           <ng-include src="'editor/fragments/read_access.html'"></ng-include>
+          <ng-include src="'editor/fragments/read_access.html'"></ng-include>
           <ng-include src="'editor/fragments/write_access.html'"></ng-include>
         </div>
       </div>
@@ -34,18 +34,44 @@
           </div>
         </div>
       </div>
-      <div class="row">
-          <!--<div class="col-md-6">
-            <div class="form-group" ng-controller="ChildSelectCtrl" lp-child-type="room" lp-list-change="setPermList">
-              <label class="control-label">Start Area</label>
-              <select class="form-control input.sm" ng-model="vars.parent" ng-change="selectParent()"
-                ng-options="parent as parent.dbo_id for parent in sourceList" required></select>
+      <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="startRoomSelect">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label">Start Area</label>
+                <select class="form-control input.sm" ng-model="parent" ng-change="selectParent()"
+                  ng-options="parent as parent.dbo_id for parent in parentList"></select>
+              </div>
             </div>
-          </div>-->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label">Start Room</label>
+                <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
+                  ng-options="child as child.dbo_id for child in childList"></select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <lp-data-error type="startRoomSelect"></lp-data-error>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="model.start_instanced"> Start Instanced
+            </label>
+          </div>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
-       <div lp-value-set="attrSet"></div>
+      <div lp-value-set="attrSet"></div>
     </div>
     <div class="col-md-3">
       <div lp-value-set="skillSet"></div>

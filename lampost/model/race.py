@@ -14,7 +14,7 @@ class PlayerRace(DBOAccess, KeyDBO):
     desc = DBOField('')
     base_attrs = DBOField({})
     start_room = DBOField()
-    start_room_instanced = DBOField(False)
+    start_instanced = DBOField(False)
 
     @property
     def new_dto(self):

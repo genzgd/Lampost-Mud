@@ -1,11 +1,10 @@
-angular.module('lampost_editor').service('lpEditorView',
+angular.module('lampost_editor').service('lpEditorLayout',
   ['$window', '$q', '$filter', '$log', '$http', '$templateCache', 'lpEvent', 'lpCache', 'lpEditor','lpUtil', 'lpSkillService',
   function($window, $q,  $filter, $log, $http, $templateCache, lpEvent, lpCache, lpEditor, lpUtil, lpSkillService) {
 
     var mudWindow = $window.opener;
     var localData;
     var localVersion = 1;
-    var viewTypes = {};
     var viewLists = {};
     var viewDefaults = {};
     var viewState = {};
@@ -49,73 +48,24 @@ angular.module('lampost_editor').service('lpEditorView',
         localStorage.setItem(lpEditor.playerId + '*editData', JSON.stringify(localData));
     }
 
-    viewTypes.build = {
-      area: {},
-      room:  {
-        nameProp: 'title',
-        refs: [
-          {type: 'room', path: 'exits.destination'},
-          {type: 'mobile', path: 'mobile_resets.mobile'},
-          {type: 'article', path: 'article_resets.article'}
-        ],
-        extend: function(model) {
-          model.dbo_id = this.parent.next_room_id;
-        }
-      },
-      mobile: {
-        preReqs: [lpSkillService.preLoad]
-      },
-      article: {
-        preReqs: [lpSkillService.preLoad],
-      }
-    };
-
+    viewLists.build = ['area', 'room', 'mobile', 'article'];
     cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap',
      {header: 'Owner'})];
     cols.room = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 10, 'model_prop cap')];
     cols.article = cols.mobile = [new ColDef('dbo_id', 3, 'idOnly'), new ColDef('title', 9, 'model_prop cap')];
-    viewLists.build = ['area', 'room', 'mobile', 'article'];
     viewDefaults.build = {paneSizes: [3, 9, 0]};
 
-
-    viewTypes.mud = {
-      social: {},
-      race: {
-        preReqs: [lpSkillService.preLoad],
-      },
-      attack: {
-        preUpdate: function (attack) {
-          if (attack.damage_type == 'weapon' && attack.weapon_type == 'unused') {
-            return $q.reject("Damage type of weapon with 'Unused' weapon is invalid.");
-          }
-          return $q.when();
-        }
-      },
-      defense: {
-        preUpdate: function(defense) {
-          if (!defense.auto_start && !defense.verb) {
-            return $q.reject("Either a command or 'autoStart' is required.");
-          }
-          return $q.when();
-        }
-      }
-    };
-
+    viewLists.mud = ['social', 'race', 'attack', 'defense'];
     cols.social = [new ColDef('dbo_id', 12)];
     cols.attack = cols.defense = [new ColDef('dbo_id', 5), new ColDef('verb', 7, null, {header: 'Command'})];
     cols.race = [new ColDef('dbo_id', 5), new ColDef('name', 7)];
-    viewLists.mud = ['social', 'race', 'attack', 'defense'];
     viewDefaults.mud = {paneSizes: [2, 10, 0]};
 
-    viewTypes.player = {
-      user: {nameProp: 'user_name'},
-      player: {}
-    }
+    viewLists.player = ['player', 'user'];
     cols.user = [new ColDef('dbo_id', 1), new ColDef('user_name', 4, null, {header: 'Name'}),  new ColDef('imm_level', 3, 'immTitle'), new ColDef('email', 4)];
     cols.player = [new ColDef('dbo_id', 4, 'model_prop cap', {header: 'Name'}), new ColDef('last_login', 5,
       null, {data: function(model) {return (model.logged_in == 'Yes' ? '*' : '') + $filter('date')(model.last_login * 1000, 'short')}}),
       new ColDef('imm_level', 3, 'immTitle')];
-    viewLists.player = ['player', 'user'];
     viewDefaults.player = {paneSizes: [5, 7, 0]};
 
     this.lastView = function() {
@@ -140,11 +90,7 @@ angular.module('lampost_editor').service('lpEditorView',
       this.viewState = viewState;
       updateLocal();
 
-      angular.forEach(viewTypes[viewType], function(contextDef, key) {
-        lpEditor.registerContext(key, contextDef);
-      });
-
-      lpEditor.initView().then(finalizeView);
+      lpEditor.initView(viewLists[viewType]).then(finalizeView);
     };
 
     function finalizeView() {
@@ -162,21 +108,18 @@ angular.module('lampost_editor').service('lpEditorView',
       $q.all(promises).then(function() {
         var selectedModel;
         var editModel;
-
         angular.forEach(viewState.models, function(dbo_id, type) {
-          selectedModel = lpCache.cacheValue(type + ':' + dbo_id);
+          selectedModel = lpCache.cachedValue(type + ':' + dbo_id);
           if (selectedModel) {
             lpEvent.dispatchLater('modelSelected', selectedModel, 'load');
           }
         })
         if (viewState.lastType) {
-          editModel = lpCache.cacheValue(viewState.lastType + ':' + viewState.lastEdit);
+          editModel = lpCache.cachedValue(viewState.lastType + ':' + viewState.lastEdit);
         }
-
         lpEvent.dispatchLater('startEdit', editModel || selectedModel || {dbo_key_type: 'no_item'});
       });
     }
-
 
     this.toggleList = function(type, value) {
         if (value) {
@@ -242,8 +185,8 @@ angular.module('lampost_editor').service('lpEditorView',
   }]);
 
 
-angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEvent', 'lpEditorView',
-  function($scope, lpEvent, lpEditorView) {
+angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEvent', 'lpEditorLayout',
+  function($scope, lpEvent, lpEditorLayout) {
 
   var settings = {paneSizes: []};
 
@@ -253,7 +196,7 @@ angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEven
 
   $scope.swapCheats = function() {
     settings.showCheats = !settings.showCheats;
-    lpEditorView.update();
+    lpEditorLayout.update();
   }
 
   $scope.cheatSheets = ["editor/view/social_cheat.html"];
@@ -280,12 +223,12 @@ angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEven
     settings.paneSizes[pane] = newSize;
     settings.paneSizes[other] = otherSize;
 
-    lpEditorView.update();
+    lpEditorLayout.update();
   }
 
   lpEvent.register('startViewLayout', function() {
-    $scope.editLists = lpEditorView.editLists();
-    settings = lpEditorView.viewState.settings;
+    $scope.editLists = lpEditorLayout.editLists();
+    settings = lpEditorLayout.viewState.settings;
     $scope.settings = settings;
     }, $scope);
 }]);

@@ -17,7 +17,7 @@ angular.module('lampost_editor').controller('UserEditorCtrl', ['$scope', 'lpEven
   function ($scope, lpEvent, lpEditor, lpCache) {
 
     $scope.editPlayer = function(player_id) {
-      var playerModel = lpCache.cacheValue('player:' + player_id);
+      var playerModel = lpCache.cachedValue('player:' + player_id);
       if (playerModel) {
         lpEvent.dispatchLater('startEdit', playerModel);
       }

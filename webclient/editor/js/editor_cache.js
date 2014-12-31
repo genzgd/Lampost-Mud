@@ -1,5 +1,5 @@
-angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote', 'lpUtil',
-  function ($q, lpEvent, lpRemote, lpUtil) {
+angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'lpRemote', 'lpUtil',
+  function ($q, $log, lpEvent, lpRemote, lpUtil) {
 
     var lpCache = this;
     var cacheHeap = [];
@@ -95,7 +95,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
               lpEvent.dispatch('modelDelete', childModels[ic], outside);
             }
           }
-          deleteEntry[key];
+          deleteEntry(key);
         }
       });
     }
@@ -125,9 +125,9 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
       deleteEntry(key)
     };
 
-    this.cacheValue = function (dbo_id) {
+    this.cachedValue = function (dbo_key) {
       var parts, size, list_key, item_key;
-      parts = dbo_id.split(':');
+      parts = dbo_key.split(':');
       size = parts.length;
       list_key = parts.slice(0, size - 1).join(':');
       item_key = parts.slice(1, size).join(':');
@@ -135,6 +135,14 @@ angular.module('lampost_editor').service('lpCache', ['$q', 'lpEvent', 'lpRemote'
         return remoteCache[list_key].map[item_key];
       }
     };
+
+    this.cachedList = function(key) {
+      var entry = remoteCache[key];
+      if (entry && entry.data) {
+        return entry.data;
+      }
+      $log.warn('Expected key ' + key + ' not in cache.');
+    }
 
     this.deref = function (key) {
       if (!key) {
