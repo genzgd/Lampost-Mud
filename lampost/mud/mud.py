@@ -19,7 +19,7 @@ import_module('lampost.env.instance')
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'mud_actions', 'perm')
 
 
-@requires('context', 'config_manager')
+@requires('context', 'config_manager', 'instance_manager')
 class MudNature():
 
     def __init__(self, flavor):
@@ -64,7 +64,13 @@ class MudNature():
     def _start_env(self, player):
         room = None
         if getattr(player, "room_id", None):
-            room = load_object(player.room_id, Room)
+            instance = self.instance_manager.get(player.instance_id)
+            if instance:
+                room = instance.get_room(player.room_id)
+            else:
+                del player.instance_id
+            if not room:
+                room = load_object(player.room_id, Room)
         if not room:
             room = load_object(self.config_manager.start_room, Room)
             if room:

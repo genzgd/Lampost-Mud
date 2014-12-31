@@ -11,6 +11,7 @@ from lampost.comm.message import MessageService
 from lampost.context.resource import provides, context_post_init, register
 from lampost.client.server import WebServer
 from lampost.context.scripts import select_json
+from lampost.env.instance import InstanceManager
 from lampost.gameops.event import Dispatcher
 from lampost.client.session import SessionManager
 from lampost.datastore.redisstore import RedisStore
@@ -47,6 +48,7 @@ class Context():
         EditUpdateService()
         AnyLoginService()
         MudNature(args.flavor)
+        InstanceManager()
         ScriptManager()
         web_server = WebServer()
         context_post_init()

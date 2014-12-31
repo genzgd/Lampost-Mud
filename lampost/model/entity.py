@@ -144,9 +144,11 @@ class Entity(BaseItem):
         if self.instance != new_instance:
             if self.instance:
                 self.instance.remove_entity(self)
+                del self.instance_id
             if new_instance:
                 new_instance.add_entity(self)
-        if not self.instance and self.env.dbo_id:
+                self.instance_id = new_instance.instance_id
+        if self.env.dbo_id:
             self.room_id = self.env.dbo_id
         self.env.first_look(self)
 
@@ -183,8 +185,6 @@ class Entity(BaseItem):
 
     def detach(self, owner=None):
         super().detach()
-        if self.instance:
-            self.instance.remove_entity(self)
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
