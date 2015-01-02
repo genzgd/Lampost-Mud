@@ -192,6 +192,8 @@ angular.module('lampost_editor').controller('OwnerIdCtrl', ['$scope', 'lpCache',
         $scope.model.owner_id = origOwner;
       } else {
         origOwner = $scope.model.owner_id;
+        $scope.model.read_access = 0;
+        $scope.model.write_access = 0;
         $scope.errors.owner = null;
       }
     }

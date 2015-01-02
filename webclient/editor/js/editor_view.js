@@ -194,6 +194,8 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         error = "Access should not be higher than your level.";
       } else if ($scope.model.read_access > $scope.model.write_access) {
         error = "Read access should not be higher than write access."
+      } else if ($scope.model.write_access > $scope.model.imm_level) {
+        error = "Write access should not be higher than owner level"
       }
       $scope.errors[key] = error;
       if (error) {

@@ -3,16 +3,20 @@ from lampost.util.lputil import PermError
 
 m_requires(__name__, 'datastore', 'context')
 
-imm_levels = {'supreme': 100000, 'admin': 10000, 'senior': 2000, 'creator': 1000, 'player': 0}
+imm_levels = {'supreme': 100000, 'founder': 50000, 'admin': 10000, 'senior': 2000, 'creator': 1000, 'player': 0}
+
 
 @provides('perm', True)
 class Permissions():
+    system_accounts = ['lampost']
+    system_level = 49999
 
     def __init__(self):
         self.rev_levels = {level: name for name, level in imm_levels.items()}
 
     def _post_init(self):
         self.immortals = get_all_hash('immortals')
+        self.immortals.update({account: self.system_level for account in self.system_accounts})
         context.set('imm_titles', imm_levels)
 
     def perm_name(self, num_level):

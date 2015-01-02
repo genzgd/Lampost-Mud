@@ -16,7 +16,6 @@ class ConfigManager():
         register('player_create', self._player_create)
         self.config = load_object(self.config_id, Config)
         if self.config:
-            perm.immortals.update({account: perm_to_level('supreme') - 1 for account in self.system_accounts})
             self._dispatch_update()
         else:
             error("No configuration found")
@@ -37,13 +36,6 @@ class ConfigManager():
         setting_type = ''.join([setting_type, '_settings'])
         config_settings = getattr(self.config, setting_type)
         config_settings[setting_id] = setting_value
-
-    def reserved(self, name):
-        return name in self.config.system_accounts
-
-    @property
-    def system_accounts(self):
-        return self.config.system_accounts
 
     def _player_create(self, player, user):
         if len(user.player_ids) == 1:
@@ -81,7 +73,6 @@ class Config(KeyDBO):
 
     title = DBOField('Lampost (New Install)')
     description = DBOField('A fresh install of Lampost Mud')
-    system_accounts = DBOField(['lampost'])
     auto_imm_level = DBOField(0)
     start_room = DBOField()
     default_displays = DBOField({})

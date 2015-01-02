@@ -25,7 +25,7 @@ class Settings(MethodHandler):
     def create_account(self):
         account_name = self.raw['account_name'].lower()
         if get_index("ix:user:name", account_name) or object_exists('player', account_name) or\
-                config_manager.reserved(account_name) or object_exists('area', account_name):
+                account_name in perm.system_accounts or object_exists('area', account_name):
             raise DataError("InUse: {}".format(account_name))
         user = user_manager.create_user(account_name, self.raw['password'], self.raw['email'].lower())
         self.session.connect_user(user)
