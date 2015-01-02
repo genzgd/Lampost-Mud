@@ -1,5 +1,5 @@
-angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCache', 'lpEditor', 'lpEvent',
-  function ($scope, lpCache, lpEditor, lpEvent) {
+angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCache', 'lpEditor', 'lpEvent', 'lpEditorTypes',
+  function ($scope, lpCache, lpEditor, lpEvent, lpEditorTypes) {
 
     var prevLevel, model;
 
@@ -35,6 +35,8 @@ angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCa
 
     lpEvent.register('editReady', setPerms);
 
+    $scope.playerRoomSelect = new lpEditorTypes.ChildSelect('room_id', 'room');
+
   }]);
 
 
@@ -47,6 +49,5 @@ angular.module('lampost_editor').controller('UserEditorCtrl', ['$scope', 'lpEven
         lpEvent.dispatchLater('startEdit', playerModel);
       }
     }
-
 
   }]);

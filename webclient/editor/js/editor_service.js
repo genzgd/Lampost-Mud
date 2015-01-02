@@ -197,6 +197,8 @@ angular.module('lampost_editor').factory('contextDefs', ['$q', function($q) {
       }
     },
     user: {nameProp: 'user_name'},
-    player: {}
+    player: {
+      preReqs: {context: ['room']}
+    }
   }
 }])

@@ -54,6 +54,34 @@
           </div>
         </div>
       </div>
+       <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="playerRoomSelect">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label">Current Area</label>
+                <select class="form-control input.sm" ng-model="parent" ng-change="selectParent()"
+                  ng-options="parent as parent.dbo_id for parent in parentList"></select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label">Current Room</label>
+                <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
+                  ng-options="child.dbo_id as child.dbo_id for child in childList">
+                  <option value="">Select Room</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <lp-data-error type="playerRoomSelect"></lp-data-error>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
     <div class="col-md-4">
       
