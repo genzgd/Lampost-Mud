@@ -39,7 +39,7 @@ class RoomEditor(ChildrenEditor):
 
     def create_exit(self):
         content = self._content()
-        room = find_area_room(content.start_room, self.player)
+        area, room = find_area_room(content.start_room, self.player)
         new_dir = content.direction
         if room.find_exit(content.direction):
             raise DataError("Room already has " + new_dir + " exit.")

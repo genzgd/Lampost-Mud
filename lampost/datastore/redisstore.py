@@ -70,7 +70,7 @@ class RedisStore():
                 dbo_key, dbo_id = ':'.join([key_type, dbo_key]), dbo_key
             except TypeError:
                 if not silent:
-                    exception("Invalid dbo_key passed to load_object")
+                    exception("Invalid dbo_key passed to load_object", stack_info=True)
                 return
         else:
             key_type, _, dbo_id = dbo_key.partition(':')
