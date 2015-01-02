@@ -123,17 +123,13 @@ class UserManager():
         return object_exists(Player.dbo_key_type, player_id)
 
     def _user_connect(self, user, client_data):
-        for player_id in user.player_ids:
-            player = load_object(player_id, Player)
-            if player.imm_level:
-                client_data['imm_player'] = player_id
-                client_data['imm_level'] = player.imm_level
-
         client_data.update({'user_id': user.dbo_id, 'player_ids': user.player_ids, 'displays': user.displays,
                             'password_reset': user.password_reset, 'notifies': user.notifies})
 
     def _player_connect(self, player, client_data):
-        client_data.update({'name': player.name, 'privilege': player.imm_level})
+        client_data['name'] = player.name
+        if player.imm_level:
+            client_data['imm_level'] = player.imm_level
 
     def login_player(self, player):
         dispatch('player_baptise', player)

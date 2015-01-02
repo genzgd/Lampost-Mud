@@ -39,10 +39,10 @@ class ConfigManager():
 
     def _player_create(self, player, user):
         if len(user.player_ids) == 1:
-            player.imm_level = perm_level('creator')
+            player.imm_level = perm_level('builder')
             update_immortal_list(player)
             dispatch('imm_level_change', player, 0)
-            message_service.add_message('system', "Welcome!  Your first player has been given creator powers.  Check out the 'Editor' window on the top menu.", player.dbo_id)
+            message_service.add_message('system', "Welcome!  Your first player has been given builder powers.  Check out the 'Editor' window on the top menu.", player.dbo_id)
         player.room_id = self.config.start_room
 
     def _session_connect(self, session):

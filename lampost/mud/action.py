@@ -21,7 +21,7 @@ def mud_action(verbs, msg_class=None, **kwargs):
     return dec_wrapper
 
 
-def imm_action(verbs, msg_class=None, imm_level='creator', **kwargs):
+def imm_action(verbs, msg_class=None, imm_level='builder', **kwargs):
     def dec_wrapper(func):
         imm_actions.add(func)
         func.imm_level = imm_level

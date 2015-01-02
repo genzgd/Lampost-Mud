@@ -3,7 +3,7 @@ from lampost.util.lputil import PermError
 
 m_requires(__name__, 'datastore', 'context')
 
-imm_levels = {'supreme': 100000, 'founder': 50000, 'admin': 10000, 'senior': 2000, 'creator': 1000, 'player': 0}
+imm_levels = {'supreme': 100000, 'founder': 50000, 'admin': 10000, 'senior': 2000, 'builder': 1000, 'player': 0}
 
 
 @provides('perm', True)

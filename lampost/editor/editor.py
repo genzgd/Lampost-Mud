@@ -17,7 +17,7 @@ class Editor(MethodHandler):
         super().prepare()
         check_perm(self.player, self)
 
-    def initialize(self, obj_class, imm_level='creator'):
+    def initialize(self, obj_class, imm_level='builder'):
         self.obj_class = obj_class
         self.imm_level = imm_level
         self.dbo_key_type = obj_class.dbo_key_type
@@ -124,7 +124,7 @@ class ChildList(SessionHandler):
 
 
 class ChildrenEditor(Editor):
-    def initialize(self, obj_class, imm_level='creator'):
+    def initialize(self, obj_class, imm_level='builder'):
         super().initialize(obj_class, imm_level)
         self.parent_type = obj_class.dbo_parent_type
 

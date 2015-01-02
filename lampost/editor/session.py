@@ -11,7 +11,7 @@ m_requires(__name__, 'log', 'session_manager', 'user_manager', 'datastore',
 def editor_login(session):
     edit_perms = []
     player = session.player
-    if has_perm(player, 'creator'):
+    if has_perm(player, 'builder'):
         edit_perms.extend(['build', 'mud'])
     if has_perm(player, 'admin'):
         edit_perms.extend(['player'])
