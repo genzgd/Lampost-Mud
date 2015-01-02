@@ -1,5 +1,29 @@
-angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCache', 'lpEditor',
-  function ($scope, lpCache, lpEditor) {
+angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCache', 'lpEditor', 'lpEvent',
+  function ($scope, lpCache, lpEditor, lpEvent) {
+
+    var prevLevel, model;
+
+    function setPerms() {
+      model = $scope.model;
+      $scope.canPromote = model.can_write && lpEditor.playerId != model.dbo_id && lpEditor.immLevel >= lpEditor.constants.imm_titles.admin;
+      prevLevel = $scope.model.imm_level;
+    }
+
+    $scope.checkPromote = function() {
+      var error;
+      if (model.logged_in == 'Yes') {
+        error = "Please do that in game.";
+      } else if (lpEditor.immLevel <= model.imm_level && lpEditor.immLevel < lpEditor.constants.imm_titles.supreme) {
+        error = "You cannot promote to that level!"
+      }
+      if (error) {
+        $scope.errors.promote = error;
+        $scope.model.imm_level = prevLevel;
+      } else {
+        $scope.errors.promote = null;
+        prevLevel = $scope.model.imm_level;
+      }
+    }
 
     lpCache.cache('race').then(function(races) {
       $scope.races = races;
@@ -9,6 +33,7 @@ angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCa
       lpCache.deref('race');
     });
 
+    lpEvent.register('editReady', setPerms);
 
   }]);
 

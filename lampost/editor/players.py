@@ -37,7 +37,8 @@ def imm_level_change(player, old_level, session=None):
 
 class ImmortalsList(SessionHandler):
     def main(self):
-        self._return([{'dbo_id': key, 'name': key, 'imm_level': value, 'dbo_key_type': 'immortal'} for key, value in perm.immortals.items()])
+        self._return([{'dbo_id': key, 'name': key, 'imm_level': value, 'dbo_key_type': 'immortal'} for key, value in
+                      perm.immortals.items()])
 
 
 class PlayerEditor(Editor):
@@ -67,6 +68,14 @@ class PlayerEditor(Editor):
         else:
             save_object(user)
             publish_edit('update', user, self.session, True)
+
+    def _pre_update(self, old_player):
+        if self.raw['imm_level'] != old_player.imm_level:
+            if old_player.session:
+                raise DataError("Please promote (or demote} {} in game".format(old_player.name))
+
+    def _post_update(self, player):
+         update_immortal_list(player)
 
 
 def check_player_perm(player, immortal):
