@@ -143,4 +143,4 @@ def room_clean_up(room, session, area_delete=None):
                     save_object(other_room, True)
                     publish_edit('update', other_room, session, True)
     room.clean_up()
-    update_next_room_id(room.parent_dbo, self.session)
+    update_next_room_id(room.parent_dbo, session)
