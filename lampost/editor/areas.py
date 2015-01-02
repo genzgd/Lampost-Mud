@@ -48,7 +48,7 @@ class RoomEditor(ChildrenEditor):
         if content.is_new:
             other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
             publish_edit('create', other_room, self.session, True)
-            add_room(area, self.session)
+            update_next_room_id(area, self.session)
         else:
             other_area, other_room = find_area_room(other_id, self.player)
             if not content.one_way and other_room.find_exit(rev_dir):
@@ -94,7 +94,7 @@ class RoomEditor(ChildrenEditor):
 
 
     def _post_create(self, room):
-        add_room(room.parent_dbo, self.session)
+        update_next_room_id(room.parent_dbo, self.session)
 
     def _post_delete(self, room):
         room_clean_up(room, self.session)
@@ -103,7 +103,7 @@ class RoomEditor(ChildrenEditor):
         room.reload()
 
 
-def add_room(area, session):
+def update_next_room_id(area, session):
     next_id = 0
     sorted_ids = area.dbo_child_keys('room')
     for dbo_id in sorted_ids:
@@ -143,3 +143,4 @@ def room_clean_up(room, session, area_delete=None):
                     save_object(other_room, True)
                     publish_edit('update', other_room, session, True)
     room.clean_up()
+    update_next_room_id(room.parent_dbo, self.session)

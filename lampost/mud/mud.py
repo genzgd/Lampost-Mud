@@ -68,14 +68,14 @@ class MudNature():
 
         if instance and instance_room:
             # Player is returning to an instance still in memory
-            return instance.get_room(player.instance_room)
+            return instance.get_room(player.instance_room_id)
 
         if instance_room and not player_room:
             # Player has no 'non-instanced' room, so presumably was created in a new instanced tutorial/racial area
             instance = self.instance_manager.next_instance()
-            return instance.get_room(player.instance_room)
+            return instance.get_room(player.instance_room_id)
 
-        #If we get here whatever instance data was associated with the player is no longer valid
+        # If we get here whatever instance data was associated with the player is no longer valid
         del player.instance_id
         del player.instance_room_id
 
