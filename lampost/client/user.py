@@ -108,12 +108,12 @@ class UserManager():
         publish_edit('create', user)
         return user
 
-    def check_name(self, account_name, old_user):
+    def check_name(self, account_name, user):
         account_name = account_name.lower()
-        if old_user:
-            if account_name == old_user.user_name.lower():
+        if user:
+            if account_name == user.user_name.lower():
                 return
-            for player_id in old_user.player_ids:
+            for player_id in user.player_ids:
                 if account_name == player_id.lower():
                     return
         if self.player_exists(account_name) or get_index("ix:user:user_name", account_name):

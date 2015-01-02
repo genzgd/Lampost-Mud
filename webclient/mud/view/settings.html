@@ -18,8 +18,7 @@
 
               <div class="col-md-7">
                 <input id="userName" class="form-control input-sm" ng-change="nameInUse = false" type="text"
-                       ng-model="user.user_name" ng-minlength="2" ng-maxlength="20" required="required"
-                    />
+                       ng-model="user.user_name"  required="required"/>
               </div>
               <div class="alert alert-danger" ng-show="nameInUse">
                 <button type="button" class="close" ng-click="nameInUse = false">×</button>
@@ -41,26 +40,22 @@
               <label for="passwordInput" class="control-label col-md-5">New Password</label>
 
               <div class="col-md-7">
-                <input id="passwordInput" class="form-control input-sm" type="password" ng-minlength="4"
-                       ng-maxlength="20"
-                       ng-model="user.password"/>
+                <input id="passwordInput" class="form-control input-sm" type="password" ng-model="user.password"/>
               </div>
             </div>
             <div class="form-group">
               <label for="passwordConfirm" class="control-label col-md-5">Confirm Password</label>
 
               <div class="col-md-7">
-                <input id="passwordConfirm" class="form-control input-sm" type="password" ng-minlength="4"
-                       ng-maxlength="20"
-                       ng-model="user.confirm"/>
+                <input id="passwordConfirm" class="form-control input-sm" type="password" ng-model="user.confirm"/>
               </div>
             </div>
             <div class="col-md-offset-8">
               <button class="btn btn-primary" type="submit">Update Account</button>
             </div>
-            <div class="alert alert-danger" ng-show="passwordMismatch">
-              <button type="button" class="close" ng-click="passwordMismatch = false">×</button>
-              Passwords do not match
+            <div class="alert alert-danger" ng-show="accountError">
+              <button type="button" class="close" ng-click="accountError = false">×</button>
+              {{accountError}}
             </div>
             <div class="alert alert-success" ng-show="showSuccess">
               <button type="button" class="close" ng-click="showSuccess = false">×</button>

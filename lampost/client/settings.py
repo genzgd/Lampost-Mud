@@ -37,18 +37,15 @@ class Settings(MethodHandler):
         if self.session.user.dbo_id != user_id:
             check_perm(self.player, 'admin')
 
-        old_user = None
-        if user_id:
-            old_user = datastore.load_object(user_id, User)
-            if not old_user:
-                raise ClientError(user_id + " does not exist!")
+        user = datastore.load_object(user_id, User)
+        if not user:
+            raise ClientError(user_id + " does not exist!")
 
-        user_manager.check_name(update_dict['user_name'], old_user)
-        user = User(user_id)
+        user_manager.check_name(update_dict['user_name'], user)
         if update_dict['password']:
             update_dict['password'] = make_hash(update_dict['password'])
         else:
-            update_dict['password'] = old_user.password
+            update_dict['password'] = user.password
         update_dict['email'] = update_dict['email'].lower()
         update_object(user, update_dict)
         publish_edit('update', user)
@@ -69,7 +66,7 @@ class Settings(MethodHandler):
         player_name = content.player_name.lower()
         if (player_name != user.user_name and get_index("ix:user:user_name", player_name))\
                 or object_exists('player', player_name) or object_exists('area', player_name)\
-                or config_manager.reserved(player_name):
+                or player_name in perm.system_accounts:
             raise DataError(content.player_name.capitalize() + " is in use.")
         content.player_data['dbo_id'] = player_name
         user_manager.attach_player(user, content.player_data)

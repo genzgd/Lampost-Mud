@@ -41,7 +41,19 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
 
     $scope.submitAccount = function () {
       if ($scope.user.confirm != $scope.user.password) {
-        $scope.passwordMismatch = true;
+        $scope.accountError = "Passwords do not match";
+        return;
+      }
+      if ($scope.user.password && $scope.user.password.length < 4) {
+        $scope.accountError = "Password is too short";
+        return;
+      }
+      if ($scope.user.password && $scope.user.password.length > 20) {
+        $scope.accountError = "Password is too long";
+        return;
+      }
+      if ($scope.user.user_name.length < 4) {
+        $scope.accountError = "Account name is too short.";
         return;
       }
       lpRemote.request("settings/update_account", {user_id: lpData.userId,
