@@ -48,7 +48,7 @@ class CoreDBO(metaclass=CommonMeta):
             except KeyError:
                 continue
         if hasattr(self, 'template_key'):
-            save_value['tk'] = dbo.template_key
+            save_value['tk'] = self.template_key
         return save_value
 
     def describe(self):

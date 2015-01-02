@@ -2,7 +2,7 @@ from lampost.datastore.dbo import CoreDBO, ChildDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.gameops.template import Template
 from lampost.model.entity import Entity
-from lampost.model.item import target_keys
+from lampost.model.item import target_keys, BaseTemplate
 
 
 class MobileTemplate(ChildDBO, Template):
@@ -19,7 +19,7 @@ class MobileTemplate(ChildDBO, Template):
         self.target_keys = target_keys(self)
 
 
-class Mobile(Entity):
+class Mobile(Entity, BaseTemplate):
     template_id = 'mobile'
 
     def detach(self):

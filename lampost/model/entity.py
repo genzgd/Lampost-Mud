@@ -1,20 +1,19 @@
 from collections import defaultdict
 import itertools
 
-from lampost.datastore.dbofield import DBOField, DBOTField
+from lampost.datastore.dbofield import DBOField
+from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.comm.broadcast import Broadcast, BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, parse_actions, has_action
-from lampost.model.item import BaseItem
 
 
 m_requires(__name__, 'log')
 
 
-class Entity(BaseItem):
-    size = DBOTField('medium')
+class Entity(metaclass=CommonMeta):
     inven = DBOField([], 'untyped')
 
     status = 'ok'

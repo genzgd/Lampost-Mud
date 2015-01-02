@@ -6,7 +6,7 @@ from lampost.comm.broadcast import Broadcast
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import CoreDBO, ChildDBO
-from lampost.datastore.dbofield import DBOField, DBOTField
+from lampost.datastore.dbofield import DBOField, DBOCField
 from lampost.env.movement import Direction
 from lampost.gameops.script import Scriptable
 from lampost.gameops.display import *
@@ -78,15 +78,15 @@ class Room(ChildDBO, Scriptable):
     dbo_parent_type = 'area'
     dbo_key_sort = lambda key: int(key.split(":")[1])
 
-    dbo_rev = DBOTField(0)
-    desc = DBOTField()
-    size = DBOTField(default_room_size)
-    exits = DBOTField([], 'exit')
-    extras = DBOTField([], 'base_item')
-    mobile_resets = DBOTField([], 'mobile_reset')
-    article_resets = DBOTField([], 'article_reset')
-    features = DBOTField([], 'untyped')
-    title = DBOTField()
+    dbo_rev = DBOField(0)
+    desc = DBOCField()
+    size = DBOCField(default_room_size)
+    exits = DBOCField([], 'exit')
+    extras = DBOCField([], 'base_item')
+    mobile_resets = DBOCField([], 'mobile_reset')
+    article_resets = DBOCField([], 'article_reset')
+    features = DBOCField([], 'untyped')
+    title = DBOCField()
     instance_providers = AutoField([])
 
     instance = None

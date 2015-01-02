@@ -10,16 +10,19 @@ save_value_refs = []
 
 
 class DBOField(AutoField):
-    lazy = False
-
     def __init__(self, default=None, dbo_class_id=None, required=False):
         super().__init__(default)
         self.required = required
         self.dbo_class_id = dbo_class_id
 
     def save_value(self, instance):
-        value = self.dto_value(instance)
+        value = self._save_value(instance)
         self.check_default(value, instance)
+        return value
+
+    def hydrate(self, instance, dto_repr):
+        value = self._hydrate_func(instance, dto_repr)
+        setattr(instance, self.field, value)
         return value
 
     def check_default(self, value, instance):
@@ -31,13 +34,41 @@ class DBOField(AutoField):
 
     def meta_init(self, field):
         self.field = field
-        self.hydrate = get_hydrate_func(self.default, field, self.dbo_class_id)
-        self.cmp_value = value_transform(to_dto_repr, self.default, field, self.dbo_class_id)
+        self._hydrate_func = get_hydrate_func(load_any, self.default, self.dbo_class_id)
         self.dto_value = value_transform(to_dto_repr, self.default, field, self.dbo_class_id, for_json=True)
+        self.cmp_value = value_transform(to_save_repr, self.default, field, self.dbo_class_id)
+        self._save_value = value_transform(to_save_repr, self.default, field, self.dbo_class_id, for_json=True)
 
 
+class DBOTField():
+    """
+    This class always passes access to the template.  It also provides a blueprint to auto generate the appropriate
+    DBO fields in the Template class.
 
-class DBOTField(DBOField, TemplateField):
+    Fields that are initialized in the Template but whose values can be overridden by the instance should be declared
+    as a DBOField in the template class and a DBOCField field in the instance class with identical names
+    """
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return getattr(instance.template, self.field)
+
+    def __set__(self, instance, value):
+        error("Illegally setting value {} of DBOTField {}", value, self.field,  stack_info=True)
+
+    def meta_init(self, field):
+        self.field = field
+
+
+class DBOCField(DBOField, TemplateField):
+    """
+    This class should be used in cloneable objects that do not have a separate template class.  It will pass
+    access to the original object if not overridden in the child object.
+    """
     def check_default(self, value, instance):
         super().check_default(value, instance)
         try:
@@ -51,32 +82,66 @@ class DBOTField(DBOField, TemplateField):
             raise KeyError
 
 
-def get_hydrate_func(default, field, class_id):
+class DBOLField(DBOField):
+    """
+    This class should be used for database references where the value is used only for a short time, such
+    as initializing the holder.  It 'lazy loads' the database object when the descriptor __get__ is called,
+    so no database access is made if the field is never 'read', and the database object will be freed from the
+    db cache on garbage collection if any reads have since gone out of scope
+
+    Sets are not supported to simplify transforms to JSON
+    """
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        try:
+            value = instance.__dict__[self.field]
+        except KeyError:
+            value = self._get_default(instance)
+        return self._hydrate_func(instance, value)
+
+    def __set__(self, instance, value):
+        if value == self.default:
+            instance.__dict__.pop(self.field, None)
+        else:
+            instance.__dict__[self.field] = self._set_value(value)
+
+    def hydrate(self, instance, dto_repr):
+        instance.__dict__[self.field] = dto_repr
+        return dto_repr
+
+    def cmp_value(self, instance):
+        return instance.__dict__.get(self.field, self.default)
+
+    def dto_value(self, instance):
+        return instance.__dict__.get(self.field, self.default)
+
+    def _save_value(self, instance):
+        return instance.__dict__.get(self.field, self.default)
+
+    def meta_init(self, field):
+        self.field = field
+        self._hydrate_func = get_hydrate_func(load_keyed, self.default, self.dbo_class_id)
+        self._set_value = value_transform(to_dbo_key, self.default, field, self.dbo_class_id)
+
+
+def get_hydrate_func(load_func, default, class_id):
     def dbo_set(instance, dto_repr_list):
-        value = {dbo for dbo in [load_ref(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
+        return {dbo for dbo in [load_func(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
                  dbo is not None}
-        setattr(instance, field, value)
-        return value
 
     def dbo_list(instance, dto_repr_list):
-        value = [dbo for dbo in [load_ref(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
+        return [dbo for dbo in [load_func(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
                  dbo is not None]
-        setattr(instance, field, value)
-        return value
 
     def dbo_dict(instance, dto_repr_dict):
-        value = {key: dbo for key, dbo in [(key, load_ref(class_id, instance, dto_repr))
+        return {key: dbo for key, dbo in [(key, load_func(class_id, instance, dto_repr))
                                            for key, dto_repr in dto_repr_dict.items()] if dbo is not None}
-        setattr(instance, field, value)
-        return value
 
     def dbo_simple(instance, dto_repr):
-        value = load_ref(class_id, instance, dto_repr)
-        setattr(instance, field, value)
-        return value
+        return load_func(class_id, instance, dto_repr)
 
     def native(instance, dto_repr):
-        setattr(instance, field, dto_repr)
         return dto_repr
 
     if class_id:
@@ -96,7 +161,6 @@ def value_transform(trans_func, default, field, class_id, for_json=False):
 
     def value_set(instance):
         return {trans_func(value, class_id) for value in getattr(instance, field) if value is not None}
-
 
     def value_list(instance):
         return [trans_func(value, class_id) for value in getattr(instance, field) if value is not None]
@@ -123,12 +187,10 @@ def value_transform(trans_func, default, field, class_id, for_json=False):
 
 def to_dto_repr(dbo, class_id):
     if hasattr(dbo, 'dbo_id'):
-        save_value_refs.append(dbo.dbo_key)
         return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
     dto_value = dbo.dto_value
     if hasattr(dbo, 'template_key'):
         dto_value['tk'] = dbo.template_key
-        save_value_refs.append(dbo.template_key)
     elif getattr(dbo, 'class_id', class_id) != class_id:
         # If the object has a different class_id than field definition thinks it should have
         # we need to save the actual class_id
@@ -136,35 +198,33 @@ def to_dto_repr(dbo, class_id):
     return dto_value
 
 
-class DBOLField(DBOField):
-    """
-    This class should be used for database references where the value is used only for a short time, such
-    as initializing the holder.  If used for collections it is important to remember that the underlying
-    collection must hold dbo_ids, not actual objects.  The __set__ method does the conversion for
-    """
-    lazy = True
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        try:
-            instance_value = instance.__dict__[self.field]
-        except KeyError:
-            return self._get_default(instance)
-        return self._get_value(self.dbo_class_id, instance_value)
-
-    def __set__(self, instance, value):
-        if value == self.default:
-            instance.__dict__.pop(self.field, None)
-        else:
-            instance.__dict__[self.field] = self._set_value(value)
+def to_save_repr(dbo, class_id):
+    if hasattr(dbo, 'dbo_id'):
+        save_value_refs.append(dbo.dbo_key)
+        return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
+    save_value = dbo.save_value
+    if hasattr(dbo, 'template_key'):
+        save_value['tk'] = dbo.template_key
+        save_value_refs.append(dbo.template_key)
+    elif getattr(dbo, 'class_id', class_id) != class_id:
+        # If the object has a different class_id than field definition thinks it should have
+        # we need to save the actual class_id
+        save_value['class_id'] = dbo.class_id
+    return save_value
 
 
-def lazy_load(class_id, dbo_id):
+def to_dbo_key(dbo, class_id):
+    try:
+        return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
+    except AttributeError:
+        error('Attempting to set dbo_ref with unkeyed value {}', dbo)
+
+
+def load_keyed(class_id, dbo_owner, dbo_id):
     return load_object(dbo_id, class_id if class_id != "untyped" else None)
 
 
-def load_ref(class_id, dbo_owner, dto_repr):
+def load_any(class_id, dbo_owner, dto_repr):
     if not dto_repr:
         return
 

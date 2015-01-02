@@ -1,6 +1,8 @@
 import logging
-from lampost.datastore.auto import TemplateField
-from lampost.datastore.classes import set_dbo_class, get_dbo_class, set_mixin, check_dbo_class
+
+from lampost.datastore.classes import set_dbo_class, get_dbo_class, set_mixin
+from lampost.datastore.dbofield import DBOTField, DBOField
+
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +46,7 @@ class CommonMeta(type):
                 pass
 
     def _combine_base_fields(cls, bases):
+        cls.dbot_fields = {}
         cls.dbo_fields = {}
         cls.load_funcs = []
         cls.class_providers = set()
@@ -51,6 +54,7 @@ class CommonMeta(type):
             cls.dbo_fields.update({name: dbo_field for name, dbo_field in base.dbo_fields.items()})
             cls.load_funcs.extend(base.load_funcs)
             cls.class_providers.update(base.class_providers)
+            cls.dbot_fields.update({name: dbot_field for name, dbot_field in base.dbot_fields.items()})
 
     def _update_dbo_fields(cls, new_attrs):
         for name, attr in new_attrs.items():
@@ -60,6 +64,8 @@ class CommonMeta(type):
                     if old_attr:
                         log.info("Overriding attr {} of class {}", name, cls.__name__)
                     cls.dbo_fields[name] = attr
+            elif isinstance(attr, DBOTField):
+                cls.dbot_fields[name] = attr
         load_func = new_attrs.get('on_loaded')
         if load_func:
             cls.load_funcs.append(load_func)
@@ -73,7 +79,8 @@ class CommonMeta(type):
         else:
             log.info("Initializing instance class {} for template {}", cls.__name__, cls.template_id)
         template_cls.add_dbo_fields(
-            {name: dbo_field for name, dbo_field in cls.dbo_fields.items() if isinstance(dbo_field, TemplateField)})
+            {name: DBOField(*dbo_field.args, **dbo_field.kwargs) for name, dbo_field in cls.dbot_fields.items()})
+
         template_cls.instance_cls = cls
         cls.template_cls = template_cls
 
@@ -88,5 +95,6 @@ def call_mro(self, func_name, *args, **kwargs):
             cls.__dict__[func_name](self, *args, **kwargs)
         except KeyError:
             pass
+
 
 

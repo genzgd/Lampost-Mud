@@ -4,6 +4,7 @@ from lampost.env.room import Room
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 from lampost.lpflavor.entity import EntityLP
+from lampost.model.item import BaseItem
 
 from lampost.model.player import Player
 
@@ -11,14 +12,15 @@ from lampost.model.player import Player
 m_requires(__name__, 'dispatcher', 'datastore', 'config_manager')
 
 
-class PlayerLP(Player, EntityLP):
+class PlayerLP(Player, EntityLP, BaseItem):
     dbo_key_type = 'player'
 
-    race = DBOField(dbo_class_id='race')
+    race = DBOLField(dbo_class_id='race')
     affinity = 'player'
     skills = DBOField({}, 'untyped')
     touchstone = DBOField()
     can_die = True
+    size = DBOField('medium')
 
     def __init(self):
         super().__init__()

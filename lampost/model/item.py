@@ -34,16 +34,10 @@ def target_keys(item):
     return target_keys
 
 
-class BaseItem(CoreDBO):
-    class_id = 'base_item'
-
-    desc = DBOTField('')
-    title = DBOTField('')
-    aliases = DBOTField([])
-
-    sex = DBOTField('none')
+class BaseItemMixin(metaclass=CommonMeta):
+    sex = DBOField('none')
     flags = DBOField({})
-    target_keys = TemplateField(set())
+
     instance_providers = AutoField([])
 
     living = False
@@ -96,6 +90,24 @@ class BaseItem(CoreDBO):
                 self.target_keys = target_keys(self)
             except AttributeError:
                 pass
+
+
+class BaseItem(CoreDBO, BaseItemMixin):
+    class_id = 'base_item'
+
+    desc = DBOField('')
+    title = DBOField('')
+    aliases = DBOField([])
+
+    target_keys = {}
+
+
+class BaseTemplate(CoreDBO, BaseItemMixin):
+    desc = DBOTField('')
+    title = DBOTField('')
+    aliases = DBOTField([])
+
+    target_keys = TemplateField(set())
 
 
 class Readable(metaclass=CommonMeta):
