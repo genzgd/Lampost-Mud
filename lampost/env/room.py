@@ -10,6 +10,7 @@ from lampost.datastore.dbofield import DBOField, DBOCField
 from lampost.env.movement import Direction
 from lampost.gameops.script import Scriptable
 from lampost.gameops.display import *
+from lampost.model.item import Connected
 
 
 m_requires(__name__, 'log', 'dispatcher', 'datastore')
@@ -73,7 +74,7 @@ class Exit(CoreDBO):
         self._dir = Direction.ref_map.get(self.direction)
 
 
-class Room(ChildDBO, Scriptable):
+class Room(ChildDBO, Connected, Scriptable):
     dbo_key_type = 'room'
     dbo_parent_type = 'area'
     dbo_key_sort = lambda key: int(key.split(":")[1])
@@ -228,9 +229,9 @@ class Room(ChildDBO, Scriptable):
         pass
 
     def clean_up(self):
+        self.detach()
         if self._garbage_pulse:
             del self._garbage_pulse
-        detach_events(self)
         for mobile_list in self.mobiles.values():
             for mobile in mobile_list:
                 if mobile.env != self:

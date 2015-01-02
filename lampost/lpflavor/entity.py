@@ -286,11 +286,10 @@ class EntityLP(Entity):
     def status_change(self):
         self.pulse_stamp = current_pulse()
 
-    def detach(self):
+    def on_detach(self):
         self._cancel_actions()
         if self._refresh_pulse:
             del self._refresh_pulse
-        super().detach()
 
     @property
     def display_status(self):

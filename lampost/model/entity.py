@@ -2,18 +2,18 @@ from collections import defaultdict
 import itertools
 
 from lampost.datastore.dbofield import DBOField
-from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.comm.broadcast import Broadcast, BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, parse_actions, has_action
+from lampost.model.item import Connected
 
 
 m_requires(__name__, 'log')
 
 
-class Entity(metaclass=CommonMeta):
+class Entity(Connected):
     inven = DBOField([], 'untyped')
 
     status = 'ok'
@@ -184,8 +184,7 @@ class Entity(metaclass=CommonMeta):
         self.status = 'dead'
         self.detach()
 
-    def detach(self, owner=None):
-        super().detach()
+    def on_detach(self):
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
@@ -195,7 +194,9 @@ class Entity(metaclass=CommonMeta):
             if hasattr(item, 'detach_shared'):
                 item.detach_shared(self)
         self.unfollow()
+        self.leave_env()
         self.equip_slots.clear()
+
 
     @property
     def display_status(self):

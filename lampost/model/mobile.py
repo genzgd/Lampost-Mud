@@ -22,8 +22,7 @@ class MobileTemplate(ChildDBO, Template):
 class Mobile(Entity, BaseTemplate):
     template_id = 'mobile'
 
-    def detach(self):
-        super().detach()
+    def on_detach(self):
         self.original_env.mobiles[self.template].remove(self)
 
 

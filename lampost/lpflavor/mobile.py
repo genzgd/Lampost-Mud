@@ -70,7 +70,6 @@ class MobileLP(EntityLP):
         elif hasattr(entity, 'affinity') and entity.affinity in self.enemies:
             self.start_combat(entity)
 
-    def detach(self):
-        super().detach()
+    def on_detach(self):
         self.original_env.mobiles[self.template].remove(self)
 

@@ -1,13 +1,13 @@
 from lampost.comm.channel import Channel
 from lampost.context.resource import m_requires
 from lampost.gameops.action import obj_action, ActionProvider
-from lampost.model.item import BaseItem, gen_keys
+from lampost.model.item import BaseItem, gen_keys, Connected
 from lampost.mud.action import mud_action
 
 m_requires(__name__, 'dispatcher')
 
 
-class Group(ActionProvider):
+class Group(ActionProvider, Connected):
     target_keys = set(gen_keys('group'))
 
     def __init__(self, leader):
@@ -17,7 +17,7 @@ class Group(ActionProvider):
         self.invites = set()
         self.instance = None
         self.channel = Channel('gchat', 'next', aliases=('g', 'gc', 'gt', 'gtell', 'gsay', 'gs'))
-        dispatcher.register('player_connect', self._player_connect)
+        register('player_connect', self._player_connect)
 
     def join(self, member):
         if not self.members:
@@ -62,7 +62,7 @@ class Group(ActionProvider):
         if len(self.members) == 1:
            self._remove_member(self.members[0])
         self.channel.disband()
-        detach_events(self)
+        self.detach()
 
     def _player_connect(self, player, *_):
         if player in self.members:

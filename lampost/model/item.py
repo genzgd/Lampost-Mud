@@ -5,7 +5,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import CoreDBO
 from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField, AutoField
-from lampost.datastore.meta import CommonMeta
+from lampost.datastore.meta import CommonMeta, call_mro
 from lampost.gameops.action import obj_action
 from lampost.gameops.display import TELL_TO_DISPLAY
 
@@ -34,7 +34,13 @@ def target_keys(item):
     return target_keys
 
 
-class BaseItemMixin(metaclass=CommonMeta):
+class Connected(metaclass=CommonMeta):
+    def detach(self):
+        detach_events(self)
+        call_mro(self, 'on_detach')
+
+
+class BaseItemMixin(Connected):
     sex = DBOField('none')
     flags = DBOField({})
 
@@ -79,10 +85,6 @@ class BaseItemMixin(metaclass=CommonMeta):
 
     def leave_env(self):
         pass
-
-    def detach(self):
-        self.leave_env()
-        detach_events(self)
 
     def on_loaded(self):
         if not self.target_keys:

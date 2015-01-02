@@ -2,11 +2,12 @@ from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import KeyDBO
 from lampost.datastore.dbofield import DBOField
+from lampost.model.item import Connected
 
 m_requires(__name__, 'log', 'dispatcher')
 
 
-class Player(KeyDBO):
+class Player(KeyDBO, Connected):
     dbo_key_type = "player"
     dbo_set_key = "players"
 
@@ -66,6 +67,5 @@ class Player(KeyDBO):
     def die(self):
         pass
 
-    def detach(self):
-        super().detach()
+    def on_detach(self):
         self.session = None
