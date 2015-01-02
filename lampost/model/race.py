@@ -1,5 +1,5 @@
 from lampost.datastore.dbo import KeyDBO, DBOAccess
-from lampost.datastore.dbofield import DBOField
+from lampost.datastore.dbofield import DBOField, DBOLField
 
 base_attr_value = 5
 
@@ -13,7 +13,7 @@ class PlayerRace(DBOAccess, KeyDBO):
     name = DBOField("Unnamed")
     desc = DBOField('')
     base_attrs = DBOField({})
-    start_room = DBOField()
+    start_room = DBOField(dbo_class_id='room')
     start_instanced = DBOField(False)
 
     @property

@@ -5,84 +5,178 @@ from lampost.datastore.classes import get_dbo_class
 
 m_requires(__name__, 'log', 'datastore')
 
+# This is used as a 'thread local' type variable to collect child references while calculating save values
+save_value_refs = []
+
 
 class DBOField(AutoField):
+    lazy = False
+
     def __init__(self, default=None, dbo_class_id=None, required=False):
         super().__init__(default)
         self.required = required
-        if dbo_class_id:
-            self.dbo_class_id = dbo_class_id
-            self.value_wrapper = value_wrapper(self.default)
-            self.hydrate_value = value_wrapper(self.default, False)(self.hydrate_dbo_value)
-            self.convert_save_value = value_wrapper(self.default)(save_repr)
-            self.dto_value = value_wrapper(self.default)(self.to_dto_repr)
-        else:
-            self.hydrate_value = lambda dto_repr, instance: dto_repr
-            self.convert_save_value = lambda value: value
-            self.dto_value = lambda value: value
-
-    def hydrate_dbo_value(self, dto_repr, instance):
-        return load_ref(self.dbo_class_id, dto_repr, instance)
+        self.dbo_class_id = dbo_class_id
 
     def save_value(self, instance):
-        value = self.convert_save_value(instance.__dict__[self.field])
-        self.should_save(value, instance)
+        value = self.dto_value(instance)
+        self.check_default(value, instance)
         return value
 
-    def to_dto_repr(self, value):
-        try:
-            return value.dbo_key if self.dbo_class_id == 'untyped' else value.dbo_id
-        except AttributeError:
-            try:
-                dto = value.dto_value
-                field_class = getattr(self, 'dbo_class_id', None)
-                if getattr(value, 'class_id', field_class) != field_class:
-                    dto['class_id'] = value.class_id
-                if hasattr(value, 'template_key'):
-                    dto['template_key'] = value.template_key
-                return dto
-            except AttributeError:
-                return None
-
-    def should_save(self, value, instance):
-        self.check_default(value)
-
-    def check_default(self, value):
+    def check_default(self, value, instance):
         if hasattr(self.default, 'save_value'):
             if value == self.default.save_value:
                 raise KeyError
         elif value == self.default:
             raise KeyError
 
+    def meta_init(self, field):
+        self.field = field
+        self.hydrate = get_hydrate_func(self.default, field, self.dbo_class_id)
+        self.cmp_value = value_transform(to_dto_repr, self.default, field, self.dbo_class_id)
+        self.dto_value = value_transform(to_dto_repr, self.default, field, self.dbo_class_id, for_json=True)
+
 
 
 class DBOTField(DBOField, TemplateField):
-    def should_save(self, value, instance):
-        self.check_default(value)
+    def check_default(self, value, instance):
+        super().check_default(value, instance)
         try:
             template_value = getattr(instance.template, self.field)
         except AttributeError:
             return
-        if hasattr(template_value, 'save_value'):
-            if value == template_value:
+        if hasattr(template_value, 'cmp_value'):
+            if value == template_value.cmp_value:
                 raise KeyError
         elif value == template_value:
             raise KeyError
 
 
-def load_ref(class_id, dbo_repr, dbo_owner=None):
-    if not dbo_repr:
+def get_hydrate_func(default, field, class_id):
+    def dbo_set(instance, dto_repr_list):
+        value = {dbo for dbo in [load_ref(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
+                 dbo is not None}
+        setattr(instance, field, value)
+        return value
+
+    def dbo_list(instance, dto_repr_list):
+        value = [dbo for dbo in [load_ref(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
+                 dbo is not None]
+        setattr(instance, field, value)
+        return value
+
+    def dbo_dict(instance, dto_repr_dict):
+        value = {key: dbo for key, dbo in [(key, load_ref(class_id, instance, dto_repr))
+                                           for key, dto_repr in dto_repr_dict.items()] if dbo is not None}
+        setattr(instance, field, value)
+        return value
+
+    def dbo_simple(instance, dto_repr):
+        value = load_ref(class_id, instance, dto_repr)
+        setattr(instance, field, value)
+        return value
+
+    def native(instance, dto_repr):
+        setattr(instance, field, dto_repr)
+        return dto_repr
+
+    if class_id:
+        if isinstance(default, set):
+            return dbo_set
+        if isinstance(default, list):
+            return dbo_list
+        if isinstance(default, dict):
+            return dbo_dict
+        return dbo_simple
+    return native
+
+
+def value_transform(trans_func, default, field, class_id, for_json=False):
+    def native(instance):
+        return getattr(instance, field)
+
+    def value_set(instance):
+        return {trans_func(value, class_id) for value in getattr(instance, field) if value is not None}
+
+
+    def value_list(instance):
+        return [trans_func(value, class_id) for value in getattr(instance, field) if value is not None]
+
+    def value_dict(instance):
+        return {key: trans_func(value, class_id) for key, value in getattr(instance, field).items() if
+                value is not None}
+
+    def value_simple(instance):
+        value = getattr(instance, field)
+        return None if value is None else trans_func(value, class_id)
+
+    if class_id:
+        if isinstance(default, set) and not for_json:
+            return value_set
+        if isinstance(default, list) or isinstance(default, set):
+            return value_list
+        if isinstance(default, dict):
+            return value_dict
+        return value_simple
+
+    return native
+
+
+def to_dto_repr(dbo, class_id):
+    if hasattr(dbo, 'dbo_id'):
+        save_value_refs.append(dbo.dbo_key)
+        return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
+    dto_value = dbo.dto_value
+    if hasattr(dbo, 'template_key'):
+        dto_value['tk'] = dbo.template_key
+        save_value_refs.append(dbo.template_key)
+    elif getattr(dbo, 'class_id', class_id) != class_id:
+        # If the object has a different class_id than field definition thinks it should have
+        # we need to save the actual class_id
+        dto_value['class_id'] = dbo.class_id
+    return dto_value
+
+
+class DBOLField(DBOField):
+    """
+    This class should be used for database references where the value is used only for a short time, such
+    as initializing the holder.  If used for collections it is important to remember that the underlying
+    collection must hold dbo_ids, not actual objects.  The __set__ method does the conversion for
+    """
+    lazy = True
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        try:
+            instance_value = instance.__dict__[self.field]
+        except KeyError:
+            return self._get_default(instance)
+        return self._get_value(self.dbo_class_id, instance_value)
+
+    def __set__(self, instance, value):
+        if value == self.default:
+            instance.__dict__.pop(self.field, None)
+        else:
+            instance.__dict__[self.field] = self._set_value(value)
+
+
+def lazy_load(class_id, dbo_id):
+    return load_object(dbo_id, class_id if class_id != "untyped" else None)
+
+
+def load_ref(class_id, dbo_owner, dto_repr):
+    if not dto_repr:
         return
 
     dbo_ref_id = None
     # The class_id passed in is what the field thinks it should hold
     # This can be overridden in the actual stored dictionary
     try:
-        class_id = dbo_repr['class_id']
+        class_id = dto_repr['class_id']
     except TypeError:
-        # A dbo_repr is either a string or a dictionary.  If it's a string,
+        # A dto_repr is either a string or a dictionary.  If it's a string,
         # it must be reference, so capture the reference id
-        dbo_ref_id = dbo_repr
+        dbo_ref_id = dto_repr
     except KeyError:
         pass
 
@@ -91,7 +185,7 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
         return error('Unable to load reference for {}', class_id)
 
     # If this class has a key_type, it should always be a reference and we should load it from the database
-    # The dbo_representation in this case should always be a dbo_id
+    # The dto_representation in this case should always be a dbo_id
     if hasattr(dbo_class, 'dbo_key_type'):
         return load_object(dbo_ref_id, dbo_class)
 
@@ -102,58 +196,18 @@ def load_ref(class_id, dbo_repr, dbo_owner=None):
 
     # If this is a template, it should have a template key, so we load the template from the database using
     # the full key, then hydrate any non-template fields from the dictionary
-    template_key = dbo_repr.get('tk')
+    template_key = dto_repr.get('tk')
     if template_key:
         template = load_object(template_key)
         if template:
-            return template.create_instance(dbo_owner).hydrate(dbo_repr)
+            return template.create_instance(dbo_owner).hydrate(dto_repr)
         else:
             warn("Missing template for template_key {}", template_key)
             return
 
     # Finally, it's not a template and it is not a reference to an independent DB object, it must be a child
     # object of this class, just hydrate it and set the owner
-    instance = dbo_class().hydrate(dbo_repr)
+    instance = dbo_class().hydrate(dto_repr)
     if instance:
         instance.dbo_owner = dbo_owner
         return instance
-
-
-def save_repr(value):
-    if hasattr(value, 'dbo_id'):
-        return {'dbo_key': value.dbo_key}
-    return value.save_value
-
-
-def value_wrapper(value, for_dto=True):
-    if isinstance(value, set):
-        return list_wrapper if for_dto else set_wrapper
-    if isinstance(value, dict):
-        return dict_wrapper
-    if isinstance(value, list):
-        return list_wrapper
-    return lambda x: x
-
-
-def set_wrapper(func):
-    def wrapper(*args):
-        return {value for value in [func(single, *args[1:]) for single in args[0]]
-                if value is not None}
-
-    return wrapper
-
-
-def list_wrapper(func):
-    def wrapper(*args):
-        return [value for value in [func(single, *args[1:]) for single in args[0]]
-                if value is not None]
-
-    return wrapper
-
-
-def dict_wrapper(func):
-    def wrapper(*args):
-        return {key: value for key, value in [(key, func(single, *args[1:])) for key, single in args[0].items()]
-                if value is not None}
-
-    return wrapper

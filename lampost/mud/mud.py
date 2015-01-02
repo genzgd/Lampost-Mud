@@ -38,7 +38,7 @@ class MudNature():
         register('game_settings', self._game_settings)
         register('player_baptise', self._baptise, priority=-100)
         register('imm_baptise', self._imm_baptise, priority=-100)
-        register('missing_env', self._start_env)
+        register('missing_env', lambda player: player.change_env(self._start_env(player)))
 
     def _imm_baptise(self, player):
         player.can_die = False
@@ -59,28 +59,35 @@ class MudNature():
         self.shout_channel.add_sub(player)
         if player.imm_level:
             dispatch("imm_baptise", player)
-        self._start_env(player)
+        player.change_env(self._start_env(player))
 
     def _start_env(self, player):
-        room = None
-        if getattr(player, "room_id", None):
-            instance = self.instance_manager.get(player.instance_id)
-            if instance:
-                room = instance.get_room(player.room_id)
-            else:
-                del player.instance_id
-            if not room:
-                room = load_object(player.room_id, Room)
-        if not room:
-            room = load_object(self.config_manager.start_room, Room)
-            if room:
-                player.room_id = room.dbo_id
-                save_object(player)
-        if not room:
-            room = safe_room
-            try:
-                del player.room_id
-                save_object(player)
-            except AttributeError:
-                pass
-        player.change_env(room)
+        instance = self.instance_manager.get(player.instance_id)
+        instance_room = load_object(player.instance_room_id, Room, silent=True)
+        player_room = load_object(player.room_id, Room, silent=True)
+
+        if instance and instance_room:
+            # Player is returning to an instance still in memory
+            return instance.get_room(player.instance_room)
+
+        if instance_room and not player_room:
+            # Player has no 'non-instanced' room, so presumably was created in a new instanced tutorial/racial area
+            instance = self.instance_manager.next_instance()
+            return instance.get_room(player.instance_room)
+
+        #If we get here whatever instance data was associated with the player is no longer valid
+        del player.instance_id
+        del player.instance_room_id
+
+        if player_room:
+            return player_room
+
+        config_start = load_object(self.config_manager.start_room, Room)
+        if config_start:
+            return config_start
+
+        # This really should never happen
+        error("Unable to find valid room for player login", stack_info=True)
+        del player.room_id
+        save_object(player)
+        return safe_room

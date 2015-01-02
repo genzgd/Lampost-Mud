@@ -54,7 +54,7 @@ class CommonMeta(type):
 
     def _update_dbo_fields(cls, new_attrs):
         for name, attr in new_attrs.items():
-            if hasattr(attr, 'hydrate_value'):
+            if hasattr(attr, 'hydrate'):
                 old_attr = cls.dbo_fields.get(name)
                 if old_attr != attr:
                     if old_attr:

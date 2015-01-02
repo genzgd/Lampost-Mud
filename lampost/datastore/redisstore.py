@@ -1,13 +1,13 @@
-from collections import defaultdict, deque
+from collections import deque
 from weakref import WeakValueDictionary
+
 from redis import ConnectionPool
 from redis.client import StrictRedis
-from lampost.datastore.classes import get_dbo_class, get_mixed_type
-from lampost.datastore.dbo import Untyped
-from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 
-from lampost.util.log import logged
+from lampost.datastore.classes import get_dbo_class, get_mixed_type
+from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
 from lampost.context.resource import m_requires
+
 
 m_requires(__name__, 'log', 'json_encode', 'json_decode')
 
@@ -39,7 +39,11 @@ class RedisStore():
             dbo.dbo_rev = 1 if not rev else rev + 1
         if dbo.dbo_indexes:
             self._update_indexes(dbo)
-        self.redis.set(dbo.dbo_key, json_encode(self._save_root(dbo)))
+        self._clear_old_refs(dbo)
+        save_root, new_refs = dbo.to_db_value()
+        self.redis.set(dbo.dbo_key, json_encode(save_root))
+        if new_refs:
+            self._set_new_refs(dbo, new_refs)
         debug("db object {} {}saved", dbo.dbo_key, "auto" if autosave else "")
         self._object_map[dbo.dbo_key] = dbo
         return dbo
@@ -62,7 +66,12 @@ class RedisStore():
                 key_type = key_type.dbo_key_type
             except AttributeError:
                 pass
-            dbo_key, dbo_id = ':'.join([key_type, dbo_key]), dbo_key
+            try:
+                dbo_key, dbo_id = ':'.join([key_type, dbo_key]), dbo_key
+            except TypeError:
+                if not silent:
+                    exception("Invalid dbo_key passed to load_object")
+                return
         else:
             key_type, _, dbo_id = dbo_key.partition(':')
         cached_dbo = self._object_map.get(dbo_key)
@@ -72,7 +81,7 @@ class RedisStore():
         if not json_str:
             if not silent:
                 warn("Failed to find {} in database", dbo_key)
-            return None
+            return
         return self.load_from_json(json_str, key_type, dbo_id)
 
     def load_from_json(self, json_str, key_type, dbo_id):
@@ -223,55 +232,6 @@ class RedisStore():
                 if self.get_index(ix_key, new_val):
                     raise NonUniqueError(ix_key, new_val)
                 self.set_index(ix_key, new_val, dbo.dbo_id)
-
-    def _save_root(self, root_dbo):
-        self._clear_old_refs(root_dbo)
-        new_refs = []
-
-        def add_refs(dbo):
-            if root_dbo != dbo:
-                if hasattr(dbo, 'dbo_id'):
-                    new_refs.append(dbo.dbo_key)
-                elif getattr(dbo, 'template_key', None):
-                    new_refs.append(dbo.template_key)
-
-        def child_dbo(dbo, dbo_field_class):
-            # If this child is a reference, save just the appropriate id
-            if hasattr(dbo, 'dbo_id'):
-                new_refs.append(dbo.dbo_key)
-                return dbo.dbo_key if dbo_field_class == 'untyped' else dbo.dbo_id
-            save_value = save_level(dbo)
-            if hasattr(dbo, 'template_key'):
-                save_value['tk'] = dbo.template_key
-            elif getattr(dbo, 'class_id', dbo_field_class) != dbo_field_class:
-                # If the object has a different class_id than field definition thinks it should have
-                # we need to save the actual class_id
-                save_value['class_id'] = dbo.class_id
-            return save_value
-
-        def save_level(dbo):
-            add_refs(dbo)
-            save_value = {}
-            for field, dbo_field in dbo.dbo_fields.items():
-                try:
-                    field_value = dbo.__dict__[field]
-                except KeyError:
-                    continue
-
-                dbo_field_class = getattr(dbo_field, 'dbo_class_id', None)
-                if dbo_field_class:
-                    field_value = dbo_field.value_wrapper(child_dbo)(field_value, dbo_field_class)
-                try:
-                    dbo_field.should_save(field_value, dbo)
-                except KeyError:
-                    continue
-                save_value[field] = field_value
-            return save_value
-
-        root_save = save_level(root_dbo)
-        if new_refs:
-            self._set_new_refs(root_dbo, new_refs)
-        return root_save
 
     def _clear_old_refs(self, dbo):
         dbo_key = dbo.dbo_key

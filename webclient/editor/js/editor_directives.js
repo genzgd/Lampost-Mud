@@ -231,12 +231,12 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
       $scope.parentList = $filter(childSelect.parentFilter[0]).apply(null, [parents].concat(childSelect.parentFilter.slice(1)));
       if ($scope.parentList.length) {
         $scope.parent = $scope.parentList[0];
-        if (childSelect.value) {
-          cacheObj = lpCache.cachedValue(parentKey + ':' + childSelect.value.dbo_id.split(':')[0]);
+        if (typeof childSelect.value === 'string') {
+          cacheObj = lpCache.cachedValue(parentKey + ':' + childSelect.value.split(':')[0]);
           if (cacheObj && $scope.parentList.indexOf(cacheObj) > -1) {
             $scope.parent = cacheObj;
           } else {
-            $scope.errors[selectId] = "Original value " + childSelect.value.dbo_id + " is no long valid.";
+            $scope.errors[selectId] = "Original value " + childSelect.value + " is no long valid.";
           }
         }
       } else {
@@ -254,16 +254,16 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
     lpCache.cache(childKey).then(function(children) {
       $scope.childList = $filter(childSelect.childFilter[0]).apply(null, [children].concat(childSelect.childFilter.slice(1)));
       if ($scope.childList.length) {
-        $scope.child = $scope.childList[0];
-        if (childSelect.initial) {
-          cacheObj = childSelect.value && lpCache.cachedValue(childSelect.value.dbo_key);
+        if (typeof childSelect.value === 'string' && childSelect.value.split(':')[0] === $scope.parent.dbo_id) {
+          cacheObj = childSelect.value && lpCache.cachedValue(childSelect.type + ':' + childSelect.value);
           if (cacheObj && $scope.childList.indexOf(cacheObj) > -1) {
-            $scope.child = cacheObj;
+            $scope.child = cacheObj.dbo_id;
           } else {
-            $scope.errors[selectId] = childSelect.value ? "Original value " + childSelect.value + " not found." : "Original value not set";
+            $scope.errors[selectId] = "Original value " + childSelect.value + " not found.";
           }
+        } else {
+          delete $scope.child;
         }
-        $scope.selectChild();
       } else {
         $scope.childList = [invalid];
         $scope.child = invalid;
@@ -292,6 +292,8 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
 
   this.startEdit = function() {
     $scope.can_write = $scope.model.can_write;
+    delete $scope.parent;
+    delete $scope.child;
     childSelect.setSource($scope.model);
     parentList();
   };

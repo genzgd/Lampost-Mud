@@ -138,7 +138,7 @@ class Store(BaseItem):
 
     def add_inven(self, article):
         for perm_article in self.perm_items:
-            if article.template == perm_article.template and article.save_value == perm_article.save_value:
+            if article.template == perm_article.template and article.cmp_value == perm_article.cmp_value:
                 return
         self.inven.append(article)
         self.dbo_owner.dirty = True

@@ -14,12 +14,15 @@ class AutoMeta(type):
 
 
 class AutoField():
+    complex = False
+
     def __init__(self, default=None):
         self.default = default
         if default is None or isinstance(default, (int, str, bool, tuple, float)):
             self._get_default = lambda instance: self.default
         else:
             self._get_default = self._complex_default
+            self.complex = True
 
     def __get__(self, instance, owner=None):
         if instance is None:

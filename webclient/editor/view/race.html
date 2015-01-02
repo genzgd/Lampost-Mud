@@ -48,7 +48,9 @@
               <div class="form-group">
                 <label class="control-label">Start Room</label>
                 <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
-                  ng-options="child as child.dbo_id for child in childList"></select>
+                  ng-options="child.dbo_id as child.dbo_id for child in childList">
+                  <option value="">Select Room</option>
+                </select>
               </div>
             </div>
           </div>

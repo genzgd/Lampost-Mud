@@ -28,7 +28,7 @@ class InstanceManager():
     def remove_old(self):
         stale_pulse = future_pulse(instance_preserve_hours * 60 * 60)
         for instance_id, instance in instance_map.copy().items():
-            if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entites if entity.is_player and entity.session]:
+            if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entities if entity.is_player and entity.session]:
                 del instance_instance[id]
 
     def get(self, instance_id):

@@ -148,7 +148,9 @@ class Entity(BaseItem):
             if new_instance:
                 new_instance.add_entity(self)
                 self.instance_id = new_instance.instance_id
-        if self.env.dbo_id:
+        if self.instance:
+            self.instance_room_id = self.env.dbo_id
+        elif self.env.dbo_id:
             self.room_id = self.env.dbo_id
         self.env.first_look(self)
 

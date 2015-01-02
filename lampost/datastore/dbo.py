@@ -1,6 +1,7 @@
+from lampost.datastore import dbofield
 from lampost.datastore.classes import get_dbo_class, set_dbo_class
 from lampost.context.resource import m_requires
-from lampost.datastore.dbofield import DBOField, value_wrapper
+from lampost.datastore.dbofield import DBOField
 from lampost.datastore.meta import CommonMeta, call_mro
 
 m_requires(__name__, 'log', 'perm', 'datastore')
@@ -17,8 +18,7 @@ class CoreDBO(metaclass=CommonMeta):
     def hydrate(self, dto):
         for field, dbo_field in self.dbo_fields.items():
             if field in dto:
-                dbo_value = dbo_field.hydrate_value(dto[field], self)
-                setattr(self, field, dbo_value)
+                dbo_value = dbo_field.hydrate(self, dto[field])
             else:
                 dbo_value = None
                 try:
@@ -47,14 +47,21 @@ class CoreDBO(metaclass=CommonMeta):
                 save_value[field] = dbo_field.save_value(self)
             except KeyError:
                 continue
-        return self.metafields(save_value, ['template_key'])
+        if hasattr(self, 'template_key'):
+            save_value['tk'] = dbo.template_key
+        return save_value
 
     def describe(self):
         return self._describe([], 0)
 
     @property
     def dto_value(self):
-        return {field: dbo_field.dto_value(getattr(self, field)) for field, dbo_field in self.dbo_fields.items()}
+        return {field: dbo_field.dto_value(self) for field, dbo_field in self.dbo_fields.items()}
+
+    @property
+    def cmp_value(self):
+        cmp_value = {field: dbo_field.cmp_value(self) for field, dbo_field in self.dbo_fields.items()}
+        return self.metafields(cmp_value, ['dbo_key_type', 'class_id', 'template_key'])
 
     @property
     def edit_dto(self):
@@ -79,15 +86,8 @@ class CoreDBO(metaclass=CommonMeta):
             if hasattr(self, attr):
                 append(getattr(self, attr), attr)
         for field, dbo_field in sorted(self.dbo_fields.items(), key=lambda field_value: field_value[0]):
-            value = getattr(self, field)
             try:
-                dbo_field.check_default(value)
-                wrapper = value_wrapper(value)
-                if hasattr(dbo_field, 'dbo_class_id'):
-                    append('', field)
-                    wrapper(lambda value: value._describe(display, level + 1))(value)
-                else:
-                    wrapper(append)(value, field)
+                append(dbo_field.save_value(self), field)
             except KeyError:
                 pass
 
@@ -153,6 +153,13 @@ class KeyDBO(CoreDBO):
         return self.metafields(self.dto_value, ['dbo_id', 'dbo_key', 'class_id',  'dbo_key_type', 'imm_level'])
 
     @property
+    def save_value(self):
+        save_value = super().save_value
+        if getattr(self, 'class_id', self.dbo_key_type) != self.dbo_key_type:
+            save_value['class_id'] = self.class_id
+        return save_value
+
+    @property
     def new_dto(self):
         dto = self.dto_value
         dto['can_write'] = True
@@ -166,6 +173,10 @@ class KeyDBO(CoreDBO):
 
     def autosave(self):
         save_object(self, autosave=True)
+
+    def to_db_value(self):
+        del dbofield.save_value_refs[:]
+        return self.save_value, dbofield.save_value_refs
 
 
 class ParentDBO(DBOAccess, KeyDBO):

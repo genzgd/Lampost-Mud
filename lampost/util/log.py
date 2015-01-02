@@ -64,9 +64,3 @@ class LogFactory():
         consumer.exception = logger.exception
         consumer.debug_enabled = lambda: logger.getEffectiveLevel() <= logging.DEBUG
         return logger
-
-
-
-
-
-

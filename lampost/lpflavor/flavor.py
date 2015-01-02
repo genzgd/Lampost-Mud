@@ -46,7 +46,7 @@ def _post_init():
 
     register('first_time_setup', setup.first_time_setup)
     register('first_room_setup', setup.first_room_setup)
-    register('player_create', _player_create)
+    register('player_create', _player_create, priority=1000)
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
     register('game_settings', _game_settings)
@@ -57,6 +57,11 @@ def _player_create(player, user):
         setattr(player, attr_name, start_value)
         setattr(player, 'perm_{}'.format(attr_name), start_value)
     fill_pools(player)
+    if player.race.start_instanced:
+        player.instance_room_id = player.race.start_room.dbo_id
+        player.room_id = None
+    else:
+        player.room_id = player.race.start_room.dbo_id
 
 
 def _player_baptise(player):

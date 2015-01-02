@@ -19,6 +19,7 @@ class Player(KeyDBO):
     room_id = DBOField()
     home_room = DBOField()
     instance_id = DBOField(0)
+    instance_room_id = DBOField()
     group = AutoField()
 
     is_player = True
