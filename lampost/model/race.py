@@ -13,7 +13,7 @@ class PlayerRace(DBOAccess, KeyDBO):
     name = DBOField("Unnamed")
     desc = DBOField('')
     base_attrs = DBOField({})
-    start_room = DBOField(dbo_class_id='room')
+    start_room = DBOLField(dbo_class_id='room')
     start_instanced = DBOField(False)
 
     @property

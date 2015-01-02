@@ -117,11 +117,12 @@ class DBOLField(DBOField):
         return instance.__dict__.get(self.field, self.default)
 
     def _save_value(self, instance):
-        return instance.__dict__.get(self.field, self.default)
+        return self._save_ref(instance, instance.__dict__.get(self.field, self.default))
 
     def meta_init(self, field):
         self.field = field
         self._hydrate_func = get_hydrate_func(load_keyed, self.default, self.dbo_class_id)
+        self._save_ref = get_hydrate_func(save_keyed, self.default, self.dbo_class_id)
         self._set_value = value_transform(to_dbo_key, self.default, field, self.dbo_class_id)
 
 
@@ -222,6 +223,14 @@ def to_dbo_key(dbo, class_id):
 
 def load_keyed(class_id, dbo_owner, dbo_id):
     return load_object(dbo_id, class_id if class_id != "untyped" else None)
+
+
+def save_keyed(class_id, dbo_owner, dto_repr):
+    if class_id == 'untyped':
+        save_value_refs.append(dtr_repr)
+    else:
+        save_value_refs.append('{}:{}'.format(class_id, dto_repr))
+    return dto_repr
 
 
 def load_any(class_id, dbo_owner, dto_repr):
