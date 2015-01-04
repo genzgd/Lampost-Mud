@@ -32,6 +32,12 @@ def m_configured(module_name, *config_properties):
     _register(sys.modules[module_name], *config_properties)
 
 
+def get_value(property_name):
+    if ":" in property_name:
+        return _config_section_values[property_name]
+    return _config_values[property_name]
+
+
 def set_config(consumer, properties):
     for prop in properties:
         try:

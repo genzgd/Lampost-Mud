@@ -41,7 +41,7 @@ class MudNature():
         register('missing_env', self._start_env)
 
     def _player_create(self, player, user):
-        if len(user.player_ids) == 1 and not player.Imm_level:
+        if len(user.player_ids) == 1 and not player.imm_level:
             player.imm_level = perm_level('builder')
             update_immortal_list(player)
             dispatch('imm_level_change', player, 0)

@@ -16,9 +16,14 @@ def register(name, service, export_methods=False):
     _registered_modules.append(service)
     if export_methods:
         _methods[name] = {}
-        for attr, value in service.__class__.__dict__.items():
-            if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
-                _methods[name][attr] = value.__get__(service, service.__class__)
+        if inspect.ismodule(service):
+            for attr, value in service.__dict__.items():
+                if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
+                    _methods[name][attr] = value
+        else:
+            for attr, value in service.__class__.__dict__.items():
+                if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
+                    _methods[name][attr] = value.__get__(service, service.__class__)
     for cls in _consumer_map.get(name, []):
         _inject(cls, name, service)
     if name in _consumer_map:

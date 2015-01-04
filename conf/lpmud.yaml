@@ -28,6 +28,17 @@ lpmud:
     desc: 'Default room size'
     value: 10
   -
+    name: 'default_player_race'
+    desc: 'The default player race definition'
+    value:
+      dbo_id: 'human'
+      name: 'Human'
+      desc: 'The lovable but fallible human race'
+  -
+    name: 'base_attr_value'
+    desc: 'Default attribute value for new races'
+    value: 5
+  -
     name: room_stamina
     desc: Stamina cost for default room size'
     value: 2

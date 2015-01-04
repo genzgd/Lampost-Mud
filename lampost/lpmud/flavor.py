@@ -1,7 +1,7 @@
 from importlib import import_module
 
 from lampost.datastore.dbofield import DBOField
-from lampost.lpmud import setup
+from lampost.lpmud.archetype import PlayerRaceLP
 from lampost.lpmud.attributes import ATTR_LIST, fill_pools, base_pools, RESOURCE_POOLS, ATTRIBUTES
 from lampost.lpmud.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, WEAPON_TYPES
 from lampost.lpmud.skill import add_skill
@@ -11,6 +11,8 @@ from lampost.model.race import PlayerRace
 
 
 m_requires(__name__, 'context', 'dispatcher', 'datastore', 'perm')
+
+m_configured(__name__, 'default_player_race')
 
 equip_slots = ['finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
                'cloak', 'waist', 'wrist', 'one-hand', 'two-hand']
@@ -44,12 +46,17 @@ def _post_init():
     skill_calculation.extend([{'dbo_id': 'roll', 'name': 'Dice Roll'}, {'dbo_id': 'skill', 'name': 'Skill Level'}])
     context.set('skill_calculation', skill_calculation)
 
-    register('first_time_setup', setup.first_time_setup)
-    register('first_room_setup', setup.first_room_setup)
+    register('first_time_setup', _first_time_setup)
     register('player_create', _player_create, priority=1000)
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
     register('game_settings', _game_settings)
+
+
+def _first_time_setup():
+    new_race_dto = PlayerRaceLP.new_dto()
+    new_race_dto.update(default_player_race)
+    create_object(PlayerRace, new_race_dto)
 
 
 def _player_create(player, user):

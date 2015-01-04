@@ -219,7 +219,8 @@ def to_dbo_key(dbo, class_id):
     try:
         return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
     except AttributeError:
-        error('Attempting to set dbo_ref with unkeyed value {}', dbo)
+        # The value is
+        return dbo
 
 
 def load_keyed(class_id, dbo_owner, dbo_id):
@@ -228,7 +229,7 @@ def load_keyed(class_id, dbo_owner, dbo_id):
 
 def save_keyed(class_id, dbo_owner, dto_repr):
     if class_id == 'untyped':
-        save_value_refs.append(dtr_repr)
+        save_value_refs.append(dto_repr)
     else:
         save_value_refs.append('{}:{}'.format(class_id, dto_repr))
     return dto_repr

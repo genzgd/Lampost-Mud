@@ -1,7 +1,8 @@
 from lampost.datastore.dbo import KeyDBO, DBOAccess
 from lampost.datastore.dbofield import DBOField, DBOLField
+from lampost.gameops.config import m_configured
 
-base_attr_value = 5
+m_configured(__name__, 'base_attr_value', 'default_start_room')
 
 
 class PlayerRace(DBOAccess, KeyDBO):
@@ -13,11 +14,11 @@ class PlayerRace(DBOAccess, KeyDBO):
     name = DBOField("Unnamed")
     desc = DBOField('')
     base_attrs = DBOField({})
-    start_room = DBOLField(dbo_class_id='room')
+    start_room = DBOLField(default_start_room, 'room')
     start_instanced = DBOField(False)
 
-    @property
-    def new_dto(self):
-        dto = super().new_dto
-        dto['base_attrs'] = {attr_name: base_attr_value for attr_name in self.attr_list}
+    @classmethod
+    def new_dto(cls):
+        dto = super().new_dto()
+        dto['base_attrs'] = {attr_name: base_attr_value for attr_name in cls.attr_list}
         return dto

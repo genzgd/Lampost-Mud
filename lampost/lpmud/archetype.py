@@ -6,6 +6,6 @@ class Archetype(PlayerRace):
     dbo_set_key = 'arch'
 
 
-class PLayerRaceLP(PlayerRace):
+class PlayerRaceLP(PlayerRace):
     class_id = 'race'
     default_skills = DBOField([], 'default_skill')

@@ -14,6 +14,7 @@ m_requires(__name__, 'dispatcher', 'datastore')
 
 m_configured(__name__, 'default_start_room')
 
+
 class PlayerLP(Player, EntityLP, BaseItem):
     dbo_key_type = 'player'
 
