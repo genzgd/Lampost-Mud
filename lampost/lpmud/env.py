@@ -1,8 +1,12 @@
 from lampost.datastore.dbofield import DBOField
 import lampost.env.room
 from lampost.gameops.action import ActionError
+from lampost.context.config import m_configured
+
+m_configured(__name__, 'room_stamina', 'room_action', 'default_room_size')
 
 exit_cost_map = {}
+
 
 prep_multiplier = 1
 
@@ -12,8 +16,8 @@ def find_cost(room):
         try:
             return exit_cost_map[room.size]
         except KeyError:
-            exit_cost_map[room.size] = {'action': int(action_calc * room.size / lampost.env.room.default_room_size),
-                                        'stamina': int(stamina_calc * room.size / lampost.env.room.default_room_size)}
+            exit_cost_map[room.size] = {'action': int(room_stamina * room.size / default_room_size),
+                                        'stamina': int(room_action * room.size / default_room_size)}
             return exit_cost_map[room.size]
 
 

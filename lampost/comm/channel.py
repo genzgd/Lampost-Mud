@@ -1,9 +1,12 @@
 from lampost.client.services import ClientService
 from lampost.gameops.action import make_action
 from lampost.context.resource import m_requires, provides
+from lampost.context.config import m_configured
 from lampost.util.lputil import timestamp
 
 m_requires(__name__, 'dispatcher', 'datastore', 'channel_service')
+
+m_configured(__name__, 'max_channel_history')
 
 ALL_CHANNELS = 'all_channels'
 GENERAL_CHANNELS = 'general_channels'
@@ -52,10 +55,6 @@ class ChannelService(ClientService):
         register('session_connect', self._session_connect)
         register('player_connect', self._player_connect)
         register('player_logout', self._player_logout)
-        register('server_settings', self._update_settings)
-
-    def _update_settings(self, server_settings):
-        self.max_channel_history = server_settings.get('max_channel_history', 1000)
 
     def register_channel(self, channel_id, general=False):
         add_set_key(ALL_CHANNELS, channel_id)
@@ -108,7 +107,7 @@ class ChannelService(ClientService):
 
     def _prune_channels(self):
         for channel_id in self.all_channels:
-            trim_db_list(channel_key(channel_id), 0, self.max_channel_history)
+            trim_db_list(channel_key(channel_id), 0, max_channel_history)
 
 
 def channel_key(channel_id):

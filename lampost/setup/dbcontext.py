@@ -1,4 +1,4 @@
-import lampost.gameops.event
+from importlib import import_module
 
 from lampost.context.resource import provides, register
 from lampost.context.scripts import select_json
@@ -13,7 +13,7 @@ class DbContext():
 
         register('log', LogFactory())
         select_json()
-        register('dispatcher', lampost.gameops.event, True)
+        register('dispatcher', import_module('lampost.gameops.event'), True)
         register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)
 
     def set(self, key, value):

@@ -1,11 +1,8 @@
-from lampost.client.user import UserManager
-from lampost.comm.channel import ChannelService
+from importlib import import_module
+
 from lampost.context.resource import m_requires, context_post_init
-from lampost.env.room import Room
-from lampost.gameops.config import Config, create_from_dictionary, get_value
-from lampost.gameops.permissions import Permissions
-from lampost.model.area import Area
-from lampost.mud.mud import MudNature
+from lampost.gameops.db_config import Config, create_from_dicts
+from lampost.context.config import get_value, activate
 from lampost.setup import init_config
 from lampost.setup.dbcontext import DbContext
 
@@ -33,20 +30,20 @@ def new_setup(args):
     imm_name = args.imm_name.lower()
 
     yaml_config = init_config.load_config(args.config_file)
-    config = create_from_dictionary(args.config_id, yaml_config, True)
+    config = create_from_dicts(args.config_id, yaml_config, True)
     config.update_value('mud', 'root_area_id', args.root_area)
     config.update_value('mud', 'default_start_room', room_id)
-    config.activate()
+    activate(config.section_values)
 
-    Permissions()
-    user_manager = UserManager()
-    ChannelService()
-    MudNature(args.flavor)
+    import_module('lampost.gameops.permissions').Permissions()
+    user_manager = import_module('lampost.client.user').UserManager()
+    import_module('lampost.comm.channel').ChannelService()
+    import_module('lampost.mud.mud').MudNature(args.flavor)
     context_post_init()
     dispatch('first_time_setup')
 
-    create_object(Area, {'dbo_id': args.root_area, 'name': args.root_area, 'owner_id': imm_name, 'next_room_id': 1})
-    create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room", 'desc': "A brand new start room for immortals."})
+    create_object(import_module('lampost.model.area').Area, {'dbo_id': args.root_area, 'name': args.root_area, 'owner_id': imm_name, 'next_room_id': 1})
+    create_object(import_module('lampost.env.room').Room, {'dbo_id': room_id, 'title': "Immortal Start Room", 'desc': "A brand new start room for immortals."})
 
     user = user_manager.create_user(args.imm_account, args.imm_password)
     player = {'dbo_id': imm_name, 'room_id': room_id, 'race': get_value('default_player_race')['dbo_id'],

@@ -1,11 +1,13 @@
 import time
+
 from lampost.context.resource import m_requires
 from lampost.datastore import classes
 from lampost.datastore.classes import get_dbo_class
 from lampost.editor.admin import admin_op
 from lampost.model.player import Player
 
-m_requires(__name__, 'log', 'datastore', 'perm', 'config_manager')
+
+m_requires(__name__, 'log', 'datastore', 'perm')
 
 
 @admin_op

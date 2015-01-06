@@ -4,7 +4,7 @@ from random import randint
 from tornado.ioloop import PeriodicCallback
 
 from lampost.context.resource import m_requires
-from lampost.gameops.config import m_configured
+from lampost.context.config import m_configured
 
 
 m_requires(__name__, 'log', 'datastore')

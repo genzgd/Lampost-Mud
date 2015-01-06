@@ -5,13 +5,15 @@ from lampost.client.handlers import MethodHandler
 from lampost.client.user import User
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
+from lampost.context.config import m_configured
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash
 from lampost.util.lputil import ClientError
 
 
-m_requires(__name__, 'datastore', 'dispatcher', 'user_manager', 'perm', 'email_sender', 'config_manager',
-           'friend_service', 'edit_update_service')
+m_requires(__name__, 'datastore', 'dispatcher', 'user_manager', 'perm', 'email_sender', 'friend_service')
+
+m_configured(__name__, 'mud_title')
 
 @requires('session_manager')
 class Settings(MethodHandler):
@@ -48,7 +50,7 @@ class Settings(MethodHandler):
             update_dict['password'] = user.password
         update_dict['email'] = update_dict['email'].lower()
         update_object(user, update_dict)
-        publish_edit('update', user)
+        dispatch('publish_edit', 'update', user)
 
 
     def delete_account(self):
@@ -97,7 +99,7 @@ class Settings(MethodHandler):
             raise DataError("User Email Not Found")
         user = load_object(user_id, User)
         email_msg = "Your {} account name is {}.\nThe players on this account are {}."\
-            .format(config_manager.name, user.user_name,
+            .format(mud_title, user.user_name,
                     ','.join([player_id.capitalize() for player_id in user.player_ids]))
         email_sender.send_targeted_email('Account/Player Names', email_msg, [user])
 
@@ -115,11 +117,11 @@ class Settings(MethodHandler):
             raise DataError("No Email On File For {}".format(info))
         temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(12))
         email_msg = "Your {} temporary password is {}.\nYou will be asked to change it after you log in."\
-            .format(config_manager.name, temp_pw)
+            .format(mud_title, temp_pw)
         user.password = make_hash(temp_pw)
         user.password_reset = True
         save_object(user)
-        email_sender.send_targeted_email('Your {} temporary password.'.format(config_manager.name), email_msg, [user])
+        email_sender.send_targeted_email('Your {} temporary password.'.format(mud_title), email_msg, [user])
 
     def set_password(self):
         user = self.session.user

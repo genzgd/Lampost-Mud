@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbofield import DBOField, DBOLField
 from lampost.env.room import Room
 from lampost.gameops.action import ActionError
-from lampost.gameops.config import m_configured
+from lampost.context.config import m_configured
 from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 from lampost.lpmud.entity import EntityLP
 from lampost.model.item import BaseItem

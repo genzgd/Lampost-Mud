@@ -1,35 +1,33 @@
 import time
-
 from datetime import datetime, timedelta
 from os import urandom
 from base64 import b64encode
 
 from lampost.context.resource import m_requires, requires, provides
-from lampost.gameops.display import SYSTEM_DISPLAY
+from lampost.context.config import m_configured
 from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log', 'dispatcher')
 
-m_configured(__name__, 'display')
+m_configured(__name__, 'refresh_link_interval', 'broadcast_interval', 'link_dead_prune', 'link_dead_interval',
+             'link_idle_refresh')
 
 @provides('session_manager')
 @requires('user_manager')
 class SessionManager():
+
     def __init__(self):
         self.session_map = {}
         self.player_info_map = {}
         self.player_session_map = {}
 
     def _post_init(self):
-        register('server_settings', self._update_settings)
+        register_p(self._refresh_link_status, seconds=refresh_link_interval)
+        register_p(self._broadcast_status, seconds=broadcast_interval)
+        self.link_dead_prune = timedelta(seconds=link_dead_prune)
+        self.link_dead_interval = timedelta(seconds=link_dead_interval)
+        self.link_idle_refresh = timedelta(seconds=link_idle_refresh)
         register('player_logout', self._player_logout)
-
-    def _update_settings(self, server_settings):
-        register_p(self._refresh_link_status, seconds=server_settings.get('refresh_link_interval', 5))
-        register_p(self._broadcast_status, seconds=server_settings.get('broadcast_interval', 30))
-        self.link_dead_prune = timedelta(seconds=server_settings.get('link_dead_prune', 120))
-        self.link_dead_interval = timedelta(seconds=server_settings.get('link_dead_interval', 15))
-        self.link_idle_refresh = timedelta(seconds=server_settings.get('link_idle_refresh', 45))
 
     def get_session(self, session_id):
         return self.session_map.get(session_id)
@@ -63,7 +61,7 @@ class SessionManager():
         dispatch('user_connect', session.user, client_data)
         dispatch('player_connect', session.player, client_data)
         session.append_list(stale_output)
-        session.player.display_line("-- Reconnecting Session --", SYSTEM_DISPLAY)
+        session.player.display_line("-- Reconnecting Session --", 'system')
         session.player.parse("look")
         return session
 
@@ -114,7 +112,7 @@ class SessionManager():
             raise ClientError("Player user does not match session user")
         self.player_session_map[player.dbo_id] = session
         session.connect_player(player)
-        session.display_line({'text': text, 'display': SYSTEM_DISPLAY})
+        session.display_line({'text': text, 'display': 'system'})
 
     def _player_logout(self, session):
         session.user = None
@@ -266,4 +264,3 @@ class GameSession(ClientSession):
     def disconnect(self):
         dispatch('player_logout', self)
         super().disconnect()
-

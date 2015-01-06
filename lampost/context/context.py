@@ -1,62 +1,54 @@
+from importlib import import_module
+
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
+from lampost.context.config import activate
 
-import lampost.client.web
-import lampost.editor.web
-from lampost.client.services import PlayerListService, AnyLoginService, EditUpdateService
-from lampost.client.user import UserManager
-from lampost.client.email import EmailSender
-from lampost.comm.channel import ChannelService
-from lampost.comm.message import MessageService
 from lampost.context.resource import provides, context_post_init, register
-from lampost.client.server import WebServer
-from lampost.context.scripts import select_json
-from lampost.env.instance import InstanceManager
-from lampost.gameops.event import Dispatcher
-from lampost.client.session import SessionManager
 from lampost.datastore.redisstore import RedisStore
-from lampost.gameops.config import ConfigManager
-from lampost.gameops.friend import FriendService
-from lampost.gameops.permissions import Permissions
-from lampost.mud.mud import MudNature
 from lampost.util.log import LogFactory
-from lampost.util.tools import Tools
+from lampost.context.scripts import select_json
+from lampost.gameops.db_config import Config
 
 
 @provides('context')
 class Context():
-
     def __init__(self, args):
-
         self.properties = {}
         register('log', LogFactory())
         select_json()
-        Tools()
         datastore = register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)
-        Dispatcher()
-        Permissions()
-        config_mgr = ConfigManager(args.config_id, args.config_file)
-        SessionManager()
-        UserManager()
+        config = datastore.load_object(args.config_id, Config)
+        activate(config.section_values)
 
-        EmailSender()
+        # We import any configuration dependent modules after the configuration is loaded and activated
+        #  In particular this includes any class that contains DBOField configured defaults
 
-        ChannelService()
-        FriendService()
-        MessageService()
-        PlayerListService()
-        EditUpdateService()
-        AnyLoginService()
-        MudNature(args.flavor)
-        InstanceManager()
-        web_server = WebServer()
+        register('dispatcher', import_module('lampost.gameops.event'), True)
+
+        import_module('lampost.gameops.permissions').Permissions()
+        import_module('lampost.client.session').SessionManager()
+        import_module('lampost.client.user').UserManager()
+
+        import_module('lampost.client.email').EmailSender()
+        import_module('lampost.comm.channel').ChannelService()
+        import_module('lampost.gameops.friend').FriendService()
+
+        import_module('lampost.comm.message').MessageService()
+        client_services = import_module('lampost.client.services')
+        client_services.PlayerListService()
+        client_services.EditUpdateService()
+        client_services.AnyLoginService()
+        import_module('lampost.mud.mud').MudNature(args.flavor)
+        import_module('lampost.env.instance').InstanceManager()
+        import_module('lampost.util.tools').Tools()
+        web_server = import_module('lampost.client.server').WebServer()
+
         context_post_init()
 
-        lampost.client.web.add_endpoints(web_server)
-        lampost.editor.web.add_endpoints(web_server)
+        import_module('lampost.client.web').init(web_server)
+        import_module('lampost.editor.web').add_endpoints(web_server)
 
-
-        config_mgr.start_service()
         web_server.add(r"/", RedirectHandler, url="/webclient/lampost.html")
         web_server.add(r"/webclient/(.*)", StaticFileHandler, path="webclient")
         web_server.start_service(args.port, args.server_interface)

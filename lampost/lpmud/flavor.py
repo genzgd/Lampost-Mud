@@ -19,7 +19,7 @@ equip_slots = ['finger', 'neck', 'torso', 'legs', 'head', 'feet', 'arms',
 
 equip_types = ['armor', 'shield', 'weapon', 'treasure']
 
-env_module = import_module('lampost.lpmud.env')
+__import__('lampost.lpmud.env')
 __import__('lampost.lpmud.mobile')
 __import__('lampost.lpmud.article')
 __import__('lampost.lpmud.archetype')
@@ -50,7 +50,6 @@ def _post_init():
     register('player_create', _player_create, priority=1000)
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
-    register('game_settings', _game_settings)
 
 
 def _first_time_setup():
@@ -79,11 +78,6 @@ def _player_baptise(player):
 
     base_pools(player)
     player.start_refresh()
-
-
-def _game_settings(game_settings):
-    env_module.stamina_calc = game_settings.get('room_stamina', 2)
-    env_module.action_calc = game_settings.get('room_action', 10)
 
 
 def _player_connect(player, *_):

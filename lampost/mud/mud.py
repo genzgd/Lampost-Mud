@@ -2,7 +2,7 @@ from importlib import import_module
 from lampost.env.movement import Direction
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.env.room import Room, safe_room
-from lampost.gameops.config import m_configured
+from lampost.context.config import m_configured
 from lampost.mud.action import imm_actions
 from lampost.context.resource import requires, m_requires, register_module
 from lampost.comm.channel import Channel

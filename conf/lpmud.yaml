@@ -20,11 +20,11 @@ mud:
 
 lpmud:
   -
-    name: 'room_reset'
+    name: 'room_reset_time'
     desc: 'Room reset time (in seconds}.'
     value: 180
   -
-    name: 'room_size'
+    name: 'default_room_size'
     desc: 'Default room size'
     value: 10
   -

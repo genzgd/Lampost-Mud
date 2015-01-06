@@ -8,6 +8,7 @@ from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import CoreDBO, ChildDBO
 from lampost.datastore.dbofield import DBOField, DBOCField
 from lampost.env.movement import Direction
+from lampost.context.config import m_configured
 from lampost.gameops.script import Scriptable
 from lampost.gameops.display import *
 from lampost.model.item import Connected
@@ -15,8 +16,7 @@ from lampost.model.item import Connected
 
 m_requires(__name__, 'log', 'dispatcher', 'datastore')
 
-default_room_size = 10
-room_reset_time = 600
+m_configured(__name__, 'default_room_size', 'room_reset_time')
 
 
 def tell(listeners, msg_type, *args):

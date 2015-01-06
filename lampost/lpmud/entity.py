@@ -1,6 +1,6 @@
 from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
-from lampost.gameops.config import configured, m_configured
+from lampost.context.config import m_configured
 from lampost.lpmud.fight import Fight
 from lampost.lpmud.attributes import need_refresh, POOL_KEYS
 from lampost.lpmud.combat import calc_consider
