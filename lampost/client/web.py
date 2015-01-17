@@ -5,14 +5,14 @@ from lampost.client.settings import Settings
 from lampost.context.config import m_configured
 
 
-m_configured(__name__, 'mud_title', 'mud_description')
+m_configured(__name__, 'lampost_title', 'lampost_description')
 
 _web_server = None
 
 
 def _on_configured():
     if _web_server:
-        _web_server.lsp_js('config.js', "var lampost_config = {{title:'{0}', description:'{1}'}};".format(mud_title, mud_description))
+        _web_server.lsp_js('config.js', "var lampost_config = {{title:'{0}', description:'{1}'}};".format(lampost_title, lampost_description))
 
 
 def init(web_server):

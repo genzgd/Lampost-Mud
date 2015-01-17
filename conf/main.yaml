@@ -6,10 +6,15 @@
 #
 #----
 
+
+include:
+  -lpmud
+
+
 sections:
   general:
     desc: 'Base game engine settings'
-  display:
+  client:
     desc: 'Default client display settings'
   server:
     desc: 'Server connection settings'
@@ -17,10 +22,10 @@ sections:
 
 general:
   -
-    name: 'mud_title'
+    name: 'lampost_title'
     value: 'Lampost (New Install)'
   -
-    name: 'mud_description'
+    name: 'lampost_description'
     value: 'A fresh install of Lampost Mud'
   -
     name: 'auto_imm_level'
@@ -85,7 +90,7 @@ client:
         name: 'shout_channel'
         desc: 'Shout Channel'
         value:
-          color: '#ee0000'
+          color: '#00dd00'
       -
         name: 'imm_channel'
         desc: 'Immortal Channel'

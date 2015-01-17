@@ -13,7 +13,7 @@ from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'datastore', 'dispatcher', 'user_manager', 'perm', 'email_sender', 'friend_service')
 
-m_configured(__name__, 'mud_title')
+m_configured(__name__, 'lampost_title')
 
 @requires('session_manager')
 class Settings(MethodHandler):
@@ -99,7 +99,7 @@ class Settings(MethodHandler):
             raise DataError("User Email Not Found")
         user = load_object(user_id, User)
         email_msg = "Your {} account name is {}.\nThe players on this account are {}."\
-            .format(mud_title, user.user_name,
+            .format(lampost_title, user.user_name,
                     ','.join([player_id.capitalize() for player_id in user.player_ids]))
         email_sender.send_targeted_email('Account/Player Names', email_msg, [user])
 
@@ -117,11 +117,11 @@ class Settings(MethodHandler):
             raise DataError("No Email On File For {}".format(info))
         temp_pw = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(12))
         email_msg = "Your {} temporary password is {}.\nYou will be asked to change it after you log in."\
-            .format(mud_title, temp_pw)
+            .format(lampost_title, temp_pw)
         user.password = make_hash(temp_pw)
         user.password_reset = True
         save_object(user)
-        email_sender.send_targeted_email('Your {} temporary password.'.format(mud_title), email_msg, [user])
+        email_sender.send_targeted_email('Your {} temporary password.'.format(lampost_title), email_msg, [user])
 
     def set_password(self):
         user = self.session.user

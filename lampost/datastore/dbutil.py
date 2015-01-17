@@ -5,6 +5,7 @@ from lampost.datastore import classes
 from lampost.datastore.classes import get_dbo_class
 from lampost.editor.admin import admin_op
 from lampost.model.player import Player
+from lampost.setup.configinit import load_config
 
 
 m_requires(__name__, 'log', 'datastore', 'perm')
@@ -78,4 +79,19 @@ def rebuild_all_fks():
 
 
     return "{} objects updated in {} seconds".format(updated, time.time() - start_time)
+
+
+@admin_op
+def restore_db_from_yaml(config_id='lampost', path='conf', force="no"):
+    yaml_config = load_config(path)
+    existing = load_object(config_id, 'config')
+    if existing:
+        if force != 'yes':
+            return "Object exists and force is not 'yes'"
+        delete_object(existing)
+    config = create_from_dicts(config_id, yaml_config, True)
+    config.activate()
+    return 'Config {} successfully loaded from yaml files'.format(config_id)
+
+
 

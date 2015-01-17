@@ -11,10 +11,7 @@ class DbContext():
     def __init__(self, args):
         self.properties = {}
 
-        register('log', LogFactory())
-        select_json()
-        register('dispatcher', import_module('lampost.gameops.event'), True)
-        register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)
+
 
     def set(self, key, value):
         self.properties[key] = value

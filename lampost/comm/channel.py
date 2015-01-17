@@ -8,9 +8,6 @@ m_requires(__name__, 'dispatcher', 'datastore', 'channel_service')
 
 m_configured(__name__, 'max_channel_history')
 
-ALL_CHANNELS = 'all_channels'
-GENERAL_CHANNELS = 'general_channels'
-
 
 class Channel():
     def __init__(self, channel_type, instance_id=None, general=False, aliases=()):
@@ -49,22 +46,22 @@ class ChannelService(ClientService):
 
     def _post_init(self):
         super()._post_init()
-        self.all_channels = fetch_set_keys(ALL_CHANNELS)
-        self.general_channels = fetch_set_keys(GENERAL_CHANNELS)
+        self.all_channels = fetch_set_keys('all_channels')
+        self.general_channels = fetch_set_keys('general_channels')
         register('maintenance', self._prune_channels)
         register('session_connect', self._session_connect)
         register('player_connect', self._player_connect)
         register('player_logout', self._player_logout)
 
     def register_channel(self, channel_id, general=False):
-        add_set_key(ALL_CHANNELS, channel_id)
+        add_set_key('all_channels', channel_id)
         self.all_channels.add(channel_id)
         if general:
-            add_set_key(GENERAL_CHANNELS, channel_id)
+            add_set_key('general_channels', channel_id)
             self.general_channels.add(channel_id)
 
     def unregister_channel(self, channel_id):
-        delete_set_key(ALL_CHANNELS, channel_id)
+        delete_set_key('all_channels', channel_id)
         self.all_channels.discard(channel_id)
         self.general_channels.discard(channel_id)
 

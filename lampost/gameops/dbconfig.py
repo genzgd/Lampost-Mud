@@ -4,10 +4,10 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbo import DBOField, ParentDBO, ChildDBO, CoreDBO
 
 
-m_requires(__name__, 'log', 'datastore', 'context')
+m_requires(__name__, 'log', 'datastore')
 
 
-def create_from_dicts(config_id, raw_configs, set_defaults=False):
+def create(config_id, raw_configs, set_defaults=False):
     sections = {}
     all_values = defaultdict(set)
 

@@ -2,13 +2,13 @@ from importlib import import_module
 
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
-from lampost.context.config import activate
 
+from lampost.context.config import activate
 from lampost.context.resource import provides, context_post_init, register
-from lampost.datastore.redisstore import RedisStore
 from lampost.util.log import LogFactory
 from lampost.context.scripts import select_json
-from lampost.gameops.db_config import Config
+from lampost.datastore.redisstore import RedisStore
+from lampost.gameops.dbconfig import Config
 
 
 @provides('context')
@@ -22,7 +22,7 @@ class Context():
         activate(config.section_values)
 
         # We import any configuration dependent modules after the configuration is loaded and activated
-        #  In particular this includes any class that contains DBOField configured defaults
+        # In particular this includes any class that contains DBOField configured defaults
 
         register('dispatcher', import_module('lampost.gameops.event'), True)
 

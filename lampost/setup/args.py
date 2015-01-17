@@ -3,7 +3,6 @@ import argparse
 parent_parser = argparse.ArgumentParser(add_help=False)
 
 config_group = parent_parser.add_argument_group(title="Lampost Engine Configuration")
-config_group.add_argument('-fl', '--flavor', help="engine flavor module", default='lpmud')
 config_group.add_argument('-cid', '--config_id', help="database configuration id", default='ctest')
 
 log_group = parent_parser.add_argument_group(title="Logging Configuration")
@@ -26,7 +25,8 @@ web_group.add_argument('-p', '--port', help="web server port", type=int, default
 web_group.add_argument('-si', help="web server network interface", default='127.0.0.1', metavar="NW_INT", dest="server_interface")
 
 
-config_group.add_argument('-c', '--config_file', help='default yaml configuration file or directory', default='conf')
+config_group.add_argument('-c', '--config_dir', help='yaml configuration directory', default='conf')
+config_group.add_argument('-c', '--config_file', help='yaml configuration file', default='main')
 
 create_parser = argparse.ArgumentParser(parents=[parent_parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                       description="create_lp_db -- Creation utility for the Lampost Game Engine https://github.com/genzgd/Lampost-Mud")

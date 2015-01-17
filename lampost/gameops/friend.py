@@ -5,7 +5,7 @@ from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm')
 
-m_configured(__name__, 'mud_title')
+m_configured(__name__, 'lampost_title')
 
 _REQUEST_KEY = "friend_requests"
 _FRIEND_EMAIL_KEY = "friend_email_notifies"
@@ -68,7 +68,7 @@ class FriendService():
         users = [load_object(user_id, User) for user_id in notify_user_ids]
         if users:
             email_sender.send_targeted_email("{} Login".format(player.name),
-                                             "Your friend {} just logged into {}.".format(player.name, mud_title), users)
+                                             "Your friend {} just logged into {}.".format(player.name, lampost_title), users)
 
     def _delete_player(self, player_id):
         for friend_id in fetch_set_keys(friend_key(player_id)):

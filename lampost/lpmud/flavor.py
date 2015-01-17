@@ -25,6 +25,7 @@ __import__('lampost.lpmud.article')
 __import__('lampost.lpmud.archetype')
 __import__('lampost.lpmud.feature', globals(), locals(), ['store', 'touchstone'])
 
+dbo_imports = ['env, mobile, article, archetype, feature']
 
 def _post_init():
     PlayerRace.attr_list = ATTR_LIST
