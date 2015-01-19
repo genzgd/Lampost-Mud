@@ -1,6 +1,8 @@
 from lampost.lpmud.archetype import PlayerRace
 
-from lampost.context import config
+from lampost.mud import mudcore
+from lampost.context import config, resource
+from lampost.lpmud.server import NewCharacterData
 from lampost.model.area import Area
 from lampost.env.room import Room
 
@@ -22,6 +24,7 @@ def first_time_setup(args, datastore, config_values):
     return first_player
 
 
-def start_engine(args):
-    pass
+def start_engine(args, web_server):
+    resource.register('mud_core', mudcore)
+    web_server.add(r'/client_data/new_char', NewCharacterData)
 

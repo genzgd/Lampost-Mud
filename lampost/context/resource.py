@@ -13,7 +13,8 @@ _registered_modules = []
 
 def register(name, service, export_methods=False):
     _registry[name] = service
-    _registered_modules.append(service)
+    if service not in _registered_modules:
+        _registered_modules.append(service)
     if export_methods:
         _methods[name] = {}
         if inspect.ismodule(service):
@@ -29,10 +30,6 @@ def register(name, service, export_methods=False):
     if name in _consumer_map:
         del _consumer_map[name]
     return service
-
-
-def register_module(module):
-    _registered_modules.append(module)
 
 
 def inject(cls, name):
@@ -68,7 +65,8 @@ def m_requires(module_name, *resources):
     module = sys.modules[module_name]
     for name in resources:
         inject(module, name)
-    _registered_modules.append(module)
+    if module not in _registered_modules:
+        _registered_modules.append(module)
 
 
 def get_resource(name):

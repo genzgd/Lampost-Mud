@@ -31,6 +31,10 @@ general:
     desc: 'Local file directory for dynamic scripts'
     value: 'lampost_scripts'
   -
+    name: 'instance_preserve_hours'
+    desc: 'Number of hours to keep an instance in memory even if no players are in it'
+    value: 24
+  -
     name: 'imm_levels'
     desc: 'Permission levels for immortals'
     value:

@@ -1,4 +1,4 @@
-from lampost.client.user import User
+from lampost.server.user import User
 from lampost.context.resource import m_requires
 from lampost.context.config import m_configured
 from lampost.util.lputil import ClientError

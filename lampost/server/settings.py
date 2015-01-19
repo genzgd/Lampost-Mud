@@ -1,8 +1,8 @@
 import random
 import string
 
-from lampost.client.handlers import MethodHandler
-from lampost.client.user import User
+from lampost.server.handlers import MethodHandler
+from lampost.server.user import User
 from lampost.context.resource import m_requires, requires
 from lampost.datastore.exceptions import DataError
 from lampost.context.config import m_configured

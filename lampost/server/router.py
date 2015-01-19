@@ -1,7 +1,6 @@
-from lampost.client.clientdata import NewCharacterData
-from lampost.client.handlers import GameConnect, Link, Login, Action, Register, Unregister, RemoteLog
-from lampost.client.messages import FriendResponse, MessageDelete
-from lampost.client.settings import Settings
+from lampost.server.handlers import GameConnect, Link, Login, Action, Register, Unregister, RemoteLog
+from lampost.server.messages import FriendResponse, MessageDelete
+from lampost.server.settings import Settings
 from lampost.context.config import m_configured
 
 
@@ -27,8 +26,6 @@ def init(web_server):
     web_server.add(r'/register', Register)
     web_server.add(r'/unregister', Unregister)
     web_server.add(r'/remote_log', RemoteLog)
-
-    web_server.add(r'/client_data/new_char', NewCharacterData)
 
     web_server.add(r'/messages/friend_response', FriendResponse)
     web_server.add(r'/messages/delete', MessageDelete)

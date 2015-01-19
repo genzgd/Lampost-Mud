@@ -1,4 +1,4 @@
-
+from importlib import import_module
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
 
@@ -7,15 +7,16 @@ from lampost.comm.message import MessageService
 from lampost.context import resource, scripts, config
 from lampost.context.resource import context_post_init
 from lampost.datastore.redisstore import RedisStore
+from lampost.env.instance import InstanceManager
 from lampost.gameops import event, dbconfig, permissions
 from lampost.gameops.friend import FriendService
 from lampost.server.email import EmailSender
 from lampost.server.server import WebServer
-from lampost.server.services import PlayerListService, EditUpdateService
+from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
 from lampost.server.session import SessionManager
 from lampost.server.user import UserManager
 from lampost.util.log import LogFactory
-from lampost.server import web
+from lampost.server import router
 
 
 def start(args):
@@ -30,11 +31,14 @@ def start(args):
     resource.register('dispatcher', event, True)
     resource.register('perm', permissions, True)
 
+    web_server = WebServer()
+
     app_setup = import_module('{}.setup'.format(args.app_id))
-    app_setup.start_engine(args)
+    app_setup.start_engine(args, web_server)
 
     resource.register('user_manager', UserManager())
     resource.register('session_manager', SessionManager())
+    resource.register('instance_manager', InstanceManager())
     resource.register('email_sender', EmailSender())
     resource.register('channel_service', ChannelService())
     resource.register('friend_service', FriendService())
@@ -45,8 +49,7 @@ def start(args):
 
     context_post_init()
 
-    web_server = WebServer()
-    web.init(web_server)
+    router.init(web_server)
 
     web_server.add(r"/", RedirectHandler, url="/webclient/lampost.html")
     web_server.add(r"/webclient/(.*)", StaticFileHandler, path="webclient")

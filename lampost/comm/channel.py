@@ -1,4 +1,4 @@
-from lampost.client.services import ClientService
+from lampost.server.services import ClientService
 from lampost.gameops.action import make_action
 from lampost.context.resource import m_requires
 from lampost.context.config import m_configured

@@ -10,11 +10,7 @@ from lampost.gameops.template import Template
 from lampost.mud.action import mud_action, imm_action
 
 
-m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
-
-
-def _post_init():
-    context.set('skill_types', [skill_template.dbo_key_type for skill_template in dbo_types(SkillTemplate)])
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 
 def add_skill(skill_template, target, skill_level, skill_source=None):

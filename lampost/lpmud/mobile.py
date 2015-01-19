@@ -8,7 +8,7 @@ from lampost.lpmud.entity import EntityLP
 from lampost.lpmud.skill import add_skill
 from lampost.model.mobile import MobileTemplate
 
-m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 m_configured(__name__, 'affinities')
 

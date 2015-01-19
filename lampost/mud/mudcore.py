@@ -9,12 +9,13 @@ m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'user_manager', '
 
 m_configured(__name__, 'default_start_room')
 
-
-shout_channel = Channel('shout', general=True)
-imm_channel = Channel('imm')
+_init_priority = 5000
 
 
 def _post_init():
+    global shout_channel, imm_channel
+    shout_channel = Channel('shout', general=True)
+    imm_channel = Channel('imm')
     register('player_create', _player_create)
     register('player_baptise', _baptise, priority=-100)
     register('imm_baptise', _imm_baptise, priority=-100)
@@ -41,7 +42,7 @@ def _baptise(player):
 def _imm_baptise(player):
     player.can_die = False
     player.immortal = True
-    self.imm_channel.add_sub(player)
+    imm_channel.add_sub(player)
     for cmd in imm_actions:
         if player.imm_level >= perm_level(cmd.imm_level):
             player.enhance_soul(cmd)
@@ -49,7 +50,7 @@ def _imm_baptise(player):
             player.diminish_soul(cmd)
 
 
-def _start_env(self, player):
+def _start_env(player):
     instance = instance_manager.get(player.instance_id)
     instance_room = load_object(player.instance_room_id, Room, silent=True)
     player_room = load_object(player.room_id, Room, silent=True)
@@ -60,7 +61,7 @@ def _start_env(self, player):
 
     if instance_room and not player_room:
         # Player has no 'non-instanced' room, so presumably was created in a new instanced tutorial/racial area
-        instance = self.instance_manager.next_instance()
+        instance = instance_manager.next_instance()
         return instance.get_room(player.instance_room_id)
 
     # If we get here whatever instance data was associated with the player is no longer valid

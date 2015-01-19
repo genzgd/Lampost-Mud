@@ -1,4 +1,5 @@
 from lampost.comm.broadcast import BroadcastMap
+from lampost.context.config import m_configured
 from lampost.context.resource import m_requires, provides, requires
 from lampost.datastore.dbofield import DBOField
 from lampost.env.movement import Direction
@@ -10,11 +11,11 @@ from lampost.model.item import BaseItem
 
 m_requires(__name__, 'datastore', 'dispatcher')
 
+m_configured(__name__, 'instance_preserve_hours')
+
 instance_map = {}
-instance_preserve_hours = 24
 
 
-@provides('instance_manager')
 class InstanceManager():
     def _post_init(self):
         register('maintenance', self.remove_old)

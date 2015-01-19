@@ -1,6 +1,5 @@
-from lampost.client.handlers import SessionHandler
+from lampost.server.handlers import SessionHandler
 from lampost.context.resource import m_requires
-from lampost.model.race import PlayerRace
 
 m_requires(__name__, 'log', 'datastore')
 

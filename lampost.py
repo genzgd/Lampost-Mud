@@ -14,4 +14,4 @@ log.init_config(args)
 log.root_logger.info("Started with args {}", args)
 
 from lampost.setup import engine
-engine.start(startargs)
+engine.start(args)
