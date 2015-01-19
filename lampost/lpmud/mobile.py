@@ -1,3 +1,4 @@
+from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
 from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField
@@ -6,17 +7,10 @@ from lampost.lpmud.attributes import fill_pools
 from lampost.lpmud.entity import EntityLP
 from lampost.lpmud.skill import add_skill
 from lampost.model.mobile import MobileTemplate
-from lampost.model.race import base_attr_value
 
 m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 
-affinities = {'player': {'enemies': ['monster']},
-              'neutral': {'enemies': []},
-              'monster': {'enemies': ['player']}}
-
-
-def _post_init():
-    context.set('affinities', affinities)
+m_configured(__name__, 'affinities')
 
 
 class MobileTemplateLP(MobileTemplate):

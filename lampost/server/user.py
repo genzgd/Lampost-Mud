@@ -1,7 +1,7 @@
 from base64 import b64decode
 import time
 
-from lampost.context.resource import provides, m_requires
+from lampost.context.resource import m_requires
 from lampost.datastore.dbo import KeyDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.datastore.exceptions import DataError
@@ -41,7 +41,6 @@ class User(KeyDBO):
         return 0
 
 
-@provides('user_manager')
 class UserManager():
     def _post_init(self):
         register("user_connect", self._user_connect)

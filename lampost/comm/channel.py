@@ -1,6 +1,6 @@
 from lampost.client.services import ClientService
 from lampost.gameops.action import make_action
-from lampost.context.resource import m_requires, provides
+from lampost.context.resource import m_requires
 from lampost.context.config import m_configured
 from lampost.util.lputil import timestamp
 
@@ -41,7 +41,6 @@ class Channel():
         channel_service.add_sub(player.session, self.id)
 
 
-@provides('channel_service')
 class ChannelService(ClientService):
 
     def _post_init(self):

@@ -24,7 +24,6 @@ class ClientService():
             session.append(event)
 
 
-@provides('player_list_service')
 class PlayerListService(ClientService):
 
     def _post_init(self):
@@ -39,7 +38,6 @@ class PlayerListService(ClientService):
         self._session_dispatch({'player_list': player_list})
 
 
-@provides('any_login_service')
 class AnyLoginService(ClientService):
 
     def _post_init(self):
@@ -50,7 +48,6 @@ class AnyLoginService(ClientService):
         self._session_dispatch({'any_login': {'name': player.name}})
 
 
-@provides('edit_update_service', True)
 class EditUpdateService(ClientService):
 
     def _post_init(self):

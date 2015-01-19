@@ -58,3 +58,13 @@ lpmud:
       health: 1
       mental: 1
       action: 40
+  -
+    name: 'affinities'
+    desc: 'Automatic determination of "enemies" and "friends"'
+    value:
+      player:
+        enemies: ['monster']
+      neutral:
+        enemies: []
+      monster:
+        enemies: ['player']

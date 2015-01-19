@@ -3,19 +3,17 @@ from datetime import datetime, timedelta
 from os import urandom
 from base64 import b64encode
 
-from lampost.context.resource import m_requires, requires, provides
+from lampost.context.resource import m_requires, requires
 from lampost.context.config import m_configured
 from lampost.util.lputil import ClientError
 
-m_requires(__name__, 'log', 'dispatcher')
+m_requires(__name__, 'log', 'dispatcher', 'user_manager')
 
 m_configured(__name__, 'refresh_link_interval', 'broadcast_interval', 'link_dead_prune', 'link_dead_interval',
              'link_idle_refresh')
 
-@provides('session_manager')
-@requires('user_manager')
-class SessionManager():
 
+class SessionManager():
     def __init__(self):
         self.session_map = {}
         self.player_info_map = {}
@@ -68,7 +66,7 @@ class SessionManager():
     def login(self, session, user_name, password):
         user_name = user_name.lower()
         try:
-            user = self.user_manager.validate_user(user_name, password)
+            user = user_manager.validate_user(user_name, password)
         except ClientError as ce:
             session.append({'login_failure': ce.client_message})
             return
@@ -92,12 +90,12 @@ class SessionManager():
             self._connect_session(session, player, '-- Existing Session Logged Out --')
             player.parse('look')
         else:
-            player = self.user_manager.find_player(player_id)
+            player = user_manager.find_player(player_id)
             if not player:
                 session.append('logout')
                 return
             self._connect_session(session, player, 'Welcome {}'.format(player.name))
-            self.user_manager.login_player(player)
+            user_manager.login_player(player)
         client_data = {}
         dispatch('user_connect', session.user, client_data)
         dispatch('player_connect', player, client_data)
@@ -120,7 +118,7 @@ class SessionManager():
         if not player:
             return
         player.last_logout = int(time.time())
-        self.user_manager.logout_player(player)
+        user_manager.logout_player(player)
         session.player = None
         del self.player_info_map[player.dbo_id]
         del self.player_session_map[player.dbo_id]

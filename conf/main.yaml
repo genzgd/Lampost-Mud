@@ -7,10 +7,6 @@
 #----
 
 
-include:
-  -lpmud
-
-
 sections:
   general:
     desc: 'Base game engine settings'
@@ -34,6 +30,25 @@ general:
     name: 'script_dir'
     desc: 'Local file directory for dynamic scripts'
     value: 'lampost_scripts'
+  -
+    name: 'imm_levels'
+    desc: 'Permission levels for immortals'
+    value:
+      supreme: 100000
+      founder: 50000
+      admin: 10000
+      senior: 2000
+      builder: 1000
+      player: 0
+  -
+    name: 'system_accounts'
+    desc: 'Accounts without associated user objects for system permissions'
+    value:
+      - lampost
+  -
+    name: 'system_level'
+    desc: 'Default level for a system account'
+    value: 49999
 
 
 client:

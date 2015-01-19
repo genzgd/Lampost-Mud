@@ -71,18 +71,18 @@ class Config(ParentDBO):
 
     def on_loaded(self):
         self.section_values = {}
+        self.exports = {}
         for child_key in self.dbo_child_keys('c_sect'):
             section = load_object(child_key, ConfigSection)
             if section:
                 for setting in section.settings:
-                    self.section_values['{}:{}'.format(section.name, setting.name)] = setting.value
+                    self.section_values['{}:{}'.format(section.child_id, setting.name)] = setting.value
 
 
 class ConfigSection(ChildDBO):
     dbo_key_type = 'c_sect'
     dbo_parent_type = 'config'
 
-    name = DBOField()
     desc = DBOField()
     editor_constants = DBOField(False)
     settings = DBOField([], 'setting')

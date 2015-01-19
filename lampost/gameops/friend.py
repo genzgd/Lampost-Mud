@@ -1,5 +1,5 @@
 from lampost.client.user import User
-from lampost.context.resource import m_requires, provides
+from lampost.context.resource import m_requires
 from lampost.context.config import m_configured
 from lampost.util.lputil import ClientError
 
@@ -12,7 +12,6 @@ _FRIEND_EMAIL_KEY = "friend_email_notifies"
 _ALL_EMAIL_KEY = "all_email_notifies"
 
 
-@provides('friend_service')
 class FriendService():
 
     def _post_init(self):

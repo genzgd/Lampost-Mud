@@ -13,13 +13,13 @@ angular.module('lampost_mud').service('lmComm', ['lpEvent', 'lpData', 'lpRemote'
     function checkAllLogins() {
         if (lpData.notifies.indexOf('allDesktop') > -1 || lpData.notifies.indexOf('allSound') > -1) {
             if (!allLogins) {
-                lpRemote.registerService('any_login_service');
+                lpRemote.registerService('login_notify_service');
                 allLogins = true;
             }
         } else {
             if (allLogins) {
                 allLogins = false;
-                lpRemote.unregisterService('any_login_service');
+                lpRemote.unregisterService('login_notify_service');
 
             }
         }

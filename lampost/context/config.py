@@ -1,5 +1,6 @@
 import sys
 import logging
+import yaml
 
 from collections import defaultdict
 
@@ -67,10 +68,27 @@ def update_all():
         inject_config(consumer, properties)
 
 
-def activate(section_values):
+def load_yaml(path, main_conf='main'):
+    all_config = []
+
+    def add_yaml(path, file_name):
+        with open('{}/{}.yaml'.format(path, file_name), 'r') as yf:
+            try:
+                yaml_load = yaml.load(yf)
+                all_config.append(yaml_load)
+                for include_name in yaml_load.get('includes', ()):
+                    add_yaml(include_name)
+            except ParserError:
+                log.exception("Error parsing {}", yf)
+
+    add_yaml(path, main_conf)
+    return all_config
+
+
+def activate(all_values):
     _section_value_map.clear()
     _value_map.clear()
-    for section_key, value in section_values.items():
+    for section_key, value in all_values.items():
         _section_value_map[section_key] = value
         value_key = section_key.split(':')[1]
         if value_key in _value_map:
@@ -78,3 +96,4 @@ def activate(section_values):
         else:
             _value_map[value_key] = value
     update_all()
+    return _value_map

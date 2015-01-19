@@ -1,8 +1,9 @@
-from collections import defaultdict
 import itertools
 import random
+from collections import defaultdict
 
 from lampost.comm.broadcast import Broadcast
+
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import CoreDBO, ChildDBO
@@ -10,7 +11,6 @@ from lampost.datastore.dbofield import DBOField, DBOCField
 from lampost.env.movement import Direction
 from lampost.context.config import m_configured
 from lampost.gameops.script import Scriptable
-from lampost.gameops.display import *
 from lampost.model.item import Connected
 
 
@@ -57,7 +57,7 @@ class Exit(CoreDBO):
         return load_object(self.destination, Room)
 
     def examine(self, source, **_):
-        source.display_line('Exit: {}  {}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
+        source.display_line('Exit: {}  {}'.format(self._dir.desc, self.dest_room.title), 'exit')
 
     def __call__(self, source, **_):
         source.env.allow_leave(source, self)
@@ -80,7 +80,7 @@ class Room(ChildDBO, Connected, Scriptable):
     dbo_key_sort = lambda key: int(key.split(":")[1])
 
     desc = DBOCField()
-    size = DBOCField(default_room_size)
+    size = DBOCField(10)
     exits = DBOCField([], 'exit')
     extras = DBOCField([], 'base_item')
     mobile_resets = DBOCField([], 'mobile_reset')
@@ -113,7 +113,7 @@ class Room(ChildDBO, Connected, Scriptable):
         return itertools.chain(self.features, self.denizens, self.inven)
 
     def glance(self, source, **_):
-        return source.display_line(self.name, ROOM_DISPLAY)
+        return source.display_line(self.name, 'room')
 
     def entity_enters(self, entity, enter_action, entry_msg=None):
         self.receive_broadcast(entry_msg)
@@ -148,15 +148,15 @@ class Room(ChildDBO, Connected, Scriptable):
         self.examine(source)
 
     def examine(self, source, **_):
-        source.display_line(self.name, ROOM_TITLE_DISPLAY)
-        source.display_line('HRT', ROOM_DISPLAY)
-        source.display_line(self.desc, ROOM_DISPLAY)
-        source.display_line('HRB', ROOM_DISPLAY)
+        source.display_line(self.name, 'room_title')
+        source.display_line('HRT', 'room')
+        source.display_line(self.desc, 'room')
+        source.display_line('HRB', 'room')
         if self.exits:
             for my_exit in self.exits:
                 my_exit.examine(source)
         else:
-            source.display_line("No obvious exits", EXIT_DISPLAY)
+            source.display_line("No obvious exits", 'exit')
         tell([x for x in self.contents if x != source], 'glance', source)
 
     def short_exits(self):
@@ -168,7 +168,7 @@ class Room(ChildDBO, Connected, Scriptable):
                 return my_exit
 
     def on_loaded(self):
-        if not self._garbage_pulse:
+        if not self._garbage_pulse and register_p:
             self.reset()
             self._garbage_pulse = register_p(self.check_garbage, seconds=room_reset_time + 1)
 

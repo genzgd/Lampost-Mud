@@ -4,6 +4,7 @@ parent_parser = argparse.ArgumentParser(add_help=False)
 
 config_group = parent_parser.add_argument_group(title="Lampost Engine Configuration")
 config_group.add_argument('-cid', '--config_id', help="database configuration id", default='ctest')
+config_group.add_argument('-a', '--app_id', help="application module", default='lampost.lpmud')
 
 log_group = parent_parser.add_argument_group(title="Logging Configuration")
 log_group.add_argument('-l', '--log', help="default logging level", default='info', dest='log_level')
@@ -24,15 +25,13 @@ web_group = main_parser.add_argument_group(title="Web Server Configuration")
 web_group.add_argument('-p', '--port', help="web server port", type=int, default=2500)
 web_group.add_argument('-si', help="web server network interface", default='127.0.0.1', metavar="NW_INT", dest="server_interface")
 
-
-config_group.add_argument('-c', '--config_dir', help='yaml configuration directory', default='conf')
-config_group.add_argument('-c', '--config_file', help='yaml configuration file', default='main')
+config_group.add_argument('-cd', '--config_dir', help="yaml configuration directory", default='conf')
+config_group.add_argument('-cf', '--config_file', help="yaml configuration file", default='main')
 
 create_parser = argparse.ArgumentParser(parents=[parent_parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                      description="create_lp_db -- Creation utility for the Lampost Game Engine https://github.com/genzgd/Lampost-Mud")
+                                      description="lampost_setup -- Creation utility for the Lampost Game Engine https://github.com/genzgd/Lampost-Mud")
 
 create_parser.add_argument('-flush', help="Flush (remove all keys) form existing Redis database", const=True, default=False, action='store_const')
-create_parser.add_argument('-ra', '--root_area', help="root area name", default='immortal')
 
 imm_group = create_parser.add_argument_group(title="Immortal User Configuration")
 imm_group.add_argument('-ia', '--imm_account', help="root account name", default='root')

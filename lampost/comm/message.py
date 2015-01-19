@@ -1,10 +1,9 @@
-from lampost.context.resource import m_requires, provides
+from lampost.context.resource import m_requires
 from lampost.gameops.action import ActionError
 from lampost.util.lputil import timestamp
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'session_manager', 'user_manager')
 
-@provides('message_service')
 class MessageService():
 
     def _post_init(self):

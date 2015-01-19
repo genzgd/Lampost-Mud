@@ -1,12 +1,12 @@
 from smtplib import SMTPHeloError, SMTP, SMTPRecipientsRefused, SMTPSenderRefused, SMTPDataError
 from threading import Thread
 
-from lampost.context.resource import provides, requires, m_requires
+from lampost.context.resource import requires, m_requires
+
 
 m_requires(__name__, 'log')
 
 
-@provides('email_sender')
 class EmailSender():
     def __init__(self):
         try:
