@@ -38,13 +38,14 @@ def new_setup(args):
     config_values = config.activate(db_config.section_values)
 
     resource.register('dispatcher', event, True)
-    resource.register('perm', permissions, True)
+    perm = resource.register('perm', permissions, True)
+    perm._post_init()
     first_player = app_setup.first_time_setup(args, datastore, config_values)
 
     user_manager = UserManager()
     user = user_manager.create_user(args.imm_account, args.imm_password)
-    user_manager.attach_player(user, first_player)
-
+    player = user_manager.attach_player(user, first_player)
+    perm.update_immortal_list(player)
 
 
 

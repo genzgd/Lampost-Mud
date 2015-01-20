@@ -94,7 +94,7 @@ class UserManager():
         player.user_id = user.dbo_id
         save_object(player)
         save_object(user)
-        return user
+        return player
 
     def find_player(self, player_id):
         return load_object(player_id, Player)
