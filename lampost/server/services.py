@@ -1,4 +1,4 @@
-from lampost.context.resource import m_requires, provides
+from lampost.context.resource import m_requires
 
 m_requires(__name__, 'log', 'session_manager', 'dispatcher', 'perm')
 

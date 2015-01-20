@@ -39,7 +39,6 @@ def avg_calc(source, calc, skill_level=0):
 
 
 class SkillTemplate(DBOAccess, KeyDBO, Template):
-
     def on_loaded(self):
         if not self.auto_start:
             self.verbs = convert_verbs(self.verb)
@@ -52,7 +51,6 @@ class DefaultSkill(CoreDBO):
 
 
 class BaseSkill(CoreDBO):
-
     verb = DBOTField()
     name = DBOTField()
     desc = DBOTField()

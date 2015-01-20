@@ -26,7 +26,6 @@ web_group.add_argument('-p', '--port', help="web server port", type=int, default
 web_group.add_argument('-si', help="web server network interface", default='127.0.0.1', metavar="NW_INT", dest="server_interface")
 
 config_group.add_argument('-cd', '--config_dir', help="yaml configuration directory", default='conf')
-config_group.add_argument('-cf', '--config_file', help="yaml configuration file", default='main')
 
 create_parser = argparse.ArgumentParser(parents=[parent_parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                       description="lampost_setup -- Creation utility for the Lampost Game Engine https://github.com/genzgd/Lampost-Mud")

@@ -40,19 +40,6 @@ def inject(cls, name):
     _consumer_map[name].append(cls)
 
 
-def provides(name, export_methods=False):
-    def wrapper(cls):
-        original_init = cls.__init__
-
-        def init_and_register(self, *args, **kwargs):
-            register(name, self, export_methods)
-            original_init(self, *args, **kwargs)
-
-        cls.__init__ = init_and_register
-        return cls
-    return wrapper
-
-
 def requires(*resources):
     def wrapper(cls):
         for name in resources:

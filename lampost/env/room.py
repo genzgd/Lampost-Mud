@@ -16,7 +16,7 @@ from lampost.model.item import Connected
 
 m_requires(__name__, 'log', 'dispatcher', 'datastore')
 
-m_configured(__name__, 'default_room_size', 'room_reset_time')
+m_configured(__name__, 'room_reset_time')
 
 
 def tell(listeners, msg_type, *args):

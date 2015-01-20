@@ -16,7 +16,8 @@ from lampost.server.services import AnyLoginService, PlayerListService, EditUpda
 from lampost.server.session import SessionManager
 from lampost.server.user import UserManager
 from lampost.util.log import LogFactory
-from lampost.server import router
+from lampost.server import router as main_router
+from lampost.editor import router as edit_router
 
 
 def start(args):
@@ -49,7 +50,8 @@ def start(args):
 
     context_post_init()
 
-    router.init(web_server)
+    main_router.init(web_server)
+    edit_router.init(web_server)
 
     web_server.add(r"/", RedirectHandler, url="/webclient/lampost.html")
     web_server.add(r"/webclient/(.*)", StaticFileHandler, path="webclient")

@@ -1,6 +1,6 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.config import m_configured
-from lampost.context.resource import m_requires, provides, requires
+from lampost.context.resource import m_requires, requires
 from lampost.datastore.dbofield import DBOField
 from lampost.env.movement import Direction
 from lampost.env.room import Room

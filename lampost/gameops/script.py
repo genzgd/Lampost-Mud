@@ -1,6 +1,6 @@
 import os
 
-from lampost.context.resource import m_requires, inject, provides
+from lampost.context.resource import m_requires, inject
 from lampost.datastore.dbo import ChildDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.datastore.meta import CommonMeta
@@ -15,7 +15,6 @@ m_requires(__name__, 'log', 'datastore', 'dispatcher', 'script_manager')
 script_cache = {}
 
 
-@provides('script_manager')
 class ScriptManager():
 
     def _post_init(self):

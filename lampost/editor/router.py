@@ -1,3 +1,5 @@
+from importlib import import_module
+from lampost.context import resource
 from lampost.editor.admin import AdminHandler
 from lampost.editor.areas import AreaEditor, RoomEditor
 from lampost.editor.config import ConfigEditor, DisplayEditor, Properties
@@ -9,13 +11,15 @@ from lampost.editor.session import EditConnect, EditLogin, EditLogout
 from lampost.editor.shared import SocialsEditor, SkillEditor
 from lampost.env.room import Room
 from lampost.gameops.script import Script
+from lampost.lpmud.archetype import PlayerRace
 from lampost.lpmud.combat import AttackTemplate, DefenseTemplate
 from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
-from lampost.model.race import PlayerRace
 
 
-def add_endpoints(web_server):
+import_module('lampost.editor.dbops')
+
+def init(web_server):
     web_server.add(r'/editor/edit_connect', EditConnect)
     web_server.add(r'/editor/edit_login', EditLogin)
     web_server.add(r'/editor/edit_logout', EditLogout)

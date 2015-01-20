@@ -1,6 +1,6 @@
 import inspect
 
-from lampost.client.handlers import MethodHandler
+from lampost.server.handlers import MethodHandler
 from lampost.context.resource import m_requires
 
 m_requires(__name__, 'perm')

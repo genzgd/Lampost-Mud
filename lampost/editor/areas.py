@@ -7,7 +7,7 @@ from lampost.env.room import Room
 from lampost.context.config import m_configured
 from lampost.model.area import Area
 
-m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_update_service')
+m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_notify_service')
 
 m_configured(__name__, 'root_area_id', 'default_start_room')
 

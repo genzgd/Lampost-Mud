@@ -1,12 +1,12 @@
 import copy
 
-from lampost.client.handlers import MethodHandler, SessionHandler
+from lampost.server.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
-from lampost.datastore.classes import get_dbo_class
+from lampost.datastore.classes import get_dbo_class, dbo_types
 from lampost.lpmud.skill import SkillTemplate
 
 
-m_requires(__name__, 'perm', 'datastore', 'config_manager', 'context')
+m_requires(__name__, 'perm', 'datastore')
 
 
 class ConfigEditor(MethodHandler):
@@ -36,6 +36,7 @@ class DisplayEditor(MethodHandler):
 
 class Properties(SessionHandler):
     def main(self):
+        constants = {}
         constants['skill_types'] =  [skill_template.dbo_key_type for skill_template in dbo_types(SkillTemplate)]
         constants['features'] = [get_dbo_class(feature_id)().edit_dto for feature_id in ['touchstone', 'entrance', 'store']]
         self._return(constants)

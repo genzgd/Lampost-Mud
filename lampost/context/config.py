@@ -1,3 +1,4 @@
+import glob
 import sys
 import logging
 import yaml
@@ -68,11 +69,11 @@ def update_all():
         inject_config(consumer, properties)
 
 
-def load_yaml(path, main_conf='main'):
+def load_yaml(path):
     all_config = []
 
-    def add_yaml(path, file_name):
-        with open('{}/{}.yaml'.format(path, file_name), 'r') as yf:
+    for file_name in glob.glob("{}/*yaml".format(path)):
+        with open(file_name, 'r') as yf:
             try:
                 yaml_load = yaml.load(yf)
                 all_config.append(yaml_load)
@@ -81,7 +82,6 @@ def load_yaml(path, main_conf='main'):
             except ParserError:
                 log.exception("Error parsing {}", yf)
 
-    add_yaml(path, main_conf)
     return all_config
 
 

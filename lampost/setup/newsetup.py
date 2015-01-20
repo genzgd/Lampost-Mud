@@ -32,10 +32,9 @@ def new_setup(args):
         return
 
     # Load main and application yaml files and create the database configuration
-    main_yaml = config.load_yaml(args.config_dir, args.config_file)
+    config_yaml = config.load_yaml(args.config_dir)
     app_setup = import_module('{}.setup'.format(args.app_id))
-    app_yaml = app_setup.load_yaml(args)
-    db_config = dbconfig.create(args.config_id, main_yaml + app_yaml, True)
+    db_config = dbconfig.create(args.config_id, config_yaml, True)
     config_values = config.activate(db_config.section_values)
 
     resource.register('dispatcher', event, True)

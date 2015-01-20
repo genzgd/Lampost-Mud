@@ -1,14 +1,12 @@
 import time
 
-from lampost.context.resource import m_requires
+from lampost.context import resource, config
 from lampost.datastore import classes
 from lampost.datastore.classes import get_dbo_class
 from lampost.editor.admin import admin_op
-from lampost.model.player import Player
-from lampost.setup.configinit import load_config
+from lampost.gameops import dbconfig
 
-
-m_requires(__name__, 'log', 'datastore', 'perm')
+resource.m_requires(__name__, 'log', 'datastore', 'perm')
 
 
 @admin_op
@@ -50,7 +48,8 @@ def rebuild_owner_refs():
 @admin_op
 def rebuild_immortal_list():
     delete_key('immortals')
-    for player in load_object_set(Player):
+    player_cls = get_dbo_class('player')
+    for player in load_object_set(player_cls):
         if player.imm_level:
             set_db_hash('immortals', player.dbo_id, player.imm_level)
 
@@ -83,15 +82,13 @@ def rebuild_all_fks():
 
 @admin_op
 def restore_db_from_yaml(config_id='lampost', path='conf', force="no"):
-    yaml_config = load_config(path)
+    yaml_config = config.load_yaml(path)
     existing = load_object(config_id, 'config')
     if existing:
         if force != 'yes':
             return "Object exists and force is not 'yes'"
         delete_object(existing)
-    config = create_from_dicts(config_id, yaml_config, True)
-    config.activate()
+    db_config = dbconfig.create(config_id, yaml_config, True)
+    config.activate(db_config.section_values)
     return 'Config {} successfully loaded from yaml files'.format(config_id)
-
-
 
