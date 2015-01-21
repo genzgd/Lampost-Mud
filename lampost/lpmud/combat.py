@@ -4,10 +4,10 @@ from lampost.datastore.auto import TemplateField, AutoMeta
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
 from lampost.gameops.display import COMBAT_DISPLAY
-from lampost.lpmud.attributes import POOL_KEYS
 from lampost.lpmud.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
 from lampost.util.lputil import args_print, tuples_to_list
+from lampost.lpmud import attributes
 
 m_requires(__name__, 'log', 'tools', 'dispatcher')
 
@@ -95,7 +95,7 @@ def calc_consider(entity):
             [skill.points_per_pulse(entity) for skill in entity.skills.values() if skill.template_id == 'defense'])
     except ValueError:
         best_defense = 0
-    pool_levels = sum(getattr(entity, base_pool_id, 0) for pool_id, base_pool_id in POOL_KEYS)
+    pool_levels = sum(getattr(entity, base_pool_id, 0) for pool_id, base_pool_id in attributes.pool_keys)
     return int((best_attack + best_defense + pool_levels) / 2)
 
 

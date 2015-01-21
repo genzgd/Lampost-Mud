@@ -2,7 +2,7 @@ from lampost.context.config import m_configured
 from lampost.datastore.dbo import KeyDBO
 from lampost.datastore.dbofield import DBOField, DBOLField
 
-m_configured(__name__, 'base_attr_value', 'default_start_room')
+m_configured(__name__, 'base_attr_value', 'attributes', 'default_start_room')
 
 
 class Archetype(KeyDBO):
@@ -26,7 +26,7 @@ class PlayerRace(Archetype):
     def new_dto(cls):
         dto = super().new_dto()
         dto['start_room'] = default_start_room
-        dto['base_attrs'] = {attr_name: base_attr_value for attr_name in cls.attr_list}
+        dto['base_attrs'] = {attr['dbo_id']: base_attr_value for attr in attributes}
         return dto
 
 

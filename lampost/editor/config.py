@@ -1,4 +1,5 @@
 import copy
+from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.env.movement import Direction
 
 from lampost.server.handlers import MethodHandler, SessionHandler
@@ -38,7 +39,10 @@ class DisplayEditor(MethodHandler):
 class Properties(SessionHandler):
     def main(self):
         constants = {}
-        constants['directions'] = Direction.ref_map
+        constants['directions'] = Direction.ordered
+        constants['article_load_types'] = ['equip', 'default']
+        constants['broadcast_types'] = broadcast_types
+        constants['broadcast_tokens'] = broadcast_tokens
         constants['skill_types'] =  [skill_template.dbo_key_type for skill_template in dbo_types(SkillTemplate)]
         constants['features'] = [get_dbo_class(feature_id)().edit_dto for feature_id in ['touchstone', 'entrance', 'store']]
         self._return(constants)

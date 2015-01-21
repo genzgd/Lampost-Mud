@@ -39,8 +39,8 @@ lpmud:
     desc: 'Default attribute value for new races'
     value: 5
   -
-    name: room_stamina
-    desc: Stamina cost for default room size'
+    name: 'room_stamina'
+    desc: 'Stamina cost for default room size'
     value: 2
   -
     name: 'room_action'
@@ -68,3 +68,133 @@ lpmud:
         enemies: []
       monster:
         enemies: ['player']
+  -
+    name: 'attributes'
+    desc: 'Player and monster attributes'
+    value:
+    -
+      dbo_id: 'con'
+      name: 'Constitution'
+      category: 'Brawn'
+      hidden: false
+    -
+      dbo_id: 'str'
+      name: 'Strength'
+      category: 'Brawn'
+      hidden: false
+    -
+      dbo_id: 'agi'
+      name: 'Agility'
+      category: 'Brawn'
+      hidden: false
+    -
+      dbo_id: 'adv'
+      name: 'Adventuresome'
+      category: 'Brawn'
+      hidden: true
+    -
+      dbo_id: 'int'
+      name: 'Intelligence'
+      category: 'Brain'
+      hidden: false
+    -
+      dbo_id: 'wis'
+      name: 'Wisdom'
+      category: 'Brain'
+      hidden: false
+    -
+      dbo_id: 'kno'
+      name: 'Knowledge'
+      category: 'Brain'
+      hidden: false
+    -
+      dbo_id: 'cur'
+      name: 'Curiosity'
+      category: 'Brain'
+      hidden: true
+    -
+      dbo_id: 'cha'
+      name: 'Charm'
+      category: 'Bravado'
+      hidden: false
+    -
+      dbo_id: 'bal'
+      name: 'Balance'
+      category: 'Bravado'
+      hidden: false
+    -
+      dbo_id: 'gui'
+      name: 'Guile'
+      category: 'Bravado'
+      hidden: false
+    -
+      dbo_id: 'inq'
+      name: 'Inquiry'
+      category: 'Bravado'
+      hidden: true
+
+  -
+    name: 'resource_pools'
+    desc: 'Player/Monster current resources'
+    value:
+      -
+        dbo_id: 'health'
+        name: 'Health'
+        desc: 'Physical well being resource'
+        calc:
+          con: 11
+          str: 3
+          adv: 1
+          agi: 1
+      -
+        dbo_id: 'mental'
+        name: 'Mana'
+        desc: 'Mental energy resource'
+        calc:
+          int: 7
+          wis: 5
+          kno: 2
+          cur: 2
+      -
+        dbo_id: 'stamina'
+        name: 'Stamina'
+        desc: 'Physical energy resource'
+        calc:
+          con: 10
+          str: 2
+          wis: 2
+          bal: 2
+      -
+        dbo_id: 'action'
+        name: 'Action'
+        desc: 'Action points pool'
+        calc:
+          con: 5
+          bal: 5
+          wis: 3
+          agi: 2
+  -
+    name: 'equip_types'
+    desc: 'Valid type for articles'
+    value:
+      - 'armor'
+      - 'shield'
+      - 'weapon'
+      - 'treasure'
+  -
+    name: 'equip_slots'
+    desc: 'Valid slots for armor and other equipement'
+    value:
+      - 'finger'
+      - 'neck'
+      - 'torso'
+      - 'legs'
+      - 'head'
+      - 'feet'
+      - 'arms'
+      - 'cloak'
+      - 'waist'
+      - 'wrist'
+      - 'one-hand'
+      - 'two-hand'
+

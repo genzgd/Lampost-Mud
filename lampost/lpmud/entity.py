@@ -2,7 +2,7 @@ from lampost.context.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
 from lampost.context.config import m_configured
 from lampost.lpmud.fight import Fight
-from lampost.lpmud.attributes import need_refresh, POOL_KEYS
+from lampost.lpmud import attributes
 from lampost.lpmud.combat import calc_consider
 from lampost.model.entity import Entity
 
@@ -126,15 +126,15 @@ class EntityLP(Entity):
             self._cancel_actions()
 
     def start_refresh(self):
-        if not self._refresh_pulse and need_refresh(self):
-            self._refresh_pulse = register_p(self._refresh, pulses=self._refresh_interval)
+        if not self._refresh_pulse and attributes.need_refresh(self):
+            self._refresh_pulse = register_p(self._refresh, pulses=refresh_interval)
 
     def _refresh(self):
-        if self.dead or not need_refresh(self):
+        if self.dead or not attributes.need_refresh(self):
             unregister(self._refresh_pulse)
             del self._refresh_pulse
             return
-        for pool_id, base_pool_id in POOL_KEYS:
+        for pool_id, base_pool_id in attributes.pool_keys:
             new_value = getattr(self, pool_id) + refresh_rates[pool_id]
             setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
         self.status_change()
@@ -284,7 +284,7 @@ class EntityLP(Entity):
     @property
     def display_status(self):
         display_status = super().display_status
-        for pool_id, base_pool_id in POOL_KEYS:
+        for pool_id, base_pool_id in attributes.pool_keys:
             display_status[pool_id] = getattr(self, pool_id)
             display_status[base_pool_id] = getattr(self, base_pool_id)
         return display_status

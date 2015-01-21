@@ -86,8 +86,8 @@ class UserManager():
             user.player_ids.remove(player_id)
             save_object(user)
 
-    def attach_player(self, user, player_dto):
-        player = create_object(Player, player_dto)
+    def attach_player(self, user, player):
+
         user.player_ids.append(player.dbo_id)
         set_index('ix:player:user', player.dbo_id, user.dbo_id)
         dispatch('player_create', player, user)

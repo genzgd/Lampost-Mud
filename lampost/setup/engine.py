@@ -27,7 +27,7 @@ def start(args):
     # Load and activate the database configuration
     datastore = resource.register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)
     db_config = datastore.load_object(args.config_id, dbconfig.Config)
-    config.activate(db_config.section_values)
+    config_values = config.activate(db_config.section_values)
 
     resource.register('dispatcher', event, True)
     resource.register('perm', permissions, True)
@@ -35,7 +35,7 @@ def start(args):
     web_server = WebServer()
 
     app_setup = import_module('{}.setup'.format(args.app_id))
-    app_setup.start_engine(args, web_server)
+    app_setup.start_engine(args, config_values, web_server)
 
     resource.register('user_manager', UserManager())
     resource.register('session_manager', SessionManager())
