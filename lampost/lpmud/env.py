@@ -6,8 +6,6 @@ from lampost.context.config import m_configured
 m_configured(__name__, 'room_stamina', 'room_action', 'default_room_size')
 
 exit_cost_map = {}
-
-
 prep_multiplier = 1
 
 

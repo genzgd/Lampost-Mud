@@ -74,12 +74,13 @@ def load_yaml(path):
 
     for file_name in glob.glob("{}/*yaml".format(path)):
         with open(file_name, 'r') as yf:
+            log.info("Processing config file {}", file_name)
             try:
                 yaml_load = yaml.load(yf)
                 all_config.append(yaml_load)
                 for include_name in yaml_load.get('includes', ()):
                     add_yaml(include_name)
-            except ParserError:
+            except yaml.parser.ParserError:
                 log.exception("Error parsing {}", yf)
 
     return all_config

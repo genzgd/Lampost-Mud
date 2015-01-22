@@ -7,15 +7,10 @@ m_requires(__name__,  'dispatcher')
 
 def _post_init():
     """
-    context.set('equip_slots', equip_slots)
-    context.set('equip_types', equip_types)
-    context.set('attributes', ATTRIBUTES)
-    context.set('damage_types', DAMAGE_TYPES)
+
     context.set('defense_damage_types', DEFENSE_DAMAGE_TYPES)
     context.set('damage_delivery', DAMAGE_DELIVERY)
-    context.set('resource_pools', RESOURCE_POOLS)
-    context.set('weapon_types', WEAPON_TYPES)
-    context.set('weapon_options', WEAPON_OPTIONS)
+
 
 
     skill_calculation = attributes[:]

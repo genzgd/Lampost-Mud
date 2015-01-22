@@ -8,7 +8,6 @@ from lampost.context.config import m_configured
 
 
 m_requires(__name__, 'log', 'datastore')
-m_configured(__name__, 'pulse_interval', 'maintenance_interval')
 
 _registrations = defaultdict(set)
 _pulse_map = defaultdict(set)
@@ -148,3 +147,6 @@ class PulseRegistration(Registration):
 
     def cancel(self):
         self.freq = 0
+
+
+m_configured(__name__, 'pulse_interval', 'maintenance_interval')

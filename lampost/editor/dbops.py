@@ -88,7 +88,12 @@ def restore_db_from_yaml(config_id='lampost', path='conf', force="no"):
         if force != 'yes':
             return "Object exists and force is not 'yes'"
         delete_object(existing)
-    db_config = dbconfig.create(config_id, yaml_config, True)
+    try:
+        db_config = dbconfig.create(config_id, yaml_config, True)
+    except Exception as exp:
+        exeption("Failed to create configuration from yaml")
+        save_object(existing)
+        return "Exception creating configuration from yaml."
     config.activate(db_config.section_values)
     return 'Config {} successfully loaded from yaml files'.format(config_id)
 

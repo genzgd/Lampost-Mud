@@ -18,7 +18,6 @@ db_group.add_argument('-db_num', help="Redis database number", type=int, default
 db_group.add_argument('-db_pw', help="Redis database password", default=None)
 
 
-
 main_parser = argparse.ArgumentParser(parents=[parent_parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                       description="lampost -- The Lampost Game Engine  https://github.com/genzgd/Lampost-Mud")
 web_group = main_parser.add_argument_group(title="Web Server Configuration")
@@ -26,6 +25,7 @@ web_group.add_argument('-p', '--port', help="web server port", type=int, default
 web_group.add_argument('-si', help="web server network interface", default='127.0.0.1', metavar="NW_INT", dest="server_interface")
 
 config_group.add_argument('-cd', '--config_dir', help="yaml configuration directory", default='conf')
+
 
 create_parser = argparse.ArgumentParser(parents=[parent_parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                       description="lampost_setup -- Creation utility for the Lampost Game Engine https://github.com/genzgd/Lampost-Mud")
@@ -36,6 +36,11 @@ imm_group = create_parser.add_argument_group(title="Immortal User Configuration"
 imm_group.add_argument('-ia', '--imm_account', help="root account name", default='root')
 imm_group.add_argument('-im', '--imm_name', help="name of the root account primary primary", required=True)
 imm_group.add_argument('-ipw', '--imm_password', help="root account password", default='lampost')
+
+
+tools_parser = argparse.ArgumentParser(parents=[parent_parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                       description="lampost_tools -- Some command line tools for lampost")
+tools_parser.add_argument('op', metavar="OPERATION", help="Tools operation")
 
 
 

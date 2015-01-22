@@ -12,7 +12,7 @@ args = startargs.create_parser.parse_args()
 log.init_config(args)
 log.root_logger.info("Started with args {}", args)
 
-# Import after we set the logging configuration so that the root logger is properly configured
+# We set the logging configuration before importing other modules so that the root logger is properly configured
 from lampost.setup import newsetup
 
 if args.flush:

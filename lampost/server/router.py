@@ -3,9 +3,6 @@ from lampost.server.messages import FriendResponse, MessageDelete
 from lampost.server.settings import Settings
 from lampost.context.config import m_configured
 
-
-m_configured(__name__, 'lampost_title', 'lampost_description')
-
 _web_server = None
 
 
@@ -33,3 +30,7 @@ def init(web_server):
     web_server.add(r'/settings/(.*)', Settings)
 
     _on_configured()
+
+
+m_configured(__name__, 'lampost_title', 'lampost_description')
+

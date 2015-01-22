@@ -1,5 +1,5 @@
-import copy
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
+from lampost.context import config
 from lampost.env.movement import Direction
 
 from lampost.server.handlers import MethodHandler, SessionHandler
@@ -38,7 +38,10 @@ class DisplayEditor(MethodHandler):
 
 class Properties(SessionHandler):
     def main(self):
-        constants = {}
+        constants = {key: config.get_value(key) for key in ['attributes', 'resource_pools', 'equip_types', 'equip_slots', 'weapon_types',
+                                                            'damage_types', 'damage_delivery', 'damage_groups']}
+        constants['weapon_options'] = constants['weapon_types'] + [{'dbo_id': 'unused'}, {'dbo_id': 'unarmed'}, {'dbo_id': 'any'}]
+        constants['defense_damage_types'] = constants['damage_types'] + constants['damage_groups']
         constants['directions'] = Direction.ordered
         constants['article_load_types'] = ['equip', 'default']
         constants['broadcast_types'] = broadcast_types

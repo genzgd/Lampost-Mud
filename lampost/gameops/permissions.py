@@ -4,12 +4,12 @@ from lampost.util.lputil import PermError
 
 m_requires(__name__, 'datastore')
 
-m_configured(__name__, 'imm_levels', 'system_accounts', 'system_level')
-
 
 def _on_configured():
     global _rev_levels
     _rev_levels = {level: name for name, level in imm_levels.items()}
+
+m_configured(__name__, 'imm_levels', 'system_accounts', 'system_level')
 
 
 def _post_init():

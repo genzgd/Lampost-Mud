@@ -31,21 +31,20 @@ def new_setup(args):
         print("Error:  This instance is already set up")
         return
 
-    # Load main and application yaml files and create the database configuration
+    # Load config yaml files and create the database configuration
     config_yaml = config.load_yaml(args.config_dir)
-    app_setup = import_module('{}.setup'.format(args.app_id))
     db_config = dbconfig.create(args.config_id, config_yaml, True)
     config_values = config.activate(db_config.section_values)
 
+    # Initialize core services needed by the reset of the setup process
     resource.register('dispatcher', event, True)
     perm = resource.register('perm', permissions, True)
     perm._post_init()
+
+    app_setup = import_module('{}.setup'.format(args.app_id))
     first_player = app_setup.first_time_setup(args, datastore, config_values)
 
     user_manager = UserManager()
     user = user_manager.create_user(args.imm_account, args.imm_password)
     player = user_manager.attach_player(user, first_player)
     perm.update_immortal_list(player)
-
-
-

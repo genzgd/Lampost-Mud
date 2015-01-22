@@ -1,9 +1,9 @@
+from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
 from lampost.datastore.dbofield import DBOTField
 from lampost.datastore.auto import TemplateField, AutoMeta
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
-from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpmud.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
 from lampost.util.lputil import args_print, tuples_to_list
@@ -11,48 +11,20 @@ from lampost.lpmud import attributes
 
 m_requires(__name__, 'log', 'tools', 'dispatcher')
 
-WEAPON_TYPES = tuples_to_list(('dbo_id', 'damage', 'delivery'), [
-    ('sword', 'slash', 'melee'),
-    ('axe', 'slash', 'melee'),
-    ('mace', 'blunt', 'melee'),
-    ('bow', 'pierce', 'ranged'),
-    ('sling', 'blunt', 'ranged'),
-    ('spear', 'pierce', 'ranged'),
-    ('polearm', 'pierce', 'melee')
-])
+damage_categories = {}
 
-WEAPON_OPTIONS = [{'dbo_id': 'unused'}, {'dbo_id': 'unarmed'}, {'dbo_id': 'any'}] + WEAPON_TYPES
 
-DAMAGE_TYPES = tuples_to_list(('dbo_id', 'desc'), [
-    ('weapon', 'Use weapon damage type'),
-    ('blunt', 'Blunt trauma (clubs, maces)'),
-    ('pierce', 'Piercing damage (spears, arrows)'),
-    ('slash', 'Slash damage (swords, knives)'),
-    ('cold', 'Cold'),
-    ('fire', 'Fire'),
-    ('shock', 'Electric'),
-    ('acid', 'Acid'),
-    ('poison', 'Poison'),
-    ('psych', 'Mental/psychic damage'),
-    ('spirit', 'Spiritual damage')
-])
+def _on_configured():
+    global damage_categories
+    damage_categories = {group['dbo_id']: set() for group in damage_groups}
+    for damage_type in damage_types:
+        dbo_id, damage_group = damage_type['dbo_id'], damage_type['group']
+        if damage_group:
+            damage_categories['any'].add(dbo_id)
+            damage_categories[damage_group].add(dbo_id)
 
-DAMAGE_CATEGORIES = [
-    {'dbo_id': 'any', 'desc': 'All possible damage types', 'types': [d_type['dbo_id'] for d_type in DAMAGE_TYPES]},
-    {'dbo_id': 'physical', 'desc': 'All physical damage types', 'types': ['blunt', 'piece', 'slash']},
-    {'dbo_id': 'elemental', 'desc': 'All elemental damage types', 'types': ['fire', 'shock', 'cold', 'acid', 'poison']}
-]
+m_configured(__name__, 'damage_types', 'damage_groups')
 
-DAMAGE_CATEGORY_MAP = {d_cat['dbo_id']: set(d_cat['types']) for d_cat in DAMAGE_CATEGORIES}
-
-DEFENSE_DAMAGE_TYPES = DAMAGE_TYPES + DAMAGE_CATEGORIES
-
-DAMAGE_DELIVERY = tuples_to_list(('dbo_id', 'desc'), [
-    ('weapon', 'Use weapon delivery type'),
-    ('melee', 'Delivered in hand to combat'),
-    ('ranged', 'Delivered via bow, spell, or equivalent'),
-    ('psych', 'Delivered via psychic or other non-physical means')
-])
 
 CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome',
               'Evenly Matched',
@@ -138,7 +110,7 @@ class AttackSkill(BaseSkill):
 
     target_class = target_gen.make('env_living')
 
-    display = COMBAT_DISPLAY
+    display = 'combat'
     msg_class = 'attacked'
     damage_type = DBOTField('weapon')
     delivery = DBOTField('melee')
@@ -149,9 +121,9 @@ class AttackSkill(BaseSkill):
     prep_map = DBOTField(
         {'s': 'You prepare to {v} {N}.', 't': '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
     success_map = DBOTField(
-        {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
+        {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': 'combat'})
     fail_map = DBOTField(
-        {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
+        {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': 'combat'})
 
     def validate(self, source, target, **kwargs):
         if source == target:
@@ -189,7 +161,7 @@ class DefenseTemplate(SkillTemplate):
         self.calc_damage_types = set()
         for damage_type in self.damage_type:
             try:
-                self.calc_damage_types |= DAMAGE_CATEGORY_MAP[damage_type]
+                self.calc_damage_types |= damage_categories[damage_type]
             except KeyError:
                 self.calc_damage_types.add(damage_type)
 

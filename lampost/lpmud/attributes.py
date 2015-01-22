@@ -1,14 +1,16 @@
 from lampost.context.config import m_configured
 
-m_configured(__name__, 'attributes', 'resource_pools')
-
 pool_keys = []
 attr_list = []
+
 
 def _on_configured():
     global attr_list, pool_keys
     pool_keys = [(pool['dbo_id'], "base_{}".format(pool['dbo_id'])) for pool in resource_pools]
     attr_list = [attr['dbo_id'] for attr in attributes]
+
+m_configured(__name__, 'attributes', 'resource_pools')
+
 
 def base_pools(entity):
     for pool in resource_pools:

@@ -291,4 +291,4 @@ class EntityLP(Entity):
 
     def combat_status(self):
         return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
-                                                 for pool_id, _ in POOL_KEYS])])
+                                                 for pool_id, _ in attributes.pool_keys])])
