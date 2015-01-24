@@ -1,0 +1,118 @@
+<div ng-controller="RoomEditorCtrl">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label class="control-label">Title</label>
+        <input class="form-control input-sm" type="text" ng-model="model.title"/>
+      </div>
+      <div class="form-group">
+        <label class="control-label">Description</label>
+        <textarea class="form-control" rows="10" ng-model="model.desc"></textarea>
+      </div>
+      <div id="roomExtraPanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomExtraDetail"
+          data-parent="#roomExtraPanel">
+          Extras <strong>({{model.extras.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomExtraDetail">
+          <table class="table table-condensed table-hover hand">
+
+            <tr ng-repeat="extra in model.extras" ng-click="modifyExtra(extra)">
+              <td class="col-md-10">{{extra.title}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div ng-if="!wideMode" class="col-md-4">
+      <div class="row">
+        <div class="form-group col-md-4">
+          <label class="control-label">Room Id</label>
+          <input ng-if="isNew" class="form-control input-sm" type="number" ng-model="model.dbo_id"/>
+          <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+        </div>
+        <div class="form-group col-md-4">
+          <label class="control-label">DB Rev</label>
+          <div  isabled class="form-control input-sm uneditable-input">{{model.dbo_rev}}</div>
+        </div>
+        <div class="form-group col-md-3">
+          <label class="control-label">&nbsp;</label>
+          <button type="button" class="form-control never-disable input-sm btn btn-xs btn-success" ng-click="visit()">Visit</button>
+        </div>
+      </div>
+
+      <div id="roomExitPanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomExitDetail"
+          data-parent="#roomExitPanel">
+          Exits <strong>({{model.exits.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomExitDetail">
+          <table class="table table-condensed table-hover hand">
+            <tr ng-repeat="exit in model.exits" ng-click="modifyExit(exit)">
+              <td class="col-md-1">{{exit.direction}}</td>
+              <td class="col-md-4">{{exit.destination}}</td>
+              <td class="col-md-5">{{exitRoom(exit).title}}</td>
+              <td class="col-md-2"><i ng-if="exit.guarded" class="fa fa-shield"></i> <i ng-if="!exitTwoWay(exit)"
+                class="fa fa-arrow-circle-right"></i></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomFeatures">
+          Features <strong>({{model.features.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomFeatures">
+          <table class="table table-condensed table-hover hand">
+            <tr ng-repeat="feature in model.features" ng-click="modifyFeature(feature)">
+              <td class="col-md-6">{{cap(feature.class_id)}}</td>
+              <td class="col-md-6">{{feature.title}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomMobileDetail">
+          Mobile Resets <strong>({{model.mobile_resets.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomMobileDetail">
+          <table class="table table-condensed table-hover hand">
+
+            <tr ng-repeat="reset in model.mobile_resets" ng-click="modifyMobile(reset)">
+              <td class="col-md-5">{{reset.mobile}} {{resetCount(reset)}}</td>
+              <td class="col-md-5">{{resetMobile(reset).title}}</td>
+              <td class="col-md-2"><span ng-if="reset.article_loads.length" title="Loads Articles"><i
+                class="fa fa-briefcase"></i></span></td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+      <div id="roomArticlePanel" class="panel panel-default">
+        <div class="panel-heading panel-condensed" data-toggle="collapse" data-target="#roomArticleDetail"
+          data-parent="#roomArticlePanel">
+          Article Resets <strong>({{model.article_resets.length}})</strong></div>
+        <div class="collapse in panel-collapse" id="roomArticleDetail">
+          <table class="table table-condensed table-hover hand">
+
+            <tr ng-repeat="reset in model.article_resets" ng-click="modifyArticle(reset)">
+              <td class="col-md-5">{{reset.article}} {{resetCount(reset)}}</td>
+              <td class="col-md-5">{{resetArticle(reset).title}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div ng-if="isNew" class="col-md-4">
+      <div class="alert alert-warning">You must first create the room before adding new elements.</div>
+    </div>
+    <div ng-if="activeAdd" ng-class="wideMode ? 'col-md-8' : 'col-md-4'" ng-include="addPanel"></div>
+    <div ng-if="!activeAdd && !isNew" class="col-md-4 text-center">
+      <div class="btn-group btn-group-sm btn-group">
+        <button type="button" ng-click="setAddType(add.id, add.options)" ng-repeat="add in addTypes"
+          class="btn btn-default">
+          {{add.label}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

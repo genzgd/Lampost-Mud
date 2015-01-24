@@ -1,0 +1,60 @@
+<div class="container-fluid" ng-style="gameHeight" ng-controller="GameCtrl">
+  <div class="row main-display">
+    <div ng-switch="actionPane" class="col-md-6 v-full">
+      <div ng-switch-when="login" ng-controller="LoginCtrl">
+        <div class="row">
+          <div class="col-md-6">
+            <h4>Welcome to {{siteTitle}}</h4>
+          </div>
+          <div class="col-lg-offset-2 col-md-3">
+            <div style="padding-bottom: 6px;"><em>New Here?</em>
+            </div>
+            <button type="button" ng-click="newAccountDialog()" class="btn btn-primary btn-sm">Create An Account</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <p ng-bind-html="siteDescription"></p>
+          </div>
+          <form class="col-md-4 well form-padding" ng-submit="login()" form-auto-fill-fix name="loginForm">
+            <div class="form-group">
+              <label for="userIdInput">Player or Account Name:</label>
+              <input class="form-control input-sm" id="userIdInput"
+                     type="text" ng-change="loginError = false" ng-model="userId" pref-focus="pref-focus"
+                     required/>
+              <div class="forgot-link col-md-offset-3" style="margin-top: 3px;" ng-click="forgotName()">Forgot your account name?</div>
+            </div>
+            <div class="form-group">
+              <label for="passwordInput">Account Password:</label>
+              <input id="passwordInput" class="form-control input-sm"
+                     type="password" ng-change="loginError = false" ng-model="password" required/>
+
+              <div class="forgot-link col-lg-offset-3" style="margin-top: 3px;" ng-click="forgotPassword()">Forgot your password?</div>
+            </div>
+            <div class="alert alert-danger" ng-show="loginError">
+              <button type="button" class="close" ng-click="loginError = false">×</button>
+              Invalid user name or password
+            </div>
+            <button class="btn btn-sm btn-primary"
+                    style="margin-top: 4px;" type="submit">Enter {{siteTitle}}
+            </button>
+          </form>
+        </div>
+      </div>
+      <div ng-switch-default="ng-switch-default" ng-controller="ActionCtrl"
+           class="v-full">
+        <div id="displayPane" scroll-bottom="update" class="telnet">
+          <div ng-repeat="line in display" ng-style="line.style" ng-bind-html="line.text"></div>
+        </div>
+        <div class="telnet-input">
+          <textarea ng-focus="actionFocus()" ng-model="action" enter-key="sendAction()" spellcheck="false"
+                    history="history" pref-focus="pref-focus"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 v-full">
+
+      <div class="row v-full" ng-include="'mud/view/data_tabs.html'"></div>
+    </div>
+  </div>
+</div>

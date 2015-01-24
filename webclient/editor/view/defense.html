@@ -1,0 +1,60 @@
+<div ng-controller="DefenseEditorCtrl">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="control-label">Defense Id</label>
+            <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id" required="true"/>
+
+            <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{model.dbo_id}}</div>
+          </div>
+
+        </div>
+        <div class="col-md-5">
+          <div class="form-group">
+            <label class="control-label">Defense Command</label>
+            <input ng-disabled="model.auto_start || !model.can_write" class="form-control input-sm" type="text" ng-model="model.verb"/>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="model.auto_start" ng-change="onAutoStart()">
+              Auto Start
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+           <div class="form-group">
+            <label class="control-label">Name</label>
+            <input class="form-control input-sm" type="text" ng-model="model.name" />
+          </div>
+          <lp-owner_id></lp-owner_id>
+        </div>
+        <div class="col-md-6">
+          <ng-include src="'editor/fragments/read_access.html'"></ng-include>
+          <ng-include src="'editor/fragments/write_access.html'"></ng-include>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label class="control-label">Description</label>
+            <textarea class="form-control" rows="6" ng-model="model.desc"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div lp-options-list="damageTypes"></div>
+      <div lp-options-list="deliveryTypes"></div>
+    </div>
+    <div class="col-md-2" lp-value-set="costList"></div>
+    <div class="col-md-2" lp-value-set="avoidList"></div>
+    <div class="col-md-2" lp-value-set="absorbList"></div>
+  </div>
+
+</div>

@@ -1,0 +1,31 @@
+<div class="container-fluid wrapper" ng-controller="ImportsEditorCtrl">
+
+  <div class="row-fluid">
+
+    <div class="span6">
+      <div class="row-fluid">
+        <div class="span12">
+          <label>Database Import</label>
+          <button ng-click="setDatabaseDialog()" type="button" class="btn btn-mini btn-primary">Set Database</button>
+           <div class="spacer"></div>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span6" ng-hide="dbParams">
+          <label>No Database Selected</label>
+        </div>
+        <div class="span6" ng-show="dbParams">
+          <label>DB Host</label>
+          {{dbParams.db_host}}
+          <label>DB Port</label>
+          {{dbParams.db_host}}
+          <label>DB Number</label>
+          {{dbParams.db_num}}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+

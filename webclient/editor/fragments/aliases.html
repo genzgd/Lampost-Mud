@@ -1,0 +1,15 @@
+<div class="col-md-2">
+  <div class="form-group">
+    <label class="control-label">Aliases</label>
+    <button type="button" ng-click="addNewAlias()" class="btn btn-warning btn-xs">New</button>
+  </div>
+</div>
+<div class="col-md-10">
+  <div class="input-group input-group-sm" ng-repeat="alias in model.aliases track by $index">
+    <input type="text" class="form-control" ng-model="model.aliases[$index]" required>
+            <span class="input-group-btn">
+              <button title="Delete Alias" class="btn btn-default" type="button" ng-click="deleteAlias($index)"><i
+                class="fa fa-minus-square" style="color: #b00;"></i></button>
+            </span>
+  </div>
+</div>

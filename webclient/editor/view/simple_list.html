@@ -1,0 +1,24 @@
+<div class="panel panel-warning">
+  <div class="panel-heading panel-condensed" title="{{valueSet.desc}}">{{valueSet.name}}</div>
+  <table class="table table-condensed table-bordered">
+
+    <tbody>
+
+    <tr ng-repeat="row in valueSet.rows" title="{{valueSet.rowDesc(row)}}">
+      <td class="col-md-10" title="{{selectDefs[selection]}}">{{row}}</td>
+      <td ng-if='can_write' class="col-md-2"><a title="Delete Item" tabIndex="-1" ng-click="remove(row, $index)" class="icon-link"><i
+        class="fa fa-minus-square" style="color: #b00;"></i></a></td>
+    </tr>
+    </tbody>
+  </table>
+  <div class="panel-body panel-condensed">
+    <div ng-if="valueSet.unused.length && can_write" class="pull-right">
+      <select title="valueSet.optionDesc(valueSet.newValue)" class="input-sm" ng-model="valueSet.newValue"
+        ng-options="value as value.name for value in valueSet.unused"></select>
+      <button type="button" class="btn btn-xs btn-warning" ng-click="insert()">Add</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+

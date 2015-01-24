@@ -1,0 +1,75 @@
+<div class="text-left panel panel-warning" ng-controller="NewExitCtrl">
+  <div class="panel-heading panel-condensed">
+    <span class="h5">Dig New Exit</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
+  </div>
+
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-5">
+        <div class="form-group">
+          <label class="control-label">Direction</label>
+          <select class="form-control input-sm" ng-model="direction"
+            ng-options="direction.name for direction in directions" required></select>
+        </div>
+      </div>
+      <div class="col-md-offset-2 col-md-5">
+        <label class="radio">
+          <input type="radio" ng-model="useNew" ng-change="changeType()" ng-value="true">
+          To New Room
+        </label>
+        <label class="radio">
+          <input type="radio" ng-model="useNew" ng-change="changeType()" ng-value="false">
+          To Existing Room
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" ng-model="oneWay">
+          One Way
+        </label>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <div class="col-md-5">
+        <div class="form-group">
+          <label class="control-label">Area</label>
+          <select class="form-control" ng-change="changeArea()" ng-model="destAreaId" ng-disabled="useNew"
+            ng-options="area.dbo_id as area.dbo_id for area in exitAreas" required></select>
+        </div>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5">
+        <div class="form-group">
+          <label class="control-label">New Room Id</label>
+          <input ng-if="useNew" type="number" class="form-control input-sm" min="0" ng-model="destRoom.destId"
+            ng-change="changeId()" required>
+          <select ng-disabled="roomsInvalid" class="form-control input-sm" ng-show="!useNew" ng-model="destRoom"
+            ng-options="room as room.dbo_id for room in roomList"></select>
+        </div>
+      </div>
+      <div class="col-md-offset-1 col-md-6">
+        <div class="form-group">
+          <label class="control-label">New Room Title</label>
+          <input class="form-control input-sm" ng-model="destRoom.title" ng-disabled="!useNew">
+        </div>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="alert alert-danger" ng-show="lastError != null">
+        <button type="button" class="close" ng-click="clearError()">×</button>
+        {{lastError}}
+      </div>
+    </div>
+    <div class="pull-right">
+      <button type="button" ng-click="digExit()" ng-disabled="hasError" class="btn btn-sm btn-warning">Dig Exit</button>
+      <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">Cancel</button>
+    </div>
+  </div>
+
+
+</div>
+
+

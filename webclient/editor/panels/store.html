@@ -1,0 +1,118 @@
+<div class="text-left panel panel-warning" ng-controller="EditStoreCtrl">
+  <div class="panel-heading panel-condensed">
+    <span class="h5">Modify Store</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
+  </div>
+  <div class="panel-body">
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="form-group">
+              <label class="control-label">Title</label>
+              <input class="form-control input-sm" ng-model="store.title">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group">
+              <label class="control-label">Description</label>
+              <textarea class="form-control" rows="4" ng-model="store.desc"></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-4" title="Percent markup for standard value">
+            <div class="form-group">
+              <label class="control-label">Markup</label>
+              <input class="form-control input-sm" type="number" ng-model="store.markup" required="true" min="0"/>
+            </div>
+          </div>
+          <div class="col-md-4" title="Percent discount paid for items below standard value">
+            <div class="form-group">
+              <label class="control-label">Discount</label>
+              <input class="form-control input-sm" type="number" ng-model="store.discount" required="true" min="0"/>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Currency</label>
+              <select class="form-control input.sm" ng-model="newCurrency" ng-change="updateCurrency()"
+                ng-options="article.dbo_id as idOnly(article) for article in currencyList"></select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group" ng-controller="ChildSelectCtrl" lp-list-parent="currencyParent" lp-child-type="article" lp-list-change="setCurrencyList">
+              <label class="control-label">Currency Area</label>
+              <select class="form-control input.sm" ng-model="vars.parent" ng-change="selectParent()"
+                ng-options="parent as parent.dbo_id for parent in sourceList" required></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+
+      <div class="col-md-6">
+        <table class="table table-condensed">
+          <thead>
+          <tr>
+            <th class="col-md-11">Permanent Inventory</th>
+            <th class="col-md-1"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr ng-repeat="perm in store.perm_inven track by $index">
+            <td class="col-md-11">{{perm}}</td>
+            <td class="col-md-1"><a ng-show="model.can_write" ng-click="removePerm(perm)"> <i class="fa fa-minus-square"
+              style="color: #b00;"></i></a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-6" ng-if="model.can_write">
+        <div class="panel panel-info">
+          <div class="panel-heading panel-condensed">Add Permanent Inventory</div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group" ng-controller="ChildSelectCtrl" lp-child-type="article" lp-list-change="setPermList">
+                  <label class="control-label">Article Area</label>
+                  <select class="form-control input.sm" ng-model="vars.parent" ng-change="selectParent()"
+                    ng-options="parent as parent.dbo_id for parent in sourceList" required></select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="control-label">Article Id</label>
+                  <select class="form-control input.sm" ng-model="newPerm" ng-change="updateCurrency()"
+                    ng-options="article.dbo_id as idOnly(article) for article in permList"></select>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 pull-right">
+                <button ng-disabled="permExists()" type="button" ng-click="addPerm()" class="btn btn-warn btn-sm">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="pull-right">
+          <button type="button" ng-click="deleteFeature()" class="btn btn-danger btn-sm">Delete Store</button>
+          <button type="button" ng-click="closeAdd()" class="never-disable btn btn-default btn-sm">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+<div class="form-group">
+  <label class="control-label">Write Access</label>
+  <select class="form-control input-sm" ng-change="checkAccess('write')" ng-model="model.write_access"
+    ng-options="ac.value as ac.name for ac in accessLevels"></select>
+  <lp-data-error type="write_access"></lp-data-error>
+</div>

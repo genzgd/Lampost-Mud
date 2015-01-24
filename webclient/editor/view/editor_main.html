@@ -1,0 +1,24 @@
+<div  ng-controller="MainEditorCtrl">
+  <form id="mainEditForm" ng-submit="saveModel()">
+    <div class="panel panel-primary">
+      <div class="panel-heading text-center"><span
+        class="pull-left">{{parentType}}&nbsp;&nbsp;<strong>{{parentLabel}}</strong></span> {{editorLabel}}: <strong>{{modelName()}}</strong>
+        <div ng-if="model.can_write" class="btn-group pull-right">
+          <button type="button" ng-click="revertModel()" ng-disabled="!isDirty" class="btn btn-panel btn-primary ">
+            Revert <i class="fa fa-undo"></i></button>
+          &nbsp;
+          <button type="submit" ng-disabled="!isDirty" class="btn btn-panel btn-primary ">{{isNew ? 'Create' : 'Save'}}
+            <i class="fa fa-floppy-o"></i></button>
+          &nbsp;
+          <button type="button" ng-click="deleteModel()" class="btn btn-panel btn-primary">{{isNew ? 'Cancel' : 'Delete'}} <i
+            class="fa fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="panel-body" lp-disabled="!model.can_write">
+        <lp-data-error></lp-data-error>
+        <lp-outside-edit></lp-outside-edit>
+        <div ng-include="detailTemplate"></div>
+      </div>
+    </div>
+  </form>
+</div>

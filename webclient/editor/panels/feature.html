@@ -1,0 +1,27 @@
+<div class="text-left panel panel-warning">
+  <div class="panel-heading panel-condensed">
+    <span class="h5">Add Room Feature</span> <span class="pull-right hand close"
+    ng-click="closeAdd()">x</span>
+  </div>
+  <div class="panel-body">
+
+    <div class="row">
+      <div class="col-md-offset-1 col-md-6">
+        <div class="form-group">
+          <label class="control-label">Feature Type</label>
+          <select class="form-control input-sm" ng-model="newFeature" ng-options="feature as cap(feature.class_id) for feature in constants.features">
+             <option value="">-- Select --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="pull-right">
+          <button ng-show="newFeature" type="button" ng-click="startFeature(newFeature)" class="btn btn-warning btn-sm">Add {{cap(newFeature.class_id)}}</button>
+          <button type="button" ng-click="closeAdd()" class="never-disable btn btn-default btn-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

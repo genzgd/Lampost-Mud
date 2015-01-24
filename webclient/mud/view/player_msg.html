@@ -1,0 +1,8 @@
+<div class="player-msg" style="min-width: 200px;">
+  <div style="width:98%;; padding:0; display: inline;">
+    <span style="font-size: 12px;">{{msgTime(msg)}}</span>
+    <button type="button" class="close" ng-click="deleteMessage(msg)">×</button>
+  </div>
+  <h5 style="clear: both; margin:0;">&nbsp;&nbsp;{{msg.content}}</h5>
+  <h5 style="margin:0">&nbsp;&nbsp;&nbsp;&nbsp;-- {{msg.source}}</h5>
+</div>

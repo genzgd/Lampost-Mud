@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="lampost_editor" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lampost Editor</title>
+  <link rel="icon" href="lampost.png">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="common/css/lampost.css">
+  <link rel="stylesheet" href="editor/css/editor.css">
+  <link rel="stylesheet" href="common/css/spectrum.css">
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular-sanitize.js"></script>
+  <script src="common/js/autofill-event.js"></script>
+
+</head>
+
+<body ng-cloak>
+<nav ng-controller="EditorNavController" id="lm-navbar" class="navbar navbar-default navbar-fixed-top"
+  role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+        data-target="#lampost-navbar-collapse">
+        <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Lampost Editor</a>
+    </div>
+    <div class="collapse navbar-collapse" id="lampost-navbar-collapse">
+      <ul class="nav navbar-nav">
+
+        <li ng-repeat="link in links" ng-class="link.active">
+          <a ng-href ng-click="changeNav(link)">{{link.label}} <i class="fa" ng-class="link.icon"></i></a>
+        </li>
+         <li style="margin-right: 40px;"></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right active">
+        <li><p class="navbar-text">{{welcome}}</p></li>
+        <li><a ng-click="mudWindow()">Mud <i class="fa fa-tree"></i></a>
+        </li>
+        <li ng-if="appState == 'edit' || appState == 'admin'"><a ng-href ng-click="editorLogout()">Logout <i
+          class="fa fa-external-link"></i></a></li>
+        <li><a title="Lampost Forum" href="https://groups.google.com/forum/?fromgroups#!forum/lampost"
+          target="_blank"><i class="fa fa-comments"></i></a></li>
+        <li><a title="Lampost On Github" href="https://github.com/genzgd/Lampost-Mud" target="_blank"><i
+          class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container-fluid" ng-if="appState == 'connecting'">
+  <div class="row">
+    <div class="col-md-offset-4 col-md-4 text-center">
+      <div class="well well-sm">Connecting to Lampost Server</div>
+    </div>
+  </div>
+</div>
+<div class="container-fluid" ng-if="appState == 'connected'" ng-controller="EditLoginController">
+  <div class="row">
+    <div class="col-md-6 col-xs-4">
+      <div class="alert alert-info">Welcome to the <strong>{{siteTitle}}</strong> editor. Please log in with your
+        immortal character or account name.
+      </div>
+    </div>
+    <div class="col-md-4 col-xs-6 well well-sm">
+      <form ng-submit="editorLogin()">
+        <div class="form-group">
+          <label for="userIdInput">Player or Account Name:</label>
+          <input class="form-control input-sm" id="userIdInput" type="text" ng-change="loginError = false"
+            ng-model="login.userId" pref-focus="pref-focus" required/>
+        </div>
+        <div class="form-group">
+          <label for="passwordInput">Account Password:</label>
+          <input id="passwordInput" class="form-control input-sm" type="password" ng-change="loginError = false"
+            ng-model="login.password" required/>
+        </div>
+        <div class="alert alert-danger" ng-show="loginError">
+          <button type="button" class="close" ng-click="loginError = false">×</button>
+          {{loginError}}
+        </div>
+        <div class="form-group pull-right">
+          <button class="btn btn-sm btn-primary" type="submit">Enter Editor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div ng-if="appState == 'edit'" class="container-fluid" ng-controller="EditLayoutCtrl">
+  <div class="row">
+    <div ng-class="paneClass(0)">
+       <div ng-show="!settings.showCheats" class="pull-left" style="padding-bottom: 4px;">
+         <a title="Show Cheat Sheets" ng-click="swapCheats()"><i class="fa fa-lg fa-question"></i></a>
+       </div>
+       <div ng-show="settings.showCheats" class="pull-left" style="padding-bottom: 4px;">
+         <a title="Show Item Lists" ng-click="swapCheats()"><i class="fa fa-lg fa-reorder"></i></a>
+       </div>
+      <div class="pull-right" style="padding-bottom: 4px;">
+         <a ng-click="changeSize(0, 1, -1)"><i class="fa fa-lg fa-angle-double-left"></i></a>
+       </div>
+      <div class="clearfix"></div>
+      <div ng-show="!settings.showCheats" ng-repeat="editList in editLists" lp-edit-list="editList"></div>
+      <div ng-show="settings.showCheats" ng-repeat="cheatSheet in cheatSheets" ng-include="cheatSheet">
+
+      </div>
+    </div>
+    <div ng-class="paneClass(1)">
+       <div class="pull-left" style="padding-bottom: 4px;">
+        <a ng-click="changeSize(0, 1, 1)"><i class="fa fa-lg fa-angle-double-right"></i></a>
+      </div>
+      <div ng-if="selectListAvail" class="pull-right" style="padding-bottom: 4px;">
+        <a ng-click="changeSize(2, 1, 1)"><i class="fa fa-lg fa-angle-double-left"></i></a>
+      </div>
+        <div class="clearfix"></div>
+      <ng-include src="'editor/view/editor_main.html'"></ng-include>
+    </div>
+    <div ng-class="paneClass(2)">
+       <div class="pull-left" style="padding-bottom: 4px;">
+         <a ng-click="changeSize(2, 1, -1)"><i class="fa fa-lg fa-angle-double-right"></i></a>
+      </div>
+        <div class="clearfix"></div>
+      <div id="futureSelectContent"></div>
+    </div>
+  </div>
+</div>
+<ng-include ng-if="appState == 'admin'" src="'editor/view/admin_view.html'"></ng-include>
+
+
+
+<script src="common/lib/spectrum.js"></script>
+
+<script src="common/js/directives.js"></script>
+<script src="common/js/dialog.js"></script>
+<script src="common/js/util.js"></script>
+<script src="common/js/remote.js"></script>
+
+<script src="editor/js/editor_app.js"></script>
+<script src="editor/js/editor_cache.js"></script>
+<script src="editor/js/editor_service.js"></script>
+<script src="editor/js/editor_types.js"></script>
+<script src="editor/js/editor_directives.js"></script>
+<script src="editor/js/editor_view.js"></script>
+<script src="editor/js/editor_layout.js"></script>
+<script src="editor/js/editor_filters.js"></script>
+
+<script src="editor/js/admin.js"></script>
+<script src="editor/js/area_editor.js"></script>
+<script src="editor/js/rooms_editor.js"></script>
+<script src="editor/js/script_editor.js"></script>
+<script src="editor/js/player_editor.js"></script>
+<script src="editor/js/socials_editor.js"></script>
+<script src="editor/js/display_editor.js"></script>
+<script src="editor/js/feature_editors.js"></script>
+<script src="editor/js/imports_editor.js"></script>
+<script src="editor/js/skills_editor.js"></script>
+
+<script src="../lsp/config.js"></script>
+</body>
+</html>

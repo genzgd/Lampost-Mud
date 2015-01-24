@@ -1,0 +1,46 @@
+<div class="text-left panel panel-warning" ng-controller="RoomExtraCtrl">
+  <div class="panel-heading panel-condensed">
+    <span class="h5">{{newAdd ? 'Create': 'Modify'}} Extra</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-8">
+        <div class="form-group">
+          <label class="control-label">Title</label>
+          <input class="form-control input-sm" type="text" ng-model="model.title"/>
+        </div>
+      </div>
+    </div>
+    <div class="row" ng-include="'editor/fragments/aliases.html'">
+
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group">
+          <label class="control-label">Description</label>
+          <textarea class="form-control" rows="6" ng-model="model.desc"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="alert alert-danger" ng-show="lastError != null">
+        <button type="button" class="close" ng-click="lastError = null">×</button>
+        {{lastError}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="pull-right">
+          <button ng-if="!newAdd && parentModel.can_write" type="button" ng-click="deleteExtra()"
+            class="btn btn-sm btn-danger">Delete Extra
+          </button>
+          <button ng-if="newAdd && parentModel.can_write" type="button" ng-click="createExtra()"
+            class="btn btn-sm btn-warning">Add {{addLabel}}
+          </button>
+          <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">{{newAdd ? 'Cancel' : 'Close'}}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

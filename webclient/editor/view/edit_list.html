@@ -1,0 +1,25 @@
+<div class="panel panel-info">
+  <div class="hand panel-heading panel-condensed">
+    {{editorLabel()}}: <strong>{{editorTitle()}}</strong>
+          <span class="pull-right"><a ng-show="addAllowed()" ng-click="newEditor(type, $event)"><i
+            class="fa fa-lg fa-plus"></i></a>
+            <a ng-show="refreshAllowed()" ng-click="doRefresh($event)"><i class="fa fa-refresh"></i></a>&nbsp;&nbsp;
+          <a><i ng-class="toggleClass"></i></a></span>
+  </div>
+  <div class="panel-collapse collapse">
+    <div style="max-height: 600px; overflow: auto;">
+      <table class="table table-condensed table-hover" style="padding-bottom: 0; margin: 0">
+        <thead>
+        <tr>
+          <th ng-repeat="col in colDefs track by $index" ng-class="col.hClass()">{{col.header}}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="hand" ng-repeat="model in modelList" ng-click="selectModel(model)" ng-class="rowClass(model)">
+          <td ng-repeat="col in colDefs track by $index" ng-class="col.dClass()">{{col.data(model)}}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+<div class="form-group">
+  <label class="control-label">Owner Id</label>
+  <select class="form-control input-sm" ng-change="checkOwner()" ng-model="model.owner_id"
+    ng-options="imm.dbo_id as imm.dbo_id for imm in immortals"></select>
+  <lp-data-error type="owner"></lp-data-error>
+</div>

@@ -1,0 +1,172 @@
+<div class="container-fluid" ng-controller="SettingsCtrl">
+  <div class="row">
+    <div class="col-md-2 text-center">
+      <div class="alert alert-info col-md-10">Account: <strong>{{accountName}}</strong></div>
+      <div class="col-md-10 btn-group-vertical">
+        <button type="button" class="btn" ng-class="heading.class" ng-repeat="heading in headings"
+                ng-click="click(heading.id)">{{heading.label}}
+        </button>
+      </div>
+    </div>
+    <div class="col-md-8" ng-switch="headingId">
+      <div class="row" ng-switch-when="general">
+        <div class="col-md-6">
+          <form  ng-submit="submitAccount()"
+                class="well col-md-12 form-horizontal">
+            <div class="form-group">
+              <label class="control-label col-md-5" for="userName">Account Name</label>
+
+              <div class="col-md-7">
+                <input id="userName" class="form-control input-sm" ng-change="nameInUse = false" type="text"
+                       ng-model="user.user_name"  required="required"/>
+              </div>
+              <div class="alert alert-danger" ng-show="nameInUse">
+                <button type="button" class="close" ng-click="nameInUse = false">×</button>
+                Account name in use.
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-5" for="emailInput">Email Address</label>
+
+              <div class="col-md-7">
+                <input id="emailInput" class="form-control input-sm" type="email" ng-model="user.email"/>
+              </div>
+              <div class="alert alert-danger" ng-show="emailInUse">
+                <button type="button" class="close" ng-click="emailInUse = false">×</button>
+                This email is already associated with another account.
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="passwordInput" class="control-label col-md-5">New Password</label>
+
+              <div class="col-md-7">
+                <input id="passwordInput" class="form-control input-sm" type="password" ng-model="user.password"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="passwordConfirm" class="control-label col-md-5">Confirm Password</label>
+
+              <div class="col-md-7">
+                <input id="passwordConfirm" class="form-control input-sm" type="password" ng-model="user.confirm"/>
+              </div>
+            </div>
+            <div class="col-md-offset-8">
+              <button class="btn btn-primary" type="submit">Update Account</button>
+            </div>
+            <div class="alert alert-danger" ng-show="accountError">
+              <button type="button" class="close" ng-click="accountError = false">×</button>
+              {{accountError}}
+            </div>
+            <div class="alert alert-success" ng-show="showSuccess">
+              <button type="button" class="close" ng-click="showSuccess = false">×</button>
+              Your account has been updated
+            </div>
+          </form>
+        </div>
+        <div class="col-md-2">
+          <button ng-click="deleteAccount()" class="btn btn-danger">Delete My Account</button>
+        </div>
+      </div>
+      <div ng-switch-when="characters" ng-controller="CharactersTabCtrl">
+
+        <div class="row">
+          <div class="col-md-8 col-lg-6 col-sm-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                Existing Characters
+              </div>
+              <table class="table">
+                <tbody>
+                <tr ng-repeat="player in players">
+                  <td class="col-md-9">{{player.name}}</td>
+                  <td class="col-md-3">
+                    <button type="button" class="btn btn-danger btn-xs" ng-click="deleteCharacter(player.dbo_id)">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 alert alert-danger" ng-show="errorText">
+            <button type="button" class="close" ng-click="errorText = null">×</button>
+            {{errorText}}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <button class="btn btn-info" ng-click="addCharacter()">Add Character</button>
+          </div>
+        </div>
+
+      </div>
+      <div ng-switch-when="display" ng-controller="DisplayTabCtrl">
+        <div class="row">
+          <div class="col-md-9">
+            <div ng-repeat="selector in selectors" class="row">
+              <div class="col-md-3">{{selector.desc}}</div>
+              <div class="col-md-1"></div>
+              <div class="col-md-2">
+                <input type="text" ng-model="selector.userColor" color-picker="color-picker"
+                    />
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-xs" ng-click="selector.userColor = selector.defaultColor">Reset</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-primary" title="Reset to game default" ng-click="updateDisplay()">Update Display
+            </button>
+            <div class="alert alert-success" ng-show="showSuccess">
+              <button type="button" class="close" ng-click="showSuccess = false">×</button>
+              Display Settings Updated
+            </div>
+          </div>
+        </div>
+      </div>
+      <div ng-switch-when="notify" ng-controller="NotifyTabCtrl">
+        <div class="row">
+          <div class="col-md-9">
+            <h5>Friend Login Notifications</h5>
+
+            <div class="controls">
+              <label label-default="label-default" class="checkbox">
+                <input type="checkbox" ng-model="notifies.friendSound"/>Play Sound</label>
+              <label label-default="label-default" class="checkbox"
+                     ng-disabled="!desktopAvailable">
+                <input type="checkbox" ng-model="notifies.friendDesktop"/>Desktop Notification</label>
+              <label label-default="label-default" class="checkbox">
+                <input type="checkbox" ng-model="notifies.friendEmail"/>Email (Offline only)</label>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-primary" ng-click="updateNotifies()">Update Notifications</button>
+            <div class="alert alert-success" ng-show="showSuccess">
+              <button type="button" class="close" ng-click="showSuccess = false">×</button>
+              Notifications Updated
+            </div>
+          </div>
+        </div>
+        <div class="row" ng-show="isImm">
+          <div class="col-md-9">
+            <h5>Login Notifications For All Players</h5>
+
+            <div class="controls">
+              <label label-default="label-default" class="checkbox">
+                <input type="checkbox" ng-model="notifies.allSound"/>Play Sound</label>
+              <label label-default="label-default" class="checkbox"
+                     ng-disabled="!desktopAvailable">
+                <input type="checkbox" ng-model="notifies.allDesktop"/>Desktop Notification</label>
+              <label label-default="label-default" class="checkbox">
+                <input type="checkbox" ng-model="notifies.allEmail"/>Email (Offline only)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

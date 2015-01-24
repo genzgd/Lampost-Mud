@@ -1,0 +1,49 @@
+# Game settings particular to the mud nature and Lampost Mud flavor of Lampost
+
+sections:
+  mud:
+    desc: 'General mud/mux configuration'
+  lpmud:
+    desc: 'Lampost Mud specific configuration'
+
+
+mud:
+  -
+    name: 'root_area_id'
+    desc: 'Unremovable area designed for standard items like currency, torches, etc.'
+    value: 'immortal'
+  -
+    name: 'default_start_room'
+    desc: 'The fallback start room for players'
+    value: 'immortal:0'
+
+
+lpmud:
+  -
+    name: 'room_reset'
+    desc: 'Room reset time (in seconds}.'
+    value: 180
+  -
+    name: 'room_size'
+    desc: 'Default room size'
+    value: 10
+  -
+    name: room_stamina
+    desc: Stamina cost for default room size'
+    value: 2
+  -
+    name: 'room_action'
+    desc: 'Action cost for default room size'
+    value: 10
+  -
+    name: 'refresh_interval'
+    desc: "Time Interval between pool 'refreshes' for mobiles and players"
+    value: 12
+  -
+    name: 'refresh_rates'
+    desc: 'Automatic increase in pool value every "refresh_interval"'
+    value:
+      stamina: 8
+      health: 1
+      mental: 1
+      action: 40

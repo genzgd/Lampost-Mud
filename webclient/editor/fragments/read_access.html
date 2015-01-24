@@ -1,0 +1,6 @@
+<div class="form-group">
+  <label class="control-label">Read Access</label>
+  <select class="form-control input-sm" ng-change="checkAccess('read')" ng-model="model.read_access"
+    ng-options="ac.value as ac.name for ac in accessLevels"></select>
+  <lp-data-error type="read_access"></lp-data-error>
+</div>

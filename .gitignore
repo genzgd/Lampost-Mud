@@ -1,0 +1,9 @@
+*.pyc
+*.idea
+src_ext
+data
+webclient/local_lib
+webclient/fonts
+webclient/test.html
+*.log
+
