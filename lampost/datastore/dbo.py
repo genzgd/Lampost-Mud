@@ -144,6 +144,13 @@ class KeyDBO(CoreDBO):
 
     dbo_rev = DBOField(0)
 
+    @classmethod
+    def new_dto(cls):
+        new_dbo = cls()
+        dto = new_dbo.dto_value
+        dto['can_write'] = True
+        return new_dbo.metafields(dto, ['class_id', 'dbo_key_type', 'dbo_parent_type', 'dbo_children_types'])
+
     @property
     def dbo_key(self):
         return ":".join([self.dbo_key_type, self.dbo_id])
@@ -158,12 +165,6 @@ class KeyDBO(CoreDBO):
         if getattr(self, 'class_id', self.dbo_key_type) != self.dbo_key_type:
             save_value['class_id'] = self.class_id
         return save_value
-
-    @property
-    def new_dto(self):
-        dto = self.dto_value
-        dto['can_write'] = True
-        return self.metafields(dto, ['class_id', 'dbo_key_type', 'dbo_parent_type', 'dbo_children_types'])
 
     def db_created(self):
         call_mro(self, 'on_created')
@@ -201,6 +202,10 @@ class ChildDBO(KeyDBO):
         return self.dbo_id.split(':')[0]
 
     @property
+    def child_id(self):
+        return self.dbo_id.split(':')[1]
+
+    @property
     def parent_dbo(self):
         return load_object(self.parent_id, self.dbo_parent_type)
 
@@ -223,7 +228,7 @@ class ChildDBO(KeyDBO):
         return self.parent_dbo.can_write(immortal)
 
 
-#  This class is here to catch possible errors in 'untyped' colle
+#  This class is here to catch possible errors in 'untyped' collections
 class Untyped():
     def hydrate(self, dto_repr):
         # This should never get called, as 'untyped' fields should always hold

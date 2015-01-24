@@ -1,11 +1,10 @@
 import os
 
-from lampost.context.resource import m_requires, inject, provides
+from lampost.context.resource import m_requires, inject
 from lampost.datastore.dbo import ChildDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
-from lampost.mud.action import imm_action
 from lampost.util.lputil import Blank
 
 
@@ -15,7 +14,6 @@ m_requires(__name__, 'log', 'datastore', 'dispatcher', 'script_manager')
 script_cache = {}
 
 
-@provides('script_manager')
 class ScriptManager():
 
     def _post_init(self):
@@ -142,7 +140,6 @@ class Script(ChildDBO):
     dbo_key_type = 'script'
     dbo_parent_type = 'area'
 
-    dbo_rev = DBOField(0)
     title = DBOField('')
     text = DBOField('')
     approved = DBOField(False)
@@ -230,15 +227,4 @@ class Scriptable(metaclass=CommonMeta):
         pass
 
 
-@imm_action('load_file_scripts', imm_level='supreme')
-def load_file_scripts(**_):
-    script_manager.load_file_scripts()
 
-
-@imm_action('scripts', 'scripts', 'admin')
-def show_scripts(source, target, **_):
-    if not target.scripts:
-        return "No scripts"
-    source.display_line("Scripts: ")
-    for script in target.scripts:
-        source.display_line("    {}".format(script.title))

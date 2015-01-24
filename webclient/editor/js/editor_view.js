@@ -52,7 +52,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     }
 
     $scope.$on('$includeContentLoaded', function(event, included) {
-        if (included === $scope.detailTemplate) {
+        if (included === $scope.detailTemplate && included === context.include) {
           initScope();
         }
       });
@@ -203,7 +203,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       } else {
         origAccess[type] = activeModel[key];
       }
-    }
+    };
 
     $scope.$watch('model', function () {
       $scope.isDirty = !angular.equals(originalModel, activeModel);

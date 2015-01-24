@@ -1,11 +1,12 @@
 from tornado.web import RequestHandler
-from lampost.client.handlers import SessionHandler
+
+from lampost.server.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.model.player import Player
 from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log', 'session_manager', 'user_manager', 'datastore',
-           'json_decode', 'json_encode', 'perm', 'edit_update_service')
+           'json_decode', 'json_encode', 'perm', 'edit_notify_service')
 
 
 def editor_login(session):
@@ -19,7 +20,7 @@ def editor_login(session):
         edit_perms.extend(['admin', 'config'])
     session.append({'editor_login': {'edit_perms': edit_perms, 'playerId': player.dbo_id, 'imm_level': player.imm_level,
                                      'playerName': player.name}})
-    edit_update_service.register(session)
+    edit_notify_service.register(session)
 
 
 class EditConnect(RequestHandler):
@@ -74,6 +75,6 @@ class EditLogin(SessionHandler):
 
 class EditLogout(SessionHandler):
     def main(self):
-        edit_update_service.unregister(session)
+        edit_notify_service.unregister(self.session)
         self.session.player = None
         self.session.append({'editor_logout': True})

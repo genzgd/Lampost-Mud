@@ -7,7 +7,6 @@ from lampost.datastore.dbofield import DBOField, DBOTField
 from lampost.datastore.auto import TemplateField, AutoField
 from lampost.datastore.meta import CommonMeta, call_mro
 from lampost.gameops.action import obj_action
-from lampost.gameops.display import TELL_TO_DISPLAY
 
 
 m_requires(__name__, 'dispatcher', 'log')

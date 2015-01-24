@@ -4,9 +4,12 @@ from lampost.datastore.exceptions import DataError
 from lampost.editor.editor import Editor, ChildrenEditor
 from lampost.env.movement import Direction
 from lampost.env.room import Room
+from lampost.context.config import m_configured
 from lampost.model.area import Area
 
-m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_update_service', 'config_manager')
+m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_notify_service')
+
+m_configured(__name__, 'root_area_id', 'default_start_room')
 
 
 class AreaEditor(Editor):
@@ -18,7 +21,7 @@ class AreaEditor(Editor):
             raise DataError("Area name should not match any player name.")
 
     def _pre_delete(self, del_obj):
-        if del_obj.dbo_id == config_manager.config.game_settings.get('root_area'):
+        if del_obj.dbo_id == root_area_id:
             raise DataError("Cannot delete root area.")
         for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, self.session, del_obj.dbo_id)
@@ -54,6 +57,7 @@ class RoomEditor(ChildrenEditor):
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir + " exit.")
         this_exit = get_dbo_class('exit')()
+        this_exit.dbo_owner = room
         this_exit.direction = new_dir
         this_exit.destination = other_id
         this_exit.on_loaded()
@@ -62,6 +66,7 @@ class RoomEditor(ChildrenEditor):
         publish_edit('update', room, self.session)
         if not content.one_way:
             other_exit = get_dbo_class('exit')()
+            other_exit.dbo_owner = room
             other_exit.direction = rev_dir
             other_exit.destination = room.dbo_id
             other_exit.on_loaded()
@@ -127,7 +132,7 @@ def find_area_room(room_id, player):
 
 
 def room_clean_up(room, session, area_delete=None):
-    start_room = load_object(config_manager.start_room, Room)
+    start_room = load_object(default_start_room, Room)
     if not start_room:
         start_room = safe_room
     for denizen in room.denizens:

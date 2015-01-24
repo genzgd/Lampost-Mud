@@ -5,7 +5,7 @@ angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCa
 
     function setPerms() {
       model = $scope.model;
-      $scope.canPromote = model.can_write && lpEditor.playerId != model.dbo_id && lpEditor.immLevel >= lpEditor.constants.imm_titles.admin;
+      $scope.canPromote = model.can_write && lpEditor.playerId != model.dbo_id && lpEditor.immLevel >= lpEditor.constants.imm_levels.admin;
       prevLevel = $scope.model.imm_level;
     }
 
@@ -13,7 +13,7 @@ angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCa
       var error;
       if (model.logged_in == 'Yes') {
         error = "Please do that in game.";
-      } else if (lpEditor.immLevel <= model.imm_level && lpEditor.immLevel < lpEditor.constants.imm_titles.supreme) {
+      } else if (lpEditor.immLevel <= model.imm_level && lpEditor.immLevel < lpEditor.constants.imm_levels.supreme) {
         error = "You cannot promote to that level!"
       }
       if (error) {

@@ -1,6 +1,6 @@
 import inspect
 
-from lampost.client.handlers import MethodHandler
+from lampost.server.handlers import MethodHandler
 from lampost.context.resource import m_requires
 
 m_requires(__name__, 'perm')
@@ -9,8 +9,14 @@ admin_ops = {}
 
 
 def admin_op(func):
-    named_args = inspect.getargspec(func)[0]
-    admin_ops[func.__name__] = {'func': func, 'dto': {'name': func.__name__, 'args': named_args, 'params': [None] * len(named_args)}}
+    a_spec = inspect.getargspec(func)
+
+    if a_spec.defaults:
+        params = [''] * (len(a_spec.args) - len(a_spec.defaults)) + list(a_spec.defaults)
+    else:
+        params = [''] * len(a_spec.args)
+
+    admin_ops[func.__name__] = {'func': func, 'dto': {'name': func.__name__, 'args': a_spec.args, 'params': params}}
     return func
 
 

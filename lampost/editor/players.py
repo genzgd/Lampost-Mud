@@ -1,12 +1,12 @@
-from lampost.client.handlers import SessionHandler
+from lampost.server.handlers import SessionHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
-from lampost.client.user import User
+from lampost.server.user import User
 from lampost.editor.editor import Editor
 from lampost.model.player import Player
 from lampost.util.encrypt import make_hash
 
-m_requires(__name__, 'log', 'dispatcher', 'datastore', 'perm', 'user_manager', 'edit_update_service')
+m_requires(__name__, 'log', 'dispatcher', 'datastore', 'perm', 'user_manager', 'edit_notify_service')
 
 
 def _post_init():

@@ -1,15 +1,17 @@
-from lampost.client.user import User
-from lampost.context.resource import m_requires, provides
+from lampost.server.user import User
+from lampost.context.resource import m_requires
+from lampost.context.config import m_configured
 from lampost.util.lputil import ClientError
 
-m_requires(__name__, 'datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm', 'config_manager')
+m_requires(__name__, 'datastore', 'dispatcher', 'session_manager', 'user_manager', 'email_sender', 'perm')
+
+m_configured(__name__, 'lampost_title')
 
 _REQUEST_KEY = "friend_requests"
 _FRIEND_EMAIL_KEY = "friend_email_notifies"
 _ALL_EMAIL_KEY = "all_email_notifies"
 
 
-@provides('friend_service')
 class FriendService():
 
     def _post_init(self):
@@ -65,8 +67,7 @@ class FriendService():
         users = [load_object(user_id, User) for user_id in notify_user_ids]
         if users:
             email_sender.send_targeted_email("{} Login".format(player.name),
-                                             "Your friend {} just logged into {}.".
-                                             format(player.name, config_manager.config.title), users)
+                                             "Your friend {} just logged into {}.".format(player.name, lampost_title), users)
 
     def _delete_player(self, player_id):
         for friend_id in fetch_set_keys(friend_key(player_id)):

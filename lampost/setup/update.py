@@ -6,7 +6,7 @@ from lampost.model.article import ArticleTemplate
 from lampost.model.mobile import MobileTemplate
 from lampost.model.player import Player
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher', 'config_manager')
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 
 @admin_op
@@ -22,11 +22,6 @@ def assign_race(race_id):
             save_object(player)
             updates += 1
     return "{} players updated.".format(updates)
-
-def add_display(source, display_key, display_desc, display_color):
-    display_desc = str.title(display_desc.replace('_', ' '))
-    config_manager.config.default_displays[display_key] = {'desc': display_desc, 'color': display_color}
-    config_manager.save_config()
 
 
 def test_memory(source, *_):
@@ -49,9 +44,4 @@ def clean_perf(source, *_):
         old_area = load_object(area_id, Area)
         if old_area:
             delete_object(old_area)
-
-
-def add_game_setting(source, setting, value):
-    config_manager.config.game_settings[setting] = value
-    config_manager.save_config()
 

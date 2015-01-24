@@ -1,12 +1,12 @@
-from lampost.client.services import ClientService
+from lampost.server.services import ClientService
 from lampost.gameops.action import make_action
-from lampost.context.resource import m_requires, provides
+from lampost.context.resource import m_requires
+from lampost.context.config import m_configured
 from lampost.util.lputil import timestamp
 
 m_requires(__name__, 'dispatcher', 'datastore', 'channel_service')
 
-ALL_CHANNELS = 'all_channels'
-GENERAL_CHANNELS = 'general_channels'
+m_configured(__name__, 'max_channel_history')
 
 
 class Channel():
@@ -41,31 +41,26 @@ class Channel():
         channel_service.add_sub(player.session, self.id)
 
 
-@provides('channel_service')
 class ChannelService(ClientService):
 
     def _post_init(self):
         super()._post_init()
-        self.all_channels = fetch_set_keys(ALL_CHANNELS)
-        self.general_channels = fetch_set_keys(GENERAL_CHANNELS)
+        self.all_channels = fetch_set_keys('all_channels')
+        self.general_channels = fetch_set_keys('general_channels')
         register('maintenance', self._prune_channels)
         register('session_connect', self._session_connect)
         register('player_connect', self._player_connect)
         register('player_logout', self._player_logout)
-        register('server_settings', self._update_settings)
-
-    def _update_settings(self, server_settings):
-        self.max_channel_history = server_settings.get('max_channel_history', 1000)
 
     def register_channel(self, channel_id, general=False):
-        add_set_key(ALL_CHANNELS, channel_id)
+        add_set_key('all_channels', channel_id)
         self.all_channels.add(channel_id)
         if general:
-            add_set_key(GENERAL_CHANNELS, channel_id)
+            add_set_key('general_channels', channel_id)
             self.general_channels.add(channel_id)
 
     def unregister_channel(self, channel_id):
-        delete_set_key(ALL_CHANNELS, channel_id)
+        delete_set_key('all_channels', channel_id)
         self.all_channels.discard(channel_id)
         self.general_channels.discard(channel_id)
 
@@ -108,7 +103,7 @@ class ChannelService(ClientService):
 
     def _prune_channels(self):
         for channel_id in self.all_channels:
-            trim_db_list(channel_key(channel_id), 0, self.max_channel_history)
+            trim_db_list(channel_key(channel_id), 0, max_channel_history)
 
 
 def channel_key(channel_id):

@@ -14,6 +14,8 @@ class AutoMeta(type):
 
 
 class AutoField():
+    field = None
+
     def __init__(self, default=None):
         self.default = default
         if default is None or isinstance(default, (int, str, bool, tuple, float)):

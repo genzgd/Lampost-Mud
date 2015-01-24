@@ -1,0 +1,315 @@
+# Game settings particular to the mud nature and Lampost Mud flavor of Lampost
+
+sections:
+  mud:
+    desc: 'General mud/mux configuration'
+  lpmud:
+    desc: 'Lampost Mud specific configuration'
+  combat:
+    desc: 'Combat calculation'
+
+mud:
+  -
+    name: 'root_area_id'
+    desc: 'Unremovable area designed for standard items like currency, torches, etc.'
+    value: 'immortal'
+  -
+    name: 'default_start_room'
+    desc: 'The fallback start room for players'
+    value: 'immortal:0'
+
+
+lpmud:
+  -
+    name: 'room_reset_time'
+    desc: 'Room reset time (in seconds}.'
+    value: 180
+  -
+    name: 'default_room_size'
+    desc: 'Default room size'
+    value: 10
+  -
+    name: 'default_player_race'
+    desc: 'The default player race definition'
+    value:
+      dbo_id: 'human'
+      name: 'Human'
+      desc: 'The lovable but fallible human race'
+  -
+    name: 'base_attr_value'
+    desc: 'Default attribute value for new races'
+    value: 5
+  -
+    name: 'room_stamina'
+    desc: 'Stamina cost for default room size'
+    value: 2
+  -
+    name: 'room_action'
+    desc: 'Action cost for default room size'
+    value: 10
+  -
+    name: 'refresh_interval'
+    desc: "Time Interval between pool 'refreshes' for mobiles and players"
+    value: 12
+  -
+    name: 'refresh_rates'
+    desc: 'Automatic increase in pool value every "refresh_interval"'
+    value:
+      stamina: 8
+      health: 1
+      mental: 1
+      action: 40
+  -
+    name: 'affinities'
+    desc: 'Automatic determination of "enemies" and "friends"'
+    value:
+      player:
+        enemies: ['monster']
+      neutral:
+        enemies: []
+      monster:
+        enemies: ['player']
+  -
+    name: 'attributes'
+    desc: 'Player and monster attributes'
+    value:
+    -
+      dbo_id: 'con'
+      name: 'Constitution'
+      category: 'Brawn'
+      hidden: false
+    -
+      dbo_id: 'str'
+      name: 'Strength'
+      category: 'Brawn'
+      hidden: false
+    -
+      dbo_id: 'agi'
+      name: 'Agility'
+      category: 'Brawn'
+      hidden: false
+    -
+      dbo_id: 'adv'
+      name: 'Adventuresome'
+      category: 'Brawn'
+      hidden: true
+    -
+      dbo_id: 'int'
+      name: 'Intelligence'
+      category: 'Brain'
+      hidden: false
+    -
+      dbo_id: 'wis'
+      name: 'Wisdom'
+      category: 'Brain'
+      hidden: false
+    -
+      dbo_id: 'kno'
+      name: 'Knowledge'
+      category: 'Brain'
+      hidden: false
+    -
+      dbo_id: 'cur'
+      name: 'Curiosity'
+      category: 'Brain'
+      hidden: true
+    -
+      dbo_id: 'cha'
+      name: 'Charm'
+      category: 'Bravado'
+      hidden: false
+    -
+      dbo_id: 'bal'
+      name: 'Balance'
+      category: 'Bravado'
+      hidden: false
+    -
+      dbo_id: 'gui'
+      name: 'Guile'
+      category: 'Bravado'
+      hidden: false
+    -
+      dbo_id: 'inq'
+      name: 'Inquiry'
+      category: 'Bravado'
+      hidden: true
+
+  -
+    name: 'resource_pools'
+    desc: 'Player/Monster current resources'
+    value:
+      -
+        dbo_id: 'health'
+        name: 'Health'
+        desc: 'Physical well being resource'
+        calc:
+          con: 11
+          str: 3
+          adv: 1
+          agi: 1
+      -
+        dbo_id: 'mental'
+        name: 'Mana'
+        desc: 'Mental energy resource'
+        calc:
+          int: 7
+          wis: 5
+          kno: 2
+          cur: 2
+      -
+        dbo_id: 'stamina'
+        name: 'Stamina'
+        desc: 'Physical energy resource'
+        calc:
+          con: 10
+          str: 2
+          wis: 2
+          bal: 2
+      -
+        dbo_id: 'action'
+        name: 'Action'
+        desc: 'Action points pool'
+        calc:
+          con: 5
+          bal: 5
+          wis: 3
+          agi: 2
+  -
+    name: 'equip_types'
+    desc: 'Valid type for articles'
+    value:
+      - 'armor'
+      - 'shield'
+      - 'weapon'
+      - 'treasure'
+  -
+    name: 'equip_slots'
+    desc: 'Valid slots for armor and other equipement'
+    value:
+      - 'finger'
+      - 'neck'
+      - 'torso'
+      - 'legs'
+      - 'head'
+      - 'feet'
+      - 'arms'
+      - 'cloak'
+      - 'waist'
+      - 'wrist'
+      - 'one-hand'
+      - 'two-hand'
+
+combat:
+  -
+    name: 'damage_delivery'
+    desc: 'Damage delivery methods'
+    value:
+      -
+        dbo_id: 'weapon'
+        desc: 'Use weapon delivery type'
+      -
+        dbo_id: 'melee'
+        desc: 'Delivered in hand to combat'
+      -
+        dbo_id: 'ranged'
+        desc: 'Delivered via bow, spell, or equivalent'
+      -
+        dbo_id: 'psych'
+        desc: 'Delivered via psychic or other non-physical means'
+  -
+    name: 'damage_groups'
+    desc: 'Damage group descriptions'
+    value:
+      -
+        dbo_id: 'elemental'
+        desc: 'All elemental damage'
+      -
+        dbo_id: 'physical'
+        desc: 'All physical damage'
+      -
+        dbo_id: 'mystical'
+        desc: 'Damage by non-natural means'
+      -
+        dbo_id: 'any'
+        desc: 'Any possible damage type'
+  -
+    name: 'damage_types'
+    desc: 'Valid damage types'
+    value:
+      -
+        dbo_id: 'weapon'
+        desc: 'Use weapon damage type'
+        group: null
+      -
+        dbo_id: 'blunt'
+        desc: 'Blunt trauma (clubs, maces)'
+        group: 'physical'
+      -
+        dbo_id: 'pierce'
+        desc: 'Piercing damage (spears, arrows)'
+        group: 'physical'
+      -
+        dbo_id: 'slash'
+        desc: 'Slash damage (swords, knives)'
+        group: 'physical'
+      -
+        dbo_id: 'cold'
+        desc: 'Cold'
+        group: 'elemental'
+      -
+        dbo_id: 'fire'
+        desc: 'Fire'
+        group: 'elemental'
+      -
+        dbo_id: 'shock'
+        desc: 'Electric'
+        group: 'elemental'
+      -
+        dbo_id: 'acid'
+        desc: 'Acid'
+        group: 'elemental'
+      -
+        dbo_id: 'poison'
+        desc: 'Poison'
+        group: 'elemental'
+      -
+        dbo_id: 'psych'
+        desc: 'Mental/psychic damage'
+        group: 'mystical'
+      -
+        dbo_id: 'spirit'
+        desc: 'Spiritual damage'
+        group: 'mystical'
+
+  -
+    name: 'weapon_types'
+    desc: 'Valid weapon types'
+    value:
+      -
+        dbo_id: 'sword'
+        damage: 'slash'
+        delivery: 'melee'
+      -
+        dbo_id: 'axe'
+        damage: 'slash'
+        delivery: 'melee'
+      -
+        dbo_id: 'mace'
+        damage: 'blunt'
+        delivery: 'melee'
+      -
+        dbo_id: 'bow'
+        damage: 'pierce'
+        delivery: 'ranged'
+      -
+        dbo_id:  'sling'
+        damage: 'blunt'
+        delivery: 'ranged'
+      -
+        dbo_id: 'spear'
+        damage: 'pierce'
+        delivery: 'ranged'
+      -
+        dbo_id: 'polearm'
+        damage: 'pierce'
+        delivery: 'melee'

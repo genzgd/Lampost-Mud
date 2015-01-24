@@ -142,7 +142,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
         return entry.data;
       }
       $log.warn('Expected key ' + key + ' not in cache.');
-    }
+    };
 
     this.deref = function (key) {
       if (!key) {
@@ -256,7 +256,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
           modelDelete(entry, delModels[ix], true);
         }
       });
-    }
+    };
 
     this.seedCacheId = function(dboId, promises) {
 
@@ -266,7 +266,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
         return lpCache.cache(parts[0]);
       }
       return lpCache.cache(parts[0] + ':' + parts[1]);
-    }
+    };
 
     this.seedCache = function (refs, baseModel, cacheKeys) {
 

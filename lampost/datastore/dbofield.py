@@ -10,10 +10,18 @@ save_value_refs = []
 
 
 class DBOField(AutoField):
+
     def __init__(self, default=None, dbo_class_id=None, required=False):
         super().__init__(default)
         self.required = required
         self.dbo_class_id = dbo_class_id
+
+    def meta_init(self, field):
+        self.field = field
+        self._hydrate_func = get_hydrate_func(load_any, self.default, self.dbo_class_id)
+        self.dto_value = value_transform(to_dto_repr, self.default, field, self.dbo_class_id, for_json=True)
+        self.cmp_value = value_transform(to_save_repr, self.default, field, self.dbo_class_id)
+        self._save_value = value_transform(to_save_repr, self.default, field, self.dbo_class_id, for_json=True)
 
     def save_value(self, instance):
         value = self._save_value(instance)
@@ -31,13 +39,6 @@ class DBOField(AutoField):
                 raise KeyError
         elif value == self.default:
             raise KeyError
-
-    def meta_init(self, field):
-        self.field = field
-        self._hydrate_func = get_hydrate_func(load_any, self.default, self.dbo_class_id)
-        self.dto_value = value_transform(to_dto_repr, self.default, field, self.dbo_class_id, for_json=True)
-        self.cmp_value = value_transform(to_save_repr, self.default, field, self.dbo_class_id)
-        self._save_value = value_transform(to_save_repr, self.default, field, self.dbo_class_id, for_json=True)
 
 
 class DBOTField():
@@ -218,7 +219,8 @@ def to_dbo_key(dbo, class_id):
     try:
         return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
     except AttributeError:
-        error('Attempting to set dbo_ref with unkeyed value {}', dbo)
+        # The value is
+        return dbo
 
 
 def load_keyed(class_id, dbo_owner, dbo_id):
@@ -227,7 +229,7 @@ def load_keyed(class_id, dbo_owner, dbo_id):
 
 def save_keyed(class_id, dbo_owner, dto_repr):
     if class_id == 'untyped':
-        save_value_refs.append(dtr_repr)
+        save_value_refs.append(dto_repr)
     else:
         save_value_refs.append('{}:{}'.format(class_id, dto_repr))
     return dto_repr
@@ -274,7 +276,7 @@ def load_any(class_id, dbo_owner, dto_repr):
             warn("Missing template for template_key {}", template_key)
             return
 
-    # Finally, it's not a template and it is not a reference to an independent DB object, it must be a child
+    # Finally, it's not a template and it is not a reference to an independent DB object, it must be a pure child
     # object of this class, just hydrate it and set the owner
     instance = dbo_class().hydrate(dto_repr)
     if instance:

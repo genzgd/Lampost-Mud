@@ -1,21 +1,22 @@
-from lampost.client.user import UserManager
-from lampost.comm.channel import ChannelService
-from lampost.context.resource import m_requires, context_post_init
-from lampost.env.room import Room
-from lampost.gameops.config import Config, ConfigManager
-from lampost.gameops.permissions import Permissions
-from lampost.model.area import Area
-from lampost.mud.mud import MudNature
-from lampost.setup.dbcontext import DbContext
-from lampost.setup.scripts import build_default_displays, build_default_settings
-from lampost.setup.settings import SERVER_SETTINGS_DEFAULT, GAME_SETTINGS_DEFAULT
+from importlib import import_module
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm')
+from lampost.context import resource, scripts, config
+from lampost.datastore.redisstore import RedisStore
+from lampost.gameops import dbconfig, event, permissions
+from lampost.util.log import LogFactory
+from lampost.server.user import UserManager
+
+
+resource.m_requires(__name__, 'log')
 
 
 def new_setup(args):
-    DbContext(args)
 
+    resource.register('log', LogFactory())
+    scripts.select_json()
+
+    # Initialize the database, flush if requested
+    datastore = resource.register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)
     if args.flush:
         db_num = datastore.pool.connection_kwargs['db']
         if db_num == args.db_num:
@@ -25,46 +26,25 @@ def new_setup(args):
             print("Error:  DB Numbers do not match")
             return
 
-    Permissions()
-    ChannelService()
-    MudNature(args.flavor)
-    user_manager = UserManager()
-    config = load_object(args.config_id, Config)
-    if config:
+    db_config = datastore.load_object(args.config_id, 'config')
+    if db_config:
         print("Error:  This instance is already set up")
         return
 
-    context_post_init()
+    # Load config yaml files and create the database configuration
+    config_yaml = config.load_yaml(args.config_dir)
+    db_config = dbconfig.create(args.config_id, config_yaml, True)
+    config_values = config.activate(db_config.section_values)
 
-    config = Config(args.config_id)
-    config_manager = ConfigManager(args.config_id)
-    config_manager.config = config
-    room_id = "{0}:0".format(args.root_area)
-    config.start_room = room_id
-    config.game_settings['root_area'] = args.root_area
+    # Initialize core services needed by the reset of the setup process
+    resource.register('dispatcher', event, True)
+    perm = resource.register('perm', permissions, True)
+    perm._post_init()
 
-    config_manager.save_config()
-    build_default_displays()
-    build_default_settings(SERVER_SETTINGS_DEFAULT, 'server')
-    build_default_settings(GAME_SETTINGS_DEFAULT, 'game')
-    config_manager._dispatch_update()
+    app_setup = import_module('{}.setup'.format(args.app_id))
+    first_player = app_setup.first_time_setup(args, datastore, config_values)
 
-    dispatch('first_time_setup')
-
-    imm_name = args.imm_name.lower()
-    imm_level = perm_level('supreme')
-
-    area = create_object(Area, {'dbo_id': args.root_area, 'name': args.root_area, 'owner_id': args.imm_name, 'next_room_id': 1})
-
-    room = create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room",
-                                'desc': "A brand new start room for immortals."})
-    dispatch('first_room_setup', room)
-    save_object(room)
-
+    user_manager = UserManager()
     user = user_manager.create_user(args.imm_account, args.imm_password)
-    player = {'dbo_id': args.imm_name, 'room_id': room_id,
-              'home_room': room_id, 'imm_level': imm_level}
-
-    user_manager.attach_player(user, player)
-
-    set_index('immortals', imm_name, imm_level)
+    player = user_manager.attach_player(user, first_player)
+    perm.update_immortal_list(player)

@@ -1,0 +1,154 @@
+#----
+#
+# Lampost Default configuration.  Note that almost every constant is set through this system, so most
+#   of these values are required.  The contents of the yaml configuration files are stored in the database
+#   to allow fast lookups, modification, and reversion to defaults
+#
+#----
+
+
+sections:
+  general:
+    desc: 'Base game engine settings'
+  client:
+    desc: 'Default client display settings'
+  server:
+    desc: 'Server connection settings'
+
+
+general:
+  -
+    name: 'lampost_title'
+    value: 'Lampost (New Install)'
+  -
+    name: 'lampost_description'
+    value: 'A fresh install of Lampost Mud'
+  -
+    name: 'auto_imm_level'
+    value: null
+  -
+    name: 'script_dir'
+    desc: 'Local file directory for dynamic scripts'
+    value: 'lampost_scripts'
+  -
+    name: 'instance_preserve_hours'
+    desc: 'Number of hours to keep an instance in memory even if no players are in it'
+    value: 24
+  -
+    name: 'imm_levels'
+    desc: 'Permission levels for immortals'
+    value:
+      supreme: 100000
+      founder: 50000
+      admin: 10000
+      senior: 2000
+      builder: 1000
+      player: 0
+  -
+    name: 'system_accounts'
+    desc: 'Accounts without associated user objects for system permissions'
+    value:
+      - lampost
+  -
+    name: 'system_level'
+    desc: 'Default level for a system account'
+    value: 49999
+
+
+client:
+  -
+    name: 'default_displays'
+    desc: 'Default client display values'
+    value:
+      -
+        name: 'default'
+        desc: 'Default'
+        value:
+          color: '#000000'
+      -
+        name: 'system'
+        desc: 'System Messages'
+        value:
+          color: '#002288'
+      -
+        name: 'room_title'
+        desc: 'Room Titles'
+        value:
+          color: '#6b306b'
+      -
+        name: 'room'
+        desc: 'Room Descriptions'
+        value:
+          color: '#ad419a'
+      -
+        name: 'exit'
+        desc: 'Exit Descriptions'
+        value:
+          color: '#808000'
+      -
+        name: 'tell_from'
+        desc: 'Tells From Other Players'
+        value:
+          color: '#808000'
+      -
+        name: 'tell_to'
+        desc: 'Tells To Other Players'
+        value:
+         color: '#0033f8'
+      -
+        name: 'say'
+        desc: 'Say'
+        value:
+          color: '#e15a00'
+      -
+        name: 'combat'
+        desc: 'Combat Messages'
+        value:
+          color: '#ee0000'
+      -
+        name: 'shout_channel'
+        desc: 'Shout Channel'
+        value:
+          color: '#00dd00'
+      -
+        name: 'imm_channel'
+        desc: 'Immortal Channel'
+        value:
+          color: '#ed1c24'
+
+
+server:
+  -
+    name: 'pulse_interval'
+    desc: 'Base Event Pulse interval (in seconds).  Many actions are measured in pulses.'
+    value: .1
+    step: 0.05
+    min: 0.05
+  -
+    name: 'maintenance_interval'
+    desc: 'Maintenance Pulse interval (in minutes).'
+    value: 60
+  -
+    name: 'refresh_link_interval'
+    desc: 'Internal link status check (in seconds).'
+    value: 5
+  -
+    name: 'broadcast_interval'
+    desc: 'Broadcast to all clients of game status (such as player list) in seconds.'
+    value: 30
+  -
+    name: 'link_dead_interval'
+    desc: 'Time without a connection before a client is considered link dead (in seconds).'
+    value: 15
+  -
+    name : 'link_idle_refresh'
+    desc: 'Time that a link will be refreshed by the server if no other activity (in seconds).'
+    value: 45
+  -
+    name: 'link_dead_prune'
+    desc: 'Time before a link dead player will be automatically logged out (in seconds).'
+    value: 120
+  -
+    name: 'max_channel_history'
+    desc: 'Maximum number of messages to keep in database per channel'
+    value: 1000

@@ -1,19 +1,18 @@
 import pdb
 import time
-import lampost.setup.update
 
-from lampost.client.user import User
+import lampost.setup.update
+from lampost.server.user import User
 from lampost.comm.broadcast import substitute
 from lampost.env.room import Room
 from lampost.model.area import Area
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires, get_resource
 from lampost.mud.action import imm_action
-from lampost.model.player import Player
 from lampost.util.lputil import find_extra, patch_object, str_to_primitive
-from lampost.gameops.display import TELL_TO_DISPLAY
 
-m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager')
+
+m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', 'script_manager')
 
 @imm_action('edit')
 def edit(source, **_):
@@ -212,7 +211,7 @@ def unregister_display(source, args, **_):
 def describe(source, target, **_):
     source.display_line('&nbsp;&nbsp;')
     for line in target.describe():
-        source.display_line(line, TELL_TO_DISPLAY)
+        source.display_line(line, 'tell_to')
 
 @imm_action('reset')
 def reset(source, **_):
@@ -298,3 +297,17 @@ def combat_status(target, **_):
 def save(target, **_):
     save_object(target)
     return '{} saved.'.format(target.name)
+
+
+@imm_action('load_file_scripts', imm_level='supreme')
+def load_file_scripts(**_):
+    script_manager.load_file_scripts()
+
+
+@imm_action('scripts', 'scripts', 'admin')
+def show_scripts(source, target, **_):
+    if not target.scripts:
+        return "No scripts"
+    source.display_line("Scripts: ")
+    for script in target.scripts:
+        source.display_line("    {}".format(script.title))

@@ -61,8 +61,10 @@ class CommonMeta(type):
             if hasattr(attr, 'hydrate'):
                 old_attr = cls.dbo_fields.get(name)
                 if old_attr != attr:
-                    if old_attr:
-                        log.info("Overriding attr {} of class {}", name, cls.__name__)
+                    if old_attr and old_attr.default == attr.default:
+                        log.warn("Unnecessary override of attr {} in class {}", name, cls.__name__)
+                    elif old_attr and old_attr.default:
+                        log.info("Overriding default value of attr{} in class {}", name, cls.__name__)
                     cls.dbo_fields[name] = attr
             elif isinstance(attr, DBOTField):
                 cls.dbot_fields[name] = attr
@@ -74,13 +76,15 @@ class CommonMeta(type):
         template_cls = get_dbo_class(cls.template_id)
         old_class = getattr(template_cls, 'instance_cls', None)
         if old_class:
+            existing_fields = old_class.dbot_fields.values()
             log.info("Overriding existing instance class {} with {} for template {}", old_class.__name__, cls.__name__,
                      cls.template_id)
         else:
             log.info("Initializing instance class {} for template {}", cls.__name__, cls.template_id)
-        template_cls.add_dbo_fields(
-            {name: DBOField(*dbo_field.args, **dbo_field.kwargs) for name, dbo_field in cls.dbot_fields.items()})
-
+            existing_fields = ()
+        new_dbo_fields = {name: DBOField(*dbo_field.args, **dbo_field.kwargs) for name, dbo_field in
+                          cls.dbot_fields.items() if dbo_field not in existing_fields}
+        template_cls.add_dbo_fields(new_dbo_fields)
         template_cls.instance_cls = cls
         cls.template_cls = template_cls
 

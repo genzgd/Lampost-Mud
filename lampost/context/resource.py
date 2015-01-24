@@ -13,20 +13,23 @@ _registered_modules = []
 
 def register(name, service, export_methods=False):
     _registry[name] = service
-    _registered_modules.append(service)
+    if service not in _registered_modules:
+        _registered_modules.append(service)
     if export_methods:
         _methods[name] = {}
-        for attr, value in service.__class__.__dict__.items():
-            if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
-                _methods[name][attr] = value.__get__(service, service.__class__)
+        if inspect.ismodule(service):
+            for attr, value in service.__dict__.items():
+                if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
+                    _methods[name][attr] = value
+        else:
+            for attr, value in service.__class__.__dict__.items():
+                if not attr.startswith("_") and not _registry.get(attr) and hasattr(value, '__call__'):
+                    _methods[name][attr] = value.__get__(service, service.__class__)
     for cls in _consumer_map.get(name, []):
         _inject(cls, name, service)
     if name in _consumer_map:
         del _consumer_map[name]
     return service
-
-def register_module(module):
-    _registered_modules.append(module)
 
 
 def inject(cls, name):
@@ -35,19 +38,6 @@ def inject(cls, name):
         _inject(cls, name, service)
         return
     _consumer_map[name].append(cls)
-
-
-def provides(name, export_methods=False):
-    def wrapper(cls):
-        original_init = cls.__init__
-
-        def init_and_register(self, *args, **kwargs):
-            register(name, self, export_methods)
-            original_init(self, *args, **kwargs)
-
-        cls.__init__ = init_and_register
-        return cls
-    return wrapper
 
 
 def requires(*resources):
@@ -62,7 +52,8 @@ def m_requires(module_name, *resources):
     module = sys.modules[module_name]
     for name in resources:
         inject(module, name)
-    _registered_modules.append(module)
+    if module not in _registered_modules:
+        _registered_modules.append(module)
 
 
 def get_resource(name):

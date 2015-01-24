@@ -1,4 +1,3 @@
-from lampost.gameops.display import *
 from lampost.gameops.action import ActionError
 from lampost.context.resource import m_requires
 from lampost.gameops.parser import parse_chat
@@ -28,8 +27,8 @@ def tell_message(source, player, statement):
     if not statement:
         return source.display_line("Say what to " + player.name + "?")
     player.last_tell = source.dbo_id
-    player.display_line(source.name + " tells you, `" + statement + "'", TELL_FROM_DISPLAY)
-    source.display_line("You tell " + player.name + ", `" + statement + "'", TELL_TO_DISPLAY)
+    player.display_line(source.name + " tells you, `" + statement + "'", 'tell_from')
+    source.display_line("You tell " + player.name + ", `" + statement + "'", 'tell_to')
 
 
 @mud_action(('r', 'reply'))

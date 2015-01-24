@@ -1,20 +1,20 @@
 from lampost.comm.broadcast import BroadcastMap
-from lampost.context.resource import m_requires, provides, requires
+from lampost.context.config import m_configured
+from lampost.context.resource import m_requires, requires
 from lampost.datastore.dbofield import DBOField
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
-from lampost.gameops.display import EXIT_DISPLAY
 from lampost.model.item import BaseItem
 
 m_requires(__name__, 'datastore', 'dispatcher')
 
+m_configured(__name__, 'instance_preserve_hours')
+
 instance_map = {}
-instance_preserve_hours = 24
 
 
-@provides('instance_manager')
 class InstanceManager():
     def _post_init(self):
         register('maintenance', self.remove_old)
@@ -126,9 +126,9 @@ class Entrance(BaseItem):
 
     def glance(self, source, **_):
         if self._dir:
-            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
+            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.dest_room.title), 'exit')
         else:
-            source.display_line(self.title, EXIT_DISPLAY)
+            source.display_line(self.title, 'exit')
 
     def __call__(self, source, **_):
         if self.instanced:
@@ -144,4 +144,5 @@ class Entrance(BaseItem):
             destination = instance.get_room(self.destination)
         else:
             destination = self.dest_room
+        destination.attach()
         source.change_env(destination, self)
