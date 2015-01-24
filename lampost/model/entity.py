@@ -5,7 +5,6 @@ from lampost.datastore.dbofield import DBOField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.comm.broadcast import Broadcast, BroadcastMap
 from lampost.context.resource import m_requires
-from lampost.gameops.display import SYSTEM_DISPLAY
 from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.model.item import Connected
 
@@ -95,7 +94,7 @@ class Entity(Connected):
                     follower.start_action(action, follow_args)
 
     def handle_parse_error(self, error, command):
-        self.display_line(error.client_message, SYSTEM_DISPLAY)
+        self.display_line(error.client_message, 'system')
 
     def social(self, **_):
         pass

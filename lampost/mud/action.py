@@ -1,5 +1,8 @@
+from collections import defaultdict
+
 from lampost.context import resource
 from lampost.gameops.action import make_action, convert_verbs
+
 
 resource.m_requires(__name__, 'log')
 _mud_actions = {}

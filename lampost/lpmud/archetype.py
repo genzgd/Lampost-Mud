@@ -1,11 +1,11 @@
 from lampost.context.config import m_configured
-from lampost.datastore.dbo import KeyDBO
+from lampost.datastore.dbo import KeyDBO, DBOAccess
 from lampost.datastore.dbofield import DBOField, DBOLField
 
 m_configured(__name__, 'base_attr_value', 'attributes', 'default_start_room')
 
 
-class Archetype(KeyDBO):
+class Archetype(DBOAccess, KeyDBO):
     dbo_key_type = 'archetype'
     dbo_set_key = 'archetypes'
 

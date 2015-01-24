@@ -71,7 +71,8 @@ class Settings(MethodHandler):
                 or player_name in perm.system_accounts:
             raise DataError(content.player_name.capitalize() + " is in use.")
         content.player_data['dbo_id'] = player_name
-        user_manager.attach_player(user, content.player_data)
+        player = create_object(Player, content.player_data)
+        user_manager.attach_player(user, player)
 
     def get_players(self):
         user = load_object(self.raw['user_id'], User)

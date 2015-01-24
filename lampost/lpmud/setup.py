@@ -8,6 +8,7 @@ from lampost.context import config, resource
 from lampost.lpmud.server import NewCharacterData
 from lampost.model.area import Area
 from lampost.env.room import Room
+from lampost.util import tools
 
 
 def first_time_setup(args, datastore, config_values):
@@ -34,6 +35,7 @@ def start_engine(args, config_values, web_server):
     _update_classes(config_values)
     resource.register('mud_core', mudcore)
     resource.register('lpmud_core', lpcore)
+    resource.register('tools', tools, True)
     web_server.add(r'/client_data/new_char', NewCharacterData)
 
 def _update_classes(config_values):

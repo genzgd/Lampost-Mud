@@ -39,8 +39,9 @@ class DisplayEditor(MethodHandler):
 class Properties(SessionHandler):
     def main(self):
         constants = {key: config.get_value(key) for key in ['attributes', 'resource_pools', 'equip_types', 'equip_slots', 'weapon_types',
-                                                            'damage_types', 'damage_delivery', 'damage_groups', 'affinities']}
+                                                            'damage_types', 'damage_delivery', 'damage_groups', 'affinities', 'imm_levels']}
         constants['weapon_options'] = constants['weapon_types'] + [{'dbo_id': 'unused'}, {'dbo_id': 'unarmed'}, {'dbo_id': 'any'}]
+        constants['skill_calculation'] = constants['attributes'] + [{'dbo_id': 'roll', 'name': 'Dice Roll'}, {'dbo_id': 'skill', 'name': 'Skill Level'}]
         constants['defense_damage_types'] = constants['damage_types'] + constants['damage_groups']
         constants['directions'] = Direction.ordered
         constants['article_load_types'] = ['equip', 'default']

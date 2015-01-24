@@ -1,3 +1,4 @@
+from lampost.lpmud.archetype import PlayerRace
 from lampost.server.handlers import SessionHandler
 from lampost.context.resource import m_requires
 

@@ -6,18 +6,6 @@ m_requires(__name__,  'dispatcher')
 
 
 def _post_init():
-    """
-
-    context.set('defense_damage_types', DEFENSE_DAMAGE_TYPES)
-    context.set('damage_delivery', DAMAGE_DELIVERY)
-
-
-
-    skill_calculation = attributes[:]
-    skill_calculation.extend([{'dbo_id': 'roll', 'name': 'Dice Roll'}, {'dbo_id': 'skill', 'name': 'Skill Level'}])
-    context.set('skill_calculation', skill_calculation)
-    """
-
     register('player_create', _player_create, priority=1000)
     register('player_baptise', _player_baptise)
     register('player_connect', _player_connect)
