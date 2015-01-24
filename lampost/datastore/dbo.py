@@ -228,7 +228,7 @@ class ChildDBO(KeyDBO):
         return self.parent_dbo.can_write(immortal)
 
 
-#  This class is here to catch possible errors in 'untyped' colle
+#  This class is here to catch possible errors in 'untyped' collections
 class Untyped():
     def hydrate(self, dto_repr):
         # This should never get called, as 'untyped' fields should always hold

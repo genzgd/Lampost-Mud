@@ -1,6 +1,6 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import CoreDBO, KeyDBO, DBOAccess
+from lampost.datastore.dbo import KeyDBO, DBOAccess
 from lampost.datastore.dbofield import DBOField
 from lampost.mud.action import mud_action
 

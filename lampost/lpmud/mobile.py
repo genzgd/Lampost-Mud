@@ -6,11 +6,11 @@ from lampost.lpmud.archetype import Archetype
 from lampost.lpmud.attributes import fill_pools
 from lampost.lpmud.entity import EntityLP
 from lampost.lpmud.skill import add_skill
-from lampost.model.mobile import MobileTemplate
+from lampost.model.mobile import MobileTemplate, Mobile
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
-m_configured(__name__, 'affinities')
+m_configured(__name__, 'affinities', 'attributes', 'base_attr_value')
 
 
 class MobileTemplateLP(MobileTemplate):
@@ -24,8 +24,8 @@ class MobileTemplateLP(MobileTemplate):
                 setattr(self.instance_cls, attr_name, start_value)
             self.desc = arch.desc
         else:
-            for attr_name in Archetype.attr_list:
-                setattr(self.instance_cls, attr_name, base_attr_value * self.level)
+            for attr in attributes:
+                setattr(self.instance_cls, attr['dbo_id'], base_attr_value * self.level)
         self.enemies = affinities[self.affinity]['enemies']
 
     def config_instance(self, mobile, owner):
@@ -36,7 +36,7 @@ class MobileTemplateLP(MobileTemplate):
         super().config_instance(mobile, owner)
 
 
-class MobileLP(EntityLP):
+class MobileLP(EntityLP, Mobile):
     template_id = "mobile"
 
     archetype = DBOTField()

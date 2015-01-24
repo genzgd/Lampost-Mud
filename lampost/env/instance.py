@@ -6,7 +6,6 @@ from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
-from lampost.gameops.display import EXIT_DISPLAY
 from lampost.model.item import BaseItem
 
 m_requires(__name__, 'datastore', 'dispatcher')
@@ -127,9 +126,9 @@ class Entrance(BaseItem):
 
     def glance(self, source, **_):
         if self._dir:
-            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.dest_room.title), EXIT_DISPLAY)
+            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.dest_room.title), 'exit')
         else:
-            source.display_line(self.title, EXIT_DISPLAY)
+            source.display_line(self.title, 'exit')
 
     def __call__(self, source, **_):
         if self.instanced:

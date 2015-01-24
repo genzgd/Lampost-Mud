@@ -93,21 +93,6 @@ def look(target_method, **kwargs):
     return target_method(**kwargs)
 
 
-@mud_action('help')
-def help_action(source, args, **_):
-    if not args:
-        source.display_line('Available actions:')
-        action_verbs = defaultdict(list)
-        for verb, action in _mud_actions.items():
-            action_verbs[action].append(" ".join(list(verb)))
-        verb_lists = ["/".join(verbs) for verbs in action_verbs.values()]
-        return source.display_line(", ".join(sorted(verb_lists)))
-    action = _mud_actions.get(args, None)
-    if not action:
-        raise ActionError("No matching command found")
-    return getattr(action, "help_text", "No help available.")
-
-
 @mud_action('friends')
 def friends(source, **_):
     friend_list = friend_service.friend_list(source.dbo_id)

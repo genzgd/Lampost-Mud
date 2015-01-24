@@ -75,6 +75,6 @@ class EditLogin(SessionHandler):
 
 class EditLogout(SessionHandler):
     def main(self):
-        edit_notify_service.unregister(session)
+        edit_notify_service.unregister(self.session)
         self.session.player = None
         self.session.append({'editor_logout': True})

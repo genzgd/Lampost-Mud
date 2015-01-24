@@ -57,6 +57,7 @@ class RoomEditor(ChildrenEditor):
             if not content.one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir + " exit.")
         this_exit = get_dbo_class('exit')()
+        this_exit.dbo_owner = room
         this_exit.direction = new_dir
         this_exit.destination = other_id
         this_exit.on_loaded()
@@ -65,6 +66,7 @@ class RoomEditor(ChildrenEditor):
         publish_edit('update', room, self.session)
         if not content.one_way:
             other_exit = get_dbo_class('exit')()
+            other_exit.dbo_owner = room
             other_exit.direction = rev_dir
             other_exit.destination = room.dbo_id
             other_exit.on_loaded()

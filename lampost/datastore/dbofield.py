@@ -276,7 +276,7 @@ def load_any(class_id, dbo_owner, dto_repr):
             warn("Missing template for template_key {}", template_key)
             return
 
-    # Finally, it's not a template and it is not a reference to an independent DB object, it must be a child
+    # Finally, it's not a template and it is not a reference to an independent DB object, it must be a pure child
     # object of this class, just hydrate it and set the owner
     instance = dbo_class().hydrate(dto_repr)
     if instance:

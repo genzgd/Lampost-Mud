@@ -35,7 +35,7 @@ angular.module('lampost_editor').service('lpEditorLayout',
         result = $filter(this.filter[ix])(result, this.id);
       }
       return result;
-    }
+    };
 
     function loadLocal() {
         localData = JSON.parse(localStorage.getItem(lpEditor.playerId + '*editData')) || {};
@@ -100,20 +100,20 @@ angular.module('lampost_editor').service('lpEditorLayout',
       promises.push($http.get('editor/view/editor_main.html', {cache: $templateCache}));
       angular.forEach(viewState.models, function(dbo_id, type) {
         promises.push(lpCache.seedCacheId(type + ':'+ dbo_id));
-      })
+      });
       if (viewState.lastType) {
         promises.push(lpCache.seedCacheId(viewState.lastType + ':' + viewState.lastEdit));
         promises.push($http.get('editor/view/' + viewState.lastType + '.html', {cache: $templateCache}));
       }
       $q.all(promises).then(function() {
-        var selectedModel;
-        var editModel;
+        var editModel, selectedModel;
+        editModel = selectedModel = null;
         angular.forEach(viewState.models, function(dbo_id, type) {
           selectedModel = lpCache.cachedValue(type + ':' + dbo_id);
           if (selectedModel) {
             lpEvent.dispatchLater('modelSelected', selectedModel, 'load');
           }
-        })
+        });
         if (viewState.lastType) {
           editModel = lpCache.cachedValue(viewState.lastType + ':' + viewState.lastEdit);
         }
@@ -136,7 +136,7 @@ angular.module('lampost_editor').service('lpEditorLayout',
 
     this.editLists = function() {
       return viewLists[currentView];
-    }
+    };
 
     this.selectModel = function(type, value, selectType) {
       if (selectType === 'load') {
@@ -175,7 +175,7 @@ angular.module('lampost_editor').service('lpEditorLayout',
 
     lpEvent.register('editReady', function(model) {
       if (model.dbo_key_type && model.dbo_id) {
-        viewState.lastEdit = model.dbo_id
+        viewState.lastEdit = model.dbo_id;
         viewState.lastType = model.dbo_key_type;
         updateLocal();
       }
@@ -192,12 +192,12 @@ angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEven
 
   $scope.paneClass = function(pane) {
     return settings.paneSizes[pane] ? 'col-md-' + settings.paneSizes[pane] : 'hidden';
-  }
+  };
 
   $scope.swapCheats = function() {
     settings.showCheats = !settings.showCheats;
     lpEditorLayout.update();
-  }
+  };
 
   $scope.cheatSheets = ["editor/view/social_cheat.html"];
 
@@ -224,7 +224,7 @@ angular.module('lampost_editor').controller('EditLayoutCtrl', ['$scope', 'lpEven
     settings.paneSizes[other] = otherSize;
 
     lpEditorLayout.update();
-  }
+  };
 
   lpEvent.register('startViewLayout', function() {
     $scope.editLists = lpEditorLayout.editLists();
