@@ -144,5 +144,4 @@ class Entrance(BaseItem):
             destination = instance.get_room(self.destination)
         else:
             destination = self.dest_room
-        destination.attach()
         source.change_env(destination, self)
