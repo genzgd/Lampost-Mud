@@ -1,7 +1,11 @@
+import bisect
+from collections import defaultdict
+import inspect
 import os
+from weakref import WeakKeyDictionary
 
 from lampost.context.resource import m_requires, inject
-from lampost.datastore.dbo import ChildDBO
+from lampost.datastore.dbo import ChildDBO, CoreDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.datastore.meta import CommonMeta
 from lampost.gameops.action import obj_action
@@ -213,15 +217,64 @@ class Script(ChildDBO):
                 del self.code
 
 
+class Shadow():
+    def __init__(self, func):
+        self.func = func
+        self.name = func.__name__
+        self.arg_spec = inspect.getargspec(func)
+        self.chains = WeakKeyDictionary()
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+
+        chain = self.chains.get(instance, None)
+        if not chain:
+            chain = self.create_chain(instance)
+        return chain
+
+    def create_chain(self, instance):
+
+        funcs = []
+
+        def chained(self, *args, **kwargs):
+            for func in funcs:
+                func(self, *args, **kwargs)
+
+        for shadow in instance.shadow_map.get(self.name, []):
+            pass
+
+        funcs.append(self.func)
+        chain = chained.__get__(instance)
+        self.chains[instance] = chain
+        return chain
+
+
+class ShadowScript(CoreDBO):
+    class_id = 'shadow_script'
+
+    priority = DBOField(0)
+    text = DBOField('', required=True)
+    name = DBOField('', required=True)
+
+    def __cmp__(self, other):
+        if self.priority < other.priority:
+            return -1
+        if self.priority > other.priority:
+            return 1
+        return 0
+
+
 class Scriptable(metaclass=CommonMeta):
     scripts = DBOField([], 'script')
     script_vars = DBOField({})
+    shadows = DBOField([], 'shadow_script')
 
     def on_loaded(self):
-        for script in self.scripts:
-            if script.approved and script.compile():
-                apply_script(self, script)
-        self.post_script()
+        self.shadow_map = defaultdict(list)
+        for shadow in self.shadows:
+            func_shadows = self.shadow_map[shadow.name]
+            bisect.insort(func_shadows, shadow)
 
     def post_script(self):
         pass

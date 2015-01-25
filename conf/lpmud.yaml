@@ -1,4 +1,4 @@
-# Game settings particular to the mud nature and Lampost Mud flavor of Lampost
+# Game settings particular to the Lampost Mud ('lpmud') Lampost application
 
 sections:
   mud:

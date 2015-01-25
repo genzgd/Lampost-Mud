@@ -6,11 +6,11 @@ Lampost is a multi-user virtual world building platform inspired by the thriving
 ### Quickstart
 
 * Install Python 3.2.5+
-* Install redis-py 2.10.3+ and Tornado 4.0.2+ using pip
+* Install redis-py 2.10.3+, Tornado 4.0.2+ and PyYAML 3.10+ (for configuration) using pip
 * Install Redis 2.4+ 
 * Start Redis with the redis-server script
 * Clone this Github repository
-* Run create_lp_db.py --imm_name YOUR_SUPERUSER_PLAYER_NAME
+* Run lampost_setup --imm_name YOUR_SUPERUSER_PLAYER_NAME
 * Run lampost.py
 * Point your browser at <http://localhost:2500>
 
@@ -71,6 +71,8 @@ Lampost uses [Redis](http://redis.io) as its primary, high performance key/value
 Redis 2.4 and later versions.  Lampost requires the awesome [redis-py](https://github.com/andymccurdy/redis-py) library for
 Redis connectivity.
 
+Finally Lampost requires PyYAML 3.x for initial configuration.
+
 
 
 
@@ -81,7 +83,7 @@ In the works:
 
 * An expanded demo world showcasing user scripts and instanced areas
 * ~~An upgrade in the web client and editor to Bootstrap 3.3~~ Done!
-* A reworked, more flexible configuration framework
+* ~~A reworked, more flexible configuration framework~~ Done!
 * The ability to export and import areas between Lampost instances
 * Some super secret projects
 
