@@ -10,7 +10,7 @@ from lampost.datastore.dbo import CoreDBO, ChildDBO
 from lampost.datastore.dbofield import DBOField, DBOCField
 from lampost.env.movement import Direction
 from lampost.context.config import m_configured
-from lampost.gameops.script import Scriptable
+from lampost.gameops.script import Scriptable, Shadow
 from lampost.model.item import Connected
 
 
@@ -112,6 +112,10 @@ class Room(ChildDBO, Connected, Scriptable):
     def contents(self):
         return itertools.chain(self.features, self.denizens, self.inven)
 
+    @Shadow
+    def long_desc(self):
+        return self.desc
+
     def glance(self, source, **_):
         return source.display_line(self.name, 'room')
 
@@ -134,7 +138,8 @@ class Room(ChildDBO, Connected, Scriptable):
     def remove_inven(self, article):
         self.inven.remove(article)
 
-    def receive_broadcast(self, broadcast):
+    @Shadow
+    def receive_broadcast(self, broadcast, **_):
         if not broadcast:
             return
         if getattr(broadcast, 'target', None) == self:
@@ -147,10 +152,11 @@ class Room(ChildDBO, Connected, Scriptable):
     def first_look(self, source):
         self.examine(source)
 
+    @Shadow
     def examine(self, source, **_):
         source.display_line(self.name, 'room_title')
         source.display_line('HRT', 'room')
-        source.display_line(self.desc, 'room')
+        source.display_line(self.long_desc(), 'room')
         source.display_line('HRB', 'room')
         if self.exits:
             for my_exit in self.exits:

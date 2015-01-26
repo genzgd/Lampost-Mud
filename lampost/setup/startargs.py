@@ -3,7 +3,7 @@ import argparse
 parent_parser = argparse.ArgumentParser(add_help=False)
 
 config_group = parent_parser.add_argument_group(title="Lampost Engine Configuration")
-config_group.add_argument('-cid', '--config_id', help="database configuration id", default='config')
+config_group.add_argument('-cid', '--config_id', help="database configuration id", default='lampost')
 config_group.add_argument('-a', '--app_id', help="application module", default='lampost.lpmud')
 
 log_group = parent_parser.add_argument_group(title="Logging Configuration")

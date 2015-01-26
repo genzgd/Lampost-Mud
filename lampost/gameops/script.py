@@ -2,9 +2,12 @@ import bisect
 from collections import defaultdict
 import inspect
 import os
+import types
+from types import CodeType
 from weakref import WeakKeyDictionary
 
 from lampost.context.resource import m_requires, inject
+from lampost.datastore.auto import AutoField
 from lampost.datastore.dbo import ChildDBO, CoreDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.datastore.meta import CommonMeta
@@ -217,37 +220,56 @@ class Script(ChildDBO):
                 del self.code
 
 
+def create_chain(funcs):
+
+    def chained(self, *args, **kwargs):
+        last_return = None
+        for func in funcs:
+            last_return = func(self, *args, last_return=last_return, **kwargs)
+        return last_return
+    return chained
+
+
 class Shadow():
     def __init__(self, func):
         self.func = func
         self.name = func.__name__
-        self.arg_spec = inspect.getargspec(func)
-        self.chains = WeakKeyDictionary()
+        self.shadow_args = inspect.getargspec(func)
 
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
 
-        chain = self.chains.get(instance, None)
-        if not chain:
-            chain = self.create_chain(instance)
-        return chain
-
-    def create_chain(self, instance):
-
-        funcs = []
-
-        def chained(self, *args, **kwargs):
-            for func in funcs:
-                func(self, *args, **kwargs)
-
-        for shadow in instance.shadow_map.get(self.name, []):
+        try:
+            return instance.__dict__[self.name]
+        except KeyError:
             pass
 
-        funcs.append(self.func)
-        chain = chained.__get__(instance)
-        self.chains[instance] = chain
-        return chain
+        return self.create_chain(instance)
+
+    def create_chain(self, instance):
+        shadow_funcs = []
+        original_inserted = False
+        for shadow in instance.shadow_chains.get(self.name, []):
+            shadow_locals = {}
+            exec(shadow.code, self.func.__globals__, shadow_locals)
+            shadow_func = next(iter(shadow_locals.values()))
+            if shadow.priority == 0:
+                original_inserted = True
+            elif shadow.priority > 0 and not original_inserted:
+                shadow_funcs.append(self.func)
+                original_inserted = True
+            shadow_funcs.append(shadow_func)
+        if not original_inserted:
+            shadow_funcs.append(self.func)
+
+        if len(shadow_funcs) == 1:
+            bound_chain = shadow_funcs[0].__get__(instance)
+        else:
+            bound_chain = create_chain(shadow_funcs).__get__(instance)
+
+        instance.__dict__[self.name] = bound_chain
+        return bound_chain
 
 
 class ShadowScript(CoreDBO):
@@ -256,6 +278,7 @@ class ShadowScript(CoreDBO):
     priority = DBOField(0)
     text = DBOField('', required=True)
     name = DBOField('', required=True)
+    code = None
 
     def __cmp__(self, other):
         if self.priority < other.priority:
@@ -264,19 +287,33 @@ class ShadowScript(CoreDBO):
             return 1
         return 0
 
+    def compile(self):
+        if not self.code:
+            try:
+                self.code = compile(self.text, '{}_shadow'.format(self.name), 'exec')
+            except SyntaxError:
+                warn("Failed to compile shadow script {}", self.name, exc_info=True)
+                return False
+        return True
+
 
 class Scriptable(metaclass=CommonMeta):
     scripts = DBOField([], 'script')
     script_vars = DBOField({})
     shadows = DBOField([], 'shadow_script')
+    shadow_chains = AutoField({})
 
     def on_loaded(self):
-        self.shadow_map = defaultdict(list)
+        chains = defaultdict(list)
         for shadow in self.shadows:
-            func_shadows = self.shadow_map[shadow.name]
-            bisect.insort(func_shadows, shadow)
+            if shadow.compile():
+                func_shadows = chains[shadow.name]
+                bisect.insort(func_shadows, shadow)
+        self.shadow_chains = chains
+        self.load_scripts()
 
-    def post_script(self):
+    @Shadow
+    def load_scripts(self):
         pass
 
 

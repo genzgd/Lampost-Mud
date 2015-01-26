@@ -1,1 +1,1 @@
-from . import immortal, group, socials, inventory
+from . import immortal, group, socials, inventory, chat
