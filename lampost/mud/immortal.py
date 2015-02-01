@@ -12,7 +12,7 @@ from lampost.mud.action import imm_action
 from lampost.util.lputil import find_extra, patch_object, str_to_primitive
 
 
-m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager', 'script_manager')
+m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager')
 
 @imm_action('edit')
 def edit(source, **_):
@@ -297,11 +297,6 @@ def combat_status(target, **_):
 def save(target, **_):
     save_object(target)
     return '{} saved.'.format(target.name)
-
-
-@imm_action('load_file_scripts', imm_level='supreme')
-def load_file_scripts(**_):
-    script_manager.load_file_scripts()
 
 
 @imm_action('scripts', 'scripts', 'admin')

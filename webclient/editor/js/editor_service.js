@@ -20,7 +20,7 @@ angular.module('lampost_editor').service('lpEditor',
 
     EditContext.prototype.newModel = function () {
       var model = angular.copy(this.newObj);
-      model.can_write = true
+      model.can_write = true;
       model.owner_id = lpEditor.playerId;
       this.extend(model);
       return model;
@@ -58,6 +58,7 @@ angular.module('lampost_editor').service('lpEditor',
         }
         context.newObj = data.new_object;
         context.perms = data.perms;
+        context.shadows = data.shadows;
         context.metadata = true;
       }));
     }
@@ -147,7 +148,6 @@ angular.module('lampost_editor').service('lpEditor',
     });
 
     /*  config: new lpEditContext({label: "Mud Config", url: "config"}),
-     script: {label: "Script", url: "script"},
      display: {label: "Display", url: "display"},
      imports: {label: "Imports"} */
 
@@ -201,4 +201,4 @@ angular.module('lampost_editor').factory('contextDefs', ['$q', function($q) {
       preReqs: {context: ['room']}
     }
   }
-}])
+}]);

@@ -263,7 +263,7 @@ angular.module('lampost_editor').controller('EditListCtrl',
       $scope.colDefs = lpEditorLayout.cols(type);
       $scope.type = type;
       updateList();
-    }
+    };
 
     $scope.addAllowed = function () {
       return ((context.parent && context.parent.can_write) || !context.parentType) && context.perms.add;
@@ -305,10 +305,6 @@ angular.module('lampost_editor').controller('EditListCtrl',
       });
     }
 
-    function dataError(error) {
-      $scope.errors.dataError = lpEditor.translateError(error);
-    }
-
     lpEvent.register("contextUpdate", function(updated) {
       if (context === updated) {
         updateList();
@@ -347,7 +343,7 @@ angular.module('lampost_editor').controller('EditListCtrl',
 
     $scope.editorLabel = function() {
       return activeModel ? context.label : context.plural;
-    }
+    };
 
     $scope.editorTitle = function () {
       if (activeModel) {

@@ -1,79 +1,44 @@
-angular.module('lampost_editor').controller('ScriptListCtrl', ['$q', '$scope', 'lmEditor',
-  function ($q, $scope, lmEditor) {
+angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope', 'lpEditor',
+  function ($q, $scope, lpEditor) {
 
-    var listKey;
 
-    $scope.editor = {id: 'script', url: "script",  label: 'Script'};
-    var helpers = lmEditor.prepare(this, $scope);
+    $scope.modelShadows = lpEditor.context.shadows;
+    $scope.modelShadow = null;
 
-    $scope.$on('updateModel', function () {
-      if ($scope.model) {
-        lmEditor.deref(listKey);
-        listKey = "script:" + $scope.areaId;
-        helpers.prepareList(listKey);
-      } else {
-        $scope.modelList = null;
+    $scope.newAdd = !lpEditor.addObj;
+    if ($scope.newAdd) {
+      $scope.shadowScript = {text: '', priority: 0};
+    } else {
+      $scope.shadowScript = angular.copy(lpEditor.addObj);
+    }
+
+    angular.forEach($scope.modelShadows, function(shadow) {
+      if (shadow.name === $scope.shadowScript.name) {
+        $scope.modelShadow = shadow;
       }
     });
 
-    this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.areaId + ":" + newModel.dbo_id;
-    };
+    $scope.changeShadow = function() {
+      var i;
+      $scope.shadowScript.name = $scope.modelShadow.name;
+      var textlines = $scope.shadowScript.text.split('\n');
+      var firstLine= 'def ' + $scope.shadowScript.name + '(';
+      for (i = 0; i < $scope.modelShadow.args.length; i++) {
+        var argName = $scope.modelShadow.args[i];
+        firstLine += argName + ', ';
 
-    this.postCreate = function (newModel) {
-      $scope.startEditor('script', newModel);
-      return $q.reject();
-    };
-
-  }]);
-
-angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$q', '$scope', 'lmEditor',
-  function ($q, $scope, lmEditor) {
-
-    lmEditor.prepare(this, $scope);
-
-    this.preCreate = function (newModel) {
-      newModel.dbo_id = $scope.selectedAreaId + ":" + newModel.dbo_id;
-    };
-
-    $scope.editor.newEdit($scope.editor.editModel);
-
-    $scope.approvedClass = function() {
-      if ($scope.model && $scope.model.approved) {
-        return "badge-success";
       }
-      return "badge-warning";
-    };
-
-     $scope.approvedText = function() {
-      if ($scope.model && $scope.model.approved) {
-        return "Approved";
-      }
-      return "Not Approved";
-    };
-  }]);
-
-angular.module('lampost_editor').controller('ScriptSelectorCtrl', ['$q', '$scope', function($q, $scope, hostType, host) {
-  var noScript = {dbo_id: '--None--'};
-  var noItems = {dbo_id: '--No Items--', invalid: true};
-
-  $scope.objType = 'script';
-  $scope.hostType = hostType;
-  $scope.host = host;
-
-    $scope.areaChange = function() {};
-    $scope.listChange = function(rooms) {
-
-      if (rooms.length > 0) {
-        $scope.roomList = rooms;
-        $scope.hasRoom = true;
+      firstLine += '*args, **kwargs):';
+      if (textlines.length) {
+        textlines[0] = firstLine;
+        $scope.shadowScript.text = textlines.join('\n');
       } else {
-        $scope.roomList = [{dbo_id: "N/A"}];
-        $scope.hasRoom= false;
+        $scope.shadowSript.text = firstLine;
       }
-       $scope.entranceRoom = $scope.roomList[0];
     };
 
-
-}]);
-
+    $scope.createScripte = function() {
+      model.shadows.push($scope.shadowScript);
+      $scope.closeAdd();
+    }
+  }]);
