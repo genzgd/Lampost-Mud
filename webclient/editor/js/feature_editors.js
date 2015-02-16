@@ -28,7 +28,7 @@ angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter
       $scope.permList = [noItems];
     }
     $scope.newPerm = $scope.permList[0].dbo_id;
-  }
+  };
 
   $scope.updateCurrency = function() {
     if ($scope.newCurrency == noCurrency.dbo_id) {

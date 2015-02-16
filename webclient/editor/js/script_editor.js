@@ -1,15 +1,20 @@
-angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope', 'lpEditor',
-  function ($q, $scope, lpEditor) {
+angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope', 'lpRemote', 'lpEditor',
+  function ($q, $scope, lpRemote, lpEditor) {
 
+
+    var validText, originalText;
 
     $scope.modelShadows = lpEditor.context.shadows;
     $scope.modelShadow = null;
+    $scope.scriptChanged = false;
 
     $scope.newAdd = !lpEditor.addObj;
     if ($scope.newAdd) {
       $scope.shadowScript = {text: '', priority: 0};
+      originalText = '';
     } else {
       $scope.shadowScript = angular.copy(lpEditor.addObj);
+      originalText = validText = $scope.shadowScript.text;
     }
 
     angular.forEach($scope.modelShadows, function(shadow) {
@@ -19,26 +24,46 @@ angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope',
     });
 
     $scope.changeShadow = function() {
-      var i;
+      var i, lines, firstLine;
       $scope.shadowScript.name = $scope.modelShadow.name;
-      var textlines = $scope.shadowScript.text.split('\n');
-      var firstLine= 'def ' + $scope.shadowScript.name + '(';
+      lines = $scope.shadowScript.text.split('\n');
+      firstLine= 'def ' + $scope.shadowScript.name + '(';
       for (i = 0; i < $scope.modelShadow.args.length; i++) {
         var argName = $scope.modelShadow.args[i];
         firstLine += argName + ', ';
-
       }
       firstLine += '*args, **kwargs):';
-      if (textlines.length) {
-        textlines[0] = firstLine;
-        $scope.shadowScript.text = textlines.join('\n');
+      if (lines.length) {
+        lines[0] = firstLine;
+        $scope.shadowScript.text = lines.join('\n');
       } else {
-        $scope.shadowSript.text = firstLine;
+        $scope.shadowScript.text = firstLine;
       }
     };
 
-    $scope.createScripte = function() {
-      model.shadows.push($scope.shadowScript);
+    $scope.deleteScript = function() {
+      var ix = $scope.model.shadows.indexOf(lpEditor.addObj);
+      $scope.model.shadows.splice(ix, 1);
       $scope.closeAdd();
+    };
+
+    $scope.createScript = function() {
+      $scope.model.shadows.push($scope.shadowScript);
+      $scope.closeAdd();
+    };
+
+    $scope.checkValid = function() {
+      $scope.scriptValid = validText && validText === $scope.shadowScript.text;
+      $scope.scriptChanged = $scope.shadowScript.text !== originalText;
+    };
+
+    $scope.validateScript = function() {
+      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function() {
+        validText = $scope.shadowScript.text;
+        $scope.checkValid();
+      }, function(error) {
+        $scope.scriptError = error;
+      })
     }
+
   }]);

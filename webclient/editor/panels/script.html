@@ -19,7 +19,7 @@
         <input type="number" class="form-control input-sm" ng-model="shadowScript.priority" required>
       </div>
       <div class="col-md-3">
-         <button ng-show="scriptChanged" type="button" ng-click="validateScript()">Validate</button>
+         <button ng-show="scriptChanged" type="button" class="btn btn-success" ng-click="validateScript()">Validate</button>
       </div>
       <div class="col-md-3">
         <div class="pull-right" ng-if="!newAdd">
@@ -27,7 +27,7 @@
           <button ng-disabled="!scriptValid" type="button" ng-click="updateScript()" class="btn btn-default btn-sm">Update Script</button>
         </div>
         <div class="pull-right" ng-if="newAdd">
-          <button type="button" ng-click="createScript()" class="btn btn-warning btn-sm">Create Script</button>
+          <button ng-disabled="!scriptValid" type="button" ng-click="createScript()" class="btn btn-warning btn-sm">Create Script</button>
           <button type="button" ng-click="closeAdd()" class="never-disable btn btn-default btn-sm">Cancel</button>
         </div>
       </div>
