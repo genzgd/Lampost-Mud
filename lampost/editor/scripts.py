@@ -1,4 +1,4 @@
-from lampost.client.handlers import MethodHandler
+from lampost.server.handlers import MethodHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.exceptions import DataError
 from lampost.gameops.script import compile_script
