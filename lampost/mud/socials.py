@@ -2,9 +2,10 @@ from lampost.comm.broadcast import BroadcastMap
 from lampost.context.resource import m_requires
 from lampost.datastore.dbo import KeyDBO, DBOAccess
 from lampost.datastore.dbofield import DBOField
+from lampost.gameops.action import make_action
 from lampost.mud.action import mud_action
 
-m_requires(__name__, 'datastore')
+m_requires(__name__, 'log', 'datastore', 'mud_actions')
 
 
 def _post_init():
@@ -21,7 +22,11 @@ class Social(DBOAccess, KeyDBO):
     msg_class = 'social'
 
     def on_loaded(self):
-        mud_action(self.dbo_id)(self)
+        try:
+            if mud_actions[self.dbo_id] != self:
+                warn("Mud action already exists for social id {}", self.dbo_id)
+        except KeyError:
+            mud_actions[(self.dbo_id,)] = make_action(self, self.dbo_id)
         self.broadcast_map = BroadcastMap(**self.b_map)
 
     def __call__(self, source, target, **_):
