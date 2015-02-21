@@ -109,7 +109,7 @@ class Parse():
             reject_format['verb'] = ' '.join(reject.verb)
             reject_format['extra'] = extra
             reject_format['prep'] = reject.prep
-            if reject.prep:
+            if extra and reject.prep:
                 prep_ix = extra.find(reject.prep)
                 if prep_ix == -1:
                     reject_format['target'] = extra

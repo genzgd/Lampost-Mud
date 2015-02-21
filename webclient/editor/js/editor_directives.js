@@ -65,7 +65,7 @@ angular.module('lampost_editor').directive('lpEditPanel', ['lpEditorLayout', fun
       });
     }
   }
-}])
+}]);
 
 
 angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent',

@@ -125,7 +125,7 @@ angular.module('lampost_editor').controller('EditorNavController',
 
     $scope.editorLogout = function () {
       lpEvent.dispatch('server_request', 'editor/edit_logout');
-    }
+    };
 
     $scope.changeNav = function (newNav) {
       if (newNav == activeNav) {

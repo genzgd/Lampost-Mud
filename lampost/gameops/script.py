@@ -126,7 +126,7 @@ class ShadowScript(CoreDBO):
         return 0
 
     def on_loaded(self):
-        self.code, err_str = validate_code(self.text, self.name)
+        self.code, err_str = validate_script(self)
         if err_str:
             warn("Script {} failed in {} ", self.name, self.dbo_owner.dbo_id)
 

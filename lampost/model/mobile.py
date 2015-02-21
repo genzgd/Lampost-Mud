@@ -21,7 +21,6 @@ class MobileTemplate(ChildDBO, Template):
 
 class Mobile(Entity, BaseTemplate):
     template_id = 'mobile'
-    is_player = False
 
     def on_detach(self):
         self.original_env.mobiles[self.template].remove(self)

@@ -3,7 +3,8 @@
     <div class="col-md-2">
       <div class="form-group">
         <label class="control-label">Social</label>
-        <input ng-disabled="!isNew" type="text" class="form-control input-sm" ng-model="model.dbo_id" required="true"/>
+         <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id" required="true"/>
+        <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{model.dbo_id}}</div>
       </div>
       <div class="form-group">
         <label class="control-label">Edit Mode</label>

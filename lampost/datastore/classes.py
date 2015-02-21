@@ -32,6 +32,7 @@ def set_dbo_class(class_id, dbo_class):
 def set_mixin(class_id, mixin_class):
     _mixin_registry[class_id] = mixin_class
 
+
 def get_dbo_class(class_id):
     try:
         return _dbo_registry[class_id]

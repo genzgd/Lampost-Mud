@@ -38,6 +38,7 @@ def start_engine(args, config_values, web_server):
     resource.register('tools', tools, True)
     web_server.add(r'/client_data/new_char', NewCharacterData)
 
+
 def _update_classes(config_values):
     PlayerLP.add_dbo_fields({attr['dbo_id']: DBOField(0) for attr in config_values['attributes']})
     PlayerLP.add_dbo_fields({pool['dbo_id']: DBOField(0) for pool in config_values['resource_pools']})

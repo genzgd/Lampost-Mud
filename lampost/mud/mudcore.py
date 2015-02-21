@@ -2,6 +2,7 @@ from lampost.comm.channel import Channel
 from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
 from lampost.env.room import Room, safe_room
+from lampost.gameops.action import ActionError
 from lampost.mud.action import mud_action, imm_actions
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'user_manager', 'instance_manager',

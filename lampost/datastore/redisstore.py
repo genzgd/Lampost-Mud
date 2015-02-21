@@ -20,12 +20,21 @@ class RedisStore():
         self._object_map = WeakValueDictionary()
 
     def create_object(self, dbo_class, dbo_dict):
-        dbo_class = get_dbo_class(dbo_class.dbo_key_type)
-        dbo_id = dbo_dict['dbo_id']
+        dbo_class = get_dbo_class(getattr(dbo_class, 'dbo_key_type', dbo_class))
+        if not dbo_class:
+            return
+        try:
+            dbo_id = dbo_dict['dbo_id']
+        except KeyError:
+            dbo_id, dbo_dict = dbo_dict, {}
+        if dbo_id is None or dbo_id == '':
+            warn("create_object called with empty dbo_id")
+            return
+        dbo_id = str(dbo_id).lower()
         if self.object_exists(dbo_class.dbo_key_type, dbo_id):
             raise ObjectExistsError(dbo_id)
         dbo = dbo_class()
-        dbo.dbo_id = str(dbo_id).lower()
+        dbo.dbo_id = dbo_id
         dbo.hydrate(dbo_dict)
         dbo.db_created()
         if dbo.dbo_set_key:

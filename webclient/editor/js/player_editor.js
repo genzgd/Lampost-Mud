@@ -23,7 +23,7 @@ angular.module('lampost_editor').controller('PlayerEditorCtrl', ['$scope', 'lpCa
         $scope.errors.promote = null;
         prevLevel = $scope.model.imm_level;
       }
-    }
+    };
 
     lpCache.cache('race').then(function(races) {
       $scope.races = races;
