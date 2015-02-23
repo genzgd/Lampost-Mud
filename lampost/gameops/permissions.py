@@ -29,7 +29,7 @@ def update_immortal_list(player):
     else:
         delete_index('immortals', player.dbo_id)
         try:
-            delimmortals[player.dbo_id]
+            del immortals[player.dbo_id]
         except KeyError:
             pass
 

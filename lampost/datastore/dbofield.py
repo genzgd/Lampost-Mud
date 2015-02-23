@@ -260,8 +260,8 @@ def load_any(class_id, dbo_owner, dto_repr):
     if hasattr(dbo_class, 'dbo_key_type'):
         return load_object(dbo_ref_id, dbo_class)
 
-    # If we still have a dbo_ref_id, this must be part of an untyped collection, so the dbo_ref_id is a
-    # full value and we should be able to load it
+    # If we still have a dbo_ref_id, this must be part of an untyped collection, so the dbo_ref_id includes
+    # both the class name and dbo_id and we should be able to load it
     if dbo_ref_id:
         return load_object(dbo_ref_id)
 
@@ -278,7 +278,6 @@ def load_any(class_id, dbo_owner, dto_repr):
 
     # Finally, it's not a template and it is not a reference to an independent DB object, it must be a pure child
     # object of this class, just hydrate it and set the owner
-    instance = dbo_class().hydrate(dto_repr)
-    if instance:
-        instance.dbo_owner = dbo_owner
-        return instance
+    instance = dbo_class()
+    instance.dbo_owner = dbo_owner
+    return instance.hydrate(dto_repr)

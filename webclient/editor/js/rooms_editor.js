@@ -121,6 +121,11 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         $scope.setAddType('extra', {}, extra);
       };
 
+      $scope.modifyScript = function (script) {
+        $scope.closeAdd();
+        $scope.setAddType('script', {}, script);
+      };
+
       function editFeature(feature, isAdd) {
         $scope.closeAdd();
         $scope.activeFeature = feature;
@@ -182,8 +187,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         editFeature(feature);
       };
 
-      lpEvent.register('editStarting', $scope.closeAdd, $scope);
-
+      lpEvent.register('editReady', $scope.closeAdd, $scope);
     }]);
 
 
@@ -434,27 +438,27 @@ angular.module('lampost_editor').controller('RoomResetCtrl', ['$scope', 'lpEvent
 
 angular.module('lampost_editor').controller('ArticleLoadCtrl', ['$scope', function ($scope) {
 
-    var roomReset = {reset_key: 0, mobile: '-ROOM-'};
+  var roomReset = {reset_key: 0, mobile: '-ROOM-'};
 
-    function initialize() {
-      $scope.isEquip = $scope.reset.mobile_ref > 0 && $scope.reset.load_type === 'equip';
-      $scope.mobileList = angular.copy($scope.model.mobile_resets);
-      $scope.mobileList.unshift(roomReset);
+  function initialize() {
+    $scope.isEquip = $scope.reset.mobile_ref > 0 && $scope.reset.load_type === 'equip';
+    $scope.mobileList = angular.copy($scope.model.mobile_resets);
+    $scope.mobileList.unshift(roomReset);
+  }
+
+  $scope.changeEquip = function () {
+    $scope.reset.load_type = $scope.isEquip ? 'equip' : 'inven';
+  };
+
+  $scope.changeMobileRef = function () {
+    if ($scope.reset.mobile_ref == 0) {
+      $scope.reset.load_type = 'equip';
+      $scope.isEquip = true;
     }
+  };
 
-    $scope.changeEquip = function () {
-      $scope.reset.load_type = $scope.isEquip ? 'equip' : 'inven';
-    };
+  $scope.$on('addInit', initialize);
 
-    $scope.changeMobileRef = function () {
-      if ($scope.reset.mobile_ref == 0) {
-        $scope.reset.load_type = 'equip';
-        $scope.isEquip = true;
-      }
-    };
+  initialize();
 
-    $scope.$on('addInit', initialize);
-
-    initialize();
-
-  }]);
+}]);

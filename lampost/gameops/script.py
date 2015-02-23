@@ -1,6 +1,5 @@
 import bisect
 from collections import defaultdict
-import hashlib
 import inspect
 
 from lampost.context.resource import m_requires
@@ -13,13 +12,13 @@ from lampost.datastore.meta import CommonMeta
 m_requires(__name__, 'log', 'datastore')
 
 
-approved_hashes = ()
+approved_scripts = ()
 script_cache = {}
 
 
 def _post_init():
-    global approved_hashes
-    approved_hashes = fetch_set_keys('approved_scripts')
+    global approved_scripts
+    approved_scripts = fetch_set_keys('approved_scripts')
 
 
 def create_chain(funcs):
@@ -43,27 +42,28 @@ def compile_script(text, name):
     return None, err_str
 
 
-def approve_script(script):
-    add_set_key('approved_scripts', script.hash)
-    script_cache[script.hash] = script.code
+def approve_script(script_hash, script_code):
+    approved_scripts.add(script_hash)
+    add_set_key('approved_scripts', script_hash)
+    script_cache[script_hash] = script_code
 
 
 def validate_script(script):
     try:
-        return script_cache[script.hash]
+        return script_cache[script.script_hash]
     except KeyError:
         pass
-    if script.hash not in approved_hashes:
+    if script.script_hash not in approved_scripts:
         try:
             script_owner = script.dbo_owner.dbo_id
-        except:
+        except AttributeError:
             script_owner = "Unknown"
-        warn("Unapproved script {} from {} with hash {} rejected", script.name, script_owner, script_cache)
-        return False
+        warn("Unapproved script {} from {} with hash {} rejected", script.name, script_owner, script.script_hash)
+        return None
 
-    code, _ = compile_script(script)
+    code, _ = compile_script(script.text, script.name)
     if code:
-        script_cache[script.hash] = code
+        script_cache[script.script_hash] = code
     return code
 
 
@@ -115,7 +115,7 @@ class ShadowScript(CoreDBO):
     priority = DBOField(0)
     text = DBOField('', required=True)
     name = DBOField('', required=True)
-    hash = DBOField('')
+    script_hash = DBOField('')
     code = None
 
     def __cmp__(self, other):
@@ -126,9 +126,7 @@ class ShadowScript(CoreDBO):
         return 0
 
     def on_loaded(self):
-        self.code, err_str = validate_script(self)
-        if err_str:
-            warn("Script {} failed in {} ", self.name, self.dbo_owner.dbo_id)
+        self.code = validate_script(self)
 
 
 class Scriptable(metaclass=CommonMeta):
@@ -141,14 +139,11 @@ class Scriptable(metaclass=CommonMeta):
         chains = defaultdict(list)
         for shadow_script in self.shadows:
             if shadow_script.code:
-                func_shadows = chains[shadow.name]
-                bisect.insort(func_shadows, shadow)
+                func_shadows = chains[shadow_script.name]
+                bisect.insort(func_shadows, shadow_script)
         self.shadow_chains = chains
         self.load_scripts()
 
     @Shadow
     def load_scripts(self):
         pass
-
-
-

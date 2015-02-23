@@ -13,9 +13,10 @@ angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope',
       $scope.shadowScript = {text: '', priority: 0};
       originalText = '';
     } else {
-      $scope.shadowScript = angular.copy(lpEditor.addObj);
+      $scope.shadowScript = lpEditor.addObj;
       originalText = validText = $scope.shadowScript.text;
     }
+    $scope.scriptText = $scope.shadowScript.text;
 
     angular.forEach($scope.modelShadows, function(shadow) {
       if (shadow.name === $scope.shadowScript.name) {
@@ -26,7 +27,7 @@ angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope',
     $scope.changeShadow = function() {
       var i, lines, firstLine;
       $scope.shadowScript.name = $scope.modelShadow.name;
-      lines = $scope.shadowScript.text.split('\n');
+      lines = $scope.scriptText.split('\n');
       firstLine= 'def ' + $scope.shadowScript.name + '(';
       for (i = 0; i < $scope.modelShadow.args.length; i++) {
         var argName = $scope.modelShadow.args[i];
@@ -35,9 +36,9 @@ angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope',
       firstLine += '*args, **kwargs):';
       if (lines.length) {
         lines[0] = firstLine;
-        $scope.shadowScript.text = lines.join('\n');
+        $scope.scriptText = lines.join('\n');
       } else {
-        $scope.shadowScript.text = firstLine;
+        $scope.scriptText = firstLine;
       }
     };
 
@@ -52,14 +53,19 @@ angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope',
       $scope.closeAdd();
     };
 
+    $scope.updateScript = function() {
+      lpEditor.addObj.text = $scope.scriptText;
+      originalText = $scope.scriptText;
+    };
+
     $scope.checkValid = function() {
-      $scope.scriptValid = validText && validText === $scope.shadowScript.text;
-      $scope.scriptChanged = $scope.shadowScript.text !== originalText;
+      $scope.scriptValid = validText && validText === $scope.scriptText;
+      $scope.scriptChanged = $scope.scriptText !== originalText;
     };
 
     $scope.validateScript = function() {
-      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function() {
-        validText = $scope.shadowScript.text;
+      lpRemote.request('editor/script/validate', {name: $scope.shadowScript.name, text: $scoe.scriptText}).then(function() {
+        validText = $scope.scriptText;
         $scope.checkValid();
       }, function(error) {
         $scope.scriptError = error;
