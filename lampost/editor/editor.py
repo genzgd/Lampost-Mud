@@ -33,7 +33,7 @@ class Editor(MethodHandler):
     def create(self):
         self.raw['owner_id'] = self.session.player.dbo_id
         self._pre_create()
-        if has_perm(self.play, 'admin'):
+        if has_perm(self.player, 'admin'):
             validate_scripts(self.raw)
         new_obj = create_object(self.obj_class, self.raw)
         self._post_create(new_obj)
