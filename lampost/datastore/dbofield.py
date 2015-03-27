@@ -10,7 +10,6 @@ save_value_refs = []
 
 
 class DBOField(AutoField):
-
     def __init__(self, default=None, dbo_class_id=None, required=False):
         super().__init__(default)
         self.required = required
@@ -49,6 +48,7 @@ class DBOTField():
     Fields that are initialized in the Template but whose values can be overridden by the instance should be declared
     as a DBOField in the template class and a DBOCField field in the instance class with identical names
     """
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -59,7 +59,7 @@ class DBOTField():
         return getattr(instance.template, self.field)
 
     def __set__(self, instance, value):
-        error("Illegally setting value {} of DBOTField {}", value, self.field,  stack_info=True)
+        error("Illegally setting value {} of DBOTField {}", value, self.field, stack_info=True)
 
     def meta_init(self, field):
         self.field = field
@@ -70,6 +70,7 @@ class DBOCField(DBOField, TemplateField):
     This class should be used in cloneable objects that do not have a separate template class.  It will pass
     access to the original object if not overridden in the child object.
     """
+
     def check_default(self, value, instance):
         super().check_default(value, instance)
         try:
@@ -92,6 +93,7 @@ class DBOLField(DBOField):
 
     Sets are not supported to simplify transforms to JSON
     """
+
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
@@ -128,63 +130,37 @@ class DBOLField(DBOField):
 
 
 def get_hydrate_func(load_func, default, class_id):
-    def dbo_set(instance, dto_repr_list):
-        return {dbo for dbo in [load_func(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
-                 dbo is not None}
-
-    def dbo_list(instance, dto_repr_list):
-        return [dbo for dbo in [load_func(class_id, instance, dto_repr) for dto_repr in dto_repr_list] if
-                 dbo is not None]
-
-    def dbo_dict(instance, dto_repr_dict):
-        return {key: dbo for key, dbo in [(key, load_func(class_id, instance, dto_repr))
-                                           for key, dto_repr in dto_repr_dict.items()] if dbo is not None}
-
-    def dbo_simple(instance, dto_repr):
-        return load_func(class_id, instance, dto_repr)
-
-    def native(instance, dto_repr):
-        return dto_repr
-
-    if class_id:
-        if isinstance(default, set):
-            return dbo_set
-        if isinstance(default, list):
-            return dbo_list
-        if isinstance(default, dict):
-            return dbo_dict
-        return dbo_simple
-    return native
+    if not class_id:
+        return lambda instance, dto_repr: dto_repr
+    if isinstance(default, set):
+        return lambda instance, dto_repr_list: {dbo for dbo in [load_func(class_id, instance, dto_repr) for
+                                                                dto_repr in dto_repr_list] if dbo is not None}
+    if isinstance(default, list):
+        return lambda instance, dto_repr_list: [dbo for dbo in [load_func(class_id, instance, dto_repr) for
+                                                                dto_repr in dto_repr_list] if dbo is not None]
+    if isinstance(default, dict):
+        return lambda instance, dto_repr_dict: {key: dbo for key, dbo in [(key, load_func(class_id, instance, dto_repr))
+                                                                          for key, dto_repr in dto_repr_dict.items()] if
+                                                dbo is not None}
+    return lambda instance, dto_repr: load_func(class_id, instance, dto_repr)
 
 
 def value_transform(trans_func, default, field, class_id, for_json=False):
-    def native(instance):
-        return getattr(instance, field)
+    if not class_id:
+        return lambda instance: getattr(instance, field)
+    if isinstance(default, set) and not for_json:
+        return lambda instance: {trans_func(value, class_id) for value in getattr(instance, field) if value is not None}
+    if isinstance(default, list) or isinstance(default, set):
+        return lambda instance: [trans_func(value, class_id) for value in getattr(instance, field) if value is not None]
+    if isinstance(default, dict):
+        return lambda instance: {key: trans_func(value, class_id) for key, value in getattr(instance, field).items() if
+                                 value is not None}
 
-    def value_set(instance):
-        return {trans_func(value, class_id) for value in getattr(instance, field) if value is not None}
-
-    def value_list(instance):
-        return [trans_func(value, class_id) for value in getattr(instance, field) if value is not None]
-
-    def value_dict(instance):
-        return {key: trans_func(value, class_id) for key, value in getattr(instance, field).items() if
-                value is not None}
-
-    def value_simple(instance):
+    def simple(instance):
         value = getattr(instance, field)
         return None if value is None else trans_func(value, class_id)
 
-    if class_id:
-        if isinstance(default, set) and not for_json:
-            return value_set
-        if isinstance(default, list) or isinstance(default, set):
-            return value_list
-        if isinstance(default, dict):
-            return value_dict
-        return value_simple
-
-    return native
+    return simple
 
 
 def to_dto_repr(dbo, class_id):
@@ -240,9 +216,9 @@ def load_any(class_id, dbo_owner, dto_repr):
         return
 
     dbo_ref_id = None
-    # The class_id passed in is what the field thinks it should hold
-    # This can be overridden in the actual stored dictionary
     try:
+        # The class_id passed in is what the field thinks it should hold
+        # This can be overridden in the actual stored dictionary
         class_id = dto_repr['class_id']
     except TypeError:
         # A dto_repr is either a string or a dictionary.  If it's a string,
@@ -277,7 +253,7 @@ def load_any(class_id, dbo_owner, dto_repr):
             return
 
     # Finally, it's not a template and it is not a reference to an independent DB object, it must be a pure child
-    # object of this class, just hydrate it and set the owner
+    # object of this class, just set the owner and hydrate it
     instance = dbo_class()
     instance.dbo_owner = dbo_owner
     return instance.hydrate(dto_repr)
