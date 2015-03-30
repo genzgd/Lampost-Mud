@@ -42,7 +42,7 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData',
       if (lpData.playerIds.length == 0) {
         lpDialog.show({templateUrl: 'mud/dialogs/new_character.html', controller: 'NewCharacterCtrl'});
       } else {
-        lpDialog.show({templateUrl: 'mud/select_character.html', controller: "SelectCharacterCtrl"});
+        lpDialog.show({templateUrl: 'mud/dialogs/select_character.html', controller: "SelectCharacterCtrl"});
       }
     });
 

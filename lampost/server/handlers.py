@@ -80,7 +80,7 @@ class GameConnect(RequestHandler):
 class Login(SessionHandler):
     def main(self):
         content = self._content()
-        if self.session.user and content.player_id:
+        if self.session.user and getattr(content, 'player_id', None):
             session_manager.start_player(self.session, content.player_id)
         else:
             session_manager.login(self.session, content.user_id, content.password)
