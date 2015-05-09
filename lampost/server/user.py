@@ -159,7 +159,7 @@ class UserManager():
             if dbo and dbo.owner_id == player_id:
                 dbo.change_owner()
                 save_object(dbo)
-                publish_update('update', dbo)
+                dispatch('publish_update', 'update', dbo)
         dispatch('player_deleted', player_id)
 
     def _player_delete(self, player_id):

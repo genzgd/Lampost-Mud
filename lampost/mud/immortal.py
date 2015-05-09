@@ -96,6 +96,8 @@ def goto(source, args, **_):
 
 @imm_action('summon')
 def summon(source, args, **_):
+    if not args:
+        return "Summon whom?"
     session = session_manager.player_session(args[0].lower())
     if not session:
         return "Player is not logged in"

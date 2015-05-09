@@ -30,7 +30,7 @@ class InstanceManager():
         for instance_id, instance in instance_map.copy().items():
             if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entities
                                                            if hasattr(entity, 'is_player') and entity.session]:
-                del instance[instance_id]
+                del instance_map[instance_id]
 
     def get(self, instance_id):
         return instance_map.get(instance_id)
