@@ -42,7 +42,7 @@ class Group(ActionProvider, Connected):
         self._remove_member(source)
         if len(self.members) > 1 and source == self.leader:
             self.leader = self.members[0]
-            self.msg("{} is now the leader of the group.".format(self.leader_name))
+            self.msg("{} is now the leader of the group.".format(self.leader.name))
         else:
             self._check_empty()
 
@@ -60,7 +60,7 @@ class Group(ActionProvider, Connected):
         if self.invites:
             return
         if len(self.members) == 1:
-           self._remove_member(self.members[0])
+            self._remove_member(self.members[0])
         self.channel.disband()
         self.detach()
 
@@ -95,7 +95,7 @@ class Invitation(BaseItem):
         detach_events(self)
 
     @obj_action(self_target=True)
-    def decline(self,  **_):
+    def decline(self, **_):
         self.invitee.display_line("You decline {}'s invitation.".format(self.group.leader.name))
         self.group.decline(self.invitee)
         self.detach()
@@ -120,6 +120,7 @@ def invite(source, target, **_):
     else:
         Group(source)
     source.group.invites.add(target)
-    target.display_line("{} has invited you to join a group.  Please 'accept' or 'decline' the invitation.".format(source.name))
+    target.display_line(
+        "{} has invited you to join a group.  Please 'accept' or 'decline' the invitation.".format(source.name))
     source.display_line("You invite {} to join a group.".format(target.name))
     target.add_inven(Invitation(source.group, target))

@@ -50,7 +50,7 @@ def add_flag(source, target, obj, **_):
     try:
         flag_value = str_to_primitive(flag_value)
     except ValueError:
-        raise ActionError("Cannot parse {}".flag_value)
+        raise ActionError("Cannot parse {}".format(flag_value))
     obj.flags[flag_id] = flag_value
     source.display_line("Flag {} set to {} on {}.".format(flag_id, flag_value, obj.name))
 

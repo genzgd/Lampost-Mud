@@ -1,7 +1,5 @@
-import sys
 import logging
 
-from collections import defaultdict
 import itertools
 
 

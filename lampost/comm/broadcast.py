@@ -51,7 +51,7 @@ def substitute(message, source=None, target=None, verb=None, **ext_fmt):
     return result
 
 
-class BroadcastMap():
+class BroadcastMap:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             value = token_pattern.sub(r'{\1}', value)
@@ -67,7 +67,7 @@ class BroadcastMap():
                 return "[EMPTY]"
 
 
-class Broadcast():
+class Broadcast:
     def __init__(self, broadcast_map=None, source=None, target=None, display='default',
                  silent=False, verb=None, ext_fmt=None, **kwargs):
         if broadcast_map:

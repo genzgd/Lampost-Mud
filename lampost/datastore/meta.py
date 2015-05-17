@@ -88,7 +88,6 @@ class CommonMeta(type):
         template_cls.instance_cls = cls
         cls.template_cls = template_cls
 
-
     def _update_actions(cls, new_attrs):
         cls.class_providers.update({func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')})
 

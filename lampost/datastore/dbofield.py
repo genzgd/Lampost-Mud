@@ -1,3 +1,5 @@
+from threading import local
+
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField, TemplateField
 from lampost.datastore.classes import get_dbo_class
@@ -5,8 +7,9 @@ from lampost.datastore.classes import get_dbo_class
 
 m_requires(__name__, 'log', 'datastore')
 
-# This is used as a 'thread local' type variable to collect child references while calculating save values
-save_value_refs = []
+# This is used to collect child references while calculating save values, rather than attempting to pass this
+# collection recursively
+save_value_refs = local()
 
 
 class DBOField(AutoField):
@@ -178,12 +181,12 @@ def to_dto_repr(dbo, class_id):
 
 def to_save_repr(dbo, class_id):
     if hasattr(dbo, 'dbo_id'):
-        save_value_refs.append(dbo.dbo_key)
+        save_value_refs.current.append(dbo.dbo_key)
         return dbo.dbo_key if class_id == 'untyped' else dbo.dbo_id
     save_value = dbo.save_value
     if hasattr(dbo, 'template_key'):
         save_value['tk'] = dbo.template_key
-        save_value_refs.append(dbo.template_key)
+        save_value_refs.current.append(dbo.template_key)
     elif getattr(dbo, 'class_id', class_id) != class_id:
         # If the object has a different class_id than field definition thinks it should have
         # we need to save the actual class_id
@@ -205,9 +208,9 @@ def load_keyed(class_id, dbo_owner, dbo_id):
 
 def save_keyed(class_id, dbo_owner, dto_repr):
     if class_id == 'untyped':
-        save_value_refs.append(dto_repr)
+        save_value_refs.current.append(dto_repr)
     else:
-        save_value_refs.append('{}:{}'.format(class_id, dto_repr))
+        save_value_refs.current.append('{}:{}'.format(class_id, dto_repr))
     return dto_repr
 
 

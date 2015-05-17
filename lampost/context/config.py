@@ -78,9 +78,7 @@ def load_yaml(path):
             try:
                 yaml_load = yaml.load(yf)
                 all_config.append(yaml_load)
-                for include_name in yaml_load.get('includes', ()):
-                    add_yaml(include_name)
-            except yaml.parser.ParserError:
+            except yaml.YAMLError:
                 log.exception("Error parsing {}", yf)
 
     return all_config

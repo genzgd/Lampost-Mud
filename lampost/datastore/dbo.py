@@ -176,8 +176,8 @@ class KeyDBO(CoreDBO):
         save_object(self, autosave=True)
 
     def to_db_value(self):
-        del dbofield.save_value_refs[:]
-        return self.save_value, dbofield.save_value_refs
+        dbofield.save_value_refs.current = []
+        return self.save_value, dbofield.save_value_refs.current
 
 
 class ParentDBO(DBOAccess, KeyDBO):
