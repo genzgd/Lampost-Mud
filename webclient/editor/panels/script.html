@@ -8,7 +8,7 @@
       <div class="col-md-4">
          <div class="form-group">
           <label class="control-label">Function</label>
-          <select class="form-control input-sm" ng-model="modelShadow" ng-change="changeShadow()"
+          <select class="form-control input-sm" ng-model="active.shadow" ng-change="changeShadow()"
             ng-options="shadow as shadow.name for shadow in modelShadows">
              <option value="">-- Select --</option>
           </select>
@@ -24,18 +24,20 @@
       <div class="col-md-3">
         <div class="pull-right" ng-if="!newAdd">
           <button type="button" ng-click="deleteScript()" class="btn btn-danger btn-sm">Delete Script</button>
-          <button ng-disabled="!scriptValid" type="button" ng-click="updateScript()" class="btn btn-default btn-sm">Update Script</button>
+          <button type="button" ng-click="updateScript()" class="btn btn-default btn-sm">Update Script</button>
         </div>
         <div class="pull-right" ng-if="newAdd">
-          <button ng-disabled="!scriptValid" type="button" ng-click="createScript()" class="btn btn-warning btn-sm">Create Script</button>
+          <button ng-disabled="!active.shadow" type="button" ng-click="createScript()" class="btn btn-warning btn-sm">Create Script</button>
           <button type="button" ng-click="closeAdd()" class="never-disable btn btn-default btn-sm">Cancel</button>
         </div>
       </div>
     </div>
     <div class="row">
       <div class="col-md-12">
-        <textarea class="form-control" rows="12" ng-change="checkValid()" ng-model="shadowScript.text"></textarea>
+        <textarea class="form-control" rows="12" ng-model="shadowScript.text"></textarea>
+        <lp-data-error type="scriptError"></lp-data-error>
       </div>
+
     </div>
   </div>
 </div>

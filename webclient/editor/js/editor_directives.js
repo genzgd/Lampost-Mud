@@ -197,14 +197,14 @@ angular.module('lampost_editor').controller('OwnerIdCtrl', ['$scope', 'lpCache',
         $scope.errors.owner = null;
       }
     }
-}])
+}]);
 
 angular.module('lampost_editor').directive('lpOwnerId', [function() {
   return {
     restrict: 'AE',
     controller: 'OwnerIdCtrl',
     templateUrl: 'editor/fragments/owner_id.html',
-    link: function(scope, element, attrs) {
+    link: function(scope) {
       scope.$parent.$emit('lpDirectiveLoaded');
     }
   }
@@ -282,7 +282,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
       childSelect.parentSelect();
       childList();
     }
-  }
+  };
 
   $scope.selectChild = function() {
     if (!$scope.child.invalid) {
@@ -290,7 +290,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
       childSelect.setValue($scope.child);
       lpEvent.dispatch('childUpdate');
     }
-  }
+  };
 
   this.startEdit = function() {
     $scope.can_write = $scope.model.can_write;

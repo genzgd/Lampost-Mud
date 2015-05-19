@@ -12,7 +12,7 @@ angular.module('lampost_editor').controller('MainAdminCtrl', ['$scope', 'lpRemot
       blanks.push(ix);
     }
     return blanks;
-  }
+  };
 
   $scope.executeOp = function(op) {
     lpRemote.request('editor/admin/execute', op).then(function(result) {
@@ -20,4 +20,4 @@ angular.module('lampost_editor').controller('MainAdminCtrl', ['$scope', 'lpRemot
     })
   };
 
-}])
+}]);
