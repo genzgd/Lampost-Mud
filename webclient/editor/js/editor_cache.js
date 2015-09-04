@@ -86,7 +86,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
 
     function deleteChildren(model) {
       angular.forEach(model.dbo_children_types, function (cType) {
-        var ix, childList, key, ic, childModel;
+        var ix, childList, key, ic;
         childList = model[cType + "_list"];
         for (ix = 0; ix < childList.length; ix++) {
           key = childList[ix];
@@ -119,10 +119,6 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
       cacheHeap = [];
       remoteCache = {};
       lpEvent.dispatch('cacheCleared');
-    };
-
-    this.invalidate = function (key) {
-      deleteEntry(key)
     };
 
     this.cachedValue = function (dbo_key) {
@@ -240,7 +236,8 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
       entry.promise = lpRemote.request('editor/' + entry.url).then(function(data) {
         delete entry.promise;
         var model, dataKeys, delModels, ix;
-        dataKeys = {}, delModels = [];
+        dataKeys = {};
+        delModels = [];
         for (ix = 0; ix < data.length; ix++) {
           model = data[ix];
           modelInsert(entry, model);
@@ -258,8 +255,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
       });
     };
 
-    this.seedCacheId = function(dboId, promises) {
-
+    this.seedCacheId = function(dboId) {
       var parts = dboId.split(':');
       var size = parts.length;
       if (size == 2) {
@@ -269,9 +265,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
     };
 
     this.seedCache = function (refs, baseModel, cacheKeys) {
-
       var promises = [];
-
       function childRefs(refType, refPath, model) {
         var ix;
         var pieces = refPath.split('.');

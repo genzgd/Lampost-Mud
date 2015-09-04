@@ -37,7 +37,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
         option.name = option.name || option[this.optionKey];
       }
     }
-  }
+  };
 
 
   function ValueMap(sourceProp, name) {
@@ -91,7 +91,8 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   ValueObjList.prototype.transform = function(source) {
     var key = source[this.keyProp];
     return this.rowMap[key] = {key: key, name: source[this.keyProp], value: source[this.valueProp]};
-  }
+  };
+
   ValueObjList.prototype.setSource = function(model) {
       this.sourceList = model[this.sourceProp];
       this.sourceSort(this.sourceList);
@@ -102,10 +103,12 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       }
       this.rowSort(this.rows);
       this.updateUnused();
-    }
+    };
+
   ValueObjList.prototype.onChange = function(row, rowIx) {
       this.sourceList[rowIx][this.valueProp] = row.value;
-    }
+    };
+
   ValueObjList.prototype.insert = function() {
       var value = {};
       value[this.keyProp] = this.newValue[this.optionKey];
@@ -115,13 +118,14 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       this.rows.push(this.transform(value));
       this.rowSort(this.rows);
       this.updateUnused();
-    }
+    };
+
   ValueObjList.prototype.remove = function(row, rowIx) {
       delete this.rowMap[row.key];
       this.rows.splice(rowIx, 1);
       this.sourceList.splice(rowIx, 1);
       this.updateUnused();
-    }
+    };
     
     
   function OptionsList(sourceProp, name) {

@@ -10,6 +10,7 @@ from lampost.editor.scripts import ScriptEditor
 from lampost.editor.session import EditConnect, EditLogin, EditLogout
 from lampost.editor.shared import SocialsEditor, SkillEditor
 from lampost.env.room import Room
+from lampost.gameops.script import ShadowScript
 from lampost.lpmud.archetype import PlayerRace
 from lampost.lpmud.combat import AttackTemplate, DefenseTemplate
 from lampost.model.article import ArticleTemplate
@@ -35,9 +36,10 @@ def init(web_server):
     web_server.add(r'/editor/config/(.*)', ConfigEditor)
     web_server.add(r'/editor/social/(.*)', SocialsEditor)
     web_server.add(r'/editor/display/(.*)', DisplayEditor)
-    web_server.add(r'/editor/race/(.*)', Editor, obj_class=PlayerRace)
+    web_server.add(r'/editor/race/(.*)', Editor, obj_class=PlayerRace, imm_level='founder')
     web_server.add(r'/editor/attack/(.*)', SkillEditor, obj_class=AttackTemplate)
     web_server.add(r'/editor/defense/(.*)', SkillEditor, obj_class=DefenseTemplate)
+    web_server.add(r'/editor/script/list/(.*)', ChildList, obj_class=ShadowScript)
     web_server.add(r'/editor/script/(.*)', ScriptEditor)
     web_server.add(r'/editor/imports/(.*)', ImportsEditor)
     web_server.add(r'/editor/user/(.*)', UserEditor)

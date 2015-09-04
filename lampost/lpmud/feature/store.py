@@ -67,7 +67,7 @@ class Store(BaseItem):
         source.remove_inven(target)
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 
-    @obj_action()
+    @obj_action(target_class='func_providers')
     def buy(self, source, target, **_):
         if self.currency and target.value:
             money = self._take_money(source, self._price(target))

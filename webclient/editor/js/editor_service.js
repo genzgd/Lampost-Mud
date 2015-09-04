@@ -58,7 +58,6 @@ angular.module('lampost_editor').service('lpEditor',
         }
         context.newObj = data.new_object;
         context.perms = data.perms;
-        context.shadows = data.shadows;
         context.metadata = true;
       }));
     }
@@ -164,7 +163,8 @@ angular.module('lampost_editor').factory('contextDefs', ['$q', function($q) {
       refs: [
         {type: 'room', path: 'exits.destination'},
         {type: 'mobile', path: 'mobile_resets.mobile'},
-        {type: 'article', path: 'article_resets.article'}
+        {type: 'article', path: 'article_resets.article'},
+        {type: 'script', path: 'shadow_refs.script'}
       ],
       extend: function(model) {
         model.dbo_id = this.parent.next_room_id;
@@ -175,6 +175,9 @@ angular.module('lampost_editor').factory('contextDefs', ['$q', function($q) {
     },
     article: {
       preReqs: {cache: ['attack', 'defense']}
+    },
+    script: {
+      nameProp: 'title'
     },
     social: {},
     race: {

@@ -1,5 +1,4 @@
 import inspect
-from lampost.editor.scripts import validate_scripts
 
 from lampost.server.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
@@ -33,8 +32,6 @@ class Editor(MethodHandler):
     def create(self):
         self.raw['owner_id'] = self.session.player.dbo_id
         self._pre_create()
-        if has_perm(self.player, 'admin'):
-            validate_scripts(self.raw)
         new_obj = create_object(self.obj_class, self.raw)
         self._post_create(new_obj)
         return publish_edit('create', new_obj, self.session)
@@ -66,8 +63,6 @@ class Editor(MethodHandler):
         self._pre_update(existing_obj)
         if hasattr(existing_obj, 'change_owner') and self.raw['owner_id'] != existing_obj.owner_id:
             existing_obj.change_owner(self.raw['owner_id'])
-        if has_perm(self.player, 'admin'):
-            validate_scripts(self.raw)
         update_object(existing_obj, self.raw)
         self._post_update(existing_obj)
         return publish_edit('update', existing_obj, self.session)

@@ -48,11 +48,12 @@ angular.module('lampost_editor').service('lpEditorLayout',
         localStorage.setItem(lpEditor.playerId + '*editData', JSON.stringify(localData));
       }
 
-      viewLists.build = ['area', 'room', 'mobile', 'article'];
+      viewLists.build = ['area', 'room', 'mobile', 'article', 'script'];
       cols.area = [new ColDef('dbo_id', 3), new ColDef('name', 5), new ColDef('owner_id', 4, 'model_prop cap',
         {header: 'Owner'})];
       cols.room = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 10, 'model_prop cap')];
       cols.article = cols.mobile = [new ColDef('dbo_id', 3, 'idOnly'), new ColDef('title', 9, 'model_prop cap')];
+      cols.script = [new ColDef('dbo_id', 2, 'idOnly'), new ColDef('title', 7, 'model_prop cap'), new ColDef('obj_type', 3)];
       viewDefaults.build = {paneSizes: [3, 9, 0]};
 
       viewLists.mud = ['social', 'race', 'attack', 'defense'];

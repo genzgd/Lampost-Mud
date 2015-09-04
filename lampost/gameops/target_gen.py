@@ -20,6 +20,12 @@ def func_owner(target_key, entity, action, *_):
     return recursive_targets([action.__self__], target_key)
 
 
+def func_providers(target_key, entity, action, *_):
+    for target in action.__self__.target_providers:
+        if target_key in getattr(target, 'target_keys', ()):
+            yield target
+
+
 def action(target_key, entity, action):
     return recursive_targets([action], target_key)
 
