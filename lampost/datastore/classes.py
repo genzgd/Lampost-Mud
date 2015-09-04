@@ -1,5 +1,5 @@
 import logging
-
+import inspect
 import itertools
 
 
@@ -66,3 +66,10 @@ def subclasses(cls):
 
 def dbo_types(cls):
     return {subclass for subclass in subclasses(cls) if hasattr(subclass, 'dbo_key_type')}
+
+
+def implementors(base_class):
+    for key, value in _dbo_registry.items():
+        if base_class != value and base_class in inspect.getmro(value):
+            yield key
+

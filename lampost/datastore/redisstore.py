@@ -1,3 +1,5 @@
+import time
+
 from collections import deque
 from weakref import WeakValueDictionary
 
@@ -17,9 +19,10 @@ class RedisStore():
         self.pool = ConnectionPool(max_connections=2, db=db_num, host=db_host, port=db_port, password=db_pw,
                                    decode_responses=True)
         self.redis = StrictRedis(connection_pool=self.pool)
+        self.redis.ping()
         self._object_map = WeakValueDictionary()
 
-    def create_object(self, dbo_class, dbo_dict):
+    def create_object(self, dbo_class, dbo_dict, update_timestamp=True):
         dbo_class = get_dbo_class(getattr(dbo_class, 'dbo_key_type', dbo_class))
         if not dbo_class:
             return
@@ -39,13 +42,12 @@ class RedisStore():
         dbo.db_created()
         if dbo.dbo_set_key:
             self.redis.sadd(dbo.dbo_set_key, dbo.dbo_id)
-        self.save_object(dbo, True)
+        self.save_object(dbo, update_timestamp)
         return dbo
 
-    def save_object(self, dbo, update_rev=False, autosave=False):
-        if update_rev:
-            rev = getattr(dbo, "dbo_rev", None)
-            dbo.dbo_rev = 1 if not rev else rev + 1
+    def save_object(self, dbo, update_timestamp=False, autosave=False):
+        if update_timestamp:
+            dbo.dbo_ts = int(time.time())
         if dbo.dbo_indexes:
             self._update_indexes(dbo)
         self._clear_old_refs(dbo)

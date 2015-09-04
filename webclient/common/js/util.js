@@ -110,7 +110,7 @@ angular.module('lampost_util').service('lpEvent', ['$log', '$timeout', function 
     $timeout(function() {
       self.dispatch.apply(self, originalArgs);
     })
-  }
+  };
 
   this.dispatch = function () {
     var event_type = arguments[0];
@@ -133,11 +133,11 @@ angular.module('lampost_util').service('lpEvent', ['$log', '$timeout', function 
     } else {
       dispatchMap(eventMap);
     }
-  }
+  };
 }]);
 
 
-angular.module('lampost_util').service('lpUtil', [function () {
+angular.module('lampost_util').service('lpUtil', ['$filter', function ($filter) {
 
   function rawCmp(a, b) {
     return a > b ? 1 : a < b ? -1 : 0;
@@ -146,8 +146,8 @@ angular.module('lampost_util').service('lpUtil', [function () {
   function naturalCmp(a, b) {
       var x = [], y = [];
 
-      a.replace(/(\d+)|(\D+)/g, function($0, $1, $2) { x.push([$1 || 0, $2]) })
-      b.replace(/(\d+)|(\D+)/g, function($0, $1, $2) { y.push([$1 || 0, $2]) })
+      a.replace(/(\d+)|(\D+)/g, function($0, $1, $2) { x.push([$1 || 0, $2]) });
+      b.replace(/(\d+)|(\D+)/g, function($0, $1, $2) { y.push([$1 || 0, $2]) });
 
       while(x.length && y.length) {
           var xx = x.shift();
@@ -204,18 +204,12 @@ angular.module('lampost_util').service('lpUtil', [function () {
     }
   };
 
-  this.urlVars = function () {
-    var vars = {};
-    var keyValuesPairs = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for (var i = 0; i < keyValuesPairs.length; i++) {
-      var kvp = keyValuesPairs[i].split('=');
-      vars[kvp[0]] = kvps[1];
-    }
-    return vars;
-  };
-
   this.capitalize = function(name) {
     return name && name.substring(0, 1).toLocaleUpperCase() + name.substring(1);
+  };
+
+  this.dbDate = function(value) {
+    return value && $filter('date')(value * 1000, 'short');
   };
 
   this.getScrollBarSizes = function () {
@@ -262,6 +256,10 @@ angular.module('lampost_util').filter('model_prop', [function() {
   return function(model, prop) {
     return model[prop];
   }
+}]);
+
+angular.module('lampost_util').filter('dbDate', ['lpUtil', function(lpUtil) {
+  return lpUtil.dbDate;
 }]);
 
 angular.module('lampost_util').filter('join', [function() {

@@ -142,7 +142,7 @@ class KeyDBO(CoreDBO):
     dbo_indexes = ()
     dbo_children_types = ()
 
-    dbo_rev = DBOField(0)
+    dbo_ts = DBOField(0)
 
     @classmethod
     def new_dto(cls):

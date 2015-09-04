@@ -1,6 +1,8 @@
 import bisect
-from collections import defaultdict
 import inspect
+import hashlib
+
+from collections import defaultdict
 
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
@@ -32,9 +34,9 @@ def create_chain(funcs):
     return chained
 
 
-def compile_script(text, name):
+def compile_script(text, script_id):
     try:
-        return compile(text, '{}_shadow'.format(name), 'exec'), None
+        return compile(text, '{}_shadow'.format(script_id), 'exec'), None
     except SyntaxError as err:
         err_str = "Syntax Error: {}  text:{}  line: {}  offset: {}".format(err.msg, err.text, err.lineno, err.offset)
     except BaseException as err:
@@ -56,7 +58,7 @@ def validate_script(script):
         pass
     if script.script_hash not in approved_scripts:
         raise DataError
-    code, _ = compile_script(script.text, script.name)
+    code, _ = compile_script(script.text, script.dbo_id)
     if code:
         script_cache[script.script_hash] = code
     return code
@@ -106,18 +108,32 @@ class ShadowScript(ChildDBO):
     dbo_key_type = 'script'
     dbo_parent_type = 'area'
 
-    title = DBOField('')
-    obj_type = DBOField('')
+    title = DBOField('', required=True)
+    obj_type = DBOField('any')
     text = DBOField('', required=True)
-    script_hash = DBOField('')
 
     code = None
+    _script_hash = None
+
+    @property
+    def script_hash(self):
+        if not self._script_hash:
+            hasher = hashlib.sha256()
+            hasher.update(self.text.encode())
+            self._script_hash = hasher.hexdigest()
+        return self._script_hash
 
     def on_loaded(self):
         try:
             self.code = validate_script(self)
         except DataError:
             warn("Attempt to load unapproved script {}", self.dbo_id)
+
+    @property
+    def edit_dto(self):
+        edit_dto = super().edit_dto
+        edit_dto['approved'] = self.code is not None
+        return edit_dto
 
 
 class ShadowRef(ChildDBO):

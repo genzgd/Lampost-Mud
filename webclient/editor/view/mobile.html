@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col-md-4">
       <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-6">
           <div class="form-group">
             <label class="control-label">Mobile Id</label>
             <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id"/>
@@ -10,10 +10,10 @@
             <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
           <div class="form-group">
-            <label class="control-label">DB Rev</label>
-            <input class="form-control input-sm" type="number" ng-model="model.dbo_rev" disabled/>
+            <label class="control-label">Timestamp</label>
+            <div disabled class="form-control input-sm uneditable-input">{{model.dbo_ts | dbDate}}</div>
           </div>
         </div>
 

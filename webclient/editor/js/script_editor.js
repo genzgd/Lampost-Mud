@@ -1,3 +1,7 @@
+angular.module('lampost_editor').controller('ScriptEditorCtrl', [function() {
+
+}]);
+
 angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope', 'lpRemote', 'lpEditor',
   function ($q, $scope, lpRemote, lpEditor) {
 

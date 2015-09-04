@@ -1,43 +1,45 @@
 <div class="wrapper" ng-controller="ScriptEditorCtrl">
-  <div class="wrapper" ng-show="selectionMode" lm-object-selector="script"></div>
-  <div class="scrollable" ng-hide="selectionMode">
-    <div class="row-fluid">
-      <div class="span4">
-        <div class="row-fluid">
-          <h4 class="span8"><a style="cursor: pointer;" title="Change Script" ng-click="selectionMode = true">Script: {{model.dbo_id}}</a></h4>
-          <h5 class="span3">Rev: {{model.dbo_rev}}</h5>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Script Id</label>
+            <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id" required/>
+
+            <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+          </div>
         </div>
-      </div>
-      <div class="span4"></div>
-      <div class="span4">
-        <div class="row-fluid">
-          <div class="span8">
-            <button ng-disabled="!isDirty" ng-click="updateModel()" class="btn btn-primary">Update</button>
-            <button ng-disabled="!isDirty" ng-click="revertModel()" class="btn">Revert</button>
-            <button ng-click="deleteModel()" class="btn btn-danger" style="margin-left: 6px;">Delete</button>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Timestamp</label>
+
+            <div disabled class="form-control input-sm uneditable-input">{{model.dbo_ts | dbDate}}</div>
           </div>
         </div>
       </div>
     </div>
-    <div class="row-fluid">
-      <div class="span3">
-        <label>Title</label>
-        <input type="text" ng-model="model.title" required="true"/>
-      </div>
-      <div class="span4">
-        <div class="badge" ng-class="approvedClass()">{{approvedText()}}</div>
-      </div>
-    </div>
-    <div class="row-fluid">
-
-      <div class="span11">
-        <label>Text</label>
-        <div class="alert alert-error" ng-show="dataError">
-          <button type="button" class="close" ng-click="dataError = null">×</button>
-          {{dataError}}
+    <div class="col-md-8">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label class="control-label">Script Title</label>
+          <input class="form-control input-sm" ng-model="model.title" required/>
         </div>
-        <textarea class="span12 scrollable" rows="30" ng-model="model.live_text"></textarea>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label class="control-label">Object Type</label>
+          <select class="form-control input-sm col-md-10" ng-model="model.obj_type"
+                  ng-options="type for type in constants.shadow_types" required></select>
+        </div>
       </div>
     </div>
   </div>
+  <div class="row">
+    <div class="col-md-12">
+      <textarea class="form-control" rows="12" ng-model="model.text" required></textarea>
+      <lp-data-error type="scriptError"></lp-data-error>
+    </div>
+  </div>
+
 </div>

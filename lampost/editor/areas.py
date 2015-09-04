@@ -49,7 +49,7 @@ class RoomEditor(ChildrenEditor):
         rev_dir = Direction.ref_map[new_dir].rev_key
         other_id = content.dest_id
         if content.is_new:
-            other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title, 'dbo_rev': -1})
+            other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title}, False)
             publish_edit('create', other_room, self.session, True)
             update_next_room_id(area, self.session)
         else:
@@ -89,7 +89,7 @@ class RoomEditor(ChildrenEditor):
             other_exit = other_room.find_exit(Direction.ref_map[content.dir].rev_key)
             if other_exit:
                 other_room.exits.remove(other_exit)
-                if other_room.dbo_rev or other_room.exits:
+                if other_room.dbo_ts or other_room.exits:
                     save_object(other_room)
                     publish_edit('update', other_room, self.session, True)
                 else:

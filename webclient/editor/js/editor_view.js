@@ -37,6 +37,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       initActive();
       lpEditor.original = originalModel;
       lpEditor.context = context;
+      $scope.isNew = !originalModel.dbo_id;
       $scope.isDirty = false;
       $scope.editorLabel = context.label;
       if (context.parent) {
@@ -82,7 +83,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
 
     function saveModel() {
       return intercept('preUpdate', activeModel).then(function () {
-        if ($scope.isNew) {
+        if (!originalModel.dbo_id) {
           var modelDto = angular.copy(activeModel);
           return context.preCreate(modelDto).then(function () {
             lpRemote.request(baseUrl + 'create', modelDto).then(onCreated, dataError);
@@ -133,7 +134,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     function existingEdit(model) {
       onOverwrite(model).then(function () {
         context = lpEditor.getContext(model.dbo_key_type);
-        $scope.isNew = false;
         intercept('preEdit').then(function() {
           init(model);
           lpEvent.dispatch('modelSelected', originalModel);
@@ -177,7 +177,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
     lpEvent.register('newEdit', function (type) {
       onOverwrite().then(function () {
         context = lpEditor.getContext(type);
-        $scope.isNew = true;
         init(context.newModel());
       });
     }, $scope);
@@ -233,7 +232,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         event.preventDefault();
         event.stopPropagation();
       }
-      if (!$scope.isNew) {
+      if (originalModel.dbo_id) {
         lpEditor.deleteModel(context, originalModel, dataError);
       } else if ($scope.isDirty) {
         lpDialog.showConfirm("Delete " + context.objLabel,
