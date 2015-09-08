@@ -49,5 +49,10 @@ class Properties(SessionHandler):
         constants['broadcast_tokens'] = broadcast_tokens
         constants['skill_types'] =  [skill_template.dbo_key_type for skill_template in dbo_types(SkillTemplate)]
         constants['features'] = [get_dbo_class(feature_id)().edit_dto for feature_id in ['touchstone', 'entrance', 'store']]
-        constants['shadow_types'] = ['any'] + list(implementors(Scriptable))
+        shadow_types = {'any': {'name': 'any', 'args': ['self']}}
+        for class_id, cls in implementors(Scriptable):
+            shadows = [{'name': name, 'args': func.shadow_args.args} for name, func in inspect.getmembers(value) if hasattr(func, 'shadow_args')]
+            if shadows:
+                shadow_types[class_id] = shadows
+        constants['shadow_types'] = shadow_types
         self._return(constants)

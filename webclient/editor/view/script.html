@@ -1,45 +1,47 @@
 <div class="wrapper" ng-controller="ScriptEditorCtrl">
-  <div class="row">
-    <div class="col-md-4">
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="control-label">Script Id</label>
-            <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id" required/>
 
-            <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="control-label">Timestamp</label>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="control-label">Script Id</label>
+                <input ng-if="isNew" class="form-control input-sm" type="text" ng-model="model.dbo_id" required/>
 
-            <div disabled class="form-control input-sm uneditable-input">{{model.dbo_ts | dbDate}}</div>
-          </div>
+                <div ng-if="!isNew" disabled class="form-control input-sm uneditable-input">{{idOnly(model)}}</div>
+            </div>
         </div>
-      </div>
-    </div>
-    <div class="col-md-8">
-      <div class="col-md-6">
-        <div class="form-group">
-          <label class="control-label">Script Title</label>
-          <input class="form-control input-sm" ng-model="model.title" required/>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="control-label">Timestamp</label>
+
+                <div disabled class="form-control input-sm uneditable-input">{{model.dbo_ts | dbDate}}</div>
+            </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="form-group">
-          <label class="control-label">Object Type</label>
-          <select class="form-control input-sm col-md-10" ng-model="model.obj_type"
-                  ng-options="type for type in constants.shadow_types" required></select>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="control-label">Script Title</label>
+                <input class="form-control input-sm" ng-model="model.title" required/>
+            </div>
         </div>
-      </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label class="control-label">Object Type</label>
+                <select class="form-control input-sm col-md-10" ng-change="updateShadows()" ng-model="model.obj_type"
+                        ng-options="type as type for (type, shadow) in constants.shadow_types" required></select>
+            </div>
+        </div>
+          <div class="col-md-2">
+            <div class="form-group">
+                <label class="control-label">Function</label>
+                    <select class="form-control input-sm col-md-10" ng-model="model.obj_func"
+                        ng-options="func for func in shadow_context.shadows" required></select>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <textarea class="form-control" rows="12" ng-model="model.text" required></textarea>
-      <lp-data-error type="scriptError"></lp-data-error>
+    <div class="row">
+        <div class="col-md-12">
+            <textarea class="form-control" rows="12" ng-model="model.text" required></textarea>
+            <lp-data-error type="scriptError"></lp-data-error>
+        </div>
     </div>
-  </div>
 
 </div>

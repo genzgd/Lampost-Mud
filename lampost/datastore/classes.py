@@ -69,7 +69,4 @@ def dbo_types(cls):
 
 
 def implementors(base_class):
-    for key, value in _dbo_registry.items():
-        if base_class != value and base_class in inspect.getmro(value):
-            yield key
-
+    return {key: value for key, value in _dbo_registry.items() if base_class != value and base_class in inspect.getmro(value)}

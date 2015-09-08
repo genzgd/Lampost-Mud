@@ -69,10 +69,8 @@ class Editor(MethodHandler):
 
     def metadata(self):
         new_object_cls = get_dbo_class(self.dbo_key_type)
-        shadows = [{'name': name, 'args': func.shadow_args.args} for name, func in
-                   inspect.getmembers(new_object_cls) if hasattr(func, 'shadow_args')]
         return {'perms': self._permissions(), 'parent_type': self.parent_type, 'children_types': self.children_types,
-                'new_object': new_object_cls.new_dto(), 'shadows': shadows}
+                'new_object': new_object_cls.new_dto()}
 
     def test_delete(self):
         return list(fetch_set_keys('{}:{}:holders'.format(self.dbo_key_type, self.raw['dbo_id'])))

@@ -1,27 +1,22 @@
 import bisect
 import inspect
-import hashlib
 
 from collections import defaultdict
 
 from lampost.context.resource import m_requires
 from lampost.datastore.auto import AutoField
-from lampost.datastore.dbo import CoreDBO, ChildDBO
+from lampost.datastore.dbo import ChildDBO
 from lampost.datastore.dbofield import DBOField
-from lampost.datastore.exceptions import DataError
 from lampost.datastore.meta import CommonMeta
 
 
-m_requires(__name__, 'log', 'datastore')
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
-
-approved_scripts = ()
 script_cache = {}
 
 
 def _post_init():
-    global approved_scripts
-    approved_scripts = fetch_set_keys('approved_scripts')
+    register('maintenance', lambda: script_cache.clear())
 
 
 def create_chain(funcs):
@@ -34,37 +29,23 @@ def create_chain(funcs):
     return chained
 
 
-def compile_script(text, script_id):
+def compile_script(script_hash, script_text, script_id):
     try:
-        return compile(text, '{}_shadow'.format(script_id), 'exec'), None
+        return script_cache[script_hash], None
+    except KeyError:
+        pass
+    try:
+        code = compile(script_text, '{}_shadow'.format(script_id), 'exec')
+        script_cache[script_hash] = code
+        return code, None
     except SyntaxError as err:
         err_str = "Syntax Error: {}  text:{}  line: {}  offset: {}".format(err.msg, err.text, err.lineno, err.offset)
     except BaseException as err:
         err_str = "Script Error: {}".format(err.msg)
-    debug(err_str)
     return None, err_str
 
 
-def approve_script(script_hash, script_code):
-    approved_scripts.add(script_hash)
-    add_set_key('approved_scripts', script_hash)
-    script_cache[script_hash] = script_code
-
-
-def validate_script(script):
-    try:
-        return script_cache[script.script_hash]
-    except KeyError:
-        pass
-    if script.script_hash not in approved_scripts:
-        raise DataError
-    code, _ = compile_script(script.text, script.dbo_id)
-    if code:
-        script_cache[script.script_hash] = code
-    return code
-
-
-class Shadow():
+class Shadow:
     def __init__(self, func):
         self.func = func
         self.name = func.__name__
@@ -109,31 +90,19 @@ class ShadowScript(ChildDBO):
     dbo_parent_type = 'area'
 
     title = DBOField('', required=True)
-    obj_type = DBOField('any')
+    cls_type = DBOField('any')
+    cls_shadow = DBOField('any')
     text = DBOField('', required=True)
+    script_hash = DBOField('')
+    approved = DBOField(False)
 
     code = None
-    _script_hash = None
-
-    @property
-    def script_hash(self):
-        if not self._script_hash:
-            hasher = hashlib.sha256()
-            hasher.update(self.text.encode())
-            self._script_hash = hasher.hexdigest()
-        return self._script_hash
 
     def on_loaded(self):
-        try:
-            self.code = validate_script(self)
-        except DataError:
-            warn("Attempt to load unapproved script {}", self.dbo_id)
-
-    @property
-    def edit_dto(self):
-        edit_dto = super().edit_dto
-        edit_dto['approved'] = self.code is not None
-        return edit_dto
+        if self.approved:
+            self.code, _ = compile_script(self.script_hash, self.text, self.dbo_id)
+        else:
+            info("Loading unapproved script {}", self.dbo_id)
 
 
 class ShadowRef(ChildDBO):

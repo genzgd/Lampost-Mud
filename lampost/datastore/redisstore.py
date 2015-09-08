@@ -204,6 +204,9 @@ class RedisStore():
     def get_all_hash(self, index_name):
         return {key: json_decode(value) for key, value in self.redis.hgetall(index_name).items()}
 
+    def get_hash_keys(self, hash_id):
+        return self.redis.hkeys(hash_id)
+
     def set_db_hash(self, hash_id, hash_key, value):
         return self.redis.hset(hash_id, hash_key, json_encode(value))
 

@@ -1,6 +1,34 @@
-angular.module('lampost_editor').controller('ScriptEditorCtrl', [function() {
+angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpEditor',
+  function ($scope, lpEditor) {
 
-}]);
+    var shadowClass;
+
+
+    $scope.updateShadow = function() {
+      var activeShadow, i, lines, firstLine, name;
+      activeShadow = lpEditor.constants[model.cls_type][model.cls_shadow];
+      lines = $scope.model.text.split('\n');
+      if (model.cls_type === 'any') {
+        name = model.cls_shadow == 'any' ? 'any_func' : model.cls_shadow;
+      } else {
+        name = model.cls_shadow;
+      }
+      firstLine = 'def ' + name + '(';
+      for (i = 0; i < activeShadow.args.length; i++) {
+        var argName = activeShadow.args[i];
+        firstLine += argName + ', ';
+      }
+      firstLine += '*args, **kwargs):';
+      lines[0] = firstLine;
+      $scope.model.text = lines.join('\n');
+    };
+
+    loadShadows();
+    {
+
+    }
+
+  }]);
 
 angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope', 'lpRemote', 'lpEditor',
   function ($q, $scope, lpRemote, lpEditor) {
@@ -19,45 +47,32 @@ angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope',
       $scope.shadowScript = angular.copy(lpEditor.addObj);
     }
 
-    angular.forEach($scope.modelShadows, function(shadow) {
+    angular.forEach($scope.modelShadows, function (shadow) {
       if (shadow.name === $scope.shadowScript.name) {
         $scope.active.shadow = shadow;
       }
     });
 
-    $scope.changeShadow = function() {
-      var i, lines, firstLine;
-      $scope.shadowScript.name = active.shadow.name;
-      lines = $scope.shadowScript.text.split('\n');
-      firstLine= 'def ' + $scope.shadowScript.name + '(';
-      for (i = 0; i < active.shadow.args.length; i++) {
-        var argName = active.shadow.args[i];
-        firstLine += argName + ', ';
-      }
-      firstLine += '*args, **kwargs):';
-      lines[0] = firstLine;
-      $scope.shadowScript.text = lines.join('\n');
-    };
 
-    $scope.deleteScript = function() {
+    $scope.deleteScript = function () {
       var ix = $scope.model.shadows.indexOf(lpEditor.addObj);
       $scope.model.shadows.splice(ix, 1);
       $scope.closeAdd();
     };
 
-    $scope.createScript = function() {
-      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function() {
-          $scope.model.shadows.push($scope.shadowScript);
-          $scope.closeAdd();
-        });
+    $scope.createScript = function () {
+      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function () {
+        $scope.model.shadows.push($scope.shadowScript);
+        $scope.closeAdd();
+      });
     };
 
-    $scope.updateScript = function() {
+    $scope.updateScript = function () {
       angular.copy($scope.shadowScript, lpEditor.addObj);
-      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function() {
+      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function () {
           angular.copy($scope.shadowScript, lpEditor.addObj);
           $scope.closeAdd();
-        }, function(error) {
+        }, function (error) {
           $scope.errors.scriptError = error;
         }
       );
