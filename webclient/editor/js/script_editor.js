@@ -1,11 +1,15 @@
-angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpEditor',
-  function ($scope, lpEditor) {
+angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpEvent', 'lpEditor',
+  function ($scope, lpEvent, lpEditor) {
 
-    var shadowClass;
 
 
     $scope.updateShadow = function() {
       var activeShadow, i, lines, firstLine, name;
+      $scope.shadowClass = lpEditor.constants[model.cls_type];
+      if (!shadowClass) {
+        $scope.shadowClass = lpEditor.constants['any'];
+
+      }
       activeShadow = lpEditor.constants[model.cls_type][model.cls_shadow];
       lines = $scope.model.text.split('\n');
       if (model.cls_type === 'any') {
@@ -23,10 +27,8 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpEd
       $scope.model.text = lines.join('\n');
     };
 
-    loadShadows();
-    {
+    lpEvent.register('editReady', $scope.updateShadow, $scope);
 
-    }
 
   }]);
 

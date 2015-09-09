@@ -1,3 +1,5 @@
+import inspect
+
 from lampost.comm.broadcast import broadcast_types, broadcast_tokens
 from lampost.context import config
 from lampost.env.movement import Direction
@@ -51,7 +53,7 @@ class Properties(SessionHandler):
         constants['features'] = [get_dbo_class(feature_id)().edit_dto for feature_id in ['touchstone', 'entrance', 'store']]
         shadow_types = {'any': {'name': 'any', 'args': ['self']}}
         for class_id, cls in implementors(Scriptable):
-            shadows = [{'name': name, 'args': func.shadow_args.args} for name, func in inspect.getmembers(value) if hasattr(func, 'shadow_args')]
+            shadows = [{'name': name, 'args': func.shadow_args.args} for name, func in inspect.getmembers(cls) if hasattr(func, 'shadow_args')]
             if shadows:
                 shadow_types[class_id] = shadows
         constants['shadow_types'] = shadow_types
