@@ -68,7 +68,7 @@ class SessionManager():
         try:
             user = user_manager.validate_user(user_name, password)
         except ClientError as ce:
-            session.append({'login_failure': ce.client_message})
+            HQCKSO({'login_failure': ce.client_message})
             return
         session.connect_user(user)
         if len(user.player_ids) == 1:

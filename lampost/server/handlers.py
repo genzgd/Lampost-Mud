@@ -82,8 +82,10 @@ class Login(SessionHandler):
         content = self._content()
         if self.session.user and getattr(content, 'player_id', None):
             session_manager.start_player(self.session, content.player_id)
-        else:
+        elif hasattr(content, 'user_id') and hasattr(content, 'password'):
             session_manager.login(self.session, content.user_id, content.password)
+        else:
+            session.append({'login_failure': 'Browser did not submit credentials, please retype'})
 
 
 class Link(RequestHandler):
@@ -112,7 +114,11 @@ class Action(SessionHandler):
 
 class Register(SessionHandler):
     def main(self):
-        get_resource(self.raw['service_id']).register(self.session, self.raw.get('data', None))
+        client_service = get_resource(self.raw['service_id'])
+        if client_service:
+            client_service.register(self.session, self.raw.get('data', None))
+        else:
+            warn("Failed to register for service {}", self.raw['service_id'])
 
 
 class Unregister(SessionHandler):
