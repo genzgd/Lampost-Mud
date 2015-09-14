@@ -5,12 +5,14 @@
         <div class="col-md-6">
           <div class="form-group">
             <label class="control-label">Player Id</label>
+
             <div disabled class="form-control input-sm uneditable-input">{{model.dbo_id | cap}}</div>
           </div>
         </div>
         <div class="col-md-4">
           <div class="form-group">
             <label class="control-label">User Id</label>
+
             <div disabled class="form-control input-sm uneditable-input">{{model.user_id}}</div>
           </div>
         </div>
@@ -19,15 +21,16 @@
         <div class="col-md-6">
           <div class="form-group">
             <label class="control-label">Imm Level</label>
-            <select ng-change="checkPromote()" ng-disabled="!canPromote" class="form-control input-sm" ng-model="model.imm_level"
-              ng-options="immLevel.value as immLevel.name for immLevel in immLevels"></select>
+            <select ng-change="checkPromote()" ng-disabled="!canPromote" class="form-control input-sm"
+                    ng-model="model.imm_level"
+                    ng-options="immLevel.value as immLevel.name for immLevel in immLevels"></select>
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
             <label class="control-label">Race</label>
             <select class="form-control input-sm" ng-model="model.race"
-              ng-options="race.dbo_id as race.name for race in races"></select>
+                    ng-options="race.dbo_id as race.name for race in races"></select>
           </div>
         </div>
       </div>
@@ -42,6 +45,7 @@
         <div class="col-md-6">
           <div class="form-group">
             <label class="control-label">Last Login</label>
+
             <div disabled class="form-control input-sm uneditable-input">{{model.last_login * 1000 | date: 'short'}}
             </div>
           </div>
@@ -49,26 +53,27 @@
         <div class="col-md-6">
           <div class="form-group">
             <label class="control-label">Last Logout</label>
+
             <div disabled class="form-control input-sm uneditable-input">{{model.last_logout * 1000 | date: 'short'}}
             </div>
           </div>
         </div>
       </div>
-       <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="playerRoomSelect">
+      <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="playerRoomSelect">
         <div class="col-md-12">
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
                 <label class="control-label">Current Area</label>
                 <select class="form-control input.sm" ng-model="parent" ng-change="selectParent()"
-                  ng-options="parent as parent.dbo_id for parent in parentList"></select>
+                        ng-options="parent as parent.dbo_id for parent in parentList"></select>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label class="control-label">Current Room</label>
                 <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
-                  ng-options="child.dbo_id as child.dbo_id for child in childList">
+                        ng-options="child.dbo_id as child.dbo_id for child in childList">
                   <option value="">Select Room</option>
                 </select>
               </div>
@@ -79,12 +84,11 @@
               <lp-data-error type="playerRoomSelect"></lp-data-error>
             </div>
           </div>
-
         </div>
       </div>
     </div>
     <div class="col-md-4">
-      
+
     </div>
   </div>
 

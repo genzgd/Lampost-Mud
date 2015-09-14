@@ -1,23 +1,32 @@
-angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpEvent', 'lpEditor',
-  function ($scope, lpEvent, lpEditor) {
+angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUtil', 'lpEvent', 'lpEditor',
+  function ($scope, lpUtil, lpEvent, lpEditor) {
 
+    var classMap, activeClass;
+    classMap = lpEditor.constants['shadow_types'];
 
-
-    $scope.updateShadow = function() {
-      var activeShadow, i, lines, firstLine, name;
-      $scope.shadowClass = lpEditor.constants[model.cls_type];
-      if (!shadowClass) {
-        $scope.shadowClass = lpEditor.constants['any'];
-
+    $scope.updateShadowClass = function () {
+      activeClass = classMap[$scope.model.cls_type];
+      if (!activeClass) {
+        activeClass = classMap['any'];
       }
-      activeShadow = lpEditor.constants[model.cls_type][model.cls_shadow];
+      lpUtil.stringSort(activeClass, 'name');
+      $scope.shadowFuncs = activeClass;
+
+      if (!$scope.model.args || $scope.model.cls_type !== 'any') {
+        $scope.updateArgs();
+      }
+    };
+
+    $scope.updateArgs = function() {
+      var activeShadow, i, lines, firstLine;
+      var shadowMap = lpUtil.toMap(activeClass, 'name');
+      activeShadow = shadowMap[$scope.model.cls_shadow];
+      if (!activeShadow) {
+        $scope.model.cls_shadow = $scope.shadowFuncs[0].name;
+        activeShadow = shadowMap[$scope.model.cls_shadow];
+      }
       lines = $scope.model.text.split('\n');
-      if (model.cls_type === 'any') {
-        name = model.cls_shadow == 'any' ? 'any_func' : model.cls_shadow;
-      } else {
-        name = model.cls_shadow;
-      }
-      firstLine = 'def ' + name + '(';
+      firstLine = 'def ' + activeShadow.name + '(';
       for (i = 0; i < activeShadow.args.length; i++) {
         var argName = activeShadow.args[i];
         firstLine += argName + ', ';
@@ -27,57 +36,26 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpEv
       $scope.model.text = lines.join('\n');
     };
 
-    lpEvent.register('editReady', $scope.updateShadow, $scope);
+    $scope.noApprove = lpEditor.immLevel < lpEditor.constants.imm_levels.admin;
 
+    lpEvent.register('editReady', $scope.updateShadowClass, $scope);
 
   }]);
 
-angular.module('lampost_editor').controller('ShadowScriptCtrl', ['$q', '$scope', 'lpRemote', 'lpEditor',
-  function ($q, $scope, lpRemote, lpEditor) {
+angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'lpRemote', 'lpEditorTypes', 'lpEditor',
+  function ($q, $scope, lpRemote, lpEditorTypes, lpEditor) {
 
-    var active;
-
-    $scope.active = active = {};
-    $scope.errors = {};
-    $scope.modelShadows = lpEditor.context.shadows;
+    $scope.scriptSelect = new lpEditorTypes.ChildSelect('script', 'script');
+    $scope.scriptSelect.setSource();
 
     $scope.newAdd = !lpEditor.addObj;
     if ($scope.newAdd) {
-      $scope.shadowScript = {text: '', priority: 0};
+
       originalText = '';
     } else {
       $scope.shadowScript = angular.copy(lpEditor.addObj);
     }
 
-    angular.forEach($scope.modelShadows, function (shadow) {
-      if (shadow.name === $scope.shadowScript.name) {
-        $scope.active.shadow = shadow;
-      }
-    });
 
-
-    $scope.deleteScript = function () {
-      var ix = $scope.model.shadows.indexOf(lpEditor.addObj);
-      $scope.model.shadows.splice(ix, 1);
-      $scope.closeAdd();
-    };
-
-    $scope.createScript = function () {
-      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function () {
-        $scope.model.shadows.push($scope.shadowScript);
-        $scope.closeAdd();
-      });
-    };
-
-    $scope.updateScript = function () {
-      angular.copy($scope.shadowScript, lpEditor.addObj);
-      lpRemote.request('editor/script/validate', $scope.shadowScript).then(function () {
-          angular.copy($scope.shadowScript, lpEditor.addObj);
-          $scope.closeAdd();
-        }, function (error) {
-          $scope.errors.scriptError = error;
-        }
-      );
-    };
 
   }]);

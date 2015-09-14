@@ -23,7 +23,7 @@ class ScriptEditor(ChildrenEditor):
     def _pre_create(self):
         self._calc_hash()
         self.code = validate(self.raw)
-        self.raw['approved'] = has_perm(self.player, 'admin')
+        self.raw['approved'] = has_perm(self.player, 'admin') and self.raw['approved']
 
     def _post_create(self, new_obj):
         new_obj.code = self.code if new_obj.approved else None
@@ -32,7 +32,7 @@ class ScriptEditor(ChildrenEditor):
         self.code = validate(self.raw)
         self._calc_hash()
         if self.raw['script_hash'] != existing.script_hash:
-            self.raw['approved'] = has_perm(self.player, 'admin')
+            self.raw['approved'] = has_perm(self.player, 'admin') and self.raw['approved']
 
     def _post_update(self, existing_obj):
         existing_obj.code = self.code if existing_obj.approved else None

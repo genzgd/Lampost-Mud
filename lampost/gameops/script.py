@@ -91,7 +91,7 @@ class ShadowScript(ChildDBO):
 
     title = DBOField('', required=True)
     cls_type = DBOField('any')
-    cls_shadow = DBOField('any')
+    cls_shadow = DBOField('any_func')
     text = DBOField('', required=True)
     script_hash = DBOField('')
     approved = DBOField(False)

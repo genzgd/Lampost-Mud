@@ -1,43 +1,75 @@
-<div class="text-left panel panel-warning" ng-controller="ShadowScriptCtrl">
+<div class="text-left panel panel-warning" ng-controller="ScriptRefCtrl">
   <div class="panel-heading panel-condensed">
     <span class="h5">Shadow Script</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
   </div>
   <div class="panel-body">
+   <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="scriptSelect">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label">Script Area</label>
+                <select class="form-control input.sm" ng-model="parent" ng-change="selectParent()"
+                        ng-options="parent as parent.dbo_id for parent in parentList"></select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="control-label">Script Name</label>
+                <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
+                        ng-options="child.dbo_id as child.title for child in childList">
+                  <option value="">Select Room</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <lp-data-error type="scriptSelect"></lp-data-error>
+            </div>
+          </div>
+        </div>
+      </div>
+    <div ng-if="validReset">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">{{addLabel}} Id</label>
+            <select class="form-control input-sm" ng-model="reset[addId]" ng-change="changeResetId()"
+              ng-options="object.dbo_id as idOnly(object) for object in objects" autofocus></select>
+          </div>
 
-    <div class="row">
-      <div class="col-md-4">
-         <div class="form-group">
-          <label class="control-label">Function</label>
-          <select class="form-control input-sm" ng-model="active.shadow" ng-change="changeShadow()"
-            ng-options="shadow as shadow.name for shadow in modelShadows">
-             <option value="">-- Select --</option>
-          </select>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="control-label">Source Area</label>
+            <select class="form-control input.sm" ng-model="vars.areaId" ng-change="changeArea()"
+              ng-options="area.dbo_id as area.dbo_id for area in sourceAreas" required></select>
+          </div>
         </div>
       </div>
-      <div class="col-md-2">
-        <label class="control-label">Priority</label>
-        <input type="number" class="form-control input-sm" ng-model="shadowScript.priority" required>
-      </div>
-      <div class="col-md-3">
-         <button ng-show="scriptChanged" type="button" class="btn btn-success" ng-click="validateScript()">Validate</button>
-      </div>
-      <div class="col-md-3">
-        <div class="pull-right" ng-if="!newAdd">
-          <button type="button" ng-click="deleteScript()" class="btn btn-danger btn-sm">Delete Script</button>
-          <button type="button" ng-click="updateScript()" class="btn btn-default btn-sm">Update Script</button>
-        </div>
-        <div class="pull-right" ng-if="newAdd">
-          <button ng-disabled="!active.shadow" type="button" ng-click="createScript()" class="btn btn-warning btn-sm">Create Script</button>
-          <button type="button" ng-click="closeAdd()" class="never-disable btn btn-default btn-sm">Cancel</button>
+      <div class="row">
+        <div class="col-md-12">
+          <h5>{{resetObj.title}}</h5>
+          <div class="well well-sm">{{resetObj.desc}}</div>
         </div>
       </div>
+
     </div>
-    <div class="row">
-      <div class="col-md-12">
-        <textarea class="form-control" rows="12" ng-model="shadowScript.text"></textarea>
-        <lp-data-error type="scriptError"></lp-data-error>
-      </div>
 
+    <ng-include src="resetInclude"></ng-include>
+
+    <div class="pull-right">
+      <button ng-if="!newAdd && validScript" type="button" ng-click="deleteScriptRef()" class="btn btn-sm btn-danger">Delete Script
+        {{addLabel}}
+      </button>
+      <button ng-if="newAdd && validScript" type="button" ng-click="createScriptRef()" class="btn btn-sm btn-warning">Add Script
+      </button>
+      <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">{{newAdd ? 'Cancel' : 'Close'}}
+      </button>
     </div>
   </div>
+
 </div>
+
+

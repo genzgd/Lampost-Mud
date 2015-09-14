@@ -162,6 +162,25 @@ angular.module('lampost_util').service('lpUtil', ['$filter', function ($filter) 
       return 0;
   }
 
+  this.toArray = function(obj, keyId) {
+    if (!keyId) {
+      keyId = 'key;'
+    }
+    return Object.keys(obj).map(function (key) {
+      var arrayObj = angular.copy(obj[key]);
+      arrayObj[keyId] = key;
+      return arrayObj;
+    })
+  };
+
+  this.toMap = function(array, keyId) {
+    var objMap = {};
+    array.forEach(function(value) {
+      objMap[value[keyId]] = value;
+    });
+    return objMap;
+  };
+
   this.naturalCmp = naturalCmp;
 
   this.naturalSort = function(array) {

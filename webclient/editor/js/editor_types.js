@@ -144,19 +144,21 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     }
     this.rowSort(this.rows);
     this.updateUnused();
-  }
+  };
+
   OptionsList.prototype.insert = function() {
     var value = this.newValue[this.optionKey];
     this.rows.push(value);
     this.rowMap[value] = value;
     this.rowSort(this.rows);
     this.updateUnused();
-  }
+  };
+
   OptionsList.prototype.remove = function(row, rowIx) {
     delete this.rowMap[row];
     this.rows.splice(rowIx, 1);
     this.updateUnused();
-  }
+  };
 
 
   function ChildSelect(sourceProp, type) {
@@ -169,11 +171,11 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     this.initial = true;
     this.model = model;
     this.value = model[this.sourceProp];
-  }
+  };
   ChildSelect.prototype.setValue = function(value) {
     this.initial = false;
     this.model[this.sourceProp] = value;
-  }
+  };
 
   return {
     ValueMap: ValueMap,

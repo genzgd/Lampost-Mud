@@ -84,22 +84,22 @@ angular.module('lampost_editor').controller('EditorNavController',
       }
 
       lpEditor.init(data).then(function () {
-        var player, access;
+        var playerLevels, accessLevels;
         $rootScope.constants = lpEditor.constants;
         $rootScope.immortals = lpEditor.immortals;
-        access = [];
+        accessLevels = [];
         angular.forEach(lpEditor.constants.imm_levels, function(value, key) {
           if (value > 0) {
-            access.push({name: lpUtil.capitalize(key), value: value});
+            accessLevels.push({name: lpUtil.capitalize(key), value: value});
           }
         });
-        player = angular.copy(access);
-        lpUtil.descIntSort(access, 'value');
-        access.unshift({name: 'Default', value: 0});
-        $rootScope.accessLevels = access;
-        lpUtil.intSort(player, 'value');
-        player.unshift({name: 'Player', value: 0});
-        $rootScope.immLevels = player;
+        playerLevels = angular.copy(accessLevels);
+        lpUtil.descIntSort(accessLevels, 'value');
+        accessLevels.unshift({name: 'Default', value: 0});
+        $rootScope.accessLevels = accessLevels;
+        lpUtil.intSort(playerLevels, 'value');
+        playerLevels.unshift({name: 'Player', value: 0});
+        $rootScope.immLevels = playerLevels;
 
         var lastView = lpEditorLayout.lastView();
         for (var ix = 0; ix < $scope.links.length; ix++) {
