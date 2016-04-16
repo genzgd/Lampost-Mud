@@ -1,5 +1,5 @@
 from lampost.datastore.dbofield import DBOField
-from lampost.lpmud.archetype import PlayerRace, Archetype
+from lampost.lpmud.archetype import PlayerRace
 from lampost.lpmud.player import PlayerLP
 
 from lampost.mud import mudcore

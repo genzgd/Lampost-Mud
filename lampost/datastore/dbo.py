@@ -1,8 +1,8 @@
-from lampost.datastore import dbofield
-from lampost.datastore.classes import get_dbo_class, set_dbo_class
 from lampost.context.resource import m_requires
+from lampost.core.meta import CommonMeta, call_mro
+from lampost.datastore import dbofield
+from lampost.datastore.classes import set_dbo_class, get_dbo_class
 from lampost.datastore.dbofield import DBOField
-from lampost.datastore.meta import CommonMeta, call_mro
 
 m_requires(__name__, 'log', 'perm', 'datastore')
 

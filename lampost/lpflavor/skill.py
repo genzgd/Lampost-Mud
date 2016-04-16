@@ -1,10 +1,10 @@
 from random import randint
 
 from lampost.context.resource import m_requires
+from lampost.core.auto import TemplateField
 from lampost.datastore.classes import dbo_types
 from lampost.datastore.dbo import CoreDBO, KeyDBO, DBOAccess
 from lampost.datastore.dbofield import DBOField, DBOTField
-from lampost.datastore.auto import TemplateField
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.gameops.template import Template
 from lampost.mud.action import mud_action, imm_action

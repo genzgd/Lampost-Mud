@@ -1,4 +1,4 @@
-from lampost.datastore.meta import CommonMeta
+from lampost.core.meta import CommonMeta
 
 
 class Template(metaclass=CommonMeta):

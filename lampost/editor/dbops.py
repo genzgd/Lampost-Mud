@@ -1,7 +1,8 @@
 import time
 
+import lampost.datastore.classes
 from lampost.context import resource, config
-from lampost.datastore import classes
+from lampost.core import classes
 from lampost.datastore.classes import get_dbo_class
 from lampost.editor.admin import admin_op
 from lampost.gameops import dbconfig
@@ -30,7 +31,7 @@ def rebuild_owner_refs():
     # Yes, we're abusing the keys command.  If we required a later version of Redis (2.8) we could use SCAN
     for owned_key in datastore.redis.keys('owned:*'):
         delete_key(owned_key)
-    for dbo_cls in classes._dbo_registry.values():
+    for dbo_cls in lampost.datastore.classes._dbo_registry.values():
         dbo_key_type = getattr(dbo_cls, 'dbo_key_type', None)
         if not dbo_key_type:
             continue
@@ -71,7 +72,7 @@ def rebuild_all_fks():
         delete_key(holder_key)
     for ref_key in datastore.redis.keys('*:refs'):
         delete_key(ref_key)
-    for dbo_cls in classes._dbo_registry.values():
+    for dbo_cls in lampost.datastore.classes._dbo_registry.values():
         dbo_key_type = getattr(dbo_cls, 'dbo_key_type', None)
         if dbo_key_type and not hasattr(dbo_cls, 'dbo_parent_type'):
             update(dbo_cls)

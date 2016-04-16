@@ -1,9 +1,8 @@
 from threading import local
 
 from lampost.context.resource import m_requires
-from lampost.datastore.auto import AutoField, TemplateField
+from lampost.core.auto import AutoField, TemplateField
 from lampost.datastore.classes import get_dbo_class
-
 
 m_requires(__name__, 'log', 'datastore')
 

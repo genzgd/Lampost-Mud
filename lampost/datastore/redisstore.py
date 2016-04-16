@@ -1,14 +1,13 @@
 import time
-
 from collections import deque
 from weakref import WeakValueDictionary
 
 from redis import ConnectionPool
 from redis.client import StrictRedis
 
+from lampost.context.resource import m_requires
 from lampost.datastore.classes import get_dbo_class, get_mixed_type
 from lampost.datastore.exceptions import ObjectExistsError, NonUniqueError
-from lampost.context.resource import m_requires
 
 
 m_requires(__name__, 'log', 'json_encode', 'json_decode')

@@ -1,7 +1,7 @@
 from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
+from lampost.core.auto import TemplateField
 from lampost.datastore.dbofield import DBOField, DBOTField
-from lampost.datastore.auto import TemplateField
 from lampost.lpmud.archetype import Archetype
 from lampost.lpmud.attributes import fill_pools
 from lampost.lpmud.entity import EntityLP

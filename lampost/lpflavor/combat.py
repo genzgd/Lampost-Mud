@@ -1,9 +1,8 @@
 from lampost.context.resource import m_requires
+from lampost.core.auto import TemplateField, AutoMeta
 from lampost.datastore.dbofield import DBOTField
-from lampost.datastore.auto import TemplateField, AutoMeta
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
-from lampost.gameops.display import COMBAT_DISPLAY
 from lampost.lpflavor.attributes import POOL_KEYS
 from lampost.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
@@ -138,7 +137,7 @@ class AttackSkill(BaseSkill):
 
     target_class = target_gen.make('env_living')
 
-    display = COMBAT_DISPLAY
+    display = "combat"
     msg_class = 'attacked'
     damage_type = DBOTField('weapon')
     delivery = DBOTField('melee')
@@ -149,9 +148,9 @@ class AttackSkill(BaseSkill):
     prep_map = DBOTField(
         {'s': 'You prepare to {v} {N}.', 't': '{n} prepares to {v} you.', 'e': '{n} prepares to {v} {N}.'})
     success_map = DBOTField(
-        {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': COMBAT_DISPLAY})
+        {'s': 'You {v} {N}.', 't': '{n} {v}s you.', 'e': '{n} {v}s {N}.', 'display': "combat"})
     fail_map = DBOTField(
-        {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': COMBAT_DISPLAY})
+        {'s': 'You miss {N}.', 't': '{n} misses you.', 'e': '{n} missed {N}.', 'display': "combat"})
 
     def validate(self, source, target, **kwargs):
         if source == target:

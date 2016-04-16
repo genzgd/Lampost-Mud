@@ -1,6 +1,6 @@
 import logging
 
-from lampost.datastore.classes import set_dbo_class, get_dbo_class, set_mixin
+from lampost.datastore.classes import set_dbo_class, get_dbo_class
 from lampost.datastore.dbofield import DBOTField, DBOField
 
 
@@ -29,8 +29,6 @@ class CommonMeta(type):
             cls.class_id = cls.dbo_key_type
             set_dbo_class(cls.class_id, cls)
 
-        if 'mixin_id' in new_attrs:
-            set_mixin(cls.mixin_id, cls)
 
     def add_dbo_fields(cls, new_fields):
         cls._meta_init_attrs(new_fields)

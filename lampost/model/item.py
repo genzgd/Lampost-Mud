@@ -1,13 +1,12 @@
-import math
 import itertools
+import math
 
 from lampost.context.resource import m_requires
+from lampost.core.auto import TemplateField, AutoField
+from lampost.core.meta import CommonMeta, call_mro
 from lampost.datastore.dbo import CoreDBO
 from lampost.datastore.dbofield import DBOField, DBOTField
-from lampost.datastore.auto import TemplateField, AutoField
-from lampost.datastore.meta import CommonMeta, call_mro
 from lampost.gameops.action import obj_action
-
 
 m_requires(__name__, 'dispatcher', 'log')
 
@@ -112,10 +111,10 @@ class BaseTemplate(CoreDBO, BaseItemMixin):
 
 
 class Readable(metaclass=CommonMeta):
-    mixin_id = 'readable'
+    class_id = 'readable'
 
     text = DBOField('')
 
     @obj_action()
     def read(self, source, **_):
-        source.display_line(self.text, TELL_TO_DISPLAY)
+        source.display_line(self.text, "tell_to")

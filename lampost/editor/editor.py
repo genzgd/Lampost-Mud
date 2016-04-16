@@ -1,10 +1,7 @@
-import inspect
-
-from lampost.server.handlers import MethodHandler, SessionHandler
 from lampost.context.resource import m_requires
 from lampost.datastore.classes import get_dbo_class
 from lampost.datastore.exceptions import DataError
-
+from lampost.server.handlers import MethodHandler, SessionHandler
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher', 'perm', 'edit_notify_service')
 

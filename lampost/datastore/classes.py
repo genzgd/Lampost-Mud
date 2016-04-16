@@ -1,13 +1,13 @@
-import logging
 import inspect
+import logging
 import itertools
 
-
-_dbo_registry = {}
-_mixin_registry = {}
-_mixed_registry = {}
+from lampost.core.classes import cls_name, subclasses
 
 log = logging.getLogger(__name__)
+
+_dbo_registry = {}
+_mixed_registry = {}
 
 
 def check_dbo_class(class_id):
@@ -27,10 +27,6 @@ def set_dbo_class(class_id, dbo_class):
         log.warn("Attempting to register invalid class_id {}", class_id)
 
 
-def set_mixin(class_id, mixin_class):
-    _mixin_registry[class_id] = mixin_class
-
-
 def get_dbo_class(class_id):
     try:
         return _dbo_registry[class_id]
@@ -46,22 +42,10 @@ def get_mixed_type(class_id, mixins):
     try:
         return _mixed_registry[mixin_key]
     except KeyError:
-        mixin_bases = (main_class,) + tuple(_mixin_registry[mixin] for mixin in mixins)
+        mixin_bases = (main_class,) + tuple(_dbo_registry[mixin] for mixin in mixins)
         mixin_class = type("_".join(mixin_key), mixin_bases, {'mixins': mixins})
         _mixed_registry[mixin_key] = mixin_class
         return mixin_class
-
-
-def cls_name(cls):
-    return ".".join([cls.__module__, cls.__name__])
-
-
-def subclasses(cls):
-    yield cls
-    for subclass in cls.__subclasses__():
-        yield subclass
-        for sub_sub in subclasses(subclass):
-            yield sub_sub
 
 
 def dbo_types(cls):

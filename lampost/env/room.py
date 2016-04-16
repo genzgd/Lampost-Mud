@@ -3,16 +3,14 @@ import random
 from collections import defaultdict
 
 from lampost.comm.broadcast import Broadcast
-
+from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
-from lampost.datastore.auto import AutoField
+from lampost.core.auto import AutoField
 from lampost.datastore.dbo import CoreDBO, ChildDBO
 from lampost.datastore.dbofield import DBOField, DBOCField
 from lampost.env.movement import Direction
-from lampost.context.config import m_configured
 from lampost.gameops.script import Scriptable, Shadow
 from lampost.model.item import Connected
-
 
 m_requires(__name__, 'log', 'dispatcher', 'datastore')
 

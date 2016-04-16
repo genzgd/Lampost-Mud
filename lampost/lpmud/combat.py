@@ -1,13 +1,13 @@
 from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
+from lampost.core.auto import TemplateField, AutoMeta
 from lampost.datastore.dbofield import DBOTField
-from lampost.datastore.auto import TemplateField, AutoMeta
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
+from lampost.lpmud import attributes
 from lampost.lpmud.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampost.mud.action import mud_action
-from lampost.util.lputil import args_print, tuples_to_list
-from lampost.lpmud import attributes
+from lampost.util.lputil import args_print
 
 m_requires(__name__, 'log', 'tools', 'dispatcher')
 

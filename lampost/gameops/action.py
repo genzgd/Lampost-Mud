@@ -1,8 +1,8 @@
 import inspect
-from lampost.datastore.meta import CommonMeta
 
-from lampost.gameops import target_gen
 from lampost.context.resource import m_requires
+from lampost.core.meta import CommonMeta
+from lampost.gameops import target_gen
 from lampost.util.lputil import ClientError
 
 m_requires(__name__, 'log')

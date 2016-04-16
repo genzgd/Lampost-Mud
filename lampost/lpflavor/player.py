@@ -2,7 +2,6 @@ from lampost.context.resource import m_requires
 from lampost.datastore.dbofield import DBOField, DBOLField
 from lampost.env.room import Room
 from lampost.gameops.action import ActionError
-from lampost.gameops.display import SYSTEM_DISPLAY, COMBAT_DISPLAY
 from lampost.lpflavor.entity import EntityLP
 from lampost.model.item import BaseItem
 
@@ -32,7 +31,7 @@ class PlayerLP(Player, EntityLP, BaseItem):
 
     def check_logout(self):
         if self.last_opponent:
-            self.display_line("You are in life threatening combat!  You can't log out right now.", COMBAT_DISPLAY)
+            self.display_line("You are in life threatening combat!  You can't log out right now.", "combat")
             if self.imm_level:
                 self.display_line("(You might want to consider imposing 'peace.')")
             raise ActionError()
@@ -55,9 +54,9 @@ class PlayerLP(Player, EntityLP, BaseItem):
             self.start_refresh()
             return
 
-        self.display_line("Alas, you succumb to your injuries.", COMBAT_DISPLAY)
+        self.display_line("Alas, you succumb to your injuries.", "combat")
         self.display_line("Unless other help intercedes, you will be returned to your last touchstone in 90 seconds.<br/>"
-                          "You may hasten the end if you 'abandon' all hope of assistance.", SYSTEM_DISPLAY)
+                          "You may hasten the end if you 'abandon' all hope of assistance.", "system")
         self._death_effects()
         self._bind_pulse = register_once(self.resurrect, seconds=90)
         self.status_change()

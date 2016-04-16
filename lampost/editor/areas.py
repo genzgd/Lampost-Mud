@@ -1,10 +1,10 @@
-from lampost.datastore.classes import get_dbo_class
+from lampost.context.config import m_configured
 from lampost.context.resource import m_requires
+from lampost.datastore.classes import get_dbo_class
 from lampost.datastore.exceptions import DataError
 from lampost.editor.editor import Editor, ChildrenEditor
 from lampost.env.movement import Direction
 from lampost.env.room import Room
-from lampost.context.config import m_configured
 from lampost.model.area import Area
 
 m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_notify_service')
