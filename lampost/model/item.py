@@ -2,10 +2,10 @@ import math
 
 from lampost.context.resource import m_requires
 from lampost.core.auto import TemplateField
-from lampost.core.meta import call_mro
-from lampost.core.test import CoreMeta
+from lampost.core.meta import call_mro, CoreMeta
 from lampost.datastore.dbo import CoreDBO, DBOFacet
 from lampost.datastore.dbofield import DBOField, DBOTField
+from lampost.datastore.template import TemplateInstance
 from lampost.gameops.action import obj_action, ActionProvider
 
 m_requires(__name__, 'dispatcher', 'log')
@@ -96,7 +96,7 @@ class ItemDBO(ItemFacet):
     target_keys = {}
 
 
-class ItemTemplate(ItemFacet):
+class ItemInstance(ItemFacet, TemplateInstance):
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])

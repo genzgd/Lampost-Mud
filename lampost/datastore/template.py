@@ -1,9 +1,10 @@
-from lampost.context.resource import m_requires
-from lampost.core.test import CoreMeta
-from lampost.datastore.classes import get_dbo_class
-from lampost.datastore.dbofield import DBOTField
+import logging
 
-m_requires(__name__, 'log')
+from lampost.core.meta import CoreMeta
+from lampost.datastore.classes import get_dbo_class
+from lampost.datastore.dbofield import DBOField, DBOTField
+
+log = logging.getLogger(__name__)
 
 
 class Template(metaclass=CoreMeta):
@@ -19,13 +20,19 @@ class Template(metaclass=CoreMeta):
         pass
 
 
-class InstanceDBO(metaclass=CoreMeta):
-    dbot_fields = {}
+class TemplateInstance(metaclass=CoreMeta):
 
     @classmethod
     def _mixin_init(cls, name, bases, new_attrs):
-        cls.dbot_fields = cls.dbot_fields.copy().update({name: attr} for name, attr in new_attrs if isinstance(attr, DBOTField))
+        dbot_fields = getattr(cls, 'dbot_fields', {}).copy()
+        dbot_fields.update({name: attr for name, attr in new_attrs.items() if isinstance(attr, DBOTField)})
+        cls.dbot_fields = dbot_fields
 
+        if hasattr(cls, "template_id"):
+            cls._attach_template()
+
+    @classmethod
+    def _attach_template(cls):
         template_cls = get_dbo_class(cls.template_id)
         old_class = getattr(template_cls, 'instance_cls', None)
         if old_class:

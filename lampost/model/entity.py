@@ -1,6 +1,7 @@
 from collections import defaultdict
 import itertools
 
+from lampost.datastore.dbo import DBOFacet
 from lampost.datastore.dbofield import DBOField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.comm.broadcast import Broadcast, BroadcastMap
@@ -12,7 +13,7 @@ from lampost.model.item import Connected
 m_requires(__name__, 'log')
 
 
-class Entity(Connected):
+class Entity(DBOFacet, Connected):
     inven = DBOField([], 'untyped')
 
     status = 'ok'

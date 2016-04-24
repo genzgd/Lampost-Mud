@@ -3,9 +3,9 @@ import itertools
 from lampost.core.auto import TemplateField
 from lampost.datastore.dbo import CoreDBO, ChildDBO
 from lampost.datastore.dbofield import DBOField, DBOTField
-from lampost.datastore.template import Template
+from lampost.datastore.template import Template, TemplateInstance
 from lampost.gameops.action import ActionError
-from lampost.model.item import target_keys, ItemTemplate
+from lampost.model.item import target_keys, ItemInstance
 from lampost.util.lputil import plural
 
 
@@ -30,7 +30,7 @@ class ArticleTemplate(ChildDBO, Template):
                 self.plural_keys.add(single_key[:-1] + (plural(single_key[-1:][0]),))
 
 
-class Article(ItemTemplate):
+class Article(ItemInstance):
     template_id = 'article'
 
     weight = DBOTField(0)

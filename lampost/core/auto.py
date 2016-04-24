@@ -1,6 +1,6 @@
 import copy
 
-from lampost.core.test import CoreMeta
+from lampost.core.meta import CoreMeta
 
 
 class AttrAutoInit(metaclass=CoreMeta):

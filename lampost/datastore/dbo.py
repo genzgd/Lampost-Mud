@@ -1,11 +1,15 @@
+import logging
+
 from lampost.context.resource import m_requires
 from lampost.core.auto import AttrAutoInit
 from lampost.core.meta import call_mro
 from lampost.datastore import dbofield
 from lampost.datastore.classes import set_dbo_class, get_dbo_class
-from lampost.datastore.dbofield import DBOField, DBOTField
+from lampost.datastore.dbofield import DBOField
 
-m_requires(__name__, 'log', 'perm', 'datastore')
+log = logging.getLogger(__name__)
+
+m_requires(__name__, 'perm', 'datastore')
 
 
 class DBOFacet(AttrAutoInit):
@@ -50,7 +54,6 @@ class DBOFacet(AttrAutoInit):
 
 class CoreDBO(DBOFacet):
     dbo_owner = None
-    template_id = None
 
     def _on_loaded(self):
         for load_func in self.load_funcs:

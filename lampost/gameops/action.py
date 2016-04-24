@@ -4,8 +4,7 @@ import itertools
 
 from lampost.context.resource import m_requires
 from lampost.core.auto import AutoField
-from lampost.core.meta import CommonMeta
-from lampost.core.test import CoreMeta
+from lampost.core.meta import CoreMeta
 from lampost.gameops import target_gen
 from lampost.util.lputil import ClientError
 
