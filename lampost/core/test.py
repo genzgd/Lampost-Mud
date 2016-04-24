@@ -26,5 +26,5 @@ class CoreMeta(type):
     def _update_set(cls, bases, attr_name):
         new_field = set()
         for base in bases:
-            new_field.update(getattr(cls, attr_name, set()))
+            new_field.update(getattr(base, attr_name, set()))
         setattr(cls, attr_name, new_field)
