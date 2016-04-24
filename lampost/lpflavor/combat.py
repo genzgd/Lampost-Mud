@@ -1,5 +1,5 @@
 from lampost.context.resource import m_requires
-from lampost.core.auto import TemplateField, AutoMeta
+from lampost.core.auto import TemplateField, AttrAutoInit
 from lampost.datastore.dbofield import DBOTField
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
@@ -104,7 +104,7 @@ def consider_level(source_con, target_con):
     return int(perc / 13.27) - CON_RANGE
 
 
-class Attack(metaclass=AutoMeta):
+class Attack(AttrAutoInit):
     success_map = TemplateField()
     fail_map = TemplateField()
     delivery = TemplateField()

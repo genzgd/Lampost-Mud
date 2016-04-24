@@ -1,7 +1,7 @@
 from lampost.comm.channel import Channel
 from lampost.context.resource import m_requires
 from lampost.gameops.action import obj_action, ActionProvider
-from lampost.model.item import BaseItem, gen_keys, Connected
+from lampost.model.item import ItemDBO, gen_keys, Connected
 from lampost.mud.action import mud_action
 
 m_requires(__name__, 'dispatcher')
@@ -72,7 +72,7 @@ class Group(ActionProvider, Connected):
         self.leave(member)
 
 
-class Invitation(BaseItem):
+class Invitation(ItemDBO):
     title = "A group invitation"
     target_keys = set(gen_keys(title))
 

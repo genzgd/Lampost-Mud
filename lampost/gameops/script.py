@@ -4,8 +4,7 @@ from collections import defaultdict
 
 from lampost.context.resource import m_requires
 from lampost.core.auto import AutoField
-from lampost.core.meta import CommonMeta
-from lampost.datastore.dbo import ChildDBO
+from lampost.datastore.dbo import ChildDBO, DBOFacet
 from lampost.datastore.dbofield import DBOField
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher')
@@ -117,7 +116,7 @@ class ShadowRef(ChildDBO):
         return 0
 
 
-class Scriptable(metaclass=CommonMeta):
+class Scriptable(DBOFacet):
     shadow_refs = DBOField([], 'shadow_ref')
     script_vars = DBOField({})
     shadow_chains = AutoField({})

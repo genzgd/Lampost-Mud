@@ -1,12 +1,12 @@
-import itertools
 import math
 
 from lampost.context.resource import m_requires
-from lampost.core.auto import TemplateField, AutoField
-from lampost.core.meta import CommonMeta, call_mro
-from lampost.datastore.dbo import CoreDBO
+from lampost.core.auto import TemplateField
+from lampost.core.meta import call_mro
+from lampost.core.test import CoreMeta
+from lampost.datastore.dbo import CoreDBO, DBOFacet
 from lampost.datastore.dbofield import DBOField, DBOTField
-from lampost.gameops.action import obj_action
+from lampost.gameops.action import obj_action, ActionProvider
 
 m_requires(__name__, 'dispatcher', 'log')
 
@@ -32,17 +32,15 @@ def target_keys(item):
     return target_keys
 
 
-class Connected(metaclass=CommonMeta):
+class Connected(metaclass=CoreMeta):
     def detach(self):
         detach_events(self)
         call_mro(self, 'on_detach')
 
 
-class BaseItemMixin(Connected):
+class ItemFacet(CoreDBO, Connected, ActionProvider):
     sex = DBOField('none')
     flags = DBOField({})
-
-    instance_providers = AutoField([])
 
     living = False
     env = None
@@ -52,10 +50,6 @@ class BaseItemMixin(Connected):
     @property
     def name(self):
         return self.title
-
-    @property
-    def action_providers(self):
-        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.instance_providers)
 
     def target_finder(self, entity, target_key):
         if target_key in self.target_keys:
@@ -92,7 +86,7 @@ class BaseItemMixin(Connected):
                 pass
 
 
-class BaseItem(CoreDBO, BaseItemMixin):
+class ItemDBO(ItemFacet):
     class_id = 'base_item'
 
     desc = DBOField('')
@@ -102,7 +96,7 @@ class BaseItem(CoreDBO, BaseItemMixin):
     target_keys = {}
 
 
-class BaseTemplate(CoreDBO, BaseItemMixin):
+class ItemTemplate(ItemFacet):
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])
@@ -110,7 +104,7 @@ class BaseTemplate(CoreDBO, BaseItemMixin):
     target_keys = TemplateField(set())
 
 
-class Readable(metaclass=CommonMeta):
+class Readable(DBOFacet, ActionProvider):
     class_id = 'readable'
 
     text = DBOField('')

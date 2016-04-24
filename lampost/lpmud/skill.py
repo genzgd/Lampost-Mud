@@ -3,10 +3,10 @@ from random import randint
 from lampost.context.resource import m_requires
 from lampost.core.auto import TemplateField
 from lampost.datastore.classes import dbo_types
-from lampost.datastore.dbo import CoreDBO, KeyDBO, DBOAccess
+from lampost.datastore.dbo import CoreDBO, KeyDBO, OwnerDBO
 from lampost.datastore.dbofield import DBOField, DBOTField
+from lampost.datastore.template import Template
 from lampost.gameops.action import ActionError, convert_verbs
-from lampost.gameops.template import Template
 from lampost.mud.action import mud_action, imm_action
 
 
@@ -38,7 +38,7 @@ def avg_calc(source, calc, skill_level=0):
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
-class SkillTemplate(DBOAccess, KeyDBO, Template):
+class SkillTemplate(KeyDBO, OwnerDBO, Template):
     def on_loaded(self):
         if not self.auto_start:
             self.verbs = convert_verbs(self.verb)

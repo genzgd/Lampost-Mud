@@ -1,6 +1,6 @@
 from lampost.datastore.dbofield import DBOField
 
-from lampost.model.item import BaseItem
+from lampost.model.item import ItemDBO
 from lampost.mud.action import mud_action
 
 
@@ -24,7 +24,7 @@ def inven(source, **_):
         source.display_line("You aren't carrying anything.")
 
 
-class InvenContainer(BaseItem):
+class InvenContainer(ItemDBO):
     class_id = 'container'
 
     contents = DBOField([], 'untyped')

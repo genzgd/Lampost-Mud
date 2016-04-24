@@ -1,13 +1,54 @@
 from lampost.context.resource import m_requires
-from lampost.core.meta import CommonMeta, call_mro
+from lampost.core.auto import AttrAutoInit
+from lampost.core.meta import call_mro
 from lampost.datastore import dbofield
 from lampost.datastore.classes import set_dbo_class, get_dbo_class
-from lampost.datastore.dbofield import DBOField
+from lampost.datastore.dbofield import DBOField, DBOTField
 
 m_requires(__name__, 'log', 'perm', 'datastore')
 
 
-class CoreDBO(metaclass=CommonMeta):
+class DBOFacet(AttrAutoInit):
+
+    @classmethod
+    def _cls_init(cls, class_name, bases, new_attrs):
+        if 'class_id' in new_attrs:
+            # Override any existing class id reference with this child class
+            set_dbo_class(cls.class_id, cls)
+
+        elif 'dbo_key_type' in new_attrs:
+            # Override or set the class_id to the database key if present
+            cls.class_id = cls.dbo_key_type
+            set_dbo_class(cls.class_id, cls)
+        cls._update(bases, 'dbo_fields')
+        cls._update_dbo_fields(new_attrs)
+        cls._extend(bases, "load_funcs", "on_loaded")
+
+
+    @classmethod
+    def _update_dbo_fields(cls, new_attrs):
+        for name, attr in new_attrs.items():
+            if hasattr(attr, 'hydrate'):
+                old_attr = cls.dbo_fields.get(name)
+                if old_attr == attr:
+                    log.warn("Overriding duplicate attr {} in class {}", name, cls.__name__)
+                else:
+                    if old_attr and old_attr.default == attr.default:
+                        log.warn("Unnecessary override of attr {} in class {}", name, cls.__name__)
+                    elif old_attr and old_attr.default:
+                        log.info("Overriding default value of attr{} in class {}", name, cls.__name__)
+                    cls.dbo_fields[name] = attr
+
+
+    @classmethod
+    def add_dbo_fields(cls, new_fields):
+        cls._meta_init_attrs(new_fields)
+        cls._update_dbo_fields(new_fields)
+        for name, dbo_field in new_fields.items():
+            setattr(cls, name, dbo_field)
+
+
+class CoreDBO(DBOFacet):
     dbo_owner = None
     template_id = None
 
@@ -93,6 +134,8 @@ class CoreDBO(metaclass=CommonMeta):
 
         return display
 
+
+class SystemDBO(DBOFacet):
     def can_read(self, immortal):
         return True
 
@@ -100,9 +143,7 @@ class CoreDBO(metaclass=CommonMeta):
         return is_supreme(immortal) or immortal.imm_level > getattr(self, 'imm_level', 0)
 
 
-# DBOAccess should always be first in the superclass list so that its can_read and can_write methods
-# are used instead of those in CoreDBO
-class DBOAccess(metaclass=CommonMeta):
+class OwnerDBO(DBOFacet):
     owner_id = DBOField('lampost')
     read_access = DBOField(0)
     write_access = DBOField(0)
@@ -180,7 +221,7 @@ class KeyDBO(CoreDBO):
         return self.save_value, dbofield.save_value_refs.current
 
 
-class ParentDBO(DBOAccess, KeyDBO):
+class ParentDBO(KeyDBO, OwnerDBO):
 
     @property
     def edit_dto(self):

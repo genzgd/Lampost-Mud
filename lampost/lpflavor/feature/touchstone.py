@@ -1,9 +1,9 @@
 from lampost.datastore.dbofield import DBOField
 from lampost.gameops.action import obj_action
-from lampost.model.item import Readable, BaseItem
+from lampost.model.item import Readable, ItemDBO
 
 
-class Inscription(BaseItem, Readable):
+class Inscription(ItemDBO, Readable):
     class_id = 'inscription'
 
 inscription = Inscription()
@@ -13,7 +13,7 @@ inscription.desc = "An inscription written in the flowery letters of a time long
 inscription._on_loaded()
 
 
-class Touchstone(BaseItem):
+class Touchstone(ItemDBO):
     class_id = 'touchstone'
 
     title = DBOField('Touchstone')

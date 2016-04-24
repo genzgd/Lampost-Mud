@@ -1,12 +1,16 @@
 import copy
 
+from lampost.core.test import CoreMeta
 
-class AutoMeta(type):
-    def __init__(cls, class_name, bases, new_attrs):
+
+class AttrAutoInit(metaclass=CoreMeta):
+
+    @classmethod
+    def _cls_init(cls, class_name, bases, new_attrs):
         cls._meta_init_attrs(new_attrs)
 
-    @staticmethod
-    def _meta_init_attrs(new_attrs):
+    @classmethod
+    def _meta_init_attrs(cls, new_attrs):
         for name, attr in new_attrs.items():
             try:
                 attr.meta_init(name)

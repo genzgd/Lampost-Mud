@@ -4,7 +4,7 @@ from lampost.env.room import Room
 from lampost.gameops.action import ActionError
 from lampost.context.config import m_configured
 from lampost.lpmud.entity import EntityLP
-from lampost.model.item import BaseItem
+from lampost.model.item import ItemDBO
 
 from lampost.model.player import Player
 
@@ -14,7 +14,7 @@ m_requires(__name__, 'dispatcher', 'datastore')
 m_configured(__name__, 'default_start_room')
 
 
-class PlayerLP(Player, EntityLP, BaseItem):
+class PlayerLP(Player, EntityLP, ItemDBO):
     dbo_key_type = 'player'
 
     race = DBOLField(dbo_class_id='race')

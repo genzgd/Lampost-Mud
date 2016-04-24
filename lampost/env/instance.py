@@ -6,7 +6,7 @@ from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
-from lampost.model.item import BaseItem
+from lampost.model.item import ItemDBO
 
 m_requires(__name__, 'datastore', 'dispatcher')
 
@@ -82,7 +82,7 @@ dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
 
 
 @requires('instance_manager')
-class Entrance(BaseItem):
+class Entrance(ItemDBO):
     class_id = 'entrance'
 
     verb = DBOField('enter')

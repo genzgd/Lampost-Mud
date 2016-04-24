@@ -2,7 +2,7 @@ from base64 import b64decode
 import time
 
 from lampost.context.resource import m_requires
-from lampost.datastore.dbo import KeyDBO
+from lampost.datastore.dbo import KeyDBO, SystemDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.datastore.exceptions import DataError
 from lampost.model.player import Player
@@ -13,7 +13,7 @@ from lampost.util.lputil import ClientError
 m_requires(__name__, 'log', 'perm', 'datastore', 'dispatcher')
 
 
-class User(KeyDBO):
+class User(KeyDBO, SystemDBO):
     dbo_key_type = "user"
     dbo_set_key = "users"
     dbo_indexes = "user_name", "email"

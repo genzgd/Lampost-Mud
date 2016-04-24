@@ -3,7 +3,7 @@ from lampost.datastore.dbofield import DBOField, DBOLField
 from lampost.env.room import Room
 from lampost.gameops.action import ActionError
 from lampost.lpflavor.entity import EntityLP
-from lampost.model.item import BaseItem
+from lampost.model.item import ItemDBO
 
 from lampost.model.player import Player
 
@@ -11,7 +11,7 @@ from lampost.model.player import Player
 m_requires(__name__, 'dispatcher', 'datastore', 'config_manager')
 
 
-class PlayerLP(Player, EntityLP, BaseItem):
+class PlayerLP(Player, EntityLP, ItemDBO):
     dbo_key_type = 'player'
 
     race = DBOLField(dbo_class_id='race')

@@ -1,7 +1,11 @@
 import inspect
 
+import itertools
+
 from lampost.context.resource import m_requires
+from lampost.core.auto import AutoField
 from lampost.core.meta import CommonMeta
+from lampost.core.test import CoreMeta
 from lampost.gameops import target_gen
 from lampost.util.lputil import ClientError
 
@@ -123,8 +127,14 @@ class ActionError(ClientError):
         super().__init__(msg, display)
 
 
-class ActionProvider(metaclass=CommonMeta):
+class ActionProvider(metaclass=CoreMeta):
+    instance_providers = AutoField([])
+
+    @classmethod
+    def _mixin_init(cls, name, bases, new_attrs):
+        cls._update_set(bases, 'class_providers')
+        cls.class_providers.update({func.__name__ for func in new_attrs.values() if hasattr(func, 'verbs')})
+
     @property
     def action_providers(self):
-        return (getattr(self, func_name) for func_name in self.class_providers)
-
+        return itertools.chain((getattr(self, func_name) for func_name in self.class_providers), self.instance_providers)

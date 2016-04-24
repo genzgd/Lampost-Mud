@@ -5,7 +5,7 @@ from lampost.context.resource import m_requires
 from lampost.core.auto import AutoField
 from lampost.datastore.dbofield import DBOField
 from lampost.gameops.action import obj_action, ActionError
-from lampost.model.item import BaseItem
+from lampost.model.item import ItemDBO
 
 m_requires(__name__, 'dispatcher')
 
@@ -25,7 +25,7 @@ def buyback_gen(target_key, entity, action):
 buyback_gen.abs_msg = "{target} is not available to buy back"
 
 
-class Store(BaseItem):
+class Store(ItemDBO):
     class_id = 'store'
 
     currency = DBOField(None, 'article')

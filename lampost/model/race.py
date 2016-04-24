@@ -1,10 +1,10 @@
-from lampost.datastore.dbo import KeyDBO, DBOAccess
+from lampost.datastore.dbo import KeyDBO, OwnerDBO
 from lampost.datastore.dbofield import DBOField, DBOLField
 
 base_attr_value = 5
 
 
-class PlayerRace(DBOAccess, KeyDBO):
+class PlayerRace(KeyDBO, OwnerDBO):
     dbo_key_type = "race"
     dbo_set_key = "races"
 

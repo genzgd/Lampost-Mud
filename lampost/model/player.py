@@ -1,13 +1,13 @@
 from lampost.context.resource import m_requires
 from lampost.core.auto import AutoField
-from lampost.datastore.dbo import KeyDBO
+from lampost.datastore.dbo import KeyDBO, SystemDBO
 from lampost.datastore.dbofield import DBOField
 from lampost.model.item import Connected
 
 m_requires(__name__, 'log', 'dispatcher')
 
 
-class Player(KeyDBO, Connected):
+class Player(KeyDBO, SystemDBO, Connected):
     dbo_key_type = "player"
     dbo_set_key = "players"
 
