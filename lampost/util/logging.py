@@ -1,3 +1,4 @@
+import sys
 import inspect
 import logging
 
@@ -26,9 +27,23 @@ class LoggerFmt(Logger):
         return rv
 
 
+class LogFactory():
+    def factory(self, consumer):
+        if not inspect.ismodule(consumer):
+            consumer = consumer.__class__
+        logger = logging.getLogger(consumer.__name__)
+        consumer.fatal = logger.fatal
+        consumer.error = logger.error
+        consumer.warn = logger.warn
+        consumer.info = logger.info
+        consumer.debug = logger.debug
+        consumer.exception = logger.exception
+        consumer.debug_enabled = lambda: logger.getEffectiveLevel() <= logging.DEBUG
+        return logger
+
+
 logging.setLoggerClass(LoggerFmt)
 log_format = '{asctime: <20}  {levelname: <8} {name: <26}  {message}'
-root_logger = None
 
 
 def init_config(args):
@@ -48,19 +63,3 @@ def logged(func):
         except Exception as error:
             root_logger.exception("Unhandled exception", func.__name__, error)
     return wrapper
-
-
-class LogFactory():
-
-    def factory(self, consumer):
-        if not inspect.ismodule(consumer):
-            consumer = consumer.__class__
-        logger = logging.getLogger(consumer.__name__)
-        consumer.fatal = logger.fatal
-        consumer.error = logger.error
-        consumer.warn = logger.warn
-        consumer.info = logger.info
-        consumer.debug = logger.debug
-        consumer.exception = logger.exception
-        consumer.debug_enabled = lambda: logger.getEffectiveLevel() <= logging.DEBUG
-        return logger

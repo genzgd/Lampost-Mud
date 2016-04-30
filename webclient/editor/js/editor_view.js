@@ -85,7 +85,7 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       return intercept('preUpdate', activeModel).then(function () {
         if (!originalModel.dbo_id) {
           var modelDto = angular.copy(activeModel);
-          return context.preCreate(modelDto).then(function () {
+          return context.newDto(modelDto).then(function () {
             lpRemote.request(baseUrl + 'create', modelDto).then(onCreated, dataError);
           }, dataError);
         }

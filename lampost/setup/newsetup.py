@@ -3,7 +3,7 @@ from importlib import import_module
 from lampost.context import resource, scripts, config
 from lampost.datastore.redisstore import RedisStore
 from lampost.gameops import dbconfig, event, permissions
-from lampost.util.log import LogFactory
+from lampost.util.logging import LogFactory
 from lampost.server.user import UserManager
 
 

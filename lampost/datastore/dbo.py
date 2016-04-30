@@ -1,5 +1,3 @@
-import logging
-
 from lampost.context.resource import m_requires
 from lampost.core.auto import AttrAutoInit
 from lampost.core.meta import call_mro
@@ -7,9 +5,7 @@ from lampost.datastore import dbofield
 from lampost.datastore.classes import set_dbo_class, get_dbo_class
 from lampost.datastore.dbofield import DBOField
 
-log = logging.getLogger(__name__)
-
-m_requires(__name__, 'perm', 'datastore')
+m_requires(__name__, 'log', 'perm', 'datastore')
 
 
 class DBOFacet(AttrAutoInit):
@@ -35,12 +31,12 @@ class DBOFacet(AttrAutoInit):
             if hasattr(attr, 'hydrate'):
                 old_attr = cls.dbo_fields.get(name)
                 if old_attr == attr:
-                    log.warn("Overriding duplicate attr {} in class {}", name, cls.__name__)
+                    warn("Overriding duplicate attr {} in class {}", name, cls.__name__)
                 else:
                     if old_attr and old_attr.default == attr.default:
-                        log.warn("Unnecessary override of attr {} in class {}", name, cls.__name__)
+                        warn("Unnecessary override of attr {} in class {}", name, cls.__name__)
                     elif old_attr and old_attr.default:
-                        log.info("Overriding default value of attr{} in class {}", name, cls.__name__)
+                        info("Overriding default value of attr{} in class {}", name, cls.__name__)
                     cls.dbo_fields[name] = attr
 
 

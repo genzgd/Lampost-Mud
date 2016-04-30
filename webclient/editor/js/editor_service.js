@@ -15,6 +15,7 @@ angular.module('lampost_editor').service('lpEditor',
       this.objLabel = this.objLabel || this.label;
       this.include = this.include || 'editor/view/' + id + '.html';
       this.extend = this.extend || angular.noop;
+      this.preCreate = this.preCreate || angular.noop;
       this.preReqs = this.preReqs || {};
     }
 
@@ -26,7 +27,8 @@ angular.module('lampost_editor').service('lpEditor',
       return model;
     };
 
-    EditContext.prototype.preCreate = function (model) {
+    EditContext.prototype.newDto = function (model) {
+      this.preCreate(model);
       model.dbo_id = model.dbo_id.toString().toLocaleLowerCase();
       if (model.dbo_id.indexOf(':') > -1) {
         return $q.reject("Colons not allowed in base ids");
@@ -166,8 +168,12 @@ angular.module('lampost_editor').factory('contextDefs', ['$q', function($q) {
         {type: 'article', path: 'article_resets.article'},
         {type: 'script', path: 'shadow_refs.script'}
       ],
-      extend: function(model) {
-        model.dbo_id = this.parent.next_room_id;
+      extend: function(room) {
+        room.new_id = this.parent.next_room_id;
+      },
+      preCreate: function(room) {
+        room.dbo_id = room.new_id;
+        delete room.new_id;
       }
     },
     mobile: {

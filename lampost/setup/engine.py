@@ -15,13 +15,11 @@ from lampost.server.server import WebServer
 from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
 from lampost.server.session import SessionManager
 from lampost.server.user import UserManager
-from lampost.util.log import LogFactory
 from lampost.server import router as main_router
 from lampost.editor import router as edit_router
 
 
 def start(args):
-    resource.register('log', LogFactory())
     scripts.select_json()
 
     # Load and activate the database configuration
