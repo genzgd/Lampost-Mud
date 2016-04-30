@@ -58,12 +58,12 @@ def _start_env(player):
 
     if instance and instance_room:
         # Player is returning to an instance still in memory
-        return instance.get_room(player.instance_room_id)
+        return instance.get_room(instance_room)
 
     if instance_room and not player_room:
         # Player has no 'non-instanced' room, so presumably was created in a new instanced tutorial/racial area
         instance = instance_manager.next_instance()
-        return instance.get_room(player.instance_room_id)
+        return instance.get_room(instance_room)
 
     # If we get here whatever instance data was associated with the player is no longer valid
     del player.instance_id

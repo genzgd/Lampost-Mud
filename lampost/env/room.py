@@ -31,7 +31,7 @@ class Exit(CoreDBO):
 
     target_class = None
     direction = DBOField()
-    destination = DBOField()
+    destination = DBOField(dbo_class_id="room", required=True)
     desc = DBOField()
     aliases = DBOField([])
 
@@ -50,12 +50,8 @@ class Exit(CoreDBO):
     def from_name(self):
         return Direction.ref_map.get(self._dir.rev_key).desc
 
-    @property
-    def dest_room(self):
-        return load_object(self.destination, Room)
-
     def examine(self, source, **_):
-        source.display_line('Exit: {}  {}'.format(self._dir.desc, self.dest_room.title), 'exit')
+        source.display_line('Exit: {}  {}'.format(self._dir.desc, self.destination.title), 'exit')
 
     def __call__(self, source, **_):
         source.env.allow_leave(source, self)
@@ -65,7 +61,7 @@ class Exit(CoreDBO):
         if source.instance:
             destination = source.instance.get_room(self.destination)
         else:
-            destination = self.dest_room
+            destination = self.destination
         source.change_env(destination, self)
 
     def on_loaded(self):

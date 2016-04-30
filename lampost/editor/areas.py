@@ -59,7 +59,7 @@ class RoomEditor(ChildrenEditor):
         this_exit = get_dbo_class('exit')()
         this_exit.dbo_owner = room
         this_exit.direction = new_dir
-        this_exit.destination = other_id
+        this_exit.destination = other_room
         this_exit.on_loaded()
         room.exits.append(this_exit)
         save_object(room)
@@ -68,7 +68,7 @@ class RoomEditor(ChildrenEditor):
             other_exit = get_dbo_class('exit')()
             other_exit.dbo_owner = room
             other_exit.direction = rev_dir
-            other_exit.destination = room.dbo_id
+            other_exit.destination = room
             other_exit.on_loaded()
             other_room.exits.append(other_exit)
             save_object(other_room)
@@ -85,7 +85,7 @@ class RoomEditor(ChildrenEditor):
         save_object(room)
 
         if content.both_sides:
-            other_room = local_exit.dest_room
+            other_room = local_exit.destination
             other_exit = other_room.find_exit(Direction.ref_map[content.dir].rev_key)
             if other_exit:
                 other_room.exits.remove(other_exit)
@@ -140,10 +140,10 @@ def room_clean_up(room, session, area_delete=None):
             denizen.display_line('You were in a room that was destroyed by some unknown force')
             denizen.change_env(start_room)
     for my_exit in room.exits:
-        other_room = my_exit.dest_room
+        other_room = my_exit.destination
         if other_room and other_room.parent_id != area_delete:
             for other_exit in other_room.exits:
-                if other_exit.destination == room.dbo_id:
+                if not other_exit.destination or other_exit.destination == room:
                     other_room.exits.remove(other_exit)
                     save_object(other_room, True)
                     publish_edit('update', other_room, session, True)

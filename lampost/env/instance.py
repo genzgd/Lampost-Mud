@@ -1,14 +1,14 @@
 from lampost.comm.broadcast import BroadcastMap
 from lampost.context.config import m_configured
 from lampost.context.resource import m_requires, requires
-from lampost.datastore.dbofield import DBOField
+from lampost.datastore.dbofield import DBOField, DBOLField
 from lampost.env.movement import Direction
 from lampost.env.room import Room
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
 from lampost.model.item import ItemDBO
 
-m_requires(__name__, 'datastore', 'dispatcher')
+m_requires(__name__, 'log', 'datastore', 'dispatcher')
 
 m_configured(__name__, 'instance_preserve_hours')
 
@@ -62,17 +62,17 @@ class AreaInstance():
         for room in self.rooms.values():
             room.clean_up()
 
-    def get_room(self, room_id):
+    def get_room(self, room):
+        if not room:
+            error("Null room passed to area instance")
+            return
         try:
-            room = self.rooms[room_id]
+            instance = self.rooms[room.dbo_id]
         except KeyError:
-            room = load_object(room_id, Room)
-            if not room:
-                return
-            room = room.clone()
-            room.instance = self
-            self.rooms[room_id] = room
-        return room
+            instance = room.clone()
+            instance.instance = self
+            self.rooms[room.dbo_id] = instance
+        return instance
 
 
 verb_exit = BroadcastMap(ea='{n} leaves {N}')
@@ -87,7 +87,7 @@ class Entrance(ItemDBO):
 
     verb = DBOField('enter')
     direction = DBOField(None)
-    destination = DBOField()
+    destination = DBOField(dbo_class_id="room", required=True)
     instanced = DBOField(True)
     edit_required = DBOField(True)
 
@@ -104,10 +104,6 @@ class Entrance(ItemDBO):
             self.target_class = [target_gen.action]
         if not self.title and self.verb:
             self.title = self.verb
-
-    @property
-    def dest_room(self):
-        return load_object(self.destination, Room)
 
     @property
     def name(self):
@@ -127,7 +123,7 @@ class Entrance(ItemDBO):
 
     def glance(self, source, **_):
         if self._dir:
-            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.dest_room.title), 'exit')
+            source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.destination.title), 'exit')
         else:
             source.display_line(self.title, 'exit')
 
@@ -144,5 +140,5 @@ class Entrance(ItemDBO):
                 instance = self.instance_manager.next_instance()
             destination = instance.get_room(self.destination)
         else:
-            destination = self.dest_room
+            destination = self.destination
         source.change_env(destination, self)
