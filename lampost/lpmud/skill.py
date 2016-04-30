@@ -5,7 +5,7 @@ from lampost.core.auto import TemplateField
 from lampost.datastore.classes import dbo_types
 from lampost.datastore.dbo import CoreDBO, KeyDBO, OwnerDBO
 from lampost.datastore.dbofield import DBOField, DBOTField
-from lampost.datastore.template import Template
+from lampost.datastore.template import Template, TemplateInstance
 from lampost.gameops.action import ActionError, convert_verbs
 from lampost.mud.action import mud_action, imm_action
 
@@ -50,7 +50,7 @@ class DefaultSkill(CoreDBO):
     skill_level = DBOField(1)
 
 
-class BaseSkill(CoreDBO):
+class BaseSkill(CoreDBO, TemplateInstance):
     verb = DBOTField()
     name = DBOTField()
     desc = DBOTField()
