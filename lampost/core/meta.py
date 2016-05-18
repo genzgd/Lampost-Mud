@@ -21,7 +21,9 @@ class CoreMeta(type):
     def _extend(cls, bases, cls_field, attr_name):
         new_field = []
         for base in bases:
-            new_field.extend(getattr(base, cls_field, []))
+            for base_attr in getattr(base, cls_field, []):
+                if base_attr not in new_field:
+                    new_field.append(base_attr)
         new_attr = getattr(cls, attr_name, None)
         if new_attr:
             new_attr = getattr(new_attr, "__func__", new_attr)

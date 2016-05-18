@@ -10,11 +10,9 @@ angular.module('lampost_mud').config(['$routeProvider', '$locationProvider', fun
 }]);
 
 
-// Using services here so they get instantiated.  Many depend on event listeners only
-//noinspection JSUnusedLocalSymbols
 angular.module('lampost_mud').run(
-  ['$rootScope', '$timeout', '$window', 'lpEvent', 'lpRemote', 'lpStorage', 'lpData', 'lpDialog', 'lmComm',
-  function ($rootScope, $timeout, $window, lpEvent, lpRemote, lpStorage, lpData, lpDialog, lmComm) {
+  ['$rootScope', '$timeout', '$window', '$injector', 'lpEvent', 'lpRemote', 'lpStorage',
+  function ($rootScope, $timeout, $window, $injector, lpEvent, lpRemote, lpStorage) {
 
     $window.name = "lpMudWindow" + new Date().getTime();
 
@@ -32,6 +30,9 @@ angular.module('lampost_mud').run(
     } else {
       lpRemote.connect('game_connect');
     }
+    $injector.get('lpData');
+    $injector.get('lpDialog');
+    $injector.get('lmComm');
 
   }]);
 
@@ -172,7 +173,7 @@ angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEven
     }, $scope);
 
     lpEvent.register("logout", function (reason) {
-      if (reason == "invalid_session") {
+      if (reason === "invalid_session") {
         lpDialog.removeAll();
         lpDialog.showOk("Session Lost", "Your session has been disconnected.");
       }
