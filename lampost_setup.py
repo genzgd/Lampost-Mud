@@ -1,7 +1,7 @@
 import sys
 
-from lampost.util import logging
-from lampost.setup import startargs
+from lampmud.util import logging
+from lampmud.setup import startargs
 
 if __name__ != "__main__":
     print("Invalid usage")
@@ -14,7 +14,7 @@ logging.init_config(args)
 logging.root_logger.info("Started with args {}", args)
 
 # We set the logging configuration before importing other modules so that the root logger is properly configured
-from lampost.setup import newsetup
+from lampmud.setup import newsetup
 
 if args.flush:
     response = input("Please confirm the database number you wish to clear: ")

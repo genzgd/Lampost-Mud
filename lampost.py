@@ -1,8 +1,8 @@
 import sys
 
-from lampost.setup import startargs
-from lampost.util import logging
-from lampost.context import resource
+from lampmud.setup import startargs
+from lampmud.util import logging
+from lampmud.context import resource
 
 if __name__ != "__main__":
     print("Invalid usage")
@@ -15,5 +15,5 @@ logging.root_logger.info("Started with args {}", args)
 resource.register('log', logging.LogFactory())
 
 
-from lampost.setup import engine
+from lampmud.setup import engine
 engine.start(args)
