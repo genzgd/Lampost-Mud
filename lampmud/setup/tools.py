@@ -1,6 +1,7 @@
-from lampost.di import resource, scripts, config
+from lampost.di import resource, config
+from lampost.db import dbconfig
 from lampost.db.redisstore import RedisStore
-from lampost.gameops import dbconfig
+from lampost.util import json
 from lampost.util.logging import LogFactory
 
 resource.m_requires(__name__, 'log')
@@ -8,7 +9,7 @@ resource.m_requires(__name__, 'log')
 
 def _prepare():
     resource.register('log', LogFactory())
-    scripts.select_json()
+    json.select_json()
 
 
 def reset_config(args):

@@ -1,10 +1,13 @@
 from importlib import import_module
 
-from lampost.di import resource, scripts, config
+from lampost.di import resource, config
+from lampost.db import dbconfig, permissions
 from lampost.db.redisstore import RedisStore
-from lampost.gameops import dbconfig, event, permissions
+from lampost.util import json
 from lampost.util.logging import LogFactory
-from lampmud.server.user import UserManager
+
+
+from lampost.server.user import UserManager
 
 
 resource.m_requires(__name__, 'log')
@@ -13,7 +16,7 @@ resource.m_requires(__name__, 'log')
 def new_setup(args):
 
     resource.register('log', LogFactory())
-    scripts.select_json()
+    json.select_json()
 
     # Initialize the database, flush if requested
     datastore = resource.register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)

@@ -1,9 +1,8 @@
 from lampost.di.resource import m_requires
-from lampmud.editor.admin import admin_op
+from lampost.editor.admin import admin_op
+
 from lampmud.env.room import Room
 from lampmud.model.area import Area
-from lampmud.model.article import ArticleTemplate
-from lampmud.model.mobile import MobileTemplate
 from lampmud.model.player import Player
 
 m_requires(__name__, 'log', 'datastore', 'dispatcher')

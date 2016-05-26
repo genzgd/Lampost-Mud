@@ -1,5 +1,6 @@
 from lampost.db.dbofield import DBOField
 from lampost.di import resource
+from lampost.setup import tools
 
 from lampmud.lpmud.archetype import PlayerRace
 from lampmud.lpmud.player import PlayerLP

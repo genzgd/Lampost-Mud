@@ -2,7 +2,8 @@ import math
 
 from lampost.di.resource import m_requires
 from lampost.meta.auto import TemplateField
-from lampost.util.classes import call_mro, CoreMeta
+from lampost.meta.core import CoreMeta
+from lampost.util.classes import call_mro
 from lampost.db.dbo import CoreDBO, DBOFacet
 from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import TemplateInstance
