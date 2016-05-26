@@ -1,12 +1,13 @@
 from collections import defaultdict
 import itertools
 
-from lampmud.datastore.dbo import DBOFacet
-from lampmud.datastore.dbofield import DBOField
-from lampmud.gameops.action import action_handler, add_actions, remove_action, add_action
+from lampost.db.dbo import DBOFacet
+from lampost.db.dbofield import DBOField
+from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
+from lampost.gameops.parser import ParseError, parse_actions, has_action
+from lampost.di.resource import m_requires
+
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
-from lampmud.context.resource import m_requires
-from lampmud.gameops.parser import ParseError, parse_actions, has_action
 from lampmud.model.item import Connected
 
 

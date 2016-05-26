@@ -1,6 +1,7 @@
-from lampmud.datastore.dbofield import DBOField
+from lampost.db.dbofield import DBOField
+from lampost.gameops.action import ActionError
+
 import lampmud.env.room
-from lampmud.gameops.action import ActionError
 
 exit_cost_map = {}
 

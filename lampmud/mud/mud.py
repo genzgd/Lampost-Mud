@@ -3,7 +3,7 @@ from lampmud.env.movement import Direction
 from lampmud.comm.broadcast import broadcast_types, broadcast_tokens
 from lampmud.env.room import Room, safe_room
 from lampmud.mud.action import imm_actions
-from lampmud.context.resource import requires, m_requires, register_module
+from lampost.di.resource import requires, m_requires, register_module
 from lampmud.comm.channel import Channel
 
 

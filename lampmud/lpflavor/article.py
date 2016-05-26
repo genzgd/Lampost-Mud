@@ -1,6 +1,6 @@
 from lampmud.comm.broadcast import BroadcastMap
-from lampmud.core.auto import TemplateField
-from lampmud.datastore.dbofield import DBOField, DBOTField
+from lampost.meta.auto import TemplateField
+from lampost.db.dbofield import DBOField, DBOTField
 from lampmud.model.article import Article, ArticleTemplate
 from lampmud.mud.action import mud_action
 

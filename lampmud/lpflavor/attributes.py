@@ -1,4 +1,4 @@
-from lampmud.util.lputil import tuples_to_list
+from lampost.util.lputil import tuples_to_list
 
 
 ATTRIBUTES = tuples_to_list(('dbo_id', 'name', 'category', 'hidden'), [

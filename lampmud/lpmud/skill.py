@@ -1,12 +1,13 @@
 from random import randint
 
-from lampmud.context.resource import m_requires
-from lampmud.core.auto import TemplateField
-from lampmud.datastore.classes import dbo_types
-from lampmud.datastore.dbo import CoreDBO, KeyDBO, OwnerDBO
-from lampmud.datastore.dbofield import DBOField, DBOTField
-from lampmud.datastore.template import Template, TemplateInstance
-from lampmud.gameops.action import ActionError, convert_verbs
+from lampost.di.resource import m_requires
+from lampost.meta.auto import TemplateField
+from lampost.db.registry import dbo_types
+from lampost.db.dbo import CoreDBO, KeyDBO, OwnerDBO
+from lampost.db.dbofield import DBOField, DBOTField
+from lampost.db.template import Template, TemplateInstance
+from lampost.gameops.action import ActionError, convert_verbs
+
 from lampmud.mud.action import mud_action, imm_action
 
 

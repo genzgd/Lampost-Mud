@@ -1,7 +1,7 @@
-from lampmud.context import resource, scripts, config
-from lampmud.datastore.redisstore import RedisStore
-from lampmud.gameops import dbconfig
-from lampmud.util.logging import LogFactory
+from lampost.di import resource, scripts, config
+from lampost.db.redisstore import RedisStore
+from lampost.gameops import dbconfig
+from lampost.util.logging import LogFactory
 
 resource.m_requires(__name__, 'log')
 

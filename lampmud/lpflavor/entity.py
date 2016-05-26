@@ -1,5 +1,6 @@
-from lampmud.context.resource import m_requires
-from lampmud.gameops.action import action_handler, ActionError
+from lampost.di.resource import m_requires
+from lampost.gameops.action import action_handler, ActionError
+
 from lampmud.lpflavor.fight import Fight
 from lampmud.lpflavor.attributes import need_refresh, POOL_KEYS
 from lampmud.lpflavor.combat import calc_consider

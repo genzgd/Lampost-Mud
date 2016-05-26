@@ -1,10 +1,12 @@
-from lampmud.context.resource import m_requires
-from lampmud.gameops.action import ActionError
+from lampost.di.resource import m_requires
+from lampost.gameops.action import ActionError
+
 from lampmud.lpmud.combat import consider_level
 
 m_requires(__name__, 'log', 'dispatcher', 'tools')
 
 chase_time = 120
+
 
 class FightStats():
     def __init__(self, con_level):

@@ -1,5 +1,4 @@
-from lampmud.datastore.dbo import CoreDBO
-
+from lampost.db.dbo import CoreDBO
 
 class Direction(CoreDBO):
     class_id = 'direction'

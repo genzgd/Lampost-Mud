@@ -1,7 +1,8 @@
-from lampmud.context.resource import m_requires
-from lampmud.core.auto import AutoField
-from lampmud.datastore.dbo import KeyDBO, SystemDBO
-from lampmud.datastore.dbofield import DBOField
+from lampost.di.resource import m_requires
+from lampost.meta.auto import AutoField
+from lampost.db.dbo import KeyDBO, SystemDBO
+from lampost.db.dbofield import DBOField
+
 from lampmud.model.item import Connected
 
 m_requires(__name__, 'log', 'dispatcher')

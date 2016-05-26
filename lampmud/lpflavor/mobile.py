@@ -1,12 +1,15 @@
-from lampmud.context.resource import m_requires
-from lampmud.core.auto import TemplateField
-from lampmud.datastore.dbofield import DBOField, DBOTField
+from lampost.di.resource import m_requires
+from lampost.meta.auto import TemplateField
+from lampost.db.dbofield import DBOField, DBOTField
+
+from lampmud.model.mobile import MobileTemplate
+from lampmud.model.race import base_attr_value
+
 from lampmud.lpflavor.archetype import Archetype
 from lampmud.lpflavor.attributes import fill_pools
 from lampmud.lpflavor.entity import EntityLP
 from lampmud.lpflavor.skill import add_skill
-from lampmud.model.mobile import MobileTemplate
-from lampmud.model.race import base_attr_value
+
 
 m_requires(__name__, 'log', 'context', 'datastore', 'dispatcher')
 

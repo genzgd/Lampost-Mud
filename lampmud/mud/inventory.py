@@ -1,4 +1,4 @@
-from lampmud.datastore.dbofield import DBOField
+from lampost.db.dbofield import DBOField
 
 from lampmud.model.item import ItemDBO
 from lampmud.mud.action import mud_action

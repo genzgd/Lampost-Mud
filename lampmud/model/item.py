@@ -1,12 +1,12 @@
 import math
 
-from lampmud.context.resource import m_requires
-from lampmud.core.auto import TemplateField
-from lampmud.core.meta import call_mro, CoreMeta
-from lampmud.datastore.dbo import CoreDBO, DBOFacet
-from lampmud.datastore.dbofield import DBOField, DBOTField
-from lampmud.datastore.template import TemplateInstance
-from lampmud.gameops.action import obj_action, ActionProvider
+from lampost.di.resource import m_requires
+from lampost.meta.auto import TemplateField
+from lampost.util.classes import call_mro, CoreMeta
+from lampost.db.dbo import CoreDBO, DBOFacet
+from lampost.db.dbofield import DBOField, DBOTField
+from lampost.db.template import TemplateInstance
+from lampost.gameops.action import obj_action, ActionProvider
 
 m_requires(__name__, 'dispatcher', 'log')
 

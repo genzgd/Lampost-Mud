@@ -2,20 +2,19 @@ from importlib import import_module
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
 
-from lampmud.comm.channel import ChannelService
-from lampmud.comm.message import MessageService
-from lampmud.context import resource, scripts, config
-from lampmud.context.resource import context_post_init
-from lampmud.datastore.redisstore import RedisStore
+from lampost.server.channel import ChannelService
+from lampost.server.message import MessageService
+from lampost.di import resource, config
+from lampost.db.redisstore import RedisStore
 from lampmud.env.instance import InstanceManager
-from lampmud.gameops import event, dbconfig, permissions
-from lampmud.gameops.friend import FriendService
-from lampmud.server.email import EmailSender
-from lampmud.server.server import WebServer
-from lampmud.server.services import AnyLoginService, PlayerListService, EditUpdateService
-from lampmud.server.session import SessionManager
-from lampmud.server.user import UserManager
-from lampmud.server import router as main_router
+from lampost.gameops import event,permissions
+from lampost.gameops.friend import FriendService
+from lampost.server.email import EmailSender
+from lampost.server.server import WebServer
+from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
+from lampost.server.session import SessionManager
+from lampost.server.user import UserManager
+from lampost.server import router as main_router
 from lampmud.editor import router as edit_router
 
 
@@ -46,7 +45,7 @@ def start(args):
     resource.register('login_notify_service', AnyLoginService())
     resource.register('edit_notify_service', EditUpdateService(), True)
 
-    context_post_init()
+    resource.context_post_init()
 
     main_router.init(web_server)
     edit_router.init(web_server)

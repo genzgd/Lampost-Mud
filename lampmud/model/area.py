@@ -1,5 +1,5 @@
-from lampmud.datastore.dbo import ParentDBO
-from lampmud.datastore.dbofield import DBOField
+from lampost.db.dbo import ParentDBO
+from lampost.db.dbofield import DBOField
 
 
 class Area(ParentDBO):

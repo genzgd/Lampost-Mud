@@ -1,6 +1,6 @@
 from lampmud.lpmud.attributes import fill_pools, base_pools
 from lampmud.lpmud.skill import add_skill
-from lampmud.context.resource import m_requires
+from lampost.di.resource import m_requires
 
 m_requires(__name__,  'dispatcher')
 

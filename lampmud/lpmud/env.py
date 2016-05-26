@@ -1,7 +1,8 @@
-from lampmud.datastore.dbofield import DBOField
+from lampost.db.dbofield import DBOField
+from lampost.gameops.action import ActionError
+from lampost.di.config import m_configured
+
 import lampmud.env.room
-from lampmud.gameops.action import ActionError
-from lampmud.context.config import m_configured
 
 m_configured(__name__, 'room_stamina', 'room_action', 'default_room_size')
 

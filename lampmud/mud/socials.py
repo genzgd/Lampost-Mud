@@ -1,8 +1,8 @@
 from lampmud.comm.broadcast import BroadcastMap
-from lampmud.context.resource import m_requires
-from lampmud.datastore.dbo import KeyDBO, OwnerDBO
-from lampmud.datastore.dbofield import DBOField
-from lampmud.gameops.action import make_action
+from lampost.di.resource import m_requires
+from lampost.db.dbo import KeyDBO, OwnerDBO
+from lampost.db.dbofield import DBOField
+from lampost.gameops.action import make_action
 from lampmud.mud.action import mud_action
 
 m_requires(__name__, 'log', 'datastore', 'mud_actions')

@@ -1,7 +1,9 @@
-from lampmud.context.resource import m_requires
+from lampost.di.resource import m_requires
+from lampost.config.scripts import build_default_settings
+
 from lampmud.lpflavor.feature.touchstone import Touchstone
 from lampmud.model.race import PlayerRace
-from lampmud.setup.scripts import build_default_settings
+
 
 m_requires(__name__, 'datastore')
 

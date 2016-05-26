@@ -1,12 +1,13 @@
 import itertools
 
-from lampmud.core.auto import TemplateField
-from lampmud.datastore.dbo import CoreDBO, ChildDBO
-from lampmud.datastore.dbofield import DBOField, DBOTField
-from lampmud.datastore.template import Template, TemplateInstance
-from lampmud.gameops.action import ActionError
+from lampost.meta.auto import TemplateField
+from lampost.db.dbo import CoreDBO, ChildDBO
+from lampost.db.dbofield import DBOField, DBOTField
+from lampost.db.template import Template
+from lampost.gameops.action import ActionError
+from lampost.util.lputil import plural
+
 from lampmud.model.item import target_keys, ItemInstance
-from lampmud.util.lputil import plural
 
 
 VOWELS = {'a', 'e', 'i', 'o', 'u'}

@@ -1,10 +1,10 @@
 import hashlib
 
-from lampmud.editor.editor import ChildrenEditor
+from lampost.editor.editor import ChildrenEditor
 
-from lampmud.context.resource import m_requires
-from lampmud.datastore.exceptions import DataError
-from lampmud.gameops.script import compile_script, ShadowScript
+from lampost.di.resource import m_requires
+from lampost.db.exceptions import DataError
+from lampost.gameops.script import compile_script, ShadowScript
 
 m_requires(__name__, 'perm')
 

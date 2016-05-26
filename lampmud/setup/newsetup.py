@@ -1,9 +1,9 @@
 from importlib import import_module
 
-from lampmud.context import resource, scripts, config
-from lampmud.datastore.redisstore import RedisStore
-from lampmud.gameops import dbconfig, event, permissions
-from lampmud.util.logging import LogFactory
+from lampost.di import resource, scripts, config
+from lampost.db.redisstore import RedisStore
+from lampost.gameops import dbconfig, event, permissions
+from lampost.util.logging import LogFactory
 from lampmud.server.user import UserManager
 
 

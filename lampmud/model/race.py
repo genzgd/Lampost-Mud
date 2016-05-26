@@ -1,5 +1,5 @@
-from lampmud.datastore.dbo import KeyDBO, OwnerDBO
-from lampmud.datastore.dbofield import DBOField, DBOLField
+from lampost.db.dbo import KeyDBO, OwnerDBO
+from lampost.db.dbofield import DBOField, DBOLField
 
 base_attr_value = 5
 

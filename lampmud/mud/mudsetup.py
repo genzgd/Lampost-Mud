@@ -1,7 +1,7 @@
 from importlib import import_module
 
-from lampmud.context.config import m_configured
-from lampmud.context.resource import m_requires
+from lampost.di.config import m_configured
+from lampost.di.resource import m_requires
 
 
 import_module('lampost.model.area')

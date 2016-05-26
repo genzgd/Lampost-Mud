@@ -1,6 +1,6 @@
 from lampmud.comm.channel import Channel
-from lampmud.context.resource import m_requires
-from lampmud.gameops.action import obj_action, ActionProvider
+from lampost.di.resource import m_requires
+from lampost.gameops.action import obj_action, ActionProvider
 from lampmud.model.item import ItemDBO, gen_keys, Connected
 from lampmud.mud.action import mud_action
 

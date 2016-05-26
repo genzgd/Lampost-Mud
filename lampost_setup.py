@@ -1,6 +1,6 @@
 import sys
 
-from lampmud.util import logging
+from lampost.util import logging
 from lampmud.setup import startargs
 
 if __name__ != "__main__":

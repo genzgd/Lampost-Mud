@@ -1,5 +1,6 @@
-from lampmud.context.resource import m_requires
-from lampmud.gameops.action import ActionError
+from lampost.di.resource import m_requires
+from lampost.gameops.action import ActionError
+
 from lampmud.lpflavor.combat import consider_level
 
 m_requires(__name__, 'log', 'dispatcher', 'tools')

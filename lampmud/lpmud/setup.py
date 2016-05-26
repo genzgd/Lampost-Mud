@@ -1,15 +1,15 @@
-from lampmud.datastore.dbofield import DBOField
+from lampost.db.dbofield import DBOField
+from lampost.di import resource
+
 from lampmud.lpmud.archetype import PlayerRace
 from lampmud.lpmud.player import PlayerLP
 
 from lampmud.mud import mudcore
 from lampmud.lpmud import lpcore
-from lampmud.context import config, resource
+
 from lampmud.lpmud.server import NewCharacterData
 from lampmud.model.area import Area
 from lampmud.env.room import Room
-from lampmud.util import tools
-
 
 def first_time_setup(args, datastore, config_values):
     _update_classes(config_values)

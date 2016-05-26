@@ -1,6 +1,6 @@
-from lampmud.context.resource import m_requires
-from lampmud.datastore.exceptions import DataError
-from lampmud.editor.editor import Editor
+from lampost.di.resource import m_requires
+from lampost.db.exceptions import DataError
+from lampost.editor.editor import Editor
 from lampmud.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 from lampmud.mud.socials import Social
 

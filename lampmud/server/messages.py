@@ -1,4 +1,4 @@
-from lampmud.context.resource import m_requires
+from lampost.di.resource import m_requires
 from lampmud.server.handlers import SessionHandler
 
 m_requires(__name__, 'log', 'friend_service', 'message_service', 'user_manager')

@@ -1,6 +1,7 @@
-from lampmud.datastore.dbo import CoreDBO, ChildDBO
-from lampmud.datastore.dbofield import DBOField
-from lampmud.datastore.template import Template
+from lampost.db.dbo import CoreDBO, ChildDBO
+from lampost.db.dbofield import DBOField
+from lampost.db.template import Template
+
 from lampmud.model.entity import Entity
 from lampmud.model.item import target_keys, ItemInstance
 

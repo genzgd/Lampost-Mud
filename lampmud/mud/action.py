@@ -1,7 +1,7 @@
 from collections import defaultdict
 
-from lampmud.context import resource
-from lampmud.gameops.action import make_action, convert_verbs, ActionError
+from lampost.di import resource
+from lampost.gameops.action import make_action, convert_verbs, ActionError
 
 
 resource.m_requires(__name__, 'log')

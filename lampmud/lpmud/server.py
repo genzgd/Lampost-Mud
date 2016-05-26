@@ -1,6 +1,7 @@
+from lampost.server.handlers import SessionHandler
+from lampost.di.resource import m_requires
+
 from lampmud.lpmud.archetype import PlayerRace
-from lampmud.server.handlers import SessionHandler
-from lampmud.context.resource import m_requires
 
 m_requires(__name__, 'log', 'datastore')
 

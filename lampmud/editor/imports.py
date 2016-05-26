@@ -1,6 +1,6 @@
-from lampmud.server.handlers import MethodHandler
-from lampmud.context.resource import m_requires
-from lampmud.datastore.redisstore import RedisStore
+from lampost.server.handlers import MethodHandler
+from lampost.di.resource import m_requires
+from lampost.db.redisstore import RedisStore
 
 m_requires(__name__, 'log', 'perm', 'dispatcher')
 

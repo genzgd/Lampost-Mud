@@ -1,6 +1,6 @@
-from lampmud.context.config import m_configured
-from lampmud.datastore.dbo import KeyDBO, OwnerDBO
-from lampmud.datastore.dbofield import DBOField, DBOLField
+from lampost.di.config import m_configured
+from lampost.db.dbo import KeyDBO, OwnerDBO
+from lampost.db.dbofield import DBOField, DBOLField
 
 m_configured(__name__, 'base_attr_value', 'attributes', 'default_start_room')
 

@@ -1,11 +1,12 @@
-from lampmud.context.resource import m_requires
-from lampmud.datastore.dbofield import DBOField, DBOLField
-from lampmud.env.room import Room
-from lampmud.gameops.action import ActionError
-from lampmud.lpflavor.entity import EntityLP
-from lampmud.model.item import ItemDBO
+from lampost.di.resource import m_requires
+from lampost.db.dbofield import DBOField, DBOLField
+from lampost.gameops.action import ActionError
 
 from lampmud.model.player import Player
+from lampmud.env.room import Room
+from lampmud.model.item import ItemDBO
+
+from lampmud.lpflavor.entity import EntityLP
 
 
 m_requires(__name__, 'dispatcher', 'datastore', 'config_manager')

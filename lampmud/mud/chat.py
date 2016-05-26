@@ -1,6 +1,6 @@
-from lampmud.gameops.action import ActionError
-from lampmud.context.resource import m_requires
-from lampmud.gameops.parser import parse_chat
+from lampost.gameops.action import ActionError
+from lampost.di.resource import m_requires
+from lampost.gameops.parser import parse_chat
 from lampmud.mud.action import mud_action
 
 m_requires(__name__, 'session_manager', 'user_manager')

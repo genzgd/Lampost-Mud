@@ -4,7 +4,7 @@ if __name__ != "__main__":
     print("Invalid usage")
     sys.exit(2)
 
-from lampmud.util import logging
+from lampost.util import logging
 from lampmud.setup import startargs
 
 args = startargs.tools_parser.parse_args()

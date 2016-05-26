@@ -1,13 +1,14 @@
 from importlib import import_module
 
-from lampmud.datastore.dbofield import DBOField
+from lampost.db.dbofield import DBOField
+from lampost.di.resource import m_requires
+
+from lampmud.model.race import PlayerRace
 from lampmud.lpflavor import setup
 from lampmud.lpflavor.attributes import ATTR_LIST, fill_pools, base_pools, RESOURCE_POOLS, ATTRIBUTES
 from lampmud.lpflavor.combat import DAMAGE_TYPES, DAMAGE_DELIVERY, WEAPON_OPTIONS, DEFENSE_DAMAGE_TYPES, WEAPON_TYPES
 from lampmud.lpflavor.skill import add_skill
 from lampmud.lpflavor.player import PlayerLP
-from lampmud.context.resource import m_requires
-from lampmud.model.race import PlayerRace
 
 
 m_requires(__name__, 'context', 'dispatcher', 'datastore', 'perm')

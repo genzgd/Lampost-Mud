@@ -1,5 +1,5 @@
-from lampmud.datastore.dbofield import DBOField
-from lampmud.gameops.action import obj_action
+from lampost.db.dbofield import DBOField
+from lampost.gameops.action import obj_action
 from lampmud.model.item import Readable, ItemDBO
 
 

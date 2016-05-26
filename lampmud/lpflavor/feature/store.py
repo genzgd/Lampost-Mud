@@ -1,10 +1,11 @@
 import itertools
 from collections import deque
 
-from lampmud.context.resource import m_requires
-from lampmud.core.auto import AutoField
-from lampmud.datastore.dbofield import DBOField
-from lampmud.gameops.action import obj_action, ActionError
+from lampost.di.resource import m_requires
+from lampost.meta.auto import AutoField
+from lampost.db.dbofield import DBOField
+from lampost.gameops.action import obj_action, ActionError
+
 from lampmud.model.item import ItemDBO
 
 m_requires(__name__, 'dispatcher')

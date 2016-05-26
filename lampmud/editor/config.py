@@ -1,11 +1,12 @@
 import inspect
 
 from lampmud.comm.broadcast import broadcast_types, broadcast_tokens
-from lampmud.context import config
-from lampmud.context.resource import m_requires
-from lampmud.datastore.classes import get_dbo_class, dbo_types, implementors
+from lampost.di import config
+from lampost.di.resource import m_requires
+from lampost.gameops.script import Scriptable
+from lampost.db.registry import get_dbo_class, dbo_types, implementors
 from lampmud.env.movement import Direction
-from lampmud.gameops.script import Scriptable
+
 from lampmud.lpmud.skill import SkillTemplate
 from lampmud.server.handlers import MethodHandler, SessionHandler
 

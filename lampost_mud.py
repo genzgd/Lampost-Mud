@@ -1,8 +1,8 @@
 import sys
 
 from lampmud.setup import startargs
-from lampmud.util import logging
-from lampmud.context import resource
+from lampost.util import logging
+from lampost.di import resource
 
 if __name__ != "__main__":
     print("Invalid usage")

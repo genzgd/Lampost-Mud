@@ -1,12 +1,14 @@
-from lampmud.context.resource import m_requires
-from lampmud.core.auto import TemplateField, AttrAutoInit
-from lampmud.datastore.dbofield import DBOTField
-from lampmud.gameops import target_gen
-from lampmud.gameops.action import ActionError
+from lampost.di.resource import m_requires
+from lampost.meta.auto import TemplateField, AttrAutoInit
+from lampost.db.dbofield import DBOTField
+from lampost.gameops import target_gen
+from lampost.gameops.action import ActionError
+from lampost.util.lputil import args_print, tuples_to_list
+
 from lampmud.lpflavor.attributes import POOL_KEYS
 from lampmud.lpflavor.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampmud.mud.action import mud_action
-from lampmud.util.lputil import args_print, tuples_to_list
+
 
 m_requires(__name__, 'log', 'tools', 'dispatcher')
 

@@ -1,4 +1,4 @@
-from lampmud.context.config import m_configured
+from lampost.di.config import m_configured
 
 pool_keys = []
 attr_list = []

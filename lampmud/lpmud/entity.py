@@ -1,6 +1,7 @@
-from lampmud.context.resource import m_requires
-from lampmud.gameops.action import action_handler, ActionError
-from lampmud.context.config import m_configured
+from lampost.di.resource import m_requires
+from lampost.gameops.action import action_handler, ActionError
+from lampost.di.config import m_configured
+
 from lampmud.lpmud.fight import Fight
 from lampmud.lpmud import attributes
 from lampmud.lpmud.combat import calc_consider

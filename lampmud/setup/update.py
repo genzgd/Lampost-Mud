@@ -1,4 +1,4 @@
-from lampmud.context.resource import m_requires
+from lampost.di.resource import m_requires
 from lampmud.editor.admin import admin_op
 from lampmud.env.room import Room
 from lampmud.model.area import Area
