@@ -14,6 +14,7 @@ from lampost.gameops import event
 from lampost.gameops.friend import FriendService
 from lampost.server.email import EmailSender
 from lampost.server.web import WebServer
+from lampost.server import display
 from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
 from lampost.server.session import SessionManager
 from lampost.server.user import UserManager
@@ -46,6 +47,7 @@ def start(args):
     resource.register('channel_service', ChannelService())
     resource.register('friend_service', FriendService())
     resource.register('message_service', MessageService())
+    resource.register('display', display)
     resource.register('player_list_service', PlayerListService())
     resource.register('login_notify_service', AnyLoginService())
     resource.register('edit_notify_service', EditUpdateService(), True)

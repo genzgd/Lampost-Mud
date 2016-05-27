@@ -4,8 +4,6 @@ from lampost.db.registry import get_dbo_class
 from lampost.db.exceptions import DataError
 from lampost.editor.editor import Editor, ChildrenEditor
 from lampmud.env.movement import Direction
-from lampmud.env.room import Room
-from lampmud.model.area import Area
 
 m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_notify_service')
 
@@ -14,7 +12,7 @@ m_configured(__name__, 'root_area_id', 'default_start_room')
 
 class AreaEditor(Editor):
     def initialize(self):
-        super().initialize(Area)
+        super().initialize('area')
 
     def _pre_create(self):
         if object_exists('player', self.raw['dbo_id']):
@@ -23,18 +21,18 @@ class AreaEditor(Editor):
     def _pre_delete(self, del_obj):
         if del_obj.dbo_id == root_area_id:
             raise DataError("Cannot delete root area.")
-        for room in load_object_set(Room, 'area_rooms:{}'.format(del_obj.dbo_id)):
+        for room in load_object_set('room', 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, self.session, del_obj.dbo_id)
 
 
 class RoomEditor(ChildrenEditor):
     def initialize(self):
-        super().initialize(Room)
+        super().initialize('room')
 
     def visit(self):
         if not self.session.player.session:
             raise DataError("You are not logged in")
-        room = load_object(self.raw['room_id'], Room)
+        room = load_object(self.raw['room_id'], 'room')
         if not room:
             raise DataError("ROOM_MISSING")
         room.reload()
@@ -49,7 +47,7 @@ class RoomEditor(ChildrenEditor):
         rev_dir = Direction.ref_map[new_dir].rev_key
         other_id = content.dest_id
         if content.is_new:
-            other_room = create_object(Room, {'dbo_id': other_id, 'title': content.dest_title}, False)
+            other_room = create_object('room', {'dbo_id': other_id, 'title': content.dest_title}, False)
             publish_edit('create', other_room, self.session, True)
             update_next_room_id(area, self.session)
         else:
@@ -123,7 +121,7 @@ def update_next_room_id(area, session):
 
 
 def find_area_room(room_id, player):
-    room = load_object(room_id, Room)
+    room = load_object(room_id, 'room')
     if not room:
         raise DataError("ROOM_MISSING")
     area = room.parent_dbo
@@ -132,7 +130,7 @@ def find_area_room(room_id, player):
 
 
 def room_clean_up(room, session, area_delete=None):
-    start_room = load_object(default_start_room, Room)
+    start_room = load_object(default_start_room, 'room')
     if not start_room:
         start_room = safe_room
     for denizen in room.denizens:
