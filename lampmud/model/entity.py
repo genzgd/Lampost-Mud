@@ -8,13 +8,13 @@ from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.di.resource import m_requires
 
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
-from lampmud.model.item import Connected
+from lampmud.model.item import Attached
 
 
 m_requires(__name__, 'log')
 
 
-class Entity(DBOFacet, Connected):
+class Entity(DBOFacet, Attached):
     inven = DBOField([], 'untyped')
 
     status = 'ok'
@@ -24,14 +24,14 @@ class Entity(DBOFacet, Connected):
     entry_msg = BroadcastMap(e='{n} materializes.', ea="{n} arrives from the {N}.")
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
-    def __init__(self):
+    def on_loaded(self):
         self.soul = defaultdict(set)
         self.inven_actions = defaultdict(set)
         self.followers = set()
         self.registrations = set()
         self._soul_objects = set()
 
-    def baptise(self):
+    def on_attach(self):
         add_actions(self.inven_actions, self.inven)
 
     def enhance_soul(self, action):

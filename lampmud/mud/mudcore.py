@@ -19,7 +19,7 @@ def _post_init():
     shout_channel = Channel('shout', general=True)
     imm_channel = Channel('imm')
     register('player_create', _player_create)
-    register('player_baptise', _baptise, priority=-100)
+    register('player_attach', _player_attach, priority=-100)
     register('imm_baptise', _imm_baptise, priority=-100)
     register('missing_env', _start_env)
 
@@ -33,8 +33,7 @@ def _player_create(player, user):
     player.room_id = default_start_room
 
 
-def _baptise(player):
-    player.baptise()
+def _player_attach(player):
     shout_channel.add_sub(player)
     if player.imm_level:
         dispatch("imm_baptise", player)

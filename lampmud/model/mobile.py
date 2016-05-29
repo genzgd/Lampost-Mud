@@ -11,7 +11,7 @@ class MobileTemplate(ChildDBO, Template):
     dbo_parent_type = "area"
 
     def config_instance(self, instance, room):
-        instance.baptise()
+        instance.attach()
         instance.original_env = room
         room.mobiles[self].add(instance)
         instance.enter_env(room)

@@ -1,3 +1,5 @@
+from lampost.db.dbo import DBOFacet
+from lampost.db.dbofield import DBOField
 from lampost.di.resource import m_requires
 from lampost.gameops.action import action_handler, ActionError
 from lampost.di.config import m_configured
@@ -28,46 +30,16 @@ class EntityLP(Entity):
     _next_command = None
     _action_pulse = None
 
-    def __init__(self):
-        super().__init__()
+    def on_loaded(self):
         self.effects = set()
         self.defenses = set()
         self.equip_slots = {}
-        self.fight = Fight(self)
 
-    def baptise(self):
-        super().baptise()
+    def on_attach(self):
         for article in self.inven:
             if article.current_slot:
                 self._do_equip(article, article.current_slot)
         self.fight.update_skills()
-
-    def add_skill(self, skill):
-        if skill.template_key in self.skills:
-            raise ActionError("Skill already exists.")
-        self.skills[skill.template_key] = skill
-        self._apply_skill(skill)
-
-    def _apply_skill(self, skill):
-        if skill.auto_start:
-            skill.invoke(self)
-        else:
-            self.enhance_soul(skill)
-        try:
-            self.fight.update_skills()
-        except AttributeError:
-            pass
-
-    def remove_skill(self, skill_id):
-        try:
-            skill = self.skills.pop(skill_id)
-            if skill.auto_start:
-                skill.revoke(self)
-            else:
-                 self.diminish_soul(skill)
-            self.fight.update_skills()
-        except KeyError:
-            raise ActionError('{} does not have that skill'.format(self.name))
 
     def check_costs(self, costs):
         for pool, cost in costs.items():
@@ -293,3 +265,39 @@ class EntityLP(Entity):
     def combat_status(self):
         return ''.join(['{N} STATUS--', ''.join(["{0}: {1} ".format(pool_id, getattr(self, pool_id))
                                                  for pool_id, _ in attributes.pool_keys])])
+
+
+class Skilled(DBOFacet):
+    skills = DBOField({}, 'untyped')
+
+    def on_loaded(self):
+        self.fight = Fight(self)
+
+    def add_skill(self, skill):
+        if skill.template_key in self.skills:
+            raise ActionError("Skill already exists.")
+        self.skills[skill.template_key] = skill
+        self._apply_skill(skill)
+
+    def _apply_skill(self, skill):
+        if skill.auto_start:
+            skill.invoke(self)
+        else:
+            self.enhance_soul(skill)
+        try:
+            self.fight.update_skills()
+        except AttributeError:
+            pass
+
+    def remove_skill(self, skill_id):
+        try:
+            skill = self.skills.pop(skill_id)
+            if skill.auto_start:
+                skill.revoke(self)
+            else:
+                 self.diminish_soul(skill)
+            self.fight.update_skills()
+        except KeyError:
+            raise ActionError('{} does not have that skill'.format(self.name))
+
+

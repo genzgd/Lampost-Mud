@@ -7,8 +7,6 @@ m_requires(__name__,  'dispatcher')
 
 def _post_init():
     register('player_create', _player_create, priority=1000)
-    register('player_baptise', _player_baptise)
-    register('player_connect', _player_connect)
 
 
 def _player_create(player, user):
@@ -22,16 +20,3 @@ def _player_create(player, user):
     else:
         player.room_id = player.race.start_room.dbo_id
 
-
-def _player_baptise(player):
-    if player.race:
-        for default_skill in player.race.default_skills:
-            if default_skill.skill_template.dbo_key not in player.skills.keys():
-                add_skill(default_skill.skill_template, player, default_skill.skill_level, 'race')
-
-    base_pools(player)
-    player.start_refresh()
-
-
-def _player_connect(player, *_):
-    player.status_change()

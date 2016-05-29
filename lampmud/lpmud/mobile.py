@@ -5,7 +5,7 @@ from lampost.db.dbofield import DBOField, DBOTField
 
 from lampmud.lpmud.archetype import Archetype
 from lampmud.lpmud.attributes import fill_pools
-from lampmud.lpmud.entity import EntityLP
+from lampmud.lpmud.entity import EntityLP, Skilled
 from lampmud.lpmud.skill import add_skill
 from lampmud.model.mobile import MobileTemplate, Mobile
 
@@ -37,7 +37,7 @@ class MobileTemplateLP(MobileTemplate):
         super().config_instance(mobile, owner)
 
 
-class MobileLP(EntityLP, Mobile):
+class MobileLP(EntityLP, Mobile, Skilled):
     template_id = "mobile"
 
     archetype = DBOTField()

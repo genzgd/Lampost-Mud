@@ -1,16 +1,18 @@
 from lampmud.comm.broadcast import BroadcastMap
-from lampost.di.resource import m_requires
+from lampost.di.resource import m_requires, Injected
 from lampost.db.dbo import KeyDBO, OwnerDBO
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import make_action
 from lampmud.mud.action import mud_action
 
-m_requires(__name__, 'log', 'datastore', 'mud_actions')
+m_requires(__name__, 'log',  'mud_actions')
+
+db = Injected('datastore')
 
 
 def _post_init():
     global socials
-    socials = load_object_set(Social)
+    socials = db.load_object_set(Social)
 
 
 class Social(KeyDBO, OwnerDBO):

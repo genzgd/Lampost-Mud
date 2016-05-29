@@ -11,7 +11,7 @@ from lampost.gameops.script import Scriptable, Shadow
 
 from lampmud.comm.broadcast import Broadcast
 from lampmud.env.movement import Direction
-from lampmud.model.item import Connected
+from lampmud.model.item import Attached
 
 m_requires(__name__, 'log', 'dispatcher', 'datastore')
 
@@ -69,7 +69,7 @@ class Exit(CoreDBO):
         self._dir = Direction.ref_map.get(self.direction)
 
 
-class Room(ChildDBO, Connected, Scriptable):
+class Room(ChildDBO, Attached, Scriptable):
     dbo_key_type = 'room'
     dbo_parent_type = 'area'
     dbo_key_sort = lambda key: int(key.split(":")[1])

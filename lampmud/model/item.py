@@ -33,13 +33,16 @@ def target_keys(item):
     return target_keys
 
 
-class Connected(metaclass=CoreMeta):
+class Attached(metaclass=CoreMeta):
+    def attach(self):
+        call_mro(self, 'on_attach')
+
     def detach(self):
         detach_events(self)
         call_mro(self, 'on_detach')
 
 
-class ItemFacet(CoreDBO, Connected, ActionProvider):
+class ItemFacet(CoreDBO, Attached, ActionProvider):
     sex = DBOField('none')
     flags = DBOField({})
 

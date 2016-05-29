@@ -4,7 +4,9 @@ from lampost.gameops.action import ActionError
 from lampost.di.config import m_configured
 
 from lampmud.env.room import Room
-from lampmud.lpmud.entity import EntityLP
+from lampmud.lpmud.attributes import base_pools
+from lampmud.lpmud.entity import EntityLP, Skilled
+from lampmud.lpmud.skill import add_skill
 from lampmud.model.item import ItemDBO
 
 from lampmud.model.player import Player
@@ -15,20 +17,29 @@ m_requires(__name__, 'dispatcher', 'datastore')
 m_configured(__name__, 'default_start_room')
 
 
-class PlayerLP(Player, EntityLP, ItemDBO):
+class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
     dbo_key_type = 'player'
 
     race = DBOLField(dbo_class_id='race')
-    affinity = 'player'
-    skills = DBOField({}, 'untyped')
     touchstone = DBOField()
-    can_die = True
     size = DBOField('medium')
+    affinity = 'player'
+    can_die = True
 
     def on_loaded(self):
         self.auto_fight = False
         for skill in self.skills.values():
             self._apply_skill(skill)
+
+    def on_attach(self):
+        if self.race:
+            for default_skill in self.race.default_skills:
+                if default_skill.skill_template.dbo_key not in self.skills.keys():
+                    add_skill(default_skill.skill_template, self, default_skill.skill_level, 'race')
+
+        base_pools(self)
+        self.status_change()
+        self.start_refresh()
 
     def check_logout(self):
         if self.last_opponent:

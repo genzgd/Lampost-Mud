@@ -2,13 +2,13 @@ from lampost.server.channel import Channel
 from lampost.di.resource import m_requires
 from lampost.gameops.action import obj_action, ActionProvider
 
-from lampmud.model.item import ItemDBO, gen_keys, Connected
+from lampmud.model.item import ItemDBO, gen_keys, Attached
 from lampmud.mud.action import mud_action
 
 m_requires(__name__, 'dispatcher')
 
 
-class Group(ActionProvider, Connected):
+class Group(ActionProvider, Attached):
     target_keys = set(gen_keys('group'))
 
     def __init__(self, leader):

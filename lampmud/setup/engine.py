@@ -3,8 +3,6 @@ from importlib import import_module
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
 
-from lampost.server.channel import ChannelService
-from lampost.server.message import MessageService
 from lampost.di import resource, config
 from lampost.db.redisstore import RedisStore
 from lampost.db import dbconfig
@@ -20,6 +18,8 @@ from lampost.server import display
 from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
 from lampost.server.session import SessionManager
 from lampost.server.user import UserManager
+from lampost.server.channel import ChannelService
+from lampost.server.message import MessageService
 
 from lampmud.server import router as main_router
 from lampmud.env.instance import InstanceManager
@@ -40,6 +40,7 @@ def start(args):
     app_setup = import_module('{}.setup'.format(args.app_id))
     app_setup.start_engine(args, config_values)
 
+    resource.register('display', display)
     resource.register('user_manager', UserManager())
     resource.register('session_manager', SessionManager())
     resource.register('instance_manager', InstanceManager())
@@ -47,7 +48,6 @@ def start(args):
     resource.register('channel_service', ChannelService())
     resource.register('friend_service', FriendService())
     resource.register('message_service', MessageService())
-    resource.register('display', display)
     resource.register('player_list_service', PlayerListService())
     resource.register('login_notify_service', AnyLoginService())
     resource.register('edit_notify_service', EditUpdateService(), True)

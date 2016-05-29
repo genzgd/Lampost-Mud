@@ -3,12 +3,12 @@ from lampost.meta.auto import AutoField
 from lampost.db.dbo import KeyDBO, SystemDBO
 from lampost.db.dbofield import DBOField
 
-from lampmud.model.item import Connected
+from lampmud.model.item import Attached
 
 m_requires(__name__, 'log', 'dispatcher')
 
 
-class Player(KeyDBO, SystemDBO, Connected):
+class Player(KeyDBO, SystemDBO, Attached):
     dbo_key_type = "player"
     dbo_set_key = "players"
 

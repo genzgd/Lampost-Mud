@@ -17,6 +17,7 @@ from lampost.util.lputil import find_extra, patch_object, str_to_primitive
 
 m_requires(__name__, 'session_manager', 'datastore', 'dispatcher', 'perm', 'email_sender', 'user_manager')
 
+
 @imm_action('edit')
 def edit(source, **_):
     check_perm(source, load_object(source.env.parent_id, Area))
