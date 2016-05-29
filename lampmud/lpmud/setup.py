@@ -12,6 +12,7 @@ from lampmud.lpmud.server import NewCharacterData
 from lampmud.model.area import Area
 from lampmud.env.room import Room
 
+
 def first_time_setup(args, datastore, config_values):
     _update_classes(config_values)
     root_area = config_values['root_area_id']
@@ -32,12 +33,15 @@ def first_time_setup(args, datastore, config_values):
     return player
 
 
-def start_engine(args, config_values, web_server):
+def start_engine(args, config_values):
     _update_classes(config_values)
     resource.register('mud_core', mudcore)
     resource.register('lpmud_core', lpcore)
     resource.register('tools', tools, True)
-    web_server.add(r'/client_data/new_char', NewCharacterData)
+
+
+def app_routes():
+    return [(r'/client_data/new_char', NewCharacterData)]
 
 
 def _update_classes(config_values):
