@@ -1,15 +1,14 @@
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected
 from lampost.db.exceptions import DataError
 from lampost.editor.editor import Editor
 from lampmud.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
-from lampmud.mud.socials import Social
 
-m_requires(__name__, 'mud_actions')
+mud_actions = Injected('mud_actions')
 
 
 class SocialsEditor(Editor):
     def initialize(self):
-        super().initialize(Social)
+        super().initialize('social')
 
     def preview(self):
         content = self._content()
@@ -19,9 +18,6 @@ class SocialsEditor(Editor):
     def _pre_create(self):
         if (self.raw['dbo_id'],) in mud_actions:
             raise DataError("Verb already in use")
-
-    def _post_delete(self, social):
-        del mud_actions[(social.dbo_id,)]
 
 
 class SkillEditor(Editor):

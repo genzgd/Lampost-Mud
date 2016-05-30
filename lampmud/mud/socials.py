@@ -1,18 +1,20 @@
 from lampmud.comm.broadcast import BroadcastMap
-from lampost.di.resource import m_requires, Injected
+from lampost.di.resource import Injected
 from lampost.db.dbo import KeyDBO, OwnerDBO
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import make_action
 from lampmud.mud.action import mud_action
 
-m_requires(__name__, 'log',  'mud_actions')
-
+log = Injected('log')
 db = Injected('datastore')
+mud_actions = Injected('mud_actions')
+
+all_socials = {}
 
 
 def _post_init():
-    global socials
-    socials = db.load_object_set(Social)
+    # load all socials into memory so that the appropriate actions are available
+    db.load_object_set('social')
 
 
 class Social(KeyDBO, OwnerDBO):
@@ -25,11 +27,17 @@ class Social(KeyDBO, OwnerDBO):
 
     def on_loaded(self):
         try:
-            if mud_actions[self.dbo_id] != self:
-                warn("Mud action already exists for social id {}", self.dbo_id)
+            if mud_actions[(self.dbo_id,)] != self:
+                log.warn("Mud action already exists for social id {}", self.dbo_id)
         except KeyError:
             mud_actions[(self.dbo_id,)] = make_action(self, self.dbo_id)
+            all_socials[self.dbo_id] = self
         self.broadcast_map = BroadcastMap(**self.b_map)
+
+    def on_deleted(self):
+        all_socials.pop(self.dbo_id)
+        if mud_actions[(self.dbo_id,)] == self:
+            del mud_actions[(self.dbo_id,)]
 
     def __call__(self, source, target, **_):
         source.broadcast(target=target, broadcast_map=self.broadcast_map)
@@ -37,4 +45,7 @@ class Social(KeyDBO, OwnerDBO):
 
 @mud_action('socials')
 def socials_action(**_):
-    return " ".join(sorted([social.dbo_id for social in socials]))
+    socials = sorted(all_socials.keys())
+    if socials:
+        return " ".join(socials)
+    return "No socials created!"

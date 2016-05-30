@@ -256,7 +256,7 @@ def promote(source, verb, target, obj, obj_key, **_):
     target.imm_level = imm_level
     update_immortal_list(target)
     dispatch('imm_level_change', target, old_level)
-    dispatch('imm_baptise', target)
+    dispatch('imm_attach', target)
     target.session.append({'player_update': {'imm_level': imm_level}})
     source.broadcast(s="You {vb} {N} to {lvl}.", t="{n} {vb}s you to {lvl}!", e="{N} gets {vb}d!",
                      target=target, ext_fmt={'vb': verb[0], 'lvl': obj_key[0]})

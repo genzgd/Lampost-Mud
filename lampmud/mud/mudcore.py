@@ -20,8 +20,8 @@ def _post_init():
     imm_channel = Channel('imm')
     register('player_create', _player_create)
     register('player_attach', _player_attach, priority=-100)
-    register('imm_baptise', _imm_baptise, priority=-100)
     register('missing_env', _start_env)
+    register('imm_attach', _imm_attach, priority=-50)
 
 
 def _player_create(player, user):
@@ -36,11 +36,11 @@ def _player_create(player, user):
 def _player_attach(player):
     shout_channel.add_sub(player)
     if player.imm_level:
-        dispatch("imm_baptise", player)
+        dispatch('imm_attach', player)
     player.change_env(_start_env(player))
 
 
-def _imm_baptise(player):
+def _imm_attach(player):
     player.can_die = False
     player.immortal = True
     imm_channel.add_sub(player)
