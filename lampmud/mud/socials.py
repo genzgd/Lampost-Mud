@@ -1,5 +1,5 @@
 from lampmud.comm.broadcast import BroadcastMap
-from lampost.di.resource import Injected
+from lampost.di.resource import Injected, module_inject
 from lampost.db.dbo import KeyDBO, OwnerDBO
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import make_action
@@ -8,6 +8,7 @@ from lampmud.mud.action import mud_action
 log = Injected('log')
 db = Injected('datastore')
 mud_actions = Injected('mud_actions')
+module_inject(__name__)
 
 all_socials = {}
 

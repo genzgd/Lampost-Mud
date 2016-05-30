@@ -1,9 +1,10 @@
-from lampost.di.resource import Injected
+from lampost.di.resource import Injected, module_inject
 from lampost.db.exceptions import DataError
 from lampost.editor.editor import Editor
 from lampmud.comm.broadcast import BroadcastMap, Broadcast, broadcast_types
 
 mud_actions = Injected('mud_actions')
+module_inject(__name__)
 
 
 class SocialsEditor(Editor):
