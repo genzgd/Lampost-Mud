@@ -1,6 +1,6 @@
 import sys
 
-from lampmud.setup import startargs
+from lampost.setup import startargs
 from lampost.util import logging
 from lampost.di import resource
 

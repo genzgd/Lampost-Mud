@@ -2,11 +2,12 @@ import hashlib
 
 from lampost.editor.editor import ChildrenEditor
 
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.db.exceptions import DataError
 from lampost.gameops.script import compile_script, ShadowScript
 
-m_requires(__name__, 'perm')
+perm = Injected('perm')
+module_inject(__name__)
 
 
 def validate(script_dict):
@@ -23,7 +24,7 @@ class ScriptEditor(ChildrenEditor):
     def _pre_create(self):
         self._calc_hash()
         self.code = validate(self.raw)
-        self.raw['approved'] = has_perm(self.player, 'admin') and self.raw['approved']
+        self.raw['approved'] = perm.has_perm(self.player, 'admin') and self.raw['approved']
 
     def _post_create(self, new_obj):
         new_obj.code = self.code if new_obj.approved else None
@@ -32,7 +33,7 @@ class ScriptEditor(ChildrenEditor):
         self.code = validate(self.raw)
         self._calc_hash()
         if self.raw['script_hash'] != existing.script_hash:
-            self.raw['approved'] = has_perm(self.player, 'admin') and self.raw['approved']
+            self.raw['approved'] = perm.has_perm(self.player, 'admin') and self.raw['approved']
 
     def _post_update(self, existing_obj):
         existing_obj.code = self.code if existing_obj.approved else None

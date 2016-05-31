@@ -1,6 +1,6 @@
-from lampost.di.config import m_configured
-from lampost.di.resource import m_requires, requires
 from lampost.db.dbofield import DBOField
+
+from lampost.di.resource import Injected, module_inject
 from lampost.gameops import target_gen
 from lampost.gameops.action import convert_verbs, ActionError
 
@@ -8,32 +8,10 @@ from lampmud.comm.broadcast import BroadcastMap
 from lampmud.env.movement import Direction
 from lampmud.model.item import ItemDBO
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher')
-
-m_configured(__name__, 'instance_preserve_hours')
-
-instance_map = {}
-
-
-class InstanceManager():
-    def _post_init(self):
-        register('maintenance', self.remove_old)
-
-    def next_instance(self):
-        instance_id = db_counter('instance_id')
-        area_instance = AreaInstance(instance_id)
-        instance_map[instance_id] = area_instance
-        return area_instance
-
-    def remove_old(self):
-        stale_pulse = future_pulse(instance_preserve_hours * 60 * 60)
-        for instance_id, instance in instance_map.copy().items():
-            if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entities
-                                                           if hasattr(entity, 'is_player') and entity.session]:
-                del instance_map[instance_id]
-
-    def get(self, instance_id):
-        return instance_map.get(instance_id)
+log = Injected('log')
+ev = Injected('dispatcher')
+instance_manager = Injected('instance_manager')
+module_inject(__name__)
 
 
 class AreaInstance():
@@ -41,12 +19,12 @@ class AreaInstance():
         self.instance_id = instance_id
         self.entities = set()
         self.rooms = {}
-        self.pulse_stamp = current_pulse()
+        self.pulse_stamp = ev.current_pulse
 
     def add_entity(self, entity):
         self.entities.add(entity)
         entity.instance = self
-        self.pulse_stamp = current_pulse()
+        self.pulse_stamp = ev.current_pulse
 
     def remove_entity(self, entity):
         if entity in self.entities:
@@ -56,7 +34,7 @@ class AreaInstance():
                 self.clear_rooms()
                 if entity.group:
                     entity.group.instance = None
-            del instance_map[self.instance_id]
+            instance_manager.delete(self.instance_id)
 
     def clear_rooms(self):
         for room in self.rooms.values():
@@ -64,7 +42,7 @@ class AreaInstance():
 
     def get_room(self, room):
         if not room:
-            error("Null room passed to area instance")
+            log.error("Null room passed to area instance")
             return
         try:
             instance = self.rooms[room.dbo_id]
@@ -81,13 +59,12 @@ verb_entry = BroadcastMap(ea='{n} arrives {N}')
 dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
 
 
-@requires('instance_manager')
 class Entrance(ItemDBO):
     class_id = 'entrance'
 
+    destination = DBOField(dbo_class_id="room", required=True)
     verb = DBOField('enter')
     direction = DBOField(None)
-    destination = DBOField(dbo_class_id="room", required=True)
     instanced = DBOField(True)
     edit_required = DBOField(True)
 
@@ -135,9 +112,9 @@ class Entrance(ItemDBO):
                     if self.destination not in instance.rooms:
                         raise ActionError("Your group has entered a different instance.  You must leave your group to go this way.")
                 else:
-                    instance = source.group.instance = self.instance_manager.next_instance()
+                    instance = source.group.instance = instance_manager.next_instance()
             else:
-                instance = self.instance_manager.next_instance()
+                instance = instance_manager.next_instance()
             destination = instance.get_room(self.destination)
         else:
             destination = self.destination

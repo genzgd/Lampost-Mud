@@ -1,9 +1,8 @@
 import inspect
 
 from lampost.di import config
-from lampost.di.resource import m_requires
 from lampost.gameops.script import Scriptable
-from lampost.server.handlers import MethodHandler, SessionHandler
+from lampost.server.handlers import SessionHandler
 from lampost.db.registry import get_dbo_class, dbo_types, implementors
 
 from lampmud.env.movement import Direction
@@ -11,35 +10,7 @@ from lampmud.comm.broadcast import broadcast_types, broadcast_tokens
 from lampmud.lpmud.skill import SkillTemplate
 
 
-m_requires(__name__, 'perm', 'datastore')
-
-
-class ConfigEditor(MethodHandler):
-    def get(self):
-        check_perm(self.player, 'supreme')
-        return config_manager.config_json
-
-    def get_defaults(self):
-        check_perm(self.player, 'supreme')
-        return {'server': load_raw('server_settings_default'), 'game': load_raw('game_settings_default')}
-
-    def update(self):
-        check_perm(self.player, 'supreme')
-        config_manager.update_config(self.raw)
-        return config_manager.config_json
-
-
-class DisplayEditor(MethodHandler):
-    def list(self):
-        return config_manager.config.default_displays
-
-    def update(self):
-        check_perm(self.player, 'admin')
-        config_manager.config.default_displays = self.raw['display']
-        config_manager.save_config()
-
-
-class Properties(SessionHandler):
+class Constants(SessionHandler):
     def main(self):
         constants = {key: config.get_value(key) for key in ['attributes', 'resource_pools', 'equip_types', 'equip_slots', 'weapon_types',
                                                             'damage_types', 'damage_delivery', 'damage_groups', 'affinities', 'imm_levels']}

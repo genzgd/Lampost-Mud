@@ -9,9 +9,9 @@ from lampost.db import dbconfig
 from lampost.util import json
 
 from lampost.db import permissions
-from lampost.gameops import event
+from lampost.event.system import dispatcher
 from lampost.gameops.friend import FriendService
-from lampost.server.email import EmailSender
+from lampost.server.email import email_sender
 from lampost.server import web
 from lampost.server import pages
 from lampost.server import display
@@ -22,7 +22,7 @@ from lampost.server.channel import ChannelService
 from lampost.server.message import MessageService
 
 from lampmud.server import router as main_router
-from lampmud.env.instance import InstanceManager
+from lampmud.env import instancemgr
 from lampmud.editor import router as edit_router
 
 
@@ -34,7 +34,7 @@ def start(args):
     db_config = datastore.load_object(args.config_id, dbconfig.Config)
     config_values = config.activate(db_config.section_values)
 
-    resource.register('dispatcher', event, True)
+    resource.register('dispatcher', dispatcher, True)
     resource.register('perm', permissions, True)
 
     app_setup = import_module('{}.setup'.format(args.app_id))
@@ -43,14 +43,14 @@ def start(args):
     resource.register('display', display)
     resource.register('user_manager', UserManager())
     resource.register('session_manager', SessionManager())
-    resource.register('instance_manager', InstanceManager())
-    resource.register('email_sender', EmailSender())
+    resource.register('instance_manager', instancemgr)
+    resource.register('email_sender', email_sender)
     resource.register('channel_service', ChannelService())
     resource.register('friend_service', FriendService())
     resource.register('message_service', MessageService())
     resource.register('player_list_service', PlayerListService())
     resource.register('login_notify_service', AnyLoginService())
-    resource.register('edit_notify_service', EditUpdateService(), True)
+    resource.register('edit_update_service', EditUpdateService(), True)
 
     resource.context_post_init()
 

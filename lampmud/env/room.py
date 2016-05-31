@@ -3,7 +3,7 @@ import random
 from collections import defaultdict
 
 from lampost.di.config import m_configured
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOCField
@@ -13,7 +13,10 @@ from lampmud.comm.broadcast import Broadcast
 from lampmud.env.movement import Direction
 from lampmud.model.item import Attached
 
-m_requires(__name__, 'log', 'dispatcher', 'datastore')
+log = Injected('log')
+ev = Injected('dispatcher')
+db = Injected('datastore')
+module_inject(__name__)
 
 m_configured(__name__, 'room_reset_time')
 
@@ -118,7 +121,7 @@ class Room(ChildDBO, Attached, Scriptable):
         self.receive_broadcast(entry_msg)
         entity.env = self
         self.denizens.append(entity)
-        entity.pulse_stamp = current_pulse()
+        entity.pulse_stamp = ev.current_pulse
         tell(self.contents, "entity_enter_env", entity, enter_action)
 
     def entity_leaves(self, entity, exit_action, exit_msg=None):
@@ -128,7 +131,7 @@ class Room(ChildDBO, Attached, Scriptable):
 
     def add_inven(self, article):
         self.inven.append(article)
-        article.pulse_stamp = current_pulse()
+        article.pulse_stamp = ev.current_pulse
 
     def remove_inven(self, article):
         self.inven.remove(article)
@@ -169,9 +172,9 @@ class Room(ChildDBO, Attached, Scriptable):
                 return my_exit
 
     def on_loaded(self):
-        if not self._garbage_pulse and register_p:
+        if not self._garbage_pulse:
             self.reset()
-            self._garbage_pulse = register_p(self.check_garbage, seconds=room_reset_time + 1)
+            self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
 
     def allow_leave(self, *args):
         pass
@@ -179,9 +182,9 @@ class Room(ChildDBO, Attached, Scriptable):
     def check_garbage(self):
         if hasattr(self, 'dirty'):
             if not self.instance:
-                save_object(self)
+                db.save_object(self)
             del self.dirty
-        stale_pulse = future_pulse(-room_reset_time)
+        stale_pulse = ev.future_pulse(-room_reset_time)
         for obj in self.contents:
             obj_pulse = getattr(obj, 'pulse_stamp', 0)
             if obj_pulse > stale_pulse or hasattr(obj, 'is_player'):
@@ -240,15 +243,15 @@ class Room(ChildDBO, Attached, Scriptable):
             if hasattr(obj, 'detach'):
                 obj.detach()
         if not getattr(self, 'template', None):
-            evict_object(self)
+            db.evict_object(self)
 
     def reload(self):
         players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
         for player in players:
             player.change_env(safe_room)
         self.clean_up()
-        evict_object(self)
-        new_room = load_object(self.dbo_key)
+        db.evict_object(self)
+        new_room = db.load_object(self.dbo_key)
         if new_room:
             for player in players:
                 player.change_env(new_room)

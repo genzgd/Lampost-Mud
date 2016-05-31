@@ -8,19 +8,18 @@ from lampost.editor.editor import ChildrenEditor, Editor, ChildList
 from lampost.editor.session import EditConnect, EditLogin, EditLogout
 
 from lampmud.editor.areas import AreaEditor, RoomEditor
-from lampmud.editor.config import ConfigEditor, DisplayEditor, Properties
+from lampmud.editor.config import Constants
 from lampmud.editor.imports import ImportsEditor
 from lampmud.editor.scripts import ScriptEditor
 from lampmud.editor.shared import SocialsEditor, SkillEditor
 
 import_module('lampost.editor.dbops')
 
-
 routes = [
     (r'/editor/edit_connect', EditConnect),
     (r'/editor/edit_login', EditLogin),
     (r'/editor/edit_logout', EditLogout),
-    (r'/editor/constants', Properties),
+    (r'/editor/constants', Constants),
     (r'/editor/immortal/list', ImmortalsList),
     (r'/editor/area/(.*)', AreaEditor),
     Route(r'/editor/room/list/(.*)', ChildList, obj_class='room'),
@@ -30,9 +29,7 @@ routes = [
     Route(r'/editor/article/list/(.*)', ChildList, obj_class='article'),
     Route(r'/editor/article/(.*)', ChildrenEditor, obj_class='article'),
     (r'/editor/player/(.*)', PlayerEditor),
-    (r'/editor/config/(.*)', ConfigEditor),
     (r'/editor/social/(.*)', SocialsEditor),
-    (r'/editor/display/(.*)', DisplayEditor),
     Route(r'/editor/race/(.*)', Editor, obj_class='race', imm_level='founder'),
     Route(r'/editor/attack/(.*)', SkillEditor, obj_class='attack'),
     Route(r'/editor/defense/(.*)', SkillEditor, obj_class='defense'),

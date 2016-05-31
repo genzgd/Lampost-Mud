@@ -1,15 +1,17 @@
 from lampost.server.handlers import MethodHandler
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.db.redisstore import RedisStore
 
-m_requires(__name__, 'log', 'perm', 'dispatcher')
+log = Injected('log')
+perm = Injected('perm')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 copy_dbs = {}
 
 
 def _post_init():
-    register('session_disconnect', _remove_db)
-
+    ev.register('session_disconnect', _remove_db)
 
 def _remove_db(session):
     if session in copy_dbs:
@@ -19,9 +21,9 @@ def _remove_db(session):
 class ImportsEditor(MethodHandler):
 
     def set_db(self):
-        check_perm(self.player, 'admin')
+        perm.check_perm(self.player, 'admin')
         content = self._content()
         db = RedisStore(content.db_host, content.db_port, content.db_num, content.db_pw)
-        copy_dbs[session] = db
+        copy_dbs[self.session] = db
         del content.db_pw
         return content.__dict__

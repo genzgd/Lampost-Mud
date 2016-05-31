@@ -1,5 +1,5 @@
 from lampost.di.config import m_configured
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField, AutoAttrInit
 from lampost.db.dbofield import DBOTField
 from lampost.gameops import target_gen
@@ -10,11 +10,13 @@ from lampmud.lpmud import attributes
 from lampmud.lpmud.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampmud.mud.action import mud_action
 
-
-m_requires(__name__, 'log', 'tools', 'dispatcher')
+log = Injected('log')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 damage_categories = {}
 
+m_configured(__name__, 'damage_types', 'damage_groups')
 
 def _on_configured():
     global damage_categories
@@ -24,8 +26,6 @@ def _on_configured():
         if damage_group:
             damage_categories['any'].add(dbo_id)
             damage_categories[damage_group].add(dbo_id)
-
-m_configured(__name__, 'damage_types', 'damage_groups')
 
 
 CON_LEVELS = ['Insignificant', 'Trivial', 'Pesky', 'Annoying', 'Irritating', 'Bothersome', 'Troublesome',

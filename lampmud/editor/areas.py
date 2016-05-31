@@ -1,11 +1,16 @@
 from lampost.di.config import m_configured
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.db.registry import get_dbo_class
 from lampost.db.exceptions import DataError
 from lampost.editor.editor import Editor, ChildrenEditor
 from lampmud.env.movement import Direction
 
-m_requires(__name__, 'datastore', 'log', 'perm', 'dispatcher', 'edit_notify_service')
+log = Injected('log')
+db = Injected('datastore')
+perm = Injected('perm')
+ev = Injected('dispatcher')
+edit_update = Injected('edit_update_service')
+module_inject(__name__)
 
 m_configured(__name__, 'root_area_id', 'default_start_room')
 
@@ -15,13 +20,13 @@ class AreaEditor(Editor):
         super().initialize('area')
 
     def _pre_create(self):
-        if object_exists('player', self.raw['dbo_id']):
+        if db.object_exists('player', self.raw['dbo_id']):
             raise DataError("Area name should not match any player name.")
 
     def _pre_delete(self, del_obj):
         if del_obj.dbo_id == root_area_id:
             raise DataError("Cannot delete root area.")
-        for room in load_object_set('room', 'area_rooms:{}'.format(del_obj.dbo_id)):
+        for room in db.load_object_set('room', 'area_rooms:{}'.format(del_obj.dbo_id)):
             room_clean_up(room, self.session, del_obj.dbo_id)
 
 
@@ -32,7 +37,7 @@ class RoomEditor(ChildrenEditor):
     def visit(self):
         if not self.session.player.session:
             raise DataError("You are not logged in")
-        room = load_object(self.raw['room_id'], 'room')
+        room = db.load_object(self.raw['room_id'], 'room')
         if not room:
             raise DataError("ROOM_MISSING")
         room.reload()
@@ -47,8 +52,8 @@ class RoomEditor(ChildrenEditor):
         rev_dir = Direction.ref_map[new_dir].rev_key
         other_id = content.dest_id
         if content.is_new:
-            other_room = create_object('room', {'dbo_id': other_id, 'title': content.dest_title}, False)
-            publish_edit('create', other_room, self.session, True)
+            other_room = db.create_object('room', {'dbo_id': other_id, 'title': content.dest_title}, False)
+            edit_update.publish_edit('create', other_room, self.session, True)
             update_next_room_id(area, self.session)
         else:
             other_area, other_room = find_area_room(other_id, self.player)
@@ -60,8 +65,8 @@ class RoomEditor(ChildrenEditor):
         this_exit.destination = other_room
         this_exit.on_loaded()
         room.exits.append(this_exit)
-        save_object(room)
-        publish_edit('update', room, self.session)
+        db.save_object(room)
+        edit_update.publish_edit('update', room, self.session)
         if not content.one_way:
             other_exit = get_dbo_class('exit')()
             other_exit.dbo_owner = room
@@ -69,8 +74,8 @@ class RoomEditor(ChildrenEditor):
             other_exit.destination = room
             other_exit.on_loaded()
             other_room.exits.append(other_exit)
-            save_object(other_room)
-            publish_edit('update', other_room, self.session, True)
+            db.save_object(other_room)
+            edit_update.publish_edit('update', other_room, self.session, True)
         return this_exit.dto_value
 
     def delete_exit(self):
@@ -80,7 +85,7 @@ class RoomEditor(ChildrenEditor):
         if not local_exit:
             raise DataError('Exit does not exist')
         room.exits.remove(local_exit)
-        save_object(room)
+        db.save_object(room)
 
         if content.both_sides:
             other_room = local_exit.destination
@@ -88,12 +93,12 @@ class RoomEditor(ChildrenEditor):
             if other_exit:
                 other_room.exits.remove(other_exit)
                 if other_room.dbo_ts or other_room.exits:
-                    save_object(other_room)
-                    publish_edit('update', other_room, self.session, True)
+                    db.save_object(other_room)
+                    edit_update.publish_edit('update', other_room, self.session, True)
                 else:
-                    delete_object(other_room)
+                    db.delete_object(other_room)
                     room_clean_up(room, self.session)
-                    publish_edit('delete', other_room, self.session, True)
+                    edit_update.publish_edit('delete', other_room, self.session, True)
 
 
     def _post_create(self, room):
@@ -116,23 +121,21 @@ def update_next_room_id(area, session):
         else:
             break
     area.next_room_id = next_id
-    save_object(area)
-    publish_edit('update', area, session, True)
+    db.save_object(area)
+    edit_update.publish_edit('update', area, session, True)
 
 
 def find_area_room(room_id, player):
-    room = load_object(room_id, 'room')
+    room = db.load_object(room_id, 'room')
     if not room:
         raise DataError("ROOM_MISSING")
     area = room.parent_dbo
-    check_perm(player, area)
+    perm.check_perm(player, area)
     return area, room
 
 
 def room_clean_up(room, session, area_delete=None):
-    start_room = load_object(default_start_room, 'room')
-    if not start_room:
-        start_room = safe_room
+    start_room = db.load_object(default_start_room, 'room')
     for denizen in room.denizens:
         if hasattr(denizen, 'is_player'):
             denizen.display_line('You were in a room that was destroyed by some unknown force')
@@ -143,7 +146,8 @@ def room_clean_up(room, session, area_delete=None):
             for other_exit in other_room.exits:
                 if not other_exit.destination or other_exit.destination == room:
                     other_room.exits.remove(other_exit)
-                    save_object(other_room, True)
-                    publish_edit('update', other_room, session, True)
+                    db.save_object(other_room, True)
+                    edit_update.publish_edit('update', other_room, session, True)
     room.clean_up()
     update_next_room_id(room.parent_dbo, session)
+

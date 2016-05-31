@@ -1,12 +1,12 @@
-from lampmud.lpmud.attributes import fill_pools, base_pools
-from lampmud.lpmud.skill import add_skill
-from lampost.di.resource import m_requires
+from lampmud.lpmud.attributes import fill_pools
+from lampost.di.resource import Injected, module_inject
 
-m_requires(__name__,  'dispatcher')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 
 def _post_init():
-    register('player_create', _player_create, priority=1000)
+    ev.register('player_create', _player_create, priority=1000)
 
 
 def _player_create(player, user):

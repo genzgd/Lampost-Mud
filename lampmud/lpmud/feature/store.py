@@ -1,14 +1,15 @@
 import itertools
 from collections import deque
 
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import AutoField
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import obj_action, ActionError
 
 from lampmud.model.item import ItemDBO
 
-m_requires(__name__, 'dispatcher')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 
 class Buyback():
@@ -120,20 +121,20 @@ class Store(ItemDBO):
         raise ActionError("You don't have any {}!".format(self.currency.plural_title))
 
     def _start_buyback(self):
-        self.pulse_stamp = current_pulse()
+        self.pulse_stamp = ev.current_pulse
         if not self.buyback_reg:
-            self.buyback_reg = register_p(self._trim_buybacks, seconds=30)
+            self.buyback_reg = ev.register_p(self._trim_buybacks, seconds=30)
 
     def _trim_buybacks(self):
-        stale_pulse = future_pulse(-self.buyback_seconds)
+        stale_pulse = ev.future_pulse(-self.buyback_seconds)
         try:
             last = self.buybacks[-1]
             while last.pulse < stale_pulse:
                 self.add_inven(self.buybacks.pop().article)
                 last = self.buybacks[-1]
-            self.pulse_stamp = current_pulse()
+            self.pulse_stamp = ev.current_pulse
         except IndexError:
-            unregister(self.buyback_reg)
+            ev.unregister(self.buyback_reg)
             self.buyback_reg = None
 
     def add_inven(self, article):
