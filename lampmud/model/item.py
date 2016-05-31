@@ -1,6 +1,6 @@
 import math
 
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.meta.core import CoreMeta
 from lampost.util.classes import call_mro
@@ -9,7 +9,9 @@ from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import TemplateInstance
 from lampost.gameops.action import obj_action, ActionProvider
 
-m_requires(__name__, 'dispatcher', 'log')
+log = Injected('log')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 
 def gen_keys(target_id):
@@ -38,7 +40,7 @@ class Attached(metaclass=CoreMeta):
         call_mro(self, 'on_attach')
 
     def detach(self):
-        detach_events(self)
+        ev.detach_events(self)
         call_mro(self, 'on_detach')
 
 

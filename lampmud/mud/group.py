@@ -1,12 +1,12 @@
 from lampost.server.channel import Channel
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import obj_action, ActionProvider
 
 from lampmud.model.item import ItemDBO, gen_keys, Attached
 from lampmud.mud.action import mud_action
 
-m_requires(__name__, 'dispatcher')
-
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 class Group(ActionProvider, Attached):
     target_keys = set(gen_keys('group'))
@@ -18,7 +18,7 @@ class Group(ActionProvider, Attached):
         self.invites = set()
         self.instance = None
         self.channel = Channel('gchat', 'next', aliases=('g', 'gc', 'gt', 'gtell', 'gsay', 'gs'))
-        register('player_connect', self._player_connect)
+        ev.register('player_connect', self._player_connect)
 
     def join(self, member):
         if not self.members:
@@ -80,7 +80,7 @@ class Invitation(ItemDBO):
     def __init__(self, group, invitee):
         self.group = group
         self.invitee = invitee
-        register_once(self.decline, seconds=60)
+        ev.register_once(self.decline, seconds=60)
 
     def short_desc(self, *_):
         return self.title
@@ -89,11 +89,10 @@ class Invitation(ItemDBO):
         return "An invitation to {}'s group.".format(self.group.leader.name)
 
     @obj_action(self_target=True)
-    def accept(self, source, **_):
-        source.display_line("You have joined {}'s group.".format(self.group.leader.name))
+    def accept(self, **_):
+        self.invitee.display_line("You have joined {}'s group.".format(self.group.leader.name))
         self.group.join(self.invitee)
-        source.remove_inven(self)
-        detach_events(self)
+        self.detach()
 
     @obj_action(self_target=True)
     def decline(self, **_):

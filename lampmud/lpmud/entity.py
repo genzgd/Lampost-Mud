@@ -1,6 +1,6 @@
 from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import action_handler, ActionError
 from lampost.di.config import m_configured
 
@@ -8,8 +8,11 @@ from lampmud.lpmud.fight import Fight
 from lampmud.lpmud import attributes
 from lampmud.lpmud.combat import calc_consider
 from lampmud.model.entity import Entity
+from lampmud.mud.tools import combat_log
 
-m_requires(__name__, 'log', 'tools', 'dispatcher')
+log = Injected('log')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 m_configured(__name__, 'refresh_interval', 'refresh_rates')
 
@@ -66,7 +69,7 @@ class EntityLP(Entity):
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
         if prep_time:
-            self._current_action = action, act_args, register_once(self._finish_action, prep_time, priority=priority)
+            self._current_action = action, act_args, ev.register_once(self._finish_action, prep_time, priority=priority)
             self._action_target = act_args.get('target', None)
         else:
             super().process_action(action, act_args)
@@ -100,11 +103,11 @@ class EntityLP(Entity):
 
     def start_refresh(self):
         if not self._refresh_pulse and attributes.need_refresh(self):
-            self._refresh_pulse = register_p(self._refresh, pulses=refresh_interval)
+            self._refresh_pulse = ev.register_p(self._refresh, pulses=refresh_interval)
 
     def _refresh(self):
         if self.dead or not attributes.need_refresh(self):
-            unregister(self._refresh_pulse)
+            ev.unregister(self._refresh_pulse)
             del self._refresh_pulse
             return
         for pool_id, base_pool_id in attributes.pool_keys:
@@ -226,7 +229,7 @@ class EntityLP(Entity):
 
     def _cancel_actions(self):
         if self._current_action:
-            unregister(self._current_action[2])
+            ev.unregister(self._current_action[2])
             del self._current_action
             try:
                 del self._action_target
@@ -247,7 +250,7 @@ class EntityLP(Entity):
         self.mental = 0
 
     def status_change(self):
-        self.pulse_stamp = current_pulse()
+        self.pulse_stamp = ev.current_pulse
 
     def on_detach(self):
         self._cancel_actions()

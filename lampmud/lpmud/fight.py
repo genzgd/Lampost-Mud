@@ -1,9 +1,12 @@
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import ActionError
 
 from lampmud.lpmud.combat import consider_level
 
-m_requires(__name__, 'log', 'dispatcher', 'tools')
+log = Injected('log')
+ev = Injected('dispatcher')
+module_inject(__name__)
+
 
 chase_time = 120
 
@@ -14,7 +17,7 @@ class FightStats():
         self.defend_results = {}
         self.con_level = con_level
         self.last_exit = None
-        self.last_seen = current_pulse()
+        self.last_seen = ev.current_pulse
 
 
 class Fight():
@@ -33,7 +36,7 @@ class Fight():
 
     def add(self, opponent):
         try:
-            self.opponents[opponent].last_seen = current_pulse()
+            self.opponents[opponent].last_seen = ev.current_pulse
         except KeyError:
             self.opponents[opponent] = FightStats(consider_level(self.consider, opponent.considered()))
             self.me.check_fight()
@@ -44,7 +47,7 @@ class Fight():
             if opponent.last_opponent == self.me:
                 opponent.last_opponent = None
         except KeyError:
-            warn("Removing opponent not in fight")
+            log.warn("Removing opponent not in fight")
 
     def end_all(self):
         for opponent in list(self.opponents.keys()):
@@ -56,14 +59,14 @@ class Fight():
         try:
             stats = self.opponents[opponent]
             stats.last_exit = ex
-            stats.last_seen = current_pulse()
+            stats.last_seen = ev.current_pulse
             self.select_action()
         except KeyError:
             pass
 
     def clear_hunt_timer(self):
         if self.hunt_timer:
-            unregister(self.hunt_timer)
+            ev.unregister(self.hunt_timer)
             del self.hunt_timer
 
     def select_action(self):
@@ -92,10 +95,10 @@ class Fight():
             return
             # Try again when another skill because available
         if next_available < 10000:
-            register_once(self.me.check_fight, next_available)
+            ev.register_once(self.me.check_fight, next_available)
 
     def try_chase(self):
-        stale_pulse = future_pulse(-chase_time)
+        stale_pulse = ev.future_pulse(-chase_time)
         removed = [opponent for opponent, stats in self.opponents.items() if stats.last_seen < stale_pulse]
         for opponent in removed:
             self.end(opponent, False)
@@ -108,4 +111,4 @@ class Fight():
                     break
                 except ActionError:
                     pass
-        self.hunt_timer = register_p(self.select_action, seconds=10)
+        self.hunt_timer = ev.register_p(self.select_action, seconds=10)

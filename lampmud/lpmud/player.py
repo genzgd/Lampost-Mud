@@ -1,18 +1,19 @@
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.db.dbofield import DBOField, DBOLField
 from lampost.gameops.action import ActionError
 from lampost.di.config import m_configured
 
 from lampmud.env.room import Room
-from lampmud.lpmud.attributes import base_pools
+from lampmud.lpmud.attributes import base_pools, fill_pools
 from lampmud.lpmud.entity import EntityLP, Skilled
 from lampmud.lpmud.skill import add_skill
 from lampmud.model.item import ItemDBO
 
 from lampmud.model.player import Player
 
-
-m_requires(__name__, 'dispatcher', 'datastore')
+ev = Injected('dispatcher')
+db = Injected('datastore')
+module_inject(__name__)
 
 m_configured(__name__, 'default_start_room')
 
@@ -25,6 +26,17 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
     size = DBOField('medium')
     affinity = 'player'
     can_die = True
+
+    def on_created(self):
+        for attr_name, start_value in self.race.base_attrs.items():
+            setattr(self, attr_name, start_value)
+            setattr(self, 'perm_{}'.format(attr_name), start_value)
+        fill_pools(self)
+        if self.race.start_instanced:
+            self.instance_room_id = self.race.start_room.dbo_id
+            self.room_id = None
+        else:
+            self.room_id = self.race.start_room.dbo_id
 
     def on_loaded(self):
         self.auto_fight = False
@@ -70,17 +82,17 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         self.display_line("Unless other help intercedes, you will be returned to your last touchstone in 90 seconds.<br/>"
                           "You may hasten the end if you 'abandon' all hope of assistance.", 'system')
         self._death_effects()
-        self._bind_pulse = register_once(self.resurrect, seconds=90)
+        self._bind_pulse = ev.register_once(self.resurrect, seconds=90)
         self.status_change()
 
     def resurrect(self, auto=True):
-        unregister(self._bind_pulse)
+        ev.unregister(self._bind_pulse)
         del self._bind_pulse
         res_room = None
         if self.touchstone:
-            res_room = load_object(self.touchstone, Room)
+            res_room = db.load_object(self.touchstone, Room)
         if not res_room:
-            res_room = load_object(default_start_room, Room)
+            res_room = db.load_object(default_start_room, Room)
         self.change_env(res_room)
         self.display_line("With a sick feeling, you return to consciousness")
         self.status = 'ok'

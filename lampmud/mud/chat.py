@@ -1,9 +1,11 @@
 from lampost.gameops.action import ActionError
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.gameops.parser import parse_chat
 from lampmud.mud.action import mud_action
 
-m_requires(__name__, 'session_manager', 'user_manager')
+sm = Injected('session_manager')
+um = Injected('um')
+module_inject(__name__)
 
 
 @mud_action('emote')
@@ -16,7 +18,7 @@ def emote(source, verb, command, **_):
 def tell(source, verb, args, command, **_):
     if not args:
         raise ActionError("Tell who?")
-    session = session_manager.player_session(user_manager.name_to_id(args[0]))
+    session = sm.player_session(um.name_to_id(args[0]))
     if not session:
         raise ActionError("{} not found.".format(args[0]))
     ix = len(verb[0]) + len(args[0]) + 2
@@ -35,7 +37,7 @@ def tell_message(source, player, statement):
 def reply(source, verb, command, **_):
     if not source.last_tell:
         raise ActionError("You have not received a tell recently.")
-    session = session_manager.player_session(source.last_tell)
+    session = sm.player_session(source.last_tell)
     if session:
         tell_message(source, session.player, parse_chat(verb, command))
     else:

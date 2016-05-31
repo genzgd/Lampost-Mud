@@ -1,16 +1,12 @@
 from lampost.db.dbofield import DBOField
 from lampost.di import resource
-from lampost.setup import tools
 
 from lampmud.lpmud.archetype import PlayerRace
 from lampmud.lpmud.player import PlayerLP
 
 from lampmud.mud import mudcore
-from lampmud.lpmud import lpcore
 
 from lampmud.lpmud.server import NewCharacterData
-from lampmud.model.area import Area
-from lampmud.env.room import Room
 
 
 def first_time_setup(args, datastore, config_values):
@@ -19,16 +15,15 @@ def first_time_setup(args, datastore, config_values):
     room_id = "{0}:0".format(root_area)
     imm_name = args.imm_name.lower()
 
-    datastore.create_object(Area, {'dbo_id': root_area, 'name': root_area, 'owner_id': imm_name, 'next_room_id': 1})
-    datastore.create_object(Room, {'dbo_id': room_id, 'title': "Immortal Start Room", 'desc': "A brand new start room for immortals."})
+    datastore.create_object('area', {'dbo_id': root_area, 'name': root_area, 'owner_id': imm_name, 'next_room_id': 1})
+    datastore.create_object('room', {'dbo_id': room_id, 'title': "Immortal Start Room", 'desc': "A brand new start room for immortals."})
 
     race_dto = PlayerRace.new_dto()
     race_dto.update(config_values['default_player_race'])
     race = datastore.create_object(PlayerRace, race_dto)
 
     supreme_level = config_values['imm_levels']['supreme']
-    player = datastore.create_object(PlayerLP, {'dbo_id': imm_name, 'room_id': room_id, 'race': race.dbo_id, 'home_room': room_id, 'imm_level': supreme_level})
-    lpcore._player_create(player, None)
+    player = datastore.create_object('player', {'dbo_id': imm_name, 'room_id': room_id, 'race': race.dbo_id, 'home_room': room_id, 'imm_level': supreme_level})
     datastore.save_object(player)
     return player
 
@@ -36,8 +31,6 @@ def first_time_setup(args, datastore, config_values):
 def start_engine(args, config_values):
     _update_classes(config_values)
     resource.register('mud_core', mudcore)
-    resource.register('lpmud_core', lpcore)
-    resource.register('tools', tools, True)
 
 
 def app_routes():

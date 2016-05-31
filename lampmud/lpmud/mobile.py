@@ -1,5 +1,5 @@
 from lampost.di.config import m_configured
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.db.dbofield import DBOField, DBOTField
 
@@ -9,7 +9,10 @@ from lampmud.lpmud.entity import EntityLP, Skilled
 from lampmud.lpmud.skill import add_skill
 from lampmud.model.mobile import MobileTemplate, Mobile
 
-m_requires(__name__, 'log', 'datastore', 'dispatcher')
+
+log = Injected('log')
+db = Injected('datastore')
+module_inject(__name__)
 
 m_configured(__name__, 'affinities', 'attributes', 'base_attr_value')
 
@@ -20,7 +23,7 @@ class MobileTemplateLP(MobileTemplate):
 
     def on_loaded(self):
         if self.archetype:
-            arch = load_object(self.archetype, Archetype)
+            arch = db.load_object(self.archetype, Archetype)
             for attr_name, start_value in arch.base_attrs.items():
                 setattr(self.instance_cls, attr_name, start_value)
             self.desc = arch.desc

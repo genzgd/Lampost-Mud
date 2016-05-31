@@ -1,17 +1,17 @@
-from collections import defaultdict
 import itertools
+from collections import defaultdict
 
 from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.gameops.parser import ParseError, parse_actions, has_action
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
 from lampmud.model.item import Attached
 
-
-m_requires(__name__, 'log')
+log = Injected('log')
+module_inject(__name__)
 
 
 class Entity(DBOFacet, Attached):
@@ -127,7 +127,7 @@ class Entity(DBOFacet, Attached):
             self.leave_env(exit_action)
             self.enter_env(new_env, exit_action)
         else:
-            error("Entity {} changed to null environment", self.name)
+            log.error("Entity {} changed to null environment", self.name)
 
     def leave_env(self, exit_action=None):
         if self.env:

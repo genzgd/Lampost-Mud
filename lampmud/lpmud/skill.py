@@ -1,6 +1,6 @@
 from random import randint
 
-from lampost.di.resource import m_requires
+from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.db.registry import dbo_types
 from lampost.db.dbo import CoreDBO, KeyDBO, OwnerDBO
@@ -10,8 +10,10 @@ from lampost.gameops.action import ActionError, convert_verbs
 
 from lampmud.mud.action import mud_action, imm_action
 
-
-m_requires(__name__, 'log', 'datastore', 'dispatcher')
+log = Injected('log')
+db = Injected('datastore')
+ev = Injected('dispatcher')
+module_inject(__name__)
 
 
 def add_skill(skill_template, target, skill_level, skill_source=None):
@@ -21,7 +23,7 @@ def add_skill(skill_template, target, skill_level, skill_source=None):
         skill_instance.skill_source = skill_source
         target.add_skill(skill_instance)
         return skill_instance
-    warn('Unable to add missing skill {}', skill_id)
+    log.warn('Unable to add missing skill {}', skill_template.dbo_id)
 
 
 def roll_calc(source, calc, skill_level=0):
@@ -81,7 +83,7 @@ class BaseSkill(CoreDBO, TemplateInstance):
     def use(self, source, **kwargs):
         source.apply_costs(self.costs)
         self.invoke(source, **kwargs)
-        self.last_used = current_pulse()
+        self.last_used = ev.current_pulse
 
     def invoke(self, source, **_):
         pass
@@ -91,7 +93,7 @@ class BaseSkill(CoreDBO, TemplateInstance):
 
     @property
     def available(self):
-        return self.last_used + self.cool_down - current_pulse()
+        return self.last_used + self.cool_down - ev.current_pulse
 
     def __call__(self, source, **kwargs):
         self.use(source, **kwargs)
@@ -121,15 +123,15 @@ def add_skill_action(target, obj, **_):
     else:
         skill_id = None
         for skill_type in dbo_types(SkillTemplate):
-            if skill_name in fetch_set_keys(skill_type.dbo_set_key):
+            if skill_name in db.fetch_set_keys(skill_type.dbo_set_key):
                 skill_id = '{}:{}'.format(skill_type.dbo_key_type, skill_name)
                 break
     if skill_id:
-        skill_template = load_object(skill_id)
+        skill_template = db.load_object(skill_id)
         if skill_template:
             add_skill(skill_template, obj, skill_level, 'immortal')
             if getattr(obj, 'dbo_id', None):
-                save_object(obj)
+                db.save_object(obj)
             return "Added {} to {}".format(target, obj.name)
     return "Skill {} not found ".format(skill_name)
 
@@ -138,5 +140,5 @@ def add_skill_action(target, obj, **_):
 def remove_skill(target, obj, **_):
     obj.remove_skill(target[0])
     if getattr(obj, 'dbo_id', None):
-        save_object(obj)
+        db.save_object(obj)
     return "Removed {} from {}".format(target, obj.name)

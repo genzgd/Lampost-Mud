@@ -6,6 +6,7 @@ from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
 from lampost.util.lputil import args_print
 
+from lampmud.mud.tools import combat_log
 from lampmud.lpmud import attributes
 from lampmud.lpmud.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampmud.mud.action import mud_action
