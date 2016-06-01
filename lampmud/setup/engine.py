@@ -30,12 +30,12 @@ def start(args):
     json.select_json()
 
     # Load and activate the database configuration
-    datastore = resource.register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw), True)
+    datastore = resource.register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw))
     db_config = datastore.load_object(args.config_id, dbconfig.Config)
     config_values = config.activate(db_config.section_values)
 
-    resource.register('dispatcher', dispatcher, True)
-    resource.register('perm', permissions, True)
+    resource.register('dispatcher', dispatcher)
+    resource.register('perm', permissions)
 
     app_setup = import_module('{}.setup'.format(args.app_id))
     app_setup.start_engine(args, config_values)
@@ -50,7 +50,7 @@ def start(args):
     resource.register('message_service', MessageService())
     resource.register('player_list_service', PlayerListService())
     resource.register('login_notify_service', AnyLoginService())
-    resource.register('edit_update_service', EditUpdateService(), True)
+    resource.register('edit_update_service', EditUpdateService())
 
     resource.context_post_init()
 

@@ -4,7 +4,7 @@ from lampost.gameops.parser import parse_chat
 from lampmud.mud.action import mud_action
 
 sm = Injected('session_manager')
-um = Injected('um')
+um = Injected('user_manager')
 module_inject(__name__)
 
 

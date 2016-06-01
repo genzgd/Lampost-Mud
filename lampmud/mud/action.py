@@ -1,13 +1,14 @@
 from collections import defaultdict
 
-from lampost.di import resource
+from lampost.di.resource import Injected, module_inject, register
 from lampost.gameops.action import make_action, convert_verbs, ActionError
 
+log = Injected('log')
+module_inject(__name__)
 
-resource.m_requires(__name__, 'log')
 _mud_actions = {}
+register('mud_actions', _mud_actions)
 
-resource.register('mud_actions', _mud_actions)
 imm_actions = set()
 
 
@@ -16,7 +17,7 @@ def mud_action(verbs, msg_class=None, **kwargs):
         action = make_action(func, msg_class=msg_class, **kwargs)
         for verb in convert_verbs(verbs):
             if verb in _mud_actions:
-                error("Adding mud action for existing verb {}", verb)
+                log.error("Adding mud action for existing verb {}", verb)
             else:
                 _mud_actions[verb] = action
     return dec_wrapper
