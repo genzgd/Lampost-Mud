@@ -1,4 +1,4 @@
-from lampost.di.config import m_configured, ConfigValue
+from lampost.di.config import m_configured, ConfigVal
 from lampost.di.resource import Injected, module_inject
 from lampost.db.registry import get_dbo_class
 from lampost.db.exceptions import DataError
@@ -12,9 +12,9 @@ ev = Injected('dispatcher')
 edit_update = Injected('edit_update_service')
 module_inject(__name__)
 
-m_configured(__name__, 'default_start_room')
 
-root_area_id = ConfigValue('root_area_id')
+root_area_id = ConfigVal('root_area_id')
+default_start_room = ConfigVal('default_start_room')
 
 
 class AreaEditor(Editor):

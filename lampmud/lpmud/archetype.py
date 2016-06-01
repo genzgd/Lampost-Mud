@@ -1,4 +1,4 @@
-from lampost.di.config import m_configured
+from lampost.di.config import config_value
 from lampost.db.dbo import KeyDBO, OwnerDBO
 from lampost.db.dbofield import DBOField, DBOLField
 
@@ -25,7 +25,7 @@ class PlayerRace(Archetype):
     @classmethod
     def new_dto(cls):
         dto = super().new_dto()
-        dto['start_room'] = default_start_room
+        dto['start_room'] = config_value('default_start_room')
         dto['base_attrs'] = {attr['dbo_id']: base_attr_value for attr in attributes}
         return dto
 
