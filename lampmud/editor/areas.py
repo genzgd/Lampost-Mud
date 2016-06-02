@@ -1,4 +1,4 @@
-from lampost.di.config import m_configured, ConfigVal
+from lampost.di.config import ConfigVal
 from lampost.di.resource import Injected, module_inject
 from lampost.db.registry import get_dbo_class
 from lampost.db.exceptions import DataError

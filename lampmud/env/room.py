@@ -2,7 +2,7 @@ import itertools
 import random
 from collections import defaultdict
 
-from lampost.di.config import m_configured
+from lampost.di.config import ConfigVal
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
@@ -18,7 +18,7 @@ ev = Injected('dispatcher')
 db = Injected('datastore')
 module_inject(__name__)
 
-m_configured(__name__, 'room_reset_time')
+room_reset_time = ConfigVal('room_reset_time')
 
 
 def tell(listeners, msg_type, *args):

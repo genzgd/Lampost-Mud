@@ -1,5 +1,5 @@
 
-from lampost.di.config import m_configured
+from lampost.di.config import ConfigVal
 from lampost.di.resource import Injected, module_inject
 
 from lampmud.env.instance import AreaInstance
@@ -8,7 +8,7 @@ db = Injected('datastore')
 ev = Injected('dispatcher')
 module_inject(__name__)
 
-m_configured(__name__, 'instance_preserve_hours')
+preserve_hours = ConfigVal('instance_preserve_hours')
 
 instance_map = {}
 
@@ -25,7 +25,7 @@ def next_instance():
 
 
 def remove_old():
-    stale_pulse = db.future_pulse(instance_preserve_hours * 60 * 60)
+    stale_pulse = db.future_pulse(preserve_hours * 60 * 60)
     for instance_id, instance in instance_map.copy().items():
         if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entities
                                                        if hasattr(entity, 'is_player') and entity.session]:
