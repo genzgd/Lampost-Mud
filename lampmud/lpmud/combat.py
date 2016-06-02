@@ -1,4 +1,4 @@
-from lampost.di.config import m_configured
+from lampost.di.config import on_configured, config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField, AutoAttrInit
 from lampost.db.dbofield import DBOTField
@@ -17,12 +17,12 @@ module_inject(__name__)
 
 damage_categories = {}
 
-m_configured(__name__, 'damage_types', 'damage_groups')
 
+@on_configured
 def _on_configured():
     global damage_categories
-    damage_categories = {group['dbo_id']: set() for group in damage_groups}
-    for damage_type in damage_types:
+    damage_categories = {group['dbo_id']: set() for group in config_value('damage_groups')}
+    for damage_type in config_value('damage_types'):
         dbo_id, damage_group = damage_type['dbo_id'], damage_type['group']
         if damage_group:
             damage_categories['any'].add(dbo_id)

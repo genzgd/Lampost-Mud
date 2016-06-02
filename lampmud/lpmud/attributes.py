@@ -1,14 +1,20 @@
-from lampost.di.config import on_configured, ConfigVal
+from lampost.di.config import on_configured, config_value
 
 pool_keys = []
 attr_list = []
 
-resource_pools = ConfigVal('resource_pools')
-attributes = ConfigVal('attributes')
+resource_pools = []
+attributes = []
+
 
 @on_configured
 def _on_configured():
-    global attr_list, pool_keys
+    global resource_pools
+    global pool_keys
+    global attr_list
+    global pool_keys
+    resource_pools = config_value('resource_pools')
+    attributes = config_value('attributes')
     pool_keys = [(pool['dbo_id'], "base_{}".format(pool['dbo_id'])) for pool in resource_pools]
     attr_list = [attr['dbo_id'] for attr in attributes]
 

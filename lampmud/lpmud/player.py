@@ -1,9 +1,8 @@
 from lampost.di.resource import Injected, module_inject
 from lampost.db.dbofield import DBOField, DBOLField
 from lampost.gameops.action import ActionError
-from lampost.di.config import m_configured
+from lampost.di.config import config_value
 
-from lampmud.env.room import Room
 from lampmud.lpmud.attributes import base_pools, fill_pools
 from lampmud.lpmud.entity import EntityLP, Skilled
 from lampmud.lpmud.skill import add_skill
@@ -14,8 +13,6 @@ from lampmud.model.player import Player
 ev = Injected('dispatcher')
 db = Injected('datastore')
 module_inject(__name__)
-
-m_configured(__name__, 'default_start_room')
 
 
 class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
@@ -90,9 +87,9 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         del self._bind_pulse
         res_room = None
         if self.touchstone:
-            res_room = db.load_object(self.touchstone, Room)
+            res_room = db.load_object(self.touchstone, 'room')
         if not res_room:
-            res_room = db.load_object(default_start_room, Room)
+            res_room = db.load_object(config_value('default_start_room'), 'room')
         self.change_env(res_room)
         self.display_line("With a sick feeling, you return to consciousness")
         self.status = 'ok'

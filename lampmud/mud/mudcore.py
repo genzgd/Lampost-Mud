@@ -1,5 +1,5 @@
 from lampost.server.channel import Channel
-from lampost.di.config import m_configured
+from lampost.di.config import config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import ActionError
 from lampost.util.lputil import ClientError
@@ -16,8 +16,6 @@ instance_manager = Injected('instance_manager')
 message_service = Injected('message_service')
 friend_service = Injected('friend_service')
 module_inject(__name__, priority=5000)
-
-m_configured(__name__, 'default_start_room')
 
 
 def _post_init():
@@ -36,7 +34,7 @@ def _player_create(player, user):
         perm.update_immortal_list(player)
         ev.dispatch('imm_level_change', player, 0)
         message_service.add_message('system', "Welcome!  Your first player has been given immortal powers.  Check out the 'Editor' window on the top menu.", player.dbo_id)
-    player.room_id = default_start_room
+    player.room_id = config_value('default_start_room')
 
 
 def _player_attach(player):
@@ -78,7 +76,7 @@ def _start_env(player):
     if player_room:
         return player_room
 
-    default_start = db.load_object(default_start_room, 'room')
+    default_start = db.load_object(config_value('default_start_room'), 'room')
     if default_start:
         return default_start
 

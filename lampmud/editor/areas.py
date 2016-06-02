@@ -137,7 +137,7 @@ def find_area_room(room_id, player):
 
 
 def room_clean_up(room, session, area_delete=None):
-    start_room = db.load_object(default_start_room, 'room')
+    start_room = db.load_object(default_start_room.value, 'room')
     for denizen in room.denizens:
         if hasattr(denizen, 'is_player'):
             denizen.display_line('You were in a room that was destroyed by some unknown force')

@@ -2,7 +2,7 @@ from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import action_handler, ActionError
-from lampost.di.config import m_configured
+from lampost.di.config import on_configured, config_value
 
 from lampmud.lpmud.fight import Fight
 from lampmud.lpmud import attributes
@@ -14,7 +14,13 @@ log = Injected('log')
 ev = Injected('dispatcher')
 module_inject(__name__)
 
-m_configured(__name__, 'refresh_interval', 'refresh_rates')
+
+@on_configured
+def _on_configured():
+    global refresh_interval
+    global refresh_rates
+    refresh_interval = config_value('refresh_interval')
+    refresh_rates = config_value('refresh_rates')
 
 
 class EntityLP(Entity):

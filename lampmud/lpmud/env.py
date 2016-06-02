@@ -1,13 +1,21 @@
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import ActionError
-from lampost.di.config import m_configured
+from lampost.di.config import on_configured, config_value
 
 import lampmud.env.room
 
-m_configured(__name__, 'room_stamina', 'room_action', 'default_room_size')
-
 exit_cost_map = {}
 prep_multiplier = 1
+
+
+@on_configured
+def _on_configured():
+    global room_stamina
+    global room_action
+    global default_room_size
+    room_stamina = config_value('room_stamina')
+    room_action = config_value('room_action')
+    default_room_size = config_value('default_room_size')
 
 
 def find_cost(room):

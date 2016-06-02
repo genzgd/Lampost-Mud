@@ -1,4 +1,4 @@
-from lampost.di.config import m_configured
+from lampost.di.config import on_configured, config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.db.dbofield import DBOField, DBOTField
@@ -14,7 +14,15 @@ log = Injected('log')
 db = Injected('datastore')
 module_inject(__name__)
 
-m_configured(__name__, 'affinities', 'attributes', 'base_attr_value')
+
+@on_configured
+def _on_configured():
+    global affinities
+    global attributes
+    global base_attr_value
+    affinities = config_value('affinities')
+    attributes = config_value('attributes')
+    base_attr_value = config_value('base_attr_value')
 
 
 class MobileTemplateLP(MobileTemplate):
