@@ -1,4 +1,5 @@
-from lampost.di.config import on_configured, config_value
+from lampost.di.app import on_app_start
+from lampost.di.config import on_config_change, config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.db.dbofield import DBOField, DBOTField
@@ -15,8 +16,9 @@ db = Injected('datastore')
 module_inject(__name__)
 
 
-@on_configured
-def _on_configured():
+@on_app_start
+@on_config_change
+def _config():
     global affinities
     global attributes
     global base_attr_value

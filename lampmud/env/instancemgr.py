@@ -1,4 +1,4 @@
-
+from lampost.di.app import on_app_start
 from lampost.di.config import ConfigVal
 from lampost.di.resource import Injected, module_inject
 
@@ -12,8 +12,8 @@ preserve_hours = ConfigVal('instance_preserve_hours')
 
 instance_map = {}
 
-
-def _post_init():
+@on_app_start
+def _start():
     ev.register('maintenance', remove_old)
 
 
@@ -25,7 +25,7 @@ def next_instance():
 
 
 def remove_old():
-    stale_pulse = db.future_pulse(preserve_hours * 60 * 60)
+    stale_pulse = db.future_pulse(preserve_hours.value * 60 * 60)
     for instance_id, instance in instance_map.copy().items():
         if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entities
                                                        if hasattr(entity, 'is_player') and entity.session]:

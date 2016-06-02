@@ -1,6 +1,7 @@
 from lampost.db.dbofield import DBOField
+from lampost.di.app import on_app_start
 from lampost.gameops.action import ActionError
-from lampost.di.config import on_configured, config_value
+from lampost.di.config import on_config_change, config_value
 
 import lampmud.env.room
 
@@ -8,8 +9,9 @@ exit_cost_map = {}
 prep_multiplier = 1
 
 
-@on_configured
-def _on_configured():
+@on_app_start
+@on_config_change
+def _config():
     global room_stamina
     global room_action
     global default_room_size

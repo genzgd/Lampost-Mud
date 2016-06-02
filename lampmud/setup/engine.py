@@ -3,14 +3,14 @@ from importlib import import_module
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
 
-from lampost.di import resource, config
+from lampost.di import resource, config, app
 from lampost.db.redisstore import RedisStore
 from lampost.db import dbconfig
 from lampost.util import json
 
 from lampost.db import permissions
 from lampost.event.system import dispatcher
-from lampost.gameops.friend import FriendService
+from lampost.gameops import friend
 from lampost.server.email import email_sender
 from lampost.server import web
 from lampost.server import pages
@@ -19,7 +19,7 @@ from lampost.server.services import AnyLoginService, PlayerListService, EditUpda
 from lampost.server.session import SessionManager
 from lampost.server.user import UserManager
 from lampost.server.channel import ChannelService
-from lampost.server.message import MessageService
+from lampost.server import message
 
 from lampmud.server import router as main_router
 from lampmud.env import instancemgr
@@ -46,13 +46,13 @@ def start(args):
     resource.register('instance_manager', instancemgr)
     resource.register('email_sender', email_sender)
     resource.register('channel_service', ChannelService())
-    resource.register('friend_service', FriendService())
-    resource.register('message_service', MessageService())
+    resource.register('friend_service', friend)
+    resource.register('message_service', message)
     resource.register('player_list_service', PlayerListService())
     resource.register('login_notify_service', AnyLoginService())
     resource.register('edit_update_service', EditUpdateService())
 
-    resource.context_post_init()
+    app.start_app()
 
     pages.add_page(pages.LspPage('config.js', "var lampost_config = {{title:'{0}', description:'{1}'}};"
                                  .format(config_values['lampost_title'], config_values['lampost_description'])))

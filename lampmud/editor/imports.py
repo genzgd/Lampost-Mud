@@ -1,4 +1,5 @@
 from lampost.server.handlers import MethodHandler
+from lampost.di.app import on_app_start
 from lampost.di.resource import Injected, module_inject
 from lampost.db.redisstore import RedisStore
 
@@ -9,8 +10,8 @@ module_inject(__name__)
 
 copy_dbs = {}
 
-
-def _post_init():
+@on_app_start
+def _start():
     ev.register('session_disconnect', _remove_db)
 
 def _remove_db(session):

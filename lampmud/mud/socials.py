@@ -1,3 +1,5 @@
+from lampost.di.app import on_app_start
+
 from lampmud.comm.broadcast import BroadcastMap
 from lampost.di.resource import Injected, module_inject
 from lampost.db.dbo import KeyDBO, OwnerDBO
@@ -13,7 +15,8 @@ module_inject(__name__)
 all_socials = {}
 
 
-def _post_init():
+@on_app_start
+def _start():
     # load all socials into memory so that the appropriate actions are available
     db.load_object_set('social')
 

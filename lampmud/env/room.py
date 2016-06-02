@@ -2,7 +2,8 @@ import itertools
 import random
 from collections import defaultdict
 
-from lampost.di.config import ConfigVal
+from lampost.di.app import on_app_start
+from lampost.di.config import on_config_change, config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
@@ -18,7 +19,11 @@ ev = Injected('dispatcher')
 db = Injected('datastore')
 module_inject(__name__)
 
-room_reset_time = ConfigVal('room_reset_time')
+@on_app_start
+@on_config_change
+def _config():
+    global room_reset_time
+    room_reset_time = config_value('room_reset_time')
 
 
 def tell(listeners, msg_type, *args):
@@ -184,7 +189,7 @@ class Room(ChildDBO, Attached, Scriptable):
             if not self.instance:
                 db.save_object(self)
             del self.dirty
-        stale_pulse = ev.future_pulse(-room_reset_time)
+        stale_pulse = ev.future_pulse(room_reset_time)
         for obj in self.contents:
             obj_pulse = getattr(obj, 'pulse_stamp', 0)
             if obj_pulse > stale_pulse or hasattr(obj, 'is_player'):

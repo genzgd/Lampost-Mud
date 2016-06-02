@@ -1,8 +1,9 @@
 from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
+from lampost.di.app import on_app_start
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import action_handler, ActionError
-from lampost.di.config import on_configured, config_value
+from lampost.di.config import on_config_change, config_value
 
 from lampmud.lpmud.fight import Fight
 from lampmud.lpmud import attributes
@@ -15,8 +16,9 @@ ev = Injected('dispatcher')
 module_inject(__name__)
 
 
-@on_configured
-def _on_configured():
+@on_app_start
+@on_config_change
+def _config():
     global refresh_interval
     global refresh_rates
     refresh_interval = config_value('refresh_interval')

@@ -1,4 +1,5 @@
-from lampost.di.config import on_configured, config_value
+from lampost.di.app import on_app_start
+from lampost.di.config import config_value
 
 pool_keys = []
 attr_list = []
@@ -7,8 +8,8 @@ resource_pools = []
 attributes = []
 
 
-@on_configured
-def _on_configured():
+@on_app_start
+def _init():
     global resource_pools
     global pool_keys
     global attr_list

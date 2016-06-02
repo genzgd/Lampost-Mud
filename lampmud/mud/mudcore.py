@@ -1,3 +1,4 @@
+from lampost.di.app import on_app_start
 from lampost.server.channel import Channel
 from lampost.di.config import config_value
 from lampost.di.resource import Injected, module_inject
@@ -15,10 +16,11 @@ um = Injected('user_manager')
 instance_manager = Injected('instance_manager')
 message_service = Injected('message_service')
 friend_service = Injected('friend_service')
-module_inject(__name__, priority=5000)
+module_inject(__name__)
 
 
-def _post_init():
+@on_app_start(2000)
+def _start():
     global shout_channel, imm_channel
     shout_channel = Channel('shout', general=True)
     imm_channel = Channel('imm')
