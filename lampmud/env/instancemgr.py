@@ -25,7 +25,7 @@ def next_instance():
 
 
 def remove_old():
-    stale_pulse = db.future_pulse(preserve_hours.value * 60 * 60)
+    stale_pulse = ev.future_pulse(preserve_hours.value * 60 * 60)
     for instance_id, instance in instance_map.copy().items():
         if instance.pulse_stamp < stale_pulse and not [entity for entity in instance.entities
                                                        if hasattr(entity, 'is_player') and entity.session]:
