@@ -7,7 +7,6 @@ from lampost.di import resource, config, app
 from lampost.db.redisstore import RedisStore
 from lampost.db import dbconfig
 from lampost.util import json
-
 from lampost.db import permissions
 from lampost.event.system import dispatcher
 from lampost.gameops import friend
@@ -37,8 +36,8 @@ def start(args):
     resource.register('dispatcher', dispatcher)
     resource.register('perm', permissions)
 
-    app_setup = import_module('{}.setup'.format(args.app_id))
-    app_setup.start_engine(args, config_values)
+    app_setup = import_module('{}.appstart'.format(args.app_id))
+    app_setup.start_engine(args)
 
     resource.register('display', display)
     resource.register('user_manager', UserManager())

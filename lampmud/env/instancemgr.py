@@ -12,6 +12,7 @@ preserve_hours = ConfigVal('instance_preserve_hours')
 
 instance_map = {}
 
+
 @on_app_start
 def _start():
     ev.register('maintenance', remove_old)

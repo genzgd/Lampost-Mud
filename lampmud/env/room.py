@@ -19,6 +19,7 @@ ev = Injected('dispatcher')
 db = Injected('datastore')
 module_inject(__name__)
 
+
 @on_app_start
 @on_config_change
 def _config():
@@ -123,6 +124,7 @@ class Room(ChildDBO, Attached, Scriptable):
         return source.display_line(self.name, 'room')
 
     def entity_enters(self, entity, enter_action, entry_msg=None):
+        self.attach()
         self.receive_broadcast(entry_msg)
         entity.env = self
         self.denizens.append(entity)
@@ -176,7 +178,7 @@ class Room(ChildDBO, Attached, Scriptable):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-    def on_loaded(self):
+    def on_attach(self):
         if not self._garbage_pulse:
             self.reset()
             self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)

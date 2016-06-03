@@ -8,6 +8,7 @@ from lampmud.mud.action import mud_action
 ev = Injected('dispatcher')
 module_inject(__name__)
 
+
 class Group(ActionProvider, Attached):
     target_keys = set(gen_keys('group'))
 
