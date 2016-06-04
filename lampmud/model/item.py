@@ -44,7 +44,7 @@ class Attached(metaclass=CoreMeta):
         call_mro(self, 'on_detach')
 
 
-class ItemFacet(CoreDBO, Attached, ActionProvider):
+class ItemFacet(DBOFacet, Attached, ActionProvider):
     sex = DBOField('none')
     flags = DBOField({})
 
@@ -92,17 +92,17 @@ class ItemFacet(CoreDBO, Attached, ActionProvider):
                 pass
 
 
-class ItemDBO(ItemFacet):
+class ItemDBO(CoreDBO, ItemFacet):
     class_id = 'base_item'
 
     desc = DBOField('')
     title = DBOField('')
     aliases = DBOField([])
 
-    target_keys = {}
+    target_keys = set()
 
 
-class ItemInstance(ItemFacet, TemplateInstance):
+class ItemInstance(TemplateInstance, ItemFacet):
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])

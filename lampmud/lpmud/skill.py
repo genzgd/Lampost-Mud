@@ -53,7 +53,7 @@ class DefaultSkill(CoreDBO):
     skill_level = DBOField(1)
 
 
-class BaseSkill(CoreDBO, TemplateInstance):
+class BaseSkill(TemplateInstance):
     verb = DBOTField()
     name = DBOTField()
     desc = DBOTField()
