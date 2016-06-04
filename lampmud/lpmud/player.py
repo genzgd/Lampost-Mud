@@ -35,12 +35,10 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         else:
             self.room_id = self.race.start_room.dbo_id
 
-    def on_loaded(self):
+    def _on_attach(self):
         self.auto_fight = False
         for skill in self.skills.values():
             self._apply_skill(skill)
-
-    def on_attach(self):
         if self.race:
             for default_skill in self.race.default_skills:
                 if default_skill.skill_template.dbo_key not in self.skills.keys():

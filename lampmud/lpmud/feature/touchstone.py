@@ -10,7 +10,7 @@ inscription = Inscription()
 inscription.title = "Archaic Inscription"
 inscription.text = "Herewith wilt thou be bound"
 inscription.desc = "An inscription written in the flowery letters of a time long past."
-inscription._on_loaded()
+inscription.on_loaded()
 
 
 class Touchstone(ItemDBO):
@@ -26,6 +26,6 @@ class Touchstone(ItemDBO):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
         source.touchstone = self.dbo_owner.dbo_id
 
-    def on_loaded(self):
+    def _on_loaded(self):
         self.target_providers = [self.inscription]
         self.instance_providers.append(self.inscription)

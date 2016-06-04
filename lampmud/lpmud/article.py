@@ -12,7 +12,7 @@ class ArticleTemplateLP(ArticleTemplate):
     equip_msg = BroadcastMap(s="You wear {N}", e="{n} wears {N}")
     wield_msg = BroadcastMap(s="You wield {N}", e="{n} wields {N}")
 
-    def on_loaded(self):
+    def _on_loaded(self):
         if self.art_type == 'weapon':
             self.equip_msg = self.wield_msg
 

@@ -35,16 +35,16 @@ def target_keys(item):
     return target_keys
 
 
-class Attached(metaclass=CoreMeta):
+class Attachable(metaclass=CoreMeta):
     def attach(self):
-        call_mro(self, 'on_attach')
+        call_mro(self, '_on_attach')
 
     def detach(self):
         ev.detach_events(self)
-        call_mro(self, 'on_detach')
+        call_mro(self, '_on_detach')
 
 
-class ItemFacet(DBOFacet, Attached, ActionProvider):
+class ItemFacet(DBOFacet, Attachable, ActionProvider):
     sex = DBOField('none')
     flags = DBOField({})
 
@@ -52,6 +52,13 @@ class ItemFacet(DBOFacet, Attached, ActionProvider):
     env = None
 
     general = True
+
+    def _on_loaded(self):
+        if not self.target_keys:
+            try:
+                self.target_keys = target_keys(self)
+            except AttributeError:
+                pass
 
     @property
     def name(self):
@@ -83,13 +90,6 @@ class ItemFacet(DBOFacet, Attached, ActionProvider):
 
     def leave_env(self):
         pass
-
-    def on_loaded(self):
-        if not self.target_keys:
-            try:
-                self.target_keys = target_keys(self)
-            except AttributeError:
-                pass
 
 
 class ItemDBO(CoreDBO, ItemFacet):

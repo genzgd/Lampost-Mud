@@ -70,7 +70,7 @@ class Entrance(ItemDBO):
 
     msg_class = "__call__"
 
-    def on_loaded(self):
+    def _on_loaded(self):
         if self.direction:
             self._dir = Direction.ref_map[self.direction]
             self.verbs = (self._dir.obj_id,), (self._dir.desc,)

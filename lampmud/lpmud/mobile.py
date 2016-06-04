@@ -4,7 +4,6 @@ from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.db.dbofield import DBOField, DBOTField
 
-from lampmud.lpmud.archetype import Archetype
 from lampmud.lpmud.attributes import fill_pools
 from lampmud.lpmud.entity import EntityLP, Skilled
 from lampmud.lpmud.skill import add_skill
@@ -29,11 +28,10 @@ def _config():
 
 class MobileTemplateLP(MobileTemplate):
     class_id = 'mobile'
-    default_skills = DBOField([], 'default_skill')
 
-    def on_loaded(self):
+    def _on_loaded(self):
         if self.archetype:
-            arch = db.load_object(self.archetype, Archetype)
+            arch = db.load_object(self.archetype, 'archetype')
             for attr_name, start_value in arch.base_attrs.items():
                 setattr(self.instance_cls, attr_name, start_value)
             self.desc = arch.desc
@@ -42,22 +40,25 @@ class MobileTemplateLP(MobileTemplate):
                 setattr(self.instance_cls, attr['dbo_id'], base_attr_value * self.level)
         self.enemies = affinities[self.affinity]['enemies']
 
-    def config_instance(self, mobile, owner):
-        mobile.skills = {}
-        for default_skill in self.default_skills:
-            add_skill(default_skill.skill_template, mobile, default_skill.skill_level, 'mobile')
-        fill_pools(mobile)
-        super().config_instance(mobile, owner)
-
 
 class MobileLP(EntityLP, Mobile, Skilled):
     template_id = "mobile"
 
+    default_skills = DBOTField([], 'default_skill')
     archetype = DBOTField()
     level = DBOTField(1)
     affinity = DBOTField('neutral')
     enemies = TemplateField('enemies')
     guard_msg = DBOField("{source} stops you from moving {exit}.")
+
+    def _on_attach(self):
+        self.skills = {}
+        for default_skill in self.default_skills:
+            add_skill(default_skill.skill_template, self, default_skill.skill_level, 'mobile')
+        fill_pools(self)
+
+    def _on_detach(self):
+        self.original_env.mobiles[self.template].remove(self)
 
     def entity_enter_env(self, entity, *_):
         self._react_entity(entity)
@@ -78,6 +79,5 @@ class MobileLP(EntityLP, Mobile, Skilled):
         elif hasattr(entity, 'affinity') and entity.affinity in self.enemies:
             self.start_combat(entity)
 
-    def on_detach(self):
-        self.original_env.mobiles[self.template].remove(self)
+
 

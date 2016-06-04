@@ -12,7 +12,7 @@ from lampost.gameops.script import Scriptable, Shadow
 
 from lampmud.comm.broadcast import Broadcast
 from lampmud.env.movement import Direction
-from lampmud.model.item import Attached
+from lampmud.model.item import Attachable
 
 log = Injected('log')
 ev = Injected('dispatcher')
@@ -60,6 +60,9 @@ class Exit(CoreDBO):
     def from_name(self):
         return Direction.ref_map.get(self._dir.rev_key).desc
 
+    def _on_loaded(self):
+        self._dir = Direction.ref_map.get(self.direction)
+
     def examine(self, source, **_):
         source.display_line('Exit: {}  {}'.format(self._dir.desc, self.destination.title), 'exit')
 
@@ -74,11 +77,8 @@ class Exit(CoreDBO):
             destination = self.destination
         source.change_env(destination, self)
 
-    def on_loaded(self):
-        self._dir = Direction.ref_map.get(self.direction)
 
-
-class Room(ChildDBO, Attached, Scriptable):
+class Room(ChildDBO, Attachable, Scriptable):
     dbo_key_type = 'room'
     dbo_parent_type = 'area'
     dbo_key_sort = lambda key: int(key.split(":")[1])
@@ -97,10 +97,14 @@ class Room(ChildDBO, Attached, Scriptable):
 
     _garbage_pulse = None
 
-    def __init__(self):
+    def _on_attach(self):
+        if self._garbage_pulse:
+            return
+        self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
         self.inven = []
         self.denizens = []
         self.mobiles = defaultdict(set)
+        self.reset()
 
     @property
     def action_providers(self):
@@ -177,11 +181,6 @@ class Room(ChildDBO, Attached, Scriptable):
         for my_exit in self.exits:
             if my_exit.direction == exit_dir:
                 return my_exit
-
-    def on_attach(self):
-        if not self._garbage_pulse:
-            self.reset()
-            self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
 
     def allow_leave(self, *args):
         pass

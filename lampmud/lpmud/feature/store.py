@@ -144,7 +144,7 @@ class Store(ItemDBO):
         self.inven.append(article)
         self.dbo_owner.dirty = True
 
-    def on_loaded(self):
+    def _on_loaded(self):
         self.perm_items = [template.create_instance() for template in self.perm_inven]
 
     @property

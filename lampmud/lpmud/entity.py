@@ -41,16 +41,19 @@ class EntityLP(Entity):
     _next_command = None
     _action_pulse = None
 
-    def on_loaded(self):
+    def _on_attach(self):
         self.effects = set()
         self.defenses = set()
         self.equip_slots = {}
-
-    def on_attach(self):
         for article in self.inven:
             if article.current_slot:
                 self._do_equip(article, article.current_slot)
         self.fight.update_skills()
+
+    def _on_detach(self):
+        self._cancel_actions()
+        if self._refresh_pulse:
+            del self._refresh_pulse
 
     def check_costs(self, costs):
         for pool, cost in costs.items():
@@ -260,11 +263,6 @@ class EntityLP(Entity):
     def status_change(self):
         self.pulse_stamp = ev.current_pulse
 
-    def on_detach(self):
-        self._cancel_actions()
-        if self._refresh_pulse:
-            del self._refresh_pulse
-
     @property
     def display_status(self):
         display_status = super().display_status
@@ -281,7 +279,7 @@ class EntityLP(Entity):
 class Skilled(DBOFacet):
     skills = DBOField({}, 'untyped')
 
-    def on_loaded(self):
+    def _on_loaded(self):
         self.fight = Fight(self)
 
     def add_skill(self, skill):

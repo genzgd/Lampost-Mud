@@ -3,16 +3,18 @@ from lampost.meta.auto import AutoField
 from lampost.db.dbo import KeyDBO, SystemDBO
 from lampost.db.dbofield import DBOField
 
-from lampmud.model.item import Attached
+from lampmud.model.item import Attachable
 
 log = Injected('log')
 ev = Injected('dispatcher')
 module_inject(__name__)
 
 
-class Player(KeyDBO, SystemDBO, Attached):
+class Player(KeyDBO, SystemDBO, Attachable):
     dbo_key_type = "player"
     dbo_set_key = "players"
+
+    session = AutoField()
 
     user_id = DBOField(0)
     created = DBOField(0)
@@ -39,16 +41,18 @@ class Player(KeyDBO, SystemDBO, Attached):
     def name(self):
         return self.dbo_id.capitalize()
 
-    def on_attach(self):
-        ev.register_p(self.autosave, seconds=20)
-
-    def on_loaded(self):
-        self.target_keys = {(self.dbo_id,)}
-        self.last_tell = None
-        self.active_channels = set()
-        self.session = None
+    def _on_loaded(self):
         if not self.desc:
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
+
+    def _on_attach(self):
+        ev.register_p(self.autosave, seconds=20)
+        self.active_channels = set()
+        self.target_keys = {(self.dbo_id,)}
+        self.last_tell = None
+
+    def _on_detach(self):
+        self.session = None
 
     def check_logout(self):
         pass
@@ -70,5 +74,4 @@ class Player(KeyDBO, SystemDBO, Attached):
     def die(self):
         pass
 
-    def on_detach(self):
-        self.session = None
+

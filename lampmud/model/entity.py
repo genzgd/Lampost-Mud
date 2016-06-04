@@ -8,13 +8,13 @@ from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.di.resource import Injected, module_inject
 
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
-from lampmud.model.item import Attached
+from lampmud.model.item import Attachable
 
 log = Injected('log')
 module_inject(__name__)
 
 
-class Entity(DBOFacet, Attached):
+class Entity(DBOFacet, Attachable):
     inven = DBOField([], 'untyped')
 
     status = 'ok'
@@ -24,15 +24,26 @@ class Entity(DBOFacet, Attached):
     entry_msg = BroadcastMap(e='{n} materializes.', ea="{n} arrives from the {N}.")
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
-    def on_loaded(self):
+    def _on_attach(self):
         self.soul = defaultdict(set)
         self.inven_actions = defaultdict(set)
         self.followers = set()
         self.registrations = set()
         self._soul_objects = set()
-
-    def on_attach(self):
         add_actions(self.inven_actions, self.inven)
+
+    def _on_detach(self):
+        for follower in self.followers:
+            del follower.following
+            follower.display_line("You are no longer following {}.".format(self.name))
+        for item in list(itertools.chain(self.inven, self._soul_objects)):
+            if hasattr(item, 'detach'):
+                item.detach()
+            if hasattr(item, 'detach_shared'):
+                item.detach_shared(self)
+        self.unfollow()
+        self.leave_env()
+        self.equip_slots.clear()
 
     def enhance_soul(self, action):
         add_action(self.soul, action)
@@ -184,20 +195,6 @@ class Entity(DBOFacet, Attached):
         self.leave_env()
         self.status = 'dead'
         self.detach()
-
-    def on_detach(self):
-        for follower in self.followers:
-            del follower.following
-            follower.display_line("You are no longer following {}.".format(self.name))
-        for item in list(itertools.chain(self.inven, self._soul_objects)):
-            if hasattr(item, 'detach'):
-                item.detach()
-            if hasattr(item, 'detach_shared'):
-                item.detach_shared(self)
-        self.unfollow()
-        self.leave_env()
-        self.equip_slots.clear()
-
 
     @property
     def display_status(self):

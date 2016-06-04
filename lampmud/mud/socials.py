@@ -29,7 +29,7 @@ class Social(KeyDBO, OwnerDBO):
 
     msg_class = 'social'
 
-    def on_loaded(self):
+    def _on_loaded(self):
         try:
             if mud_actions[(self.dbo_id,)] != self:
                 log.warn("Mud action already exists for social id {}", self.dbo_id)

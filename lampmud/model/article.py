@@ -22,13 +22,16 @@ class ArticleTemplate(ChildDBO, Template):
             return self.title
         return self.plural_title
 
-    def on_loaded(self):
+    def _on_loaded(self):
         self.single_keys = target_keys(self)
         if self.divisible:
             self.plural_title = plural(self.title)
             self.plural_keys = set()
             for single_key in self.single_keys:
                 self.plural_keys.add(single_key[:-1] + (plural(single_key[-1:][0]),))
+
+    def config_instance(self, instance, owner):
+        instance.attach()
 
 
 class Article(ItemInstance):
