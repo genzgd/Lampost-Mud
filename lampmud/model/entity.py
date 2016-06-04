@@ -3,12 +3,12 @@ from collections import defaultdict
 
 from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
+from lampost.event.zone import Attachable
 from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
 from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.di.resource import Injected, module_inject
 
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
-from lampmud.model.item import Attachable
 
 log = Injected('log')
 module_inject(__name__)

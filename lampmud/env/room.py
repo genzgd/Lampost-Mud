@@ -5,6 +5,7 @@ from collections import defaultdict
 from lampost.di.app import on_app_start
 from lampost.di.config import on_config_change, config_value
 from lampost.di.resource import Injected, module_inject
+from lampost.event.zone import Attachable
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOCField
@@ -12,7 +13,6 @@ from lampost.gameops.script import Scriptable, Shadow
 
 from lampmud.comm.broadcast import Broadcast
 from lampmud.env.movement import Direction
-from lampmud.model.item import Attachable
 
 log = Injected('log')
 ev = Injected('dispatcher')
@@ -98,8 +98,6 @@ class Room(ChildDBO, Attachable, Scriptable):
     _garbage_pulse = None
 
     def _on_attach(self):
-        if self._garbage_pulse:
-            return
         self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
         self.inven = []
         self.denizens = []

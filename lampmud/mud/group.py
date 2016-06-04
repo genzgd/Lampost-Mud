@@ -1,8 +1,9 @@
-from lampost.server.channel import Channel
 from lampost.di.resource import Injected, module_inject
+from lampost.event.zone import Attachable
 from lampost.gameops.action import obj_action, ActionProvider
+from lampost.server.channel import Channel
 
-from lampmud.model.item import ItemDBO, gen_keys, Attachable
+from lampmud.model.item import ItemDBO, gen_keys
 from lampmud.mud.action import mud_action
 
 ev = Injected('dispatcher')

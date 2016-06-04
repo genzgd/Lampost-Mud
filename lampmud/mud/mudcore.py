@@ -19,7 +19,7 @@ friend_service = Injected('friend_service')
 module_inject(__name__)
 
 
-@on_app_start(2000)
+@on_app_start(priority=2000)
 def _start():
     global shout_channel, imm_channel
     shout_channel = Channel('shout', general=True)

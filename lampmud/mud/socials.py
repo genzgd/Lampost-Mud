@@ -38,7 +38,7 @@ class Social(KeyDBO, OwnerDBO):
             all_socials[self.dbo_id] = self
         self.broadcast_map = BroadcastMap(**self.b_map)
 
-    def on_deleted(self):
+    def _on_db_deleted(self):
         all_socials.pop(self.dbo_id)
         if mud_actions[(self.dbo_id,)] == self:
             del mud_actions[(self.dbo_id,)]

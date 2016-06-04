@@ -1,9 +1,8 @@
 from lampost.di.resource import Injected, module_inject
+from lampost.event.zone import Attachable
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import KeyDBO, SystemDBO
 from lampost.db.dbofield import DBOField
-
-from lampmud.model.item import Attachable
 
 log = Injected('log')
 ev = Injected('dispatcher')

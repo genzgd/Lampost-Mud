@@ -1,17 +1,11 @@
 import math
 
-from lampost.di.resource import Injected, module_inject
+from lampost.event.zone import Attachable
 from lampost.meta.auto import TemplateField
-from lampost.meta.core import CoreMeta
-from lampost.util.classes import call_mro
 from lampost.db.dbo import CoreDBO, DBOFacet
 from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import TemplateInstance
 from lampost.gameops.action import obj_action, ActionProvider
-
-log = Injected('log')
-ev = Injected('dispatcher')
-module_inject(__name__)
 
 
 def gen_keys(target_id):
@@ -35,16 +29,7 @@ def target_keys(item):
     return target_keys
 
 
-class Attachable(metaclass=CoreMeta):
-    def attach(self):
-        call_mro(self, '_on_attach')
-
-    def detach(self):
-        ev.detach_events(self)
-        call_mro(self, '_on_detach')
-
-
-class ItemFacet(DBOFacet, Attachable, ActionProvider):
+class ItemFacet(DBOFacet, ActionProvider, Attachable):
     sex = DBOField('none')
     flags = DBOField({})
 

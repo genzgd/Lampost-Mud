@@ -24,7 +24,7 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
     affinity = 'player'
     can_die = True
 
-    def on_created(self):
+    def _on_db_created(self):
         for attr_name, start_value in self.race.base_attrs.items():
             setattr(self, attr_name, start_value)
             setattr(self, 'perm_{}'.format(attr_name), start_value)
