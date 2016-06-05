@@ -69,7 +69,6 @@ class BaseSkill(TemplateInstance):
     last_used = DBOField(0)
     verbs = TemplateField()
 
-
     def prepare_action(self, source, target, **kwargs):
         if self.available > 0:
             raise ActionError("You cannot {} yet.".format(self.verb))

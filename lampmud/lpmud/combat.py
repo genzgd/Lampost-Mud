@@ -1,16 +1,17 @@
+from lampost.db.dbofield import DBOTField
 from lampost.di.app import on_app_start
 from lampost.di.config import config_value, on_config_change
 from lampost.di.resource import Injected, module_inject
-from lampost.meta.auto import TemplateField, AutoAttrInit
-from lampost.db.dbofield import DBOTField
 from lampost.gameops import target_gen
 from lampost.gameops.action import ActionError
+from lampost.meta.auto import TemplateField
+from lampost.meta.core import CoreMeta
 from lampost.util.lputil import args_print
 
-from lampmud.mud.tools import combat_log
 from lampmud.lpmud import attributes
 from lampmud.lpmud.skill import BaseSkill, roll_calc, SkillTemplate, avg_calc
 from lampmud.mud.action import mud_action
+from lampmud.mud.tools import combat_log
 
 log = Injected('log')
 ev = Injected('dispatcher')
@@ -82,7 +83,7 @@ def consider_level(source_con, target_con):
     return int(perc / 13.27) - CON_RANGE
 
 
-class Attack(AutoAttrInit):
+class Attack(metaclass=CoreMeta):
     success_map = TemplateField()
     fail_map = TemplateField()
     delivery = TemplateField()
