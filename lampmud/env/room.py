@@ -81,7 +81,10 @@ class Exit(CoreDBO):
 class Room(ChildDBO, Attachable, Scriptable):
     dbo_key_type = 'room'
     dbo_parent_type = 'area'
-    dbo_key_sort = lambda key: int(key.split(":")[1])
+
+    @staticmethod
+    def dbo_key_sort(key):
+        return int(key.split(':')[1])
 
     desc = DBOCField()
     size = DBOCField(10)

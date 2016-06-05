@@ -22,7 +22,7 @@ damage_categories = {}
 
 @on_app_start
 @on_config_change
-def _configure():
+def _config():
     global damage_categories
     damage_categories = {group['dbo_id']: set() for group in config_value('damage_groups')}
     for damage_type in config_value('damage_types'):

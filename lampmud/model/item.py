@@ -23,10 +23,10 @@ def gen_keys(target_id):
 
 
 def target_keys(item):
-    target_keys = set(gen_keys(item.title))
+    t_keys = set(gen_keys(item.title))
     for alias in item.aliases:
-        target_keys.update(gen_keys(alias))
-    return target_keys
+        t_keys.update(gen_keys(alias))
+    return t_keys
 
 
 class ItemFacet(DBOFacet, ActionProvider, Attachable):

@@ -3,7 +3,7 @@ from lampost.di.app import on_app_start
 from lampost.gameops.action import ActionError
 from lampost.di.config import on_config_change, config_value
 
-import lampmud.env.room
+from lampmud.env.room import Exit
 
 exit_cost_map = {}
 prep_multiplier = 1
@@ -30,7 +30,7 @@ def find_cost(room):
             return exit_cost_map[room.size]
 
 
-class ExitLP(lampmud.env.room.Exit):
+class ExitLP(Exit):
     class_id = 'exit'
 
     guarded = DBOField(False)

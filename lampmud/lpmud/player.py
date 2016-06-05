@@ -24,6 +24,8 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
     affinity = 'player'
     can_die = True
 
+    _bind_pulse = None
+
     def _on_db_created(self):
         for attr_name, start_value in self.race.base_attrs.items():
             setattr(self, attr_name, start_value)
@@ -91,5 +93,5 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         self.change_env(res_room)
         self.display_line("With a sick feeling, you return to consciousness")
         self.status = 'ok'
-        self.heath = 1
+        self.health = 1
         self.start_refresh()

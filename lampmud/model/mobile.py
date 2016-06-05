@@ -7,8 +7,8 @@ from lampmud.model.item import target_keys, ItemInstance
 
 
 class MobileTemplate(ChildDBO, Template):
-    dbo_key_type = "mobile"
-    dbo_parent_type = "area"
+    dbo_key_type = 'mobile'
+    dbo_parent_type = 'area'
 
     def _on_loaded(self):
         self.target_keys = target_keys(self)

@@ -10,7 +10,7 @@ pool_keys = []
 resource_pools = []
 
 
-@on_app_start(500)
+@on_app_start(priority=200)
 def _init():
     global attributes
     global resource_pools
