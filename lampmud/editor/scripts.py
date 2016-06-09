@@ -4,7 +4,7 @@ from lampost.editor.editor import ChildrenEditor
 
 from lampost.di.resource import Injected, module_inject
 from lampost.db.exceptions import DataError
-from lampost.gameops.script import compile_script, ShadowScript
+from lampost.gameops.script import compile_script
 
 perm = Injected('perm')
 module_inject(__name__)
@@ -19,7 +19,7 @@ def validate(script_dict):
 
 class ScriptEditor(ChildrenEditor):
     def initialize(self):
-        super().initialize(ShadowScript)
+        super().initialize('script')
 
     def _pre_create(self):
         self._calc_hash()

@@ -40,7 +40,7 @@ class Exit(CoreDBO):
     class_id = 'exit'
 
     target_class = None
-    destination = DBOField()
+    destination = DBOLField(dbo_class_id='room', required=True)
     direction = DBOField()
     desc = DBOField()
     aliases = DBOField([])
@@ -227,7 +227,7 @@ class Room(ChildDBO, Attachable, Scriptable):
                 if template.divisible:
                     if not curr_count:
                         instance = template.create_instance(self)
-                        instance.quantity = random.randrange(a_reset.reset_count, a_reset.reset_max + 1)
+                        instance.quantity = random.randrange(a_reset.reset_count, max(a_reset.reset_max, a_reset.reset_count) + 1)
                         instance.enter_env(self)
                 else:
                     for _ in range(a_reset.reset_count - curr_count):
@@ -253,6 +253,7 @@ class Room(ChildDBO, Attachable, Scriptable):
             db.evict_object(self)
 
     def reload(self):
+        self.attach()
         players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
         for player in players:
             player.change_env(safe_room)
