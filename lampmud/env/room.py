@@ -8,7 +8,7 @@ from lampost.di.resource import Injected, module_inject
 from lampost.event.zone import Attachable
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
-from lampost.db.dbofield import DBOField, DBOCField
+from lampost.db.dbofield import DBOField, DBOCField, DBOLField
 from lampost.gameops.script import Scriptable, Shadow
 
 from lampmud.comm.broadcast import Broadcast
@@ -40,8 +40,8 @@ class Exit(CoreDBO):
     class_id = 'exit'
 
     target_class = None
+    destination = DBOField()
     direction = DBOField()
-    destination = DBOField(dbo_class_id="room", required=True)
     desc = DBOField()
     aliases = DBOField([])
 

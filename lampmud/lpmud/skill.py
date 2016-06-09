@@ -137,7 +137,20 @@ def add_skill_action(target, obj, **_):
 
 @imm_action("remove skill", target_class="args", prep="from", obj_msg_class="skills", self_object=True)
 def remove_skill(target, obj, **_):
-    obj.remove_skill(target[0])
+    try:
+        skill_name = target[0]
+    except IndexError:
+        raise ActionError("Skill name required")
+    if ':' in skill_name:
+        skill_id = skill_name
+    else:
+        for skill_type in dbo_types(SkillTemplate):
+            skill_id = '{}:{}'.format(skill_type.dbo_key_type, skill_name)
+            if skill_id in obj.skills:
+                break
+            else:
+                skill_id = None
+    obj.remove_skill(skill_id)
     if getattr(obj, 'dbo_id', None):
         db.save_object(obj)
     return "Removed {} from {}".format(target, obj.name)

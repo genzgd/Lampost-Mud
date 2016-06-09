@@ -45,12 +45,12 @@ class AreaInstance():
             log.error("Null room passed to area instance")
             return
         try:
-            instance = self.rooms[room.dbo_id]
+            my_room = self.rooms[room.dbo_id]
         except KeyError:
-            instance = room.clone()
-            instance.instance = self
-            self.rooms[room.dbo_id] = instance
-        return instance
+            my_room = room.clone()
+            my_room.instance = self
+            self.rooms[room.dbo_id] = my_room
+        return my_room
 
 
 verb_exit = BroadcastMap(ea='{n} leaves {N}')
