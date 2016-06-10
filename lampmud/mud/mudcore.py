@@ -27,29 +27,31 @@ def _start():
     ev.register('player_create', _player_create)
     ev.register('player_attach', _player_attach, priority=-100)
     ev.register('missing_env', _start_env)
-    ev.register('imm_attach', _imm_attach, priority=-50)
+    ev.register('imm_update', _imm_configure, priority=-50)
 
 
 def _player_create(player, user):
     if len(user.player_ids) == 1 and not player.imm_level:
         player.imm_level = perm.perm_level('builder')
         perm.update_immortal_list(player)
-        ev.dispatch('imm_level_change', player, 0)
+        ev.dispatch('imm_update', player, 0)
         message_service.add_message('system', "Welcome!  Your first player has been given immortal powers.  Check out the 'Editor' window on the top menu.", player.dbo_id)
     player.room_id = config_value('default_start_room')
 
 
 def _player_attach(player):
     shout_channel.add_sub(player)
-    if player.imm_level:
-        ev.dispatch('imm_attach', player)
+    _imm_configure(player, 0)
     player.change_env(_start_env(player))
 
 
-def _imm_attach(player):
-    player.can_die = False
-    player.immortal = True
-    imm_channel.add_sub(player)
+def _imm_configure(player, old_level):
+    player.can_die = player.imm_level == 0
+    player.immortal = not player.can_die
+    if player.immortal and not old_level:
+        imm_channel.add_sub(player)
+    elif not player.immortal and old_level:
+        imm_channel.remove_sub(player)
     for cmd in imm_actions:
         if player.imm_level >= perm.perm_level(cmd.imm_level):
             player.enhance_soul(cmd)

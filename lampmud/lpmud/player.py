@@ -69,17 +69,16 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         self.session.update_status(status)
 
     def die(self):
-        if not self.can_die:
+        if self.can_die:
+            self.broadcast(s="Alas, you succumb to your injuries.", e="{n} dies.", display="combat")
+            self.display_line("Unless other help intercedes, you will be returned to your last touchstone in 90 seconds.<br/>"
+                              "You may hasten the end if you 'abandon' all hope of assistance.", 'system')
+            self._death_effects()
+            self._bind_pulse = ev.register_once(self.resurrect, seconds=90)
+        else:
             self.broadcast(s="You die.  Fortunately, you're immortal.", e="{n} examines {s} otherwise fatal wounds and shrugs.")
             self.health = 1
             self.start_refresh()
-            return
-
-        self.display_line("Alas, you succumb to your injuries.", 'combat')
-        self.display_line("Unless other help intercedes, you will be returned to your last touchstone in 90 seconds.<br/>"
-                          "You may hasten the end if you 'abandon' all hope of assistance.", 'system')
-        self._death_effects()
-        self._bind_pulse = ev.register_once(self.resurrect, seconds=90)
         self.status_change()
 
     def resurrect(self, auto=True):
