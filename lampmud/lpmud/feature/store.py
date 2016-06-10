@@ -58,7 +58,7 @@ class Store(ItemDBO):
             offer.quantity = self._offer(target)
             offer.enter_env(source)
             sell_msg = ''.join(("You sell {N} for ", offer.name, '.'))
-            self.buybacks.appendleft(Buyback(source.dbo_id, target, offer.quantity, current_pulse()))
+            self.buybacks.appendleft(Buyback(source.dbo_id, target, offer.quantity, ev.current_pulse))
             self._start_buyback()
         else:
             sell_msg = "You deposit {N}."
