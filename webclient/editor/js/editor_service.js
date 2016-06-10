@@ -3,7 +3,7 @@ angular.module('lampost_editor').service('lpEditor',
   function ($q, lpUtil, lpRemote, lpDialog, lpCache, lpEvent, contextDefs) {
 
     var lpEditor = this;
-    var contextMap = {};
+    var contextMap;
 
     function EditContext(id, init) {
       angular.copy(init, this);
@@ -64,11 +64,11 @@ angular.module('lampost_editor').service('lpEditor',
       }));
     }
 
-    angular.forEach(contextDefs, function(context, contextId) {
-      contextMap[contextId] = new EditContext(contextId, context);
-    });
-
     this.init = function (data) {
+      contextMap = {};
+      angular.forEach(contextDefs, function(context, contextId) {
+        contextMap[contextId] = new EditContext(contextId, context);
+      });
       this.playerId = data.playerId;
       this.immLevel = data.imm_level;
       lpCache.clearAll();

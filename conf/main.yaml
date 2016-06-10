@@ -134,7 +134,7 @@ server:
     value: 5
   -
     name: 'broadcast_interval'
-    desc: 'Broadcast to all clients of game status (such as player list) in seconds.'
+    desc: 'Broadcast to all clients of application status (such as a player list) in seconds.'
     value: 30
   -
     name: 'link_dead_interval'

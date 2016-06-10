@@ -10,10 +10,13 @@ if __name__ != "__main__":
 
 args = startargs.create_parser.parse_args()
 
+# We set the logging configuration before importing other modules so that the root logger is properly configured
 logging.init_config(args)
 logging.root_logger.info("Started with args {}", args)
 
-# We set the logging configuration before importing other modules so that the root logger is properly configured
+from lampost.di.resource import register
+register('log', logging.LogFactory())
+
 from lampost.setup import newsetup
 
 if args.flush:
