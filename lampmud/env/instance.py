@@ -1,4 +1,4 @@
-from lampost.db.dbofield import DBOField
+from lampost.db.dbofield import DBOField, DBOLField
 
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops import target_gen
@@ -34,7 +34,7 @@ class AreaInstance():
                 self.clear_rooms()
                 if entity.group:
                     entity.group.instance = None
-            instance_manager.delete(self.instance_id)
+                instance_manager.delete(self.instance_id)
 
     def clear_rooms(self):
         for room in self.rooms.values():
@@ -62,7 +62,7 @@ dir_enter = BroadcastMap(ea='{n} arrives from the {N}')
 class Entrance(ItemDBO):
     class_id = 'entrance'
 
-    destination = DBOField(dbo_class_id="room", required=True)
+    destination = DBOLField(dbo_class_id="room", required=True)
     verb = DBOField('enter')
     direction = DBOField(None)
     instanced = DBOField(True)

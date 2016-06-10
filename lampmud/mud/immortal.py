@@ -8,8 +8,6 @@ from lampost.server.user import User
 import lampmud.setup.update
 
 from lampmud.comm.broadcast import substitute
-from lampmud.env.room import Room
-from lampmud.model.area import Area
 
 from lampmud.mud.action import imm_action
 from lampost.util.lputil import find_extra, patch_object, str_to_primitive
@@ -25,7 +23,7 @@ module_inject(__name__)
 
 @imm_action('edit')
 def edit(source, **_):
-    perm.check_perm(source, db.load_object(source.env.parent_id, Area))
+    perm.check_perm(source, db.load_object(source.env.parent_id, 'area'))
     return {'start_room_edit': source.env.dbo_id}
 
 
@@ -86,17 +84,17 @@ def goto(source, args, **_):
     if session:
         new_env = session.player.env
     else:
-        area = db.load_object(dest, Area, True)
+        area = db.load_object(dest, 'area', True)
         if area:
             dest_rooms = area.dbo_child_keys('room')
             if dest_rooms:
-                new_env = db.load_object(dest_rooms[0], Room, True)
+                new_env = db.load_object(dest_rooms[0], 'room', True)
             else:
                 raise ActionError("No rooms in area {}.".format(args[0]))
         else:
             if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])
-            new_env = db.load_object(dest, Room, True)
+            new_env = db.load_object(dest, 'room', True)
     if new_env:
         source.change_env(new_env)
     else:
