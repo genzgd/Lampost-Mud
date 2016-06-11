@@ -152,3 +152,17 @@ server:
     name: 'max_channel_history'
     desc: 'Maximum number of messages to keep in database per channel'
     value: 1000
+
+
+editor:
+  - name: 'editor_tabs'
+    desc: 'Permissions for editor navigation'
+    value:
+      builder:
+        - 'build'
+        - 'mud'
+      admin:
+        - 'player'
+      supreme:
+        - 'admin'
+        - 'config'
