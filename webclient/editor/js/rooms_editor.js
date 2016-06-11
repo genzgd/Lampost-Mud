@@ -61,7 +61,9 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
 
       $scope.visit = function () {
         lpEditorLayout.mudWindow();
-        lpRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id});
+        lpRemote.request('editor/room/visit', {room_id: $scope.model.dbo_id}).catch(
+          function(error) {lpDialog.showOk(error.text)}
+        );
       };
 
       $scope.exitRoom = function (exit) {
