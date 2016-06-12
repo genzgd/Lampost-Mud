@@ -61,7 +61,7 @@ angular.module('lampost_editor').controller('EditEntranceCtrl', ['$scope', 'lpEd
 
     $scope.ent_dirs = angular.copy(lpEditor.constants.directions);
     $scope.ent_dirs.unshift({key: 'unused', name: "Use Command"});
-    $scope.parentFilter = 'hasRooms';
+    $scope.parentFilter = 'hasChild:room';
 
 
     function initialize() {

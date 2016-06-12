@@ -45,17 +45,24 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
 angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'lpRemote', 'lpEditorTypes', 'lpEditor',
   function ($q, $scope, lpRemote, lpEditorTypes, lpEditor) {
 
+    $scope.addObj = {};
     $scope.scriptSelect = new lpEditorTypes.ChildSelect('script', 'script');
-    $scope.scriptSelect.setSource();
 
-    $scope.newAdd = !lpEditor.addObj;
-    if ($scope.newAdd) {
-
-      originalText = '';
-    } else {
-      $scope.shadowScript = angular.copy(lpEditor.addObj);
+    function initialize() {
+        if (lpEditor.addObj) {
+          $scope.addObj = lpEditor.addObj;
+          $scope.newAdd = false;
+        } else {
+          $scope.addObj = {priority: 0, func_name: ''};
+          $scope.newAdd = true;
+        }
     }
 
+    $scope.validScript = function() {
+      return $scope.addObj.func_name && $scope.addObj.script
+    };
+    $scope.$on('addInit', initialize);
 
+    initialize();
 
   }]);

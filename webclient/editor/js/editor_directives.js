@@ -216,7 +216,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
 
   var childSelect, selectId, context, parentKey, childKey, cacheObj, invalid;
 
-  invalid = {dbo_id: "--N/A--", invalid: true};
+  invalid = {dbo_id: "--N/A--", name: "--N/A--", title: "--N/A--", invalid: true};
   selectId = $attrs.lpChildSelect;
   childSelect = $scope.$eval(selectId);
   context = lpEditor.getContext(childSelect.type);
@@ -285,7 +285,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
   };
 
   $scope.selectChild = function() {
-    if (!$scope.child.invalid) {
+    if ($scope.child && !$scope.child.invalid) {
       childSelect.childSelect();
       childSelect.setValue($scope.child);
       lpEvent.dispatch('childUpdate');
@@ -300,10 +300,21 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
     parentList();
   };
 
+  this.startAddEdit = function(addObj) {
+    $scope.can_write = $scope.model.can_write;
+    delete $scope.parent;
+    delete $scope.child;
+    childSelect.setSource(addObj);
+    parentList();
+  };
+
   lpEvent.register("modelDeleted", parentList, $scope);
   lpEvent.register("modelUpdated", parentList, $scope);
   lpEvent.register("modelInserted", parentList, $scope);
   lpEvent.register('editReady', this.startEdit, $scope);
+  if ($scope.addObj) {
+    this.startAddEdit($scope.addObj);
+  }
 }]);
 
 
@@ -332,7 +343,12 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
       lpCache.deref(parentKey);
       parentKey = context.parentType;
       lpCache.cache(parentKey).then(function (parents) {
-        $scope.sourceList = parentFilter ? $filter(parentFilter)(parents) : parents;
+        if (parentFilter) {
+          var f = parentFilter.split(":");
+          $scope.sourceList = $filter(f[0])(parents, f[1]);
+        } else {
+          $scope.sourceList = parents;
+        }
         $scope.vars.parent = lpCache.cachedValue(parentKey + ':' + parentId);
         loadChildren();
       });
@@ -340,7 +356,7 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
 
     function loadChildren() {
       lpCache.deref(listKey);
-      listKey = type + ':' + parentId
+      listKey = type + ':' + parentId;
       lpCache.cache(listKey).then(function (children) {
         $scope.childList = children;
         listChange(children);

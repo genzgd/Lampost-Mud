@@ -7,7 +7,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         addLabel: 'Article', addId: 'article', resetType: 'article',
         resetInclude: 'editor/panels/article_load.html'
       };
-      var wideMode = {store: true, script: true};
+      var wideMode = {store: true};
 
       $scope.dirMap = {};
 
@@ -27,7 +27,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         $scope.activeAdd = addType;
         $scope.wideMode = wideMode[addType];
         $scope.addPanel = 'editor/panels/' + addType + '.html';
-        $scope.$broadcast('addInit');
+        $scope.$broadcast('addInit', addObj, addOptions);
       };
 
       $scope.closeAdd = function () {
@@ -156,7 +156,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         });
       };
 
-
       $scope.startFeature = function (newFeature) {
         $scope.closeAdd();
         var feature = angular.copy(newFeature);
@@ -170,15 +169,6 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       $scope.deleteFeature = function () {
         $scope.model.features.splice($scope.model.features.indexOf($scope.activeFeature), 1);
         $scope.closeAdd();
-      };
-
-      $scope.selectScript = function (script) {
-        angular.forEach($scope.model.scripts, function (oldScript) {
-          if (oldScript == script.dbo_id) {
-            lpDialog.showOk("Script Exists", "This script is already in use.")
-          }
-        });
-        $scope.model.scripts.push(script.dbo_id);
       };
 
       $scope.deleteScript = function (script_id) {

@@ -3,73 +3,61 @@
     <span class="h5">Shadow Script</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
   </div>
   <div class="panel-body">
-   <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="scriptSelect">
-        <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="control-label">Script Area</label>
-                <select class="form-control input.sm" ng-model="parent" ng-change="selectParent()"
-                        ng-options="parent as parent.dbo_id for parent in parentList"></select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="control-label">Script Name</label>
-                <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
-                        ng-options="child.dbo_id as child.title for child in childList">
-                  <option value="">Select Room</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <lp-data-error type="scriptSelect"></lp-data-error>
-            </div>
-          </div>
+    <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="scriptSelect">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label class="control-label">Script</label>
+          <select class="form-control input.sm" ng-model="child" ng-change="selectChild()"
+                  ng-options="child as child.title for child in childList">
+            <option value="">Select Script</option>
+          </select>
         </div>
       </div>
-    <div ng-if="validReset">
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="control-label">{{addLabel}} Id</label>
-            <select class="form-control input-sm" ng-model="reset[addId]" ng-change="changeResetId()"
-              ng-options="object.dbo_id as idOnly(object) for object in objects" autofocus></select>
-          </div>
-
-        </div>
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="control-label">Source Area</label>
-            <select class="form-control input.sm" ng-model="vars.areaId" ng-change="changeArea()"
-              ng-options="area.dbo_id as area.dbo_id for area in sourceAreas" required></select>
-          </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label class="control-label">Source Area</label>
+          <select class="form-control input.sm" ng-model="parent" ng-change="selectParent()"
+                  ng-options="parent as parent.dbo_id for parent in parentList"></select>
         </div>
       </div>
       <div class="row">
         <div class="col-md-12">
-          <h5>{{resetObj.title}}</h5>
-          <div class="well well-sm">{{resetObj.desc}}</div>
+          <lp-data-error type="scriptSelect"></lp-data-error>
         </div>
       </div>
 
     </div>
-
-    <ng-include src="resetInclude"></ng-include>
+    <div class="row">
+      <div class="col-md-8">
+        <div class="form-group">
+          <label class="control-label">Function</label>
+          <select class="form-control input.sm" ng-model="addObj.func_name" required="true"
+                  ng-options="shadow as shadow for shadow in shadows">
+            <option value="">Select Function</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label class="control-label">Priority</label>
+          <input class="form-control input-sm" type="number" ng-model="addObj.priority" required="true"/>
+        </div>
+      </div>
+    </div>
 
     <div class="pull-right">
-      <button ng-if="!newAdd && validScript" type="button" ng-click="deleteScriptRef()" class="btn btn-sm btn-danger">Delete Script
+      <button ng-if="!newAdd && validScript()" type="button" ng-click="deleteScriptRef()" class="btn btn-sm btn-danger">
+        Delete Script
         {{addLabel}}
       </button>
-      <button ng-if="newAdd && validScript" type="button" ng-click="createScriptRef()" class="btn btn-sm btn-warning">Add Script
+      <button ng-if="newAdd && validScript()" type="button" ng-click="createScriptRef()" class="btn btn-sm btn-warning">
+        Add Script
       </button>
-      <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">{{newAdd ? 'Cancel' : 'Close'}}
+      <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">{{newAdd ? 'Cancel' :
+        'Close'}}
       </button>
     </div>
   </div>
-
 </div>
 
 

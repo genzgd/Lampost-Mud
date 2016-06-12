@@ -1,9 +1,12 @@
-angular.module('lampost_editor').filter('hasRooms', ['$filter', function($filter) {
-
-    return function(items) {
-        return $filter('filter')(items, function(value) {
-            return value.room_list.length;
+angular.module('lampost_editor').filter('hasChild', [function() {
+    return function(items, filterType) {
+        var result = [];
+        angular.forEach(items, function(item) {
+            if (item[filterType + "_list"].length) {
+                result.push(item);
+            }
         });
+        return result;
     }
 }]);
 
