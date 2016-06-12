@@ -27,7 +27,7 @@ def _start():
     ev.register('player_create', _player_create)
     ev.register('player_attach', _player_attach, priority=-100)
     ev.register('missing_env', _start_env)
-    ev.register('imm_update', _imm_configure, priority=-50)
+    ev.register('imm_attach', _imm_attach, priority=-50)
 
 
 def _player_create(player, user):
@@ -41,11 +41,11 @@ def _player_create(player, user):
 
 def _player_attach(player):
     shout_channel.add_sub(player)
-    _imm_configure(player, 0)
+    ev.dispatch('imm_attach', player, 0)
     player.change_env(_start_env(player))
 
 
-def _imm_configure(player, old_level):
+def _imm_attach(player, old_level):
     player.can_die = player.imm_level == 0
     player.immortal = not player.can_die
     if player.immortal and not old_level:
