@@ -4,8 +4,9 @@
   <div class="collapse in panel-collapse script-list">
     <table class="table table-condensed table-hover hand">
       <tr ng-repeat="script in model.shadow_refs" ng-click="modifyScript(script)">
-        <td class="col-md-9">{{script.name}}</td>
-        <td class="col-md-3">{{script_priority}}</td>
+        <td class="col-md-4">{{script.script}}</td>
+        <td class="col-md-5">{{script.func_name}}</td>
+        <td class="col-md-3">{{script.priority}}</td>
       </tr>
     </table>
   </div>

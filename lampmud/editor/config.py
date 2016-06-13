@@ -1,7 +1,7 @@
 import inspect
 
 from lampost.di.config import config_value
-from lampost.gameops.script import Scriptable
+from lampost.gameops.script import Scriptable, Shadow
 from lampost.server.handlers import SessionHandler
 from lampost.db.registry import get_dbo_class, dbo_types, implementors
 
@@ -25,7 +25,7 @@ class Constants(SessionHandler):
         constants['features'] = [get_dbo_class(feature_id)().edit_dto for feature_id in ['touchstone', 'entrance', 'store']]
         shadow_types = {'any': [{'name': 'any_func', 'args': ['self']}]}
         for class_id, cls in implementors(Scriptable):
-            shadows = [{'name': name, 'args': func.shadow_args.args} for name, func in inspect.getmembers(cls) if hasattr(func, 'shadow_args')]
+            shadows = [{'name': name, 'args': inspect.getargspec(member.func).args} for name, member in inspect.getmembers(cls) if isinstance(member, Shadow)]
             if shadows:
                 shadow_types[class_id] = shadows
         constants['shadow_types'] = shadow_types

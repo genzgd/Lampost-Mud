@@ -1,6 +1,6 @@
 <div class="text-left panel panel-warning" ng-controller="ScriptRefCtrl">
   <div class="panel-heading panel-condensed">
-    <span class="h5">Shadow Script</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
+    <span class="h5">Add Shadow Script</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
   </div>
   <div class="panel-body">
     <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="scriptSelect">
@@ -29,10 +29,10 @@
     </div>
     <div class="row">
       <div class="col-md-8">
-        <div class="form-group">
+        <div class="form-group" ng-disabled="!addObj.script">
           <label class="control-label">Function</label>
           <select class="form-control input.sm" ng-model="addObj.func_name" required="true"
-                  ng-options="shadow as shadow for shadow in shadows">
+                  ng-options="func.name as func.name for func in shadows">
             <option value="">Select Function</option>
           </select>
         </div>
@@ -46,15 +46,10 @@
     </div>
 
     <div class="pull-right">
-      <button ng-if="!newAdd && validScript()" type="button" ng-click="deleteScriptRef()" class="btn btn-sm btn-danger">
-        Delete Script
-        {{addLabel}}
-      </button>
-      <button ng-if="newAdd && validScript()" type="button" ng-click="createScriptRef()" class="btn btn-sm btn-warning">
+      <button ng-if="validScript()" type="button" ng-click="addScriptRef()" class="btn btn-sm btn-warning">
         Add Script
       </button>
-      <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">{{newAdd ? 'Cancel' :
-        'Close'}}
+      <button type="button" ng-click="closeAdd()" class="never-disable btn btn-sm btn-default">Cancel
       </button>
     </div>
   </div>

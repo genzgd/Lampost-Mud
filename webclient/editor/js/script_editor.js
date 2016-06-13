@@ -42,11 +42,45 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
 
   }]);
 
-angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'lpRemote', 'lpEditorTypes', 'lpEditor',
-  function ($q, $scope, lpRemote, lpEditorTypes, lpEditor) {
 
-    $scope.addObj = {};
+angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'lpRemote', 'lpEditFilters',
+  'lpEditorTypes', 'lpEditor', function ($q, $scope, lpRemote, lpEditFilters, lpEditorTypes, lpEditor) {
+
+    var classMap, parentFilter, childFilter, classId;
+    classId = $scope.model.class_id;
+    classMap = lpEditor.constants['shadow_types'];
+
     $scope.scriptSelect = new lpEditorTypes.ChildSelect('script', 'script');
+    $scope.scriptSelect.parentFilter = lpEditFilters.hasChild('script');
+    $scope.scriptSelect.childFilter = function(scripts) {
+      var valid = [];
+      angular.forEach(scripts, function(script) {
+        if (script.cls_type === classId || script.cls_type === 'any') {
+          valid.push(script);
+        }
+      });
+      return valid;
+    };
+
+    $scope.scriptSelect.childSelect = function(script) {
+      if (!script || script.invalid) {
+        $scope.addObj.script = null;
+        $scope.addObj.func_name = null;
+        return;
+      }
+      $scope.addObj.script = script.dbo_id;
+      if (script.cls_shadow === 'any_func') {
+        $scope.shadows = classMap[classId];
+        $scope.addObj.func_name = null;
+      } else {
+        $scope.shadows = classMap[classId][script.cls_shadow];
+        $scope.addObj.func_name = script.cls_shadow;
+      }
+    };
+
+    $scope.scriptSelect.parentSelect = function() {
+      $scope.addObj.script = null;
+    };
 
     function initialize() {
         if (lpEditor.addObj) {
@@ -61,6 +95,12 @@ angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'l
     $scope.validScript = function() {
       return $scope.addObj.func_name && $scope.addObj.script
     };
+
+    $scope.addScriptRef = function() {
+      $scope.model.shadow_refs.push($scope.addObj);
+      $scope.closeAdd();
+    };
+
     $scope.$on('addInit', initialize);
 
     initialize();

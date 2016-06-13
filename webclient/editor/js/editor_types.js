@@ -165,7 +165,9 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     this.sourceProp = sourceProp;
     this.type = type;
   }
-  ChildSelect.prototype.parentFilter = ChildSelect.prototype.childFilter = ['filter', {}];
+  ChildSelect.prototype.parentFilter = ChildSelect.prototype.childFilter = function(items) {
+    return items;
+  };
   ChildSelect.prototype.parentSelect = ChildSelect.prototype.childSelect = angular.noop;
   ChildSelect.prototype.setSource = function(model) {
     this.initial = true;

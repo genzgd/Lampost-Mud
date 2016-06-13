@@ -230,7 +230,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
   function parentList() {
     lpCache.deref(parentKey);
     lpCache.cache(parentKey).then(function(parents) {
-      $scope.parentList = $filter(childSelect.parentFilter[0]).apply(null, [parents].concat(childSelect.parentFilter.slice(1)));
+      $scope.parentList = childSelect.parentFilter(parents);
       if ($scope.parentList.length) {
         $scope.parent = $scope.parentList[0];
         if (typeof childSelect.value === 'string') {
@@ -254,7 +254,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
     lpCache.deref(childKey);
     childKey = childSelect.type + ':' + $scope.parent.dbo_id;
     lpCache.cache(childKey).then(function(children) {
-      $scope.childList = $filter(childSelect.childFilter[0]).apply(null, [children].concat(childSelect.childFilter.slice(1)));
+      $scope.childList = childSelect.childFilter(children);
       if ($scope.childList.length) {
         if (typeof childSelect.value === 'string' && childSelect.value.split(':')[0] === $scope.parent.dbo_id) {
           cacheObj = childSelect.value && lpCache.cachedValue(childSelect.type + ':' + childSelect.value);
@@ -286,8 +286,8 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
 
   $scope.selectChild = function() {
     if ($scope.child && !$scope.child.invalid) {
-      childSelect.childSelect();
       childSelect.setValue($scope.child);
+      childSelect.childSelect($scope.child);
       lpEvent.dispatch('childUpdate');
     }
   };
@@ -343,12 +343,7 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
       lpCache.deref(parentKey);
       parentKey = context.parentType;
       lpCache.cache(parentKey).then(function (parents) {
-        if (parentFilter) {
-          var f = parentFilter.split(":");
-          $scope.sourceList = $filter(f[0])(parents, f[1]);
-        } else {
-          $scope.sourceList = parents;
-        }
+        $scope.sourceList = parentFilter ? parentFilter(parents) : parents;
         $scope.vars.parent = lpCache.cachedValue(parentKey + ':' + parentId);
         loadChildren();
       });

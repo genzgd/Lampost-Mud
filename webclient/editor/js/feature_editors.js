@@ -56,13 +56,12 @@ angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter
 }]);
 
 
-angular.module('lampost_editor').controller('EditEntranceCtrl', ['$scope', 'lpEditor',
-  function($scope, lpEditor) {
+angular.module('lampost_editor').controller('EditEntranceCtrl', ['$scope', 'lpEditFilters', 'lpEditor',
+  function($scope, lpEditFilters, lpEditor) {
 
     $scope.ent_dirs = angular.copy(lpEditor.constants.directions);
     $scope.ent_dirs.unshift({key: 'unused', name: "Use Command"});
-    $scope.parentFilter = 'hasChild:room';
-
+    $scope.parentFilter = lpEditFilters.hasChild('room');
 
     function initialize() {
        $scope.entrance = angular.copy($scope.activeFeature);

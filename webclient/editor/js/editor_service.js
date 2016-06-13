@@ -60,7 +60,6 @@ angular.module('lampost_editor').service('lpEditor',
         }
         context.newObj = data.new_object;
         context.perms = data.perms;
-        context.shadows = data.shadows;
         context.metadata = true;
       }));
     }

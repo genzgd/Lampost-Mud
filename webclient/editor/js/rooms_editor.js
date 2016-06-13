@@ -17,7 +17,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         {id: 'room_reset', label: 'Article', options: articleOptions},
         {id: 'extra', label: 'Extra'},
         {id: 'feature', label: 'Feature'},
-        {id: 'script', label: 'Script'}
+        {id: 'new_script', label: 'Script'}
       ];
 
       $scope.setAddType = function (addType, addOptions, addObj) {
@@ -125,7 +125,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
 
       $scope.modifyScript = function (script) {
         $scope.closeAdd();
-        $scope.setAddType('script', {}, script);
+        $scope.setAddType('modify_script', {}, script);
       };
 
       function editFeature(feature, isAdd) {

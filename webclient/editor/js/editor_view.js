@@ -39,7 +39,6 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
       lpEditor.context = context;
       $scope.isNew = !originalModel.dbo_id;
       $scope.isDirty = false;
-      $scope.shadows = context.shadows;
       $scope.editorLabel = context.label;
       if (context.parent) {
         $scope.parentType = lpEditor.getContext(context.parentType).label + ':';
