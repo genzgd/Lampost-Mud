@@ -46,6 +46,7 @@ class ExitLP(Exit):
             if guards:
                 raise ActionError(guards[0].guard_msg.format(source=guards[0].name, exit=self._dir.desc))
         source.display_line("You head {}.".format(self._dir.desc))
+        source.env.allow_leave(source, self)
 
     def _move_user(self, source):
         source.apply_costs(find_cost(self.dbo_owner))

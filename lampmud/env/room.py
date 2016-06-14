@@ -125,9 +125,11 @@ class Room(ChildDBO, Attachable, Scriptable):
     def long_desc(self):
         return self.desc
 
+    @Shadow
     def glance(self, source, **_):
         return source.display_line(self.name, 'room')
 
+    @Shadow
     def entity_enters(self, entity, enter_action, entry_msg=None):
         self.attach()
         self.receive_broadcast(entry_msg)
@@ -141,6 +143,7 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.denizens.remove(entity)
         tell(self.contents, "entity_leave_env", entity, exit_action)
 
+    @Shadow
     def add_inven(self, article):
         self.inven.append(article)
         article.pulse_stamp = ev.current_pulse
@@ -183,7 +186,8 @@ class Room(ChildDBO, Attachable, Scriptable):
             if my_exit.direction == exit_dir:
                 return my_exit
 
-    def allow_leave(self, *args):
+    @Shadow
+    def allow_leave(self, source, leave_exit):
         pass
 
     def check_garbage(self):
