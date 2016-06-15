@@ -1,5 +1,6 @@
 import itertools
 
+from lampost.gameops.script import Shadow, Scriptable
 from lampost.meta.auto import TemplateField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOTField
@@ -68,15 +69,18 @@ class Article(ItemInstance):
             return itertools.chain(self.plural_keys, self.single_keys)
         return self.single_keys
 
+    @Shadow
     def short_desc(self, observer=None):
         return self.name.capitalize()
 
+    @Shadow
     def long_desc(self, observer=None):
         long_desc = super().long_desc(observer)
         if self.quantity:
             return "{} ({})".format(long_desc, self.quantity)
         return long_desc
 
+    @Shadow
     def get(self, source, quantity=None, **_):
         source.check_inven(self, quantity)
         gotten = self
@@ -89,6 +93,7 @@ class Article(ItemInstance):
         source.broadcast(s="You pick up {N}", e="{n} picks up {N}", target=gotten)
         gotten.enter_env(source)
 
+    @Shadow
     def drop(self, source, quantity=None, **_):
         source.check_drop(self, quantity)
         if self.current_slot:
@@ -97,6 +102,7 @@ class Article(ItemInstance):
         drop.enter_env(source.env)
         source.broadcast(s="You drop {N}", e="{n} drops {N}", target=drop)
 
+    @Shadow
     def take_from(self, source, quantity):
         if quantity and quantity < self.quantity:
             self.quantity -= quantity
@@ -107,6 +113,7 @@ class Article(ItemInstance):
             source.remove_inven(self)
         return drop
 
+    @Shadow
     def enter_env(self, new_env):
         if self.quantity:
             try:

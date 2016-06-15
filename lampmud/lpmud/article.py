@@ -1,3 +1,5 @@
+from lampost.gameops.script import Scriptable
+
 from lampmud.comm.broadcast import BroadcastMap
 from lampost.meta.auto import TemplateField
 from lampost.db.dbofield import DBOField, DBOTField
@@ -17,7 +19,7 @@ class ArticleTemplateLP(ArticleTemplate):
             self.equip_msg = self.wield_msg
 
 
-class ArticleLP(Article):
+class ArticleLP(Article, Scriptable):
     equip_slot = DBOTField()
     current_slot = DBOField()
 

@@ -1,6 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-heading panel-condensed" data-toggle="collapse" data-target=".script-list">
-    Scripts <strong>({{model.shadow_refs.length}})</strong></div>
+    Scripts <strong>({{model.shadow_refs.length}})</strong><span class="pull-right"><a ng-show="model.can_write" ng-click="addScript()"><i
+            class="fa fa-plus"></i></a></div>
   <div class="collapse in panel-collapse script-list">
     <table class="table table-condensed table-hover hand">
       <tr ng-repeat="script in model.shadow_refs" ng-click="modifyScript(script)">
