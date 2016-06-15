@@ -15,6 +15,7 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$scope', 'lpE
     $scope.locals = {};
     $scope.equip_slots = angular.copy($scope.constants.equip_slots);
     $scope.equip_slots.unshift('[none]');
+    $scope.addPanel = null;
 
     $scope.syncSlot = function() {
         $scope.model.equip_slot = $scope.locals.equipSlot == '[none]' ? null : $scope.locals.equipSlot;
@@ -22,6 +23,20 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$scope', 'lpE
 
     lpEvent.register('editReady', function() {
       $scope.locals.equipSlot = lpEditor.original.equip_slot ? lpEditor.original.equip_slot : '[none]';
+      $scope.closeAdd();
     });
+
+    $scope.addScript = function() {
+      $scope.addPanel = 'editor/panels/new_script.html';
+    };
+
+    $scope.modifyScript = function() {
+      $scope.addPanel = 'editor/panels/modify_script.html';
+    };
+
+    $scope.closeAdd = function() {
+      $scope.addPanel = null;
+    }
+
 
   }]);
