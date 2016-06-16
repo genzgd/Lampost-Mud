@@ -26,11 +26,16 @@ angular.module('lampost_editor').controller('ArticleEditorCtrl', ['$scope', 'lpE
       $scope.closeAdd();
     });
 
-    $scope.addScript = function() {
+    $scope.addScript = function(event) {
+      if (event) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
       $scope.addPanel = 'editor/panels/new_script.html';
     };
 
-    $scope.modifyScript = function() {
+    $scope.modifyScript = function(scriptRef) {
+      lpEditor.addObj = scriptRef;
       $scope.addPanel = 'editor/panels/modify_script.html';
     };
 
