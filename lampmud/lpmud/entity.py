@@ -54,6 +54,9 @@ class EntityLP(Entity):
         self._cancel_actions()
         if self._refresh_pulse:
             del self._refresh_pulse
+        del self.effects
+        del self.defenses
+        del self.equip_slots
 
     def check_costs(self, costs):
         for pool, cost in costs.items():
@@ -279,7 +282,7 @@ class EntityLP(Entity):
 class Skilled(DBOFacet):
     skills = DBOField({}, 'untyped')
 
-    def _on_loaded(self):
+    def _on_attach(self):
         self.fight = Fight(self)
 
     def add_skill(self, skill):

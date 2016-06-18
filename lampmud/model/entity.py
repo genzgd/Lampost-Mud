@@ -1,10 +1,9 @@
 import itertools
-from collections import defaultdict
 
 from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
 from lampost.event.zone import Attachable
-from lampost.gameops.action import action_handler, add_actions, remove_action, add_action
+from lampost.gameops.action import action_handler
 from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.di.resource import Injected, module_inject
 
@@ -25,14 +24,11 @@ class Entity(DBOFacet, Attachable):
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
     def _on_attach(self):
-        self.soul = defaultdict(set)
-        self.inven_actions = defaultdict(set)
         self.followers = set()
-        self.registrations = set()
         self._soul_objects = set()
-        add_actions(self.inven_actions, self.inven)
 
     def _on_detach(self):
+        self._soul_objects.clear()
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
@@ -43,23 +39,22 @@ class Entity(DBOFacet, Attachable):
                 item.detach_shared(self)
         self.unfollow()
         self.leave_env()
-        self.equip_slots.clear()
+
+    @property
+    def my_actions(self):
+        return itertools.chain(self.inven, self._soul_objects)
 
     def enhance_soul(self, action):
-        add_action(self.soul, action)
         self._soul_objects.add(action)
 
     def diminish_soul(self, action):
-        remove_action(self.soul, action)
         self._soul_objects.discard(action)
 
     def add_inven(self, article):
         self.inven.append(article)
-        add_action(self.inven_actions, article)
 
     def remove_inven(self, article):
         self.inven.remove(article)
-        remove_action(self.inven_actions, article)
 
     def entity_enter_env(self, *_):
         pass

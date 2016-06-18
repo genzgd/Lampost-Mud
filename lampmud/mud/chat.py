@@ -50,6 +50,6 @@ def say(source, verb, command, **_):
     statement = parse_chat(verb, command)
     if not statement:
         raise ActionError("Say what?")
-    source.display_line("You say `{}'".format(statement), display='say')
+    source.display_line("You say, `{}'".format(statement), display='say')
     source.broadcast(raw="{} says, `{}'".format(source.name, statement),
                      display='say', silent=True)
