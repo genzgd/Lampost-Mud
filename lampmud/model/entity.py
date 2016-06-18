@@ -41,8 +41,8 @@ class Entity(DBOFacet, Attachable):
         self.leave_env()
 
     @property
-    def my_actions(self):
-        return itertools.chain(self.inven, self._soul_objects)
+    def current_actions(self):
+        return itertools.chain(self.inven, [self.env], self._soul_objects)
 
     def enhance_soul(self, action):
         self._soul_objects.add(action)
