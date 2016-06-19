@@ -14,8 +14,8 @@ imm_actions = set()
 
 def mud_action(verbs, msg_class=None, **kwargs):
     def dec_wrapper(func):
-        action = make_action(func, msg_class=msg_class, **kwargs)
-        _mud_actions.add_unique([verbs] if isinstance(verbs, str) else verbs, action)
+        action = make_action(func, verbs, msg_class, **kwargs)
+        _mud_actions.add_unique(action)
     return dec_wrapper
 
 

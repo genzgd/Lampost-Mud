@@ -27,9 +27,9 @@ def edit(source, **_):
     return {'start_room_edit': source.env.dbo_id}
 
 
-@imm_action(('cmds', 'commands'))
-def cmds(source, **_):
-    verb_lists = [" ".join(["/".join(list(verb)) for verb in source.soul])]
+@imm_action('commands')
+def commands(source, **_):
+    verb_lists = ["/".join(list(verb)) for verb in source.soul_actions.all_actions().values()]
     return ", ".join(sorted(verb_lists))
 
 

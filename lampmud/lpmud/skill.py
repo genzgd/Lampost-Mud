@@ -6,7 +6,7 @@ from lampost.db.registry import dbo_types
 from lampost.db.dbo import CoreDBO, KeyDBO, OwnerDBO
 from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import Template, TemplateInstance
-from lampost.gameops.action import ActionError, convert_verbs
+from lampost.gameops.action import ActionError
 
 from lampmud.mud.action import mud_action, imm_action
 
@@ -131,7 +131,7 @@ def add_skill_action(target, obj, **_):
             add_skill(skill_template, obj, skill_level, 'immortal')
             if getattr(obj, 'dbo_id', None):
                 db.save_object(obj)
-            return "Added {} to {}".format(target, obj.name)
+            return "Added {} to {}".format(skill_name, obj.name)
     return "Skill {} not found ".format(skill_name)
 
 
@@ -153,4 +153,4 @@ def remove_skill(target, obj, **_):
     obj.remove_skill(skill_id)
     if getattr(obj, 'dbo_id', None):
         db.save_object(obj)
-    return "Removed {} from {}".format(target, obj.name)
+    return "Removed {} from {}".format(skill_name, obj.name)

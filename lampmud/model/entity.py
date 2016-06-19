@@ -25,15 +25,15 @@ class Entity(DBOFacet, Attachable):
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
     def _on_attach(self):
-        self.followers = set()
         self._soul_objects = set()
-        self._soul_actions = ActionCache()
-        self._inven_actions = ActionCache()
-        self._inven_actions.add(self.inven)
+        self.inven_actions = ActionCache()
+        self.inven_actions.add(self.inven)
+        self.followers = set()
+        self.soul_actions = ActionCache()
 
     def _on_detach(self):
-        self._soul_actions = None
-        self._inven_actions = None
+        self.soul_actions = None
+        self.inven_actions = None
         self._soul_objects.clear()
         for follower in self.followers:
             del follower.following
@@ -48,24 +48,24 @@ class Entity(DBOFacet, Attachable):
 
     @property
     def current_actions(self):
-        return [self.env.current_actions, self._inven_actions, self._soul_actions, mud_actions]
+        return [self.env.current_actions, self.inven_actions, self.soul_actions, mud_actions]
 
     def enhance_soul(self, action):
         self._soul_objects.add(action)
-        self._soul_actions.add(action)
+        self.soul_actions.add(action)
 
     def diminish_soul(self, action):
         if action in self._soul_objects:
             self._soul_objects.remove(action)
-            self._soul_actions.remove(action)
+            self.soul_actions.remove(action)
 
     def add_inven(self, article):
         self.inven.append(article)
-        self._inven_actions.add(article)
+        self.inven_actions.add(article)
 
     def remove_inven(self, article):
         self.inven.remove(article)
-        self._inven_actions.remove(article)
+        self.inven_actions.remove(article)
 
     def entity_enter_env(self, *_):
         pass

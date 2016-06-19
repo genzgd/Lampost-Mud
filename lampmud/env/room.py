@@ -102,15 +102,27 @@ class Room(ChildDBO, Attachable, Scriptable):
     _garbage_pulse = None
 
     def _on_attach(self):
-        self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
-        self.inven = []
         self.denizens = []
+        self.inven = []
         self.mobiles = defaultdict(set)
+        self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
         self.current_actions = ActionCache()
         self.current_actions.add(self.instance_providers)
         self.current_actions.add(self.features)
         self.current_actions.add(self.exits)
         self.reset()
+
+    def _on_detach(self):
+        del self._garbage_pulse
+        for mobile_list in self.mobiles.values():
+            for mobile in mobile_list:
+                if mobile.env != self:
+                    mobile.enter_env(self)
+        for obj in self.contents:
+            if hasattr(obj, 'detach'):
+                obj.detach()
+        if not getattr(self, 'template', None):
+            db.evict_object(self)
 
     @property
     def action_providers(self):
@@ -209,7 +221,7 @@ class Room(ChildDBO, Attachable, Scriptable):
             obj_pulse = getattr(obj, 'pulse_stamp', 0)
             if obj_pulse > stale_pulse or hasattr(obj, 'is_player'):
                 return
-        self.clean_up()
+        self.detach()
 
     def reset(self):
         new_mobiles = defaultdict(list)
@@ -251,26 +263,14 @@ class Room(ChildDBO, Attachable, Scriptable):
     def social(self):
         pass
 
-    def clean_up(self):
-        if self._garbage_pulse:
-            del self._garbage_pulse
-        for mobile_list in self.mobiles.values():
-            for mobile in mobile_list:
-                if mobile.env != self:
-                    mobile.enter_env(self)
-        for obj in self.contents:
-            if hasattr(obj, 'detach'):
-                obj.detach()
-        if not getattr(self, 'template', None):
-            db.evict_object(self)
-        self.detach()
+
 
     def reload(self):
         self.attach()
         players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
         for player in players:
             player.change_env(safe_room)
-        self.clean_up()
+        self.detach()
         db.evict_object(self)
         new_room = db.load_object(self.dbo_key)
         if new_room:

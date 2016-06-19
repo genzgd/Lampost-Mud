@@ -2,7 +2,7 @@ from lampost.db.dbofield import DBOField, DBOLField
 
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops import target_gen
-from lampost.gameops.action import convert_verbs, ActionError
+from lampost.gameops.action import ActionError
 
 from lampmud.comm.broadcast import BroadcastMap
 from lampmud.env.movement import Direction
@@ -38,7 +38,7 @@ class AreaInstance():
 
     def clear_rooms(self):
         for room in self.rooms.values():
-            room.clean_up()
+            room.detach()
 
     def get_room(self, room):
         if not room:

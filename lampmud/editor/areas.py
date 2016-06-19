@@ -138,10 +138,11 @@ def find_area_room(room_id, player):
 
 def room_clean_up(room, session, area_delete=None):
     start_room = db.load_object(default_start_room.value, 'room')
-    for denizen in room.denizens:
+    for denizen in getattr(room, 'denizens', ()):
         if hasattr(denizen, 'is_player'):
             denizen.display_line('You were in a room that was destroyed by some unknown force')
             denizen.change_env(start_room)
+    room.detach()
     for my_exit in room.exits:
         other_room = my_exit.destination
         if other_room and other_room.parent_id != area_delete:
@@ -150,6 +151,5 @@ def room_clean_up(room, session, area_delete=None):
                     other_room.exits.remove(other_exit)
                     db.save_object(other_room, True)
                     edit_update.publish_edit('update', other_room, session, True)
-    room.clean_up()
     update_next_room_id(room.parent_dbo, session)
 
