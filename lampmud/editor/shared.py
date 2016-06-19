@@ -17,7 +17,7 @@ class SocialsEditor(Editor):
         return {broadcast_type['id']: broadcast.substitute(broadcast_type['id']) for broadcast_type in broadcast_types}
 
     def _pre_create(self):
-        if (self.raw['dbo_id'],) in mud_actions:
+        if mud_actions.primary(self.raw['dbo_id']):
             raise DataError("Verb already in use")
 
 
@@ -31,4 +31,3 @@ class SkillEditor(Editor):
     def _ensure_name(self):
         name = self.raw['name'] or self.raw['verb'] or self.raw['dbo_id']
         self.raw['name'] = name.capitalize()
-

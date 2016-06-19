@@ -30,11 +30,10 @@ class Social(KeyDBO, OwnerDBO):
     msg_class = 'social'
 
     def _on_loaded(self):
-        try:
-            if mud_actions[(self.dbo_id,)] != self:
-                log.warn("Mud action already exists for social id {}", self.dbo_id)
-        except KeyError:
-            mud_actions[(self.dbo_id,)] = make_action(self, self.dbo_id)
+        if mud_actions.primary(self.dbo_id):
+            log.warn("Mud action already exists for social id {}", self.dbo_id)
+        else:
+            mud_actions.add(make_action(self, self.dbo_id))
             all_socials[self.dbo_id] = self
         self.broadcast_map = BroadcastMap(**self.b_map)
 

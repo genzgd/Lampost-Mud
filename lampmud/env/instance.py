@@ -73,11 +73,11 @@ class Entrance(ItemDBO):
     def _on_loaded(self):
         if self.direction:
             self._dir = Direction.ref_map[self.direction]
-            self.verbs = (self._dir.obj_id,), (self._dir.desc,)
+            self.verbs = self._dir.obj_id, self._dir.desc
             self.target_class = 'no_args'
         else:
             self._dir = None
-            self.verbs = convert_verbs(self.verb)
+            self.verbs = self.verb
             self.target_class = [target_gen.action]
         if not self.title and self.verb:
             self.title = self.verb

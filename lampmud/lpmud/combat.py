@@ -216,7 +216,7 @@ class DefenseSkill(BaseSkill):
         return int((effect - cost) / max(self.prep_time, 1))
 
 
-@mud_action(('con', 'consider'), 'considered')
+@mud_action('consider', 'considered')
 def consider(target_method, source, target, **_):
     target_con = target_method()
     source_con = source.considered()

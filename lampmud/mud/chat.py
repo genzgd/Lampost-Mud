@@ -14,7 +14,7 @@ def emote(source, verb, command, **_):
     source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, statement))
 
 
-@mud_action(('t', 'tell'))
+@mud_action('tell')
 def tell(source, verb, args, command, **_):
     if not args:
         raise ActionError("Tell who?")
@@ -33,7 +33,7 @@ def tell_message(source, player, statement):
     source.display_line("You tell " + player.name + ", `" + statement + "'", 'tell_to')
 
 
-@mud_action(('r', 'reply'))
+@mud_action('reply')
 def reply(source, verb, command, **_):
     if not source.last_tell:
         raise ActionError("You have not received a tell recently.")

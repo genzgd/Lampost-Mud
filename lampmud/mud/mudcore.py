@@ -97,7 +97,7 @@ def quit_action(source, **_):
     ev.dispatch('player_logout', source.session)
 
 
-@mud_action(("look", "l", "exa", "examine", "look at"), "examine")
+@mud_action(("look", "examine", "look at"), "examine")
 def look(target_method, **kwargs):
     return target_method(**kwargs)
 

@@ -3,13 +3,14 @@ import itertools
 from lampost.db.dbo import DBOFacet
 from lampost.db.dbofield import DBOField
 from lampost.event.zone import Attachable
-from lampost.gameops.action import action_handler
+from lampost.gameops.action import action_handler, ActionCache
 from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.di.resource import Injected, module_inject
 
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
 
 log = Injected('log')
+mud_actions = Injected('mud_actions')
 module_inject(__name__)
 
 
@@ -26,8 +27,13 @@ class Entity(DBOFacet, Attachable):
     def _on_attach(self):
         self.followers = set()
         self._soul_objects = set()
+        self._soul_actions = ActionCache()
+        self._inven_actions = ActionCache()
+        self._inven_actions.add(self.inven)
 
     def _on_detach(self):
+        self._soul_actions = None
+        self._inven_actions = None
         self._soul_objects.clear()
         for follower in self.followers:
             del follower.following
@@ -42,19 +48,24 @@ class Entity(DBOFacet, Attachable):
 
     @property
     def current_actions(self):
-        return itertools.chain(self.inven, [self.env], self._soul_objects)
+        return [self.env.current_actions, self._inven_actions, self._soul_actions, mud_actions]
 
     def enhance_soul(self, action):
         self._soul_objects.add(action)
+        self._soul_actions.add(action)
 
     def diminish_soul(self, action):
-        self._soul_objects.discard(action)
+        if action in self._soul_objects:
+            self._soul_objects.remove(action)
+            self._soul_actions.remove(action)
 
     def add_inven(self, article):
         self.inven.append(article)
+        self._inven_actions.add(article)
 
     def remove_inven(self, article):
         self.inven.remove(article)
+        self._inven_actions.remove(article)
 
     def entity_enter_env(self, *_):
         pass

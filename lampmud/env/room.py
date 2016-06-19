@@ -6,6 +6,7 @@ from lampost.di.app import on_app_start
 from lampost.di.config import on_config_change, config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.event.zone import Attachable
+from lampost.gameops.action import ActionCache
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOCField, DBOLField
@@ -50,7 +51,7 @@ class Exit(CoreDBO):
 
     @property
     def verbs(self):
-        return (self._dir.dbo_id,), (self._dir.desc,)
+        return self._dir.dbo_id, self._dir.desc
 
     @property
     def name(self):
@@ -105,6 +106,10 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.inven = []
         self.denizens = []
         self.mobiles = defaultdict(set)
+        self.current_actions = ActionCache()
+        self.current_actions.add(self.instance_providers)
+        self.current_actions.add(self.features)
+        self.current_actions.add(self.exits)
         self.reset()
 
     @property
@@ -136,20 +141,24 @@ class Room(ChildDBO, Attachable, Scriptable):
         entity.env = self
         self.denizens.append(entity)
         entity.pulse_stamp = ev.current_pulse
+        self.current_actions.add(entity)
         tell(self.contents, "entity_enter_env", entity, enter_action)
 
     def entity_leaves(self, entity, exit_action, exit_msg=None):
         self.receive_broadcast(exit_msg)
         self.denizens.remove(entity)
+        self.current_actions.remove(entity)
         tell(self.contents, "entity_leave_env", entity, exit_action)
 
     @Shadow
     def add_inven(self, article):
         self.inven.append(article)
+        self.current_actions.add(article)
         article.pulse_stamp = ev.current_pulse
 
     def remove_inven(self, article):
         self.inven.remove(article)
+        self.current_actions.remove(article)
 
     @Shadow
     def receive_broadcast(self, broadcast, **_):
@@ -243,7 +252,6 @@ class Room(ChildDBO, Attachable, Scriptable):
         pass
 
     def clean_up(self):
-        self.detach()
         if self._garbage_pulse:
             del self._garbage_pulse
         for mobile_list in self.mobiles.values():
@@ -255,6 +263,7 @@ class Room(ChildDBO, Attachable, Scriptable):
                 obj.detach()
         if not getattr(self, 'template', None):
             db.evict_object(self)
+        self.detach()
 
     def reload(self):
         self.attach()
