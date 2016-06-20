@@ -1,6 +1,5 @@
-import math
-
 from lampost.event.zone import Attachable
+from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import TemplateField
 from lampost.db.dbo import CoreDBO, DBOFacet
 from lampost.db.dbofield import DBOField, DBOTField
@@ -8,24 +7,10 @@ from lampost.db.template import TemplateInstance
 from lampost.gameops.action import obj_action, ActionProvider
 
 
-def gen_keys(target_id):
-    if not target_id:
-        return
-    target_tuple = tuple(target_id.lower().split(" "))
-    prefix_count = len(target_tuple) - 1
-    target = target_tuple[prefix_count],
-    for x in range(int(math.pow(2, prefix_count))):
-        next_prefix = []
-        for y in range(prefix_count):
-            if int(math.pow(2, y)) & x:
-                next_prefix.append(target_tuple[y])
-        yield tuple(next_prefix) + target
-
-
 def target_keys(item):
-    t_keys = set(gen_keys(item.title))
+    t_keys = TargetKeys(item.title)
     for alias in item.aliases:
-        t_keys.update(gen_keys(alias))
+        t_keys.add(alias)
     return t_keys
 
 
@@ -48,10 +33,6 @@ class ItemFacet(DBOFacet, ActionProvider, Attachable):
     @property
     def name(self):
         return self.title
-
-    def target_finder(self, entity, target_key):
-        if target_key in self.target_keys:
-            yield self
 
     def short_desc(self, observer):
         return self.title
@@ -84,7 +65,7 @@ class ItemDBO(CoreDBO, ItemFacet):
     title = DBOField('')
     aliases = DBOField([])
 
-    target_keys = set()
+    target_keys = None
 
 
 class ItemInstance(TemplateInstance, ItemFacet):
@@ -92,7 +73,7 @@ class ItemInstance(TemplateInstance, ItemFacet):
     title = DBOTField('')
     aliases = DBOTField([])
 
-    target_keys = TemplateField(set())
+    target_keys = TemplateField()
 
 
 class Readable(DBOFacet, ActionProvider):

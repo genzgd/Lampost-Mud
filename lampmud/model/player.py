@@ -1,5 +1,6 @@
 from lampost.di.resource import Injected, module_inject
 from lampost.event.zone import Attachable
+from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import AutoField
 from lampost.db.dbo import KeyDBO, SystemDBO
 from lampost.db.dbofield import DBOField
@@ -47,7 +48,7 @@ class Player(KeyDBO, SystemDBO, Attachable):
     def _on_attach(self):
         ev.register_p(self.autosave, seconds=20)
         self.active_channels = set()
-        self.target_keys = {(self.dbo_id,)}
+        self.target_keys = TargetKeys(self.dbo_id)
         self.last_tell = None
 
     def _on_detach(self):

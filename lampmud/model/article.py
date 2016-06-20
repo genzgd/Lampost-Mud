@@ -1,6 +1,7 @@
 import itertools
 
-from lampost.gameops.script import Shadow, Scriptable
+from lampost.gameops.script import Shadow
+from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import TemplateField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOTField
@@ -8,8 +9,7 @@ from lampost.db.template import Template
 from lampost.gameops.action import ActionError
 from lampost.util.lputil import plural
 
-from lampmud.model.item import target_keys, ItemInstance
-
+from lampmud.model.item import ItemInstance, target_keys
 
 VOWELS = {'a', 'e', 'i', 'o', 'u'}
 
@@ -25,11 +25,11 @@ class ArticleTemplate(ChildDBO, Template):
 
     def _on_loaded(self):
         self.single_keys = target_keys(self)
+
         if self.divisible:
             self.plural_title = plural(self.title)
-            self.plural_keys = set()
-            for single_key in self.single_keys:
-                self.plural_keys.add(single_key[:-1] + (plural(single_key[-1:][0]),))
+            self.plural_keys = target_keys(self)
+            self.plural_keys.add(self.plural_title)
 
     def config_instance(self, instance, owner):
         instance.attach()
@@ -45,8 +45,8 @@ class Article(ItemInstance):
     level = DBOTField(1)
     quantity = DBOField()
     uses = DBOField()
-    single_keys = TemplateField(set())
-    plural_keys = TemplateField(set())
+    single_keys = TemplateField()
+    plural_keys = TemplateField()
     plural_title = TemplateField(None)
 
     @property
@@ -66,7 +66,7 @@ class Article(ItemInstance):
     @property
     def target_keys(self):
         if self.quantity and self.quantity > 1:
-            return itertools.chain(self.plural_keys, self.single_keys)
+            return self.plural_keys
         return self.single_keys
 
     @Shadow

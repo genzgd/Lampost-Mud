@@ -20,9 +20,9 @@ class Buyback():
         self.pulse = pulse
 
 
-def buyback_gen(target_key, entity, action):
+def buyback_gen(key_type, target_key, entity, action):
     for buyback in action.__self__.buybacks:
-        if buyback.owner == entity.dbo_id and target_key in buyback.article.target_keys:
+        if buyback.owner == entity.dbo_id and target_key in getattr(buyback.article.target_keys, key_type):
             yield buyback
 buyback_gen.abs_msg = "{target} is not available to buy back"
 

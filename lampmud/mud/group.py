@@ -1,9 +1,10 @@
 from lampost.di.resource import Injected, module_inject
 from lampost.event.zone import Attachable
 from lampost.gameops.action import obj_action, ActionProvider
+from lampost.gameops.target import TargetKeys
 from lampost.server.channel import Channel
 
-from lampmud.model.item import ItemDBO, gen_keys
+from lampmud.model.item import ItemDBO
 from lampmud.mud.action import mud_action
 
 ev = Injected('dispatcher')
@@ -11,7 +12,7 @@ module_inject(__name__)
 
 
 class Group(ActionProvider, Attachable):
-    target_keys = set(gen_keys('group'))
+    target_keys = TargetKeys('group')
 
     def __init__(self, leader):
         leader.group = self
@@ -77,7 +78,7 @@ class Group(ActionProvider, Attachable):
 
 class Invitation(ItemDBO):
     title = "A group invitation"
-    target_keys = set(gen_keys(title))
+    target_keys = TargetKeys(title)
 
     def __init__(self, group, invitee):
         self.group = group
