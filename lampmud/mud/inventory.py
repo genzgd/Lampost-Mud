@@ -14,7 +14,7 @@ def drop(source, target_method, quantity=None, **_):
     return target_method(source, quantity)
 
 
-@mud_action('inven')
+@mud_action(('i', 'inventory'))
 def inven(source, **_):
     if source.inven:
         source.display_line("You are carrying:")
