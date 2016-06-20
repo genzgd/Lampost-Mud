@@ -32,9 +32,6 @@ class Entity(DBOFacet, Attachable):
         self.soul_actions = ActionCache()
 
     def _on_detach(self):
-        self.soul_actions = None
-        self.inven_actions = None
-        self._soul_objects.clear()
         for follower in self.followers:
             del follower.following
             follower.display_line("You are no longer following {}.".format(self.name))
@@ -45,6 +42,13 @@ class Entity(DBOFacet, Attachable):
                 item.detach_shared(self)
         self.unfollow()
         self.leave_env()
+        del self.soul_actions
+        del self.inven_actions
+        del self._soul_objects
+
+    def _on_reload(self):
+        self.inven_actions.refresh(self.inven)
+        self.soul_actions.refresh(self._soul_objects)
 
     @property
     def current_actions(self):

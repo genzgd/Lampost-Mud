@@ -10,7 +10,7 @@ module_inject(__name__)
 
 @mud_action('emote')
 def emote(source, verb, command, **_):
-    statement = command[len(verb[0]) + 1:]
+    statement = parse_chat(verb, command)
     source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, statement))
 
 

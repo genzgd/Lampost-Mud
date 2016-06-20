@@ -5,7 +5,6 @@ from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import ActionError
 from lampost.util.lputil import ClientError
 
-from lampmud.env.room import safe_room
 from lampmud.mud.action import mud_action, imm_actions
 
 log = Injected('log')
@@ -80,15 +79,7 @@ def _start_env(player):
     if player_room:
         return player_room
 
-    default_start = db.load_object(config_value('default_start_room'), 'room')
-    if default_start:
-        return default_start
-
-    # This really should never happen
-    log.error("Unable to find valid room for player login", stack_info=True)
-    del player.room_id
-    db.save_object(player)
-    return safe_room
+    return db.load_object(config_value('default_start_room'), 'room')
 
 
 @mud_action(('quit', 'log out'))

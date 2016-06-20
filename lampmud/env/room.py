@@ -121,8 +121,6 @@ class Room(ChildDBO, Attachable, Scriptable):
         for obj in self.contents:
             if hasattr(obj, 'detach'):
                 obj.detach()
-        if not getattr(self, 'template', None):
-            db.evict_object(self)
 
     @property
     def action_providers(self):
@@ -263,23 +261,12 @@ class Room(ChildDBO, Attachable, Scriptable):
     def social(self):
         pass
 
-
-
-    def reload(self):
-        self.attach()
-        players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
-        for player in players:
-            player.change_env(safe_room)
-        self.detach()
-        db.evict_object(self)
-        new_room = db.load_object(self.dbo_key)
-        if new_room:
+    def _on_reload(self):
+        if self.attached:
+            players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
             for player in players:
-                player.change_env(new_room)
-
-
-safe_room = Room()
-safe_room.dbo_id = '_safe_:0'
-safe_room.title = "Safe Room"
-safe_room.desc = "A temporary safe room when room is being updated."
-safe_room.first_look = lambda source: None
+                player.leave_env(self)
+            self.detach()
+            self.attach()
+            for player in players:
+                player.enter_env(self)
