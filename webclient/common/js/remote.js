@@ -73,6 +73,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }
       if (status >= 500 && status < 600) {
         lpEvent.dispatch('server_error');
+        serverRequest('link');
         return;
       }
       connected = false;
