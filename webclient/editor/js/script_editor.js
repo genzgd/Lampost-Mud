@@ -101,12 +101,12 @@ angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'l
     };
 
     $scope.addScriptRef = function () {
-      $scope.model.shadow_refs.push(shadow);
+      $scope.model.script_refs.push(shadow);
       $scope.closeAdd();
     };
 
     $scope.deleteScriptRef = function () {
-      $scope.model.shadow_refs.splice($scope.model.shadow_refs.indexOf(shadow), 1);
+      $scope.model.script_refs.splice($scope.model.script_refs.indexOf(shadow), 1);
       $scope.closeAdd();
     };
 

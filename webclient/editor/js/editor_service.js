@@ -166,7 +166,7 @@ angular.module('lampost_editor').factory('contextDefs', ['$q', function($q) {
         {type: 'room', path: 'exits.destination'},
         {type: 'mobile', path: 'mobile_resets.mobile'},
         {type: 'article', path: 'article_resets.article'},
-        {type: 'script', path: 'shadow_refs.script'}
+        {type: 'script', path: 'script_refs.script'}
       ],
       extend: function(room) {
         room.new_id = this.parent.next_room_id;

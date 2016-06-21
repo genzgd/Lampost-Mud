@@ -37,12 +37,12 @@ class ScriptEditor(ChildrenEditor):
             errors = []
             for dbo_key in holder_keys:
                 holder = db.load_object(dbo_key)
-                for shadow_ref in getattr(holder, "shadow_refs", ()):
-                    if shadow_ref.script.dbo_id == existing.dbo_id:
+                for script_ref in getattr(holder, "script_refs", ()):
+                    if script_ref.script.dbo_id == existing.dbo_id:
                         if self.raw['cls_type'] != holder.class_id:
                             errors.append("{} wrong class id {}".format(holder.dbo_id, holder.class_id))
-                        elif shadow_ref.func_name != self.raw['cls_shadow']:
-                            errors.append("{} wrong function {}".format(holder.dbo_id, shadow_ref.func_name))
+                        elif script_ref.func_name != self.raw['cls_shadow']:
+                            errors.append("{} wrong function {}".format(holder.dbo_id, script_ref.func_name))
             if errors:
                 raise DataError("Incompatible usages must be removed first:  {}".format("  ".join(errors)))
         if self.raw['script_hash'] != existing.script_hash:
