@@ -47,7 +47,7 @@ class Article(ItemInstance):
     uses = DBOField()
     single_keys = TemplateField()
     plural_keys = TemplateField()
-    plural_title = TemplateField(None)
+    plural_title = TemplateField()
 
     @property
     def name(self):

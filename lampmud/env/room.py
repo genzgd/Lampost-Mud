@@ -111,6 +111,9 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.current_actions.add(self.features)
         self.current_actions.add(self.exits)
         self.reset()
+        for obj in self.contents:
+            if hasattr(obj, 'attach'):
+                obj.attach()
 
     def _on_detach(self):
         del self._garbage_pulse
@@ -221,6 +224,7 @@ class Room(ChildDBO, Attachable, Scriptable):
                 return
         self.detach()
 
+    @Shadow
     def reset(self):
         new_mobiles = defaultdict(list)
         for m_reset in self.mobile_resets:
