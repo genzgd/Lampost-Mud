@@ -11,6 +11,7 @@ from lampost.meta.auto import AutoField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOCField, DBOLField
 from lampost.gameops.script import Scriptable, Shadow
+from lampost.util.classes import call_each
 
 from lampmud.comm.broadcast import Broadcast
 from lampmud.env.movement import Direction
@@ -26,15 +27,6 @@ module_inject(__name__)
 def _config():
     global room_reset_time
     room_reset_time = config_value('room_reset_time')
-
-
-def tell(listeners, msg_type, *args):
-    for listener in listeners:
-        try:
-            receiver = getattr(listener, msg_type)
-        except AttributeError:
-            continue
-        receiver(*args)
 
 
 class Exit(CoreDBO):
@@ -111,9 +103,7 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.current_actions.add(self.features)
         self.current_actions.add(self.exits)
         self.reset()
-        for obj in self.contents:
-            if hasattr(obj, 'attach'):
-                obj.attach()
+        call_each(self.contents, 'attach')
 
     def _on_detach(self):
         del self._garbage_pulse
@@ -121,9 +111,7 @@ class Room(ChildDBO, Attachable, Scriptable):
             for mobile in mobile_list:
                 if mobile.env != self:
                     mobile.enter_env(self)
-        for obj in self.contents:
-            if hasattr(obj, 'detach'):
-                obj.detach()
+        call_each(self.contents, 'detach')
 
     @property
     def action_providers(self):
@@ -155,13 +143,13 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.denizens.append(entity)
         entity.pulse_stamp = ev.current_pulse
         self.current_actions.add(entity)
-        tell(self.contents, "entity_enter_env", entity, enter_action)
+        call_each(self.contents, "entity_enter_env", entity, enter_action)
 
     def entity_leaves(self, entity, exit_action, exit_msg=None):
         self.receive_broadcast(exit_msg)
         self.denizens.remove(entity)
         self.current_actions.remove(entity)
-        tell(self.contents, "entity_leave_env", entity, exit_action)
+        call_each(self.contents, "entity_leave_env", entity, exit_action)
 
     @Shadow
     def add_inven(self, article):
@@ -179,7 +167,7 @@ class Room(ChildDBO, Attachable, Scriptable):
             return
         if getattr(broadcast, 'target', None) == self:
             broadcast.target = None
-        tell(self.contents, "receive_broadcast", broadcast)
+        call_each(self.contents, "receive_broadcast", broadcast)
 
     def broadcast(self, **kwargs):
         self.receive_broadcast(Broadcast(**kwargs))
@@ -198,7 +186,7 @@ class Room(ChildDBO, Attachable, Scriptable):
                 my_exit.examine(source)
         else:
             source.display_line("No obvious exits", 'exit')
-        tell([x for x in self.contents if x != source], 'glance', source)
+        call_each([x for x in self.contents if x != source], 'glance', source)
 
     def short_exits(self):
         return ", ".join([ex.name for ex in self.exits])
