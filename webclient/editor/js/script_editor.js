@@ -5,14 +5,14 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
     classMap = lpEditor.constants['shadow_types'];
 
     $scope.updateShadowClass = function (forceUpdate) {
-      activeClass = classMap[$scope.model.cls_type];
-      if (!activeClass) {
-        activeClass = classMap['any'];
+      if ($scope.model.builder != 'shadow') {
+        return;
       }
+      activeClass = classMap[$scope.model.metadata.cls_type];
       lpUtil.stringSort(activeClass, 'name');
       $scope.shadowFuncs = activeClass;
 
-      if ($scope.model.cls_type !== 'any' && (forceUpdate || $scope.model.text == '')) {
+      if (forceUpdate || $scope.model.text == '') {
         $scope.updateArgs()
       }
     };
@@ -20,10 +20,10 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
     $scope.updateArgs = function () {
       var activeShadow, i, lines, firstLine;
       var shadowMap = lpUtil.toMap(activeClass, 'name');
-      activeShadow = shadowMap[$scope.model.cls_shadow];
+      activeShadow = shadowMap[$scope.model.metadata.cls_shadow];
       if (!activeShadow) {
-        $scope.model.cls_shadow = $scope.shadowFuncs[0].name;
-        activeShadow = shadowMap[$scope.model.cls_shadow];
+        $scope.model.metadata.cls_shadow = $scope.shadowFuncs[0].name;
+        activeShadow = shadowMap[$scope.model.metadata.cls_shadow];
       }
       lines = $scope.model.text.split('\n');
       firstLine = 'def ' + activeShadow.name + '(';
@@ -36,12 +36,21 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
       $scope.model.text = lines.join('\n');
     };
 
+    $scope.updateBuilder = function() {
+      if ($scope.model.builder) {
+        $scope.builderPanel = "editor/panels/" + $scope.model.builder + "_script.html";
+        $scope.updateShadowClass(true);
+      } else {
+        $scope.builderPanel = null;
+      }
+    };
+
     $scope.noApprove = lpEditor.immLevel < lpEditor.constants.imm_levels.admin;
 
     lpEvent.register('editReady', function() {
+      $scope.updatebuilder();
       $scope.updateShadowClass(false)
     }, $scope);
-
 
   }]);
 

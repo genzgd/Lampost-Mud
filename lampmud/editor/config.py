@@ -2,7 +2,7 @@ import inspect
 import itertools
 
 from lampost.di.config import config_value
-from lampost.gameops.script import Scriptable, Shadow, decorators
+from lampost.gameops.script import Scriptable, Shadow, builders
 from lampost.server.handlers import SessionHandler
 from lampost.db.registry import get_dbo_class, dbo_types, implementors, instance_implementors
 
@@ -30,5 +30,5 @@ class Constants(SessionHandler):
             if shadows:
                 shadow_types[class_id] = shadows
         constants['shadow_types'] = shadow_types
-        constants['script_decorators'] = {key : value['args'] for key, value in decorators.items()}
+        constants['script_builders'] = list(builders.keys())
         self._return(constants)
