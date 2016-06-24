@@ -163,9 +163,7 @@ angular.module('lampost_util').service('lpUtil', ['$filter', function ($filter) 
   }
 
   this.toArray = function(obj, keyId) {
-    if (!keyId) {
-      keyId = 'key;'
-    }
+    keyId = keyId || 'key';
     return Object.keys(obj).map(function (key) {
       var arrayObj = angular.copy(obj[key]);
       arrayObj[keyId] = key;

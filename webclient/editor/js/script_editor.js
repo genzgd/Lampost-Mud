@@ -1,14 +1,20 @@
 angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUtil', 'lpEvent', 'lpEditor',
   function ($scope, lpUtil, lpEvent, lpEditor) {
 
-    var classMap, activeClass;
+    var classMap, classList, activeClass;
     classMap = lpEditor.constants['shadow_types'];
+    classList = lpUtil.toArray(classMap, 'name');
+    lpUtil.stringSort(classList, 'name');
 
     $scope.updateShadowClass = function (forceUpdate) {
       if ($scope.model.builder != 'shadow') {
         return;
       }
       activeClass = classMap[$scope.model.metadata.cls_type];
+      if (!activeClass) {
+        activeClass = classList[0];
+        $scope.model.metadata.cls_type = activeClass.name;
+      }
       lpUtil.stringSort(activeClass, 'name');
       $scope.shadowFuncs = activeClass;
 
@@ -48,7 +54,7 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
     $scope.noApprove = lpEditor.immLevel < lpEditor.constants.imm_levels.admin;
 
     lpEvent.register('editReady', function() {
-      $scope.updatebuilder();
+      $scope.updateBuilder();
       $scope.updateShadowClass(false)
     }, $scope);
 

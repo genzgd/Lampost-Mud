@@ -17,8 +17,21 @@ all_socials = {}
 
 @on_app_start
 def _start():
-    # load all socials into memory so that the appropriate actions are available
-    db.load_object_set('social')
+    for social in db.load_object_set('social'):
+        add_social_action(social)
+
+
+def add_social_action(social):
+    if mud_actions.primary(social.dbo_id):
+        log.warn("Mud action already exists for social id {}", social.dbo_id)
+    else:
+        mud_actions.add(make_action(social, social.dbo_id))
+        all_socials[social.dbo_id] = social
+
+
+def remove_social_action(social):
+    all_socials.pop(social.dbo_id)
+    mud_actions.remove(social)
 
 
 class Social(KeyDBO, OwnerDBO):
@@ -30,17 +43,13 @@ class Social(KeyDBO, OwnerDBO):
     msg_class = 'social'
 
     def _on_loaded(self):
-        if mud_actions.primary(self.dbo_id):
-            log.warn("Mud action already exists for social id {}", self.dbo_id)
-        else:
-            mud_actions.add(make_action(self, self.dbo_id))
-            all_socials[self.dbo_id] = self
         self.broadcast_map = BroadcastMap(**self.b_map)
 
+    def _on_db_created(self):
+        add_social_action(self)
+
     def _on_db_deleted(self):
-        all_socials.pop(self.dbo_id)
-        if mud_actions[(self.dbo_id,)] == self:
-            del mud_actions[(self.dbo_id,)]
+        remove_social_action(self)
 
     def __call__(self, source, target, **_):
         source.broadcast(target=target, broadcast_map=self.broadcast_map)
