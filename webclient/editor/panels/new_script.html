@@ -32,10 +32,7 @@
       <div class="col-md-8">
         <div class="form-group">
           <label class="control-label">Function</label>
-          <select class="form-control input.sm" ng-model="addObj.func_name" required
-                  ng-options="func.name as func.name for func in shadows">
-            <option value="">Select Function</option>
-          </select>
+          <div disabled class="form-control input-sm uneditable-input">{{addObj.func_name}}</div>
         </div>
       </div>
       <div class="col-md-4">

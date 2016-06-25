@@ -227,18 +227,32 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
     lpCache.deref(parentKey);
   });
 
+  function validateParent(parentId) {
+    cacheObj = lpCache.cachedValue(parentKey + ':' + parentId);
+    if (cacheObj && $scope.parentList.indexOf(cacheObj) > -1) {
+      $scope.parent = cacheObj;
+    }
+  }
+
   function parentList() {
     lpCache.deref(parentKey);
     lpCache.cache(parentKey).then(function(parents) {
       $scope.parentList = childSelect.parentFilter(parents);
       if ($scope.parentList.length) {
-        $scope.parent = $scope.parentList[0];
         if (typeof childSelect.value === 'string') {
-          cacheObj = lpCache.cachedValue(parentKey + ':' + childSelect.value.split(':')[0]);
-          if (cacheObj && $scope.parentList.indexOf(cacheObj) > -1) {
-            $scope.parent = cacheObj;
-          } else {
+          validateParent(childSelect.value.split(':')[0]);
+          if (!$scope.parent) {
             $scope.errors[selectId] = "Original value " + childSelect.value + " is no long valid.";
+          }
+        }
+        if (!$scope.parent) {
+          if (parentKey === $scope.model.dbo_key_type && $scope.model.dbo_id) {
+            validateParent($scope.model.dbo_id);
+          } else if (parentKey == $scope.model.dbo_parent_type && $scope.model.dbo_id) {
+            validateParent($scope.model.dbo_id.split(':')[0]);
+          }
+          if (!$scope.parent) {
+            $scope.parent = $scope.parentList[0];
           }
         }
       } else {
@@ -279,6 +293,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
       $scope.childList = [invalid];
       $scope.child = invalid;
     } else {
+      $scope.errors[selectId] = null;
       childSelect.parentSelect();
       childList();
     }
@@ -288,6 +303,7 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
     if ($scope.child && !$scope.child.invalid) {
       childSelect.setValue($scope.child);
       childSelect.childSelect($scope.child);
+      $scope.errors[selectId] = null;
       lpEvent.dispatch('childUpdate');
     }
   };
