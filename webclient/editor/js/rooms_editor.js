@@ -171,6 +171,13 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
         $scope.closeAdd();
       };
 
+
+      $scope.addScript = function(event) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        $scope.setAddType('new_script');
+      };
+
       $scope.deleteScript = function (script_id) {
         $scope.model.scripts.splice($scope.model.scripts.indexOf(script_id), 1);
       };

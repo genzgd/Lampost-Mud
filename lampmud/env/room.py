@@ -253,12 +253,15 @@ class Room(ChildDBO, Attachable, Scriptable):
     def social(self):
         pass
 
-    def _on_reload(self):
+    def _pre_reload(self):
         if self.attached:
-            players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
-            for player in players:
+            self.limbo_players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
+            for player in self.limbo_players:
                 player.leave_env(self)
             self.detach()
-            self.attach()
-            for player in players:
+
+    def _on_reload(self):
+        if hasattr(self, 'limbo_players'):
+            for player in self.limbo_players:
                 player.enter_env(self)
+            del self.limbo_players

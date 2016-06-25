@@ -64,7 +64,7 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
 angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'lpRemote', 'lpEditFilters',
   'lpEditorTypes', 'lpEditor', function ($q, $scope, lpRemote, lpEditFilters, lpEditorTypes, lpEditor) {
 
-    var classMap, classId, shadow;
+    var classMap, classId, scriptRef;
     classId = $scope.model.class_id;
     classMap = lpEditor.constants['shadow_types'];
 
@@ -73,7 +73,10 @@ angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'l
     $scope.scriptSelect.childFilter = function (scripts) {
       var valid = [];
       angular.forEach(scripts, function (script) {
-        if (script.cls_type === classId || script.cls_type === 'any') {
+        if (script.builder !== 'shadow') {
+          valid.push(script);
+        }
+        if (script.metadata.cls_type === classId) {
           valid.push(script);
         }
       });
@@ -82,19 +85,19 @@ angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'l
 
     $scope.scriptSelect.childSelect = function (script) {
       if (!script || script.invalid) {
-        shadow.script = null;
-        shadow.func_name = null;
+        scriptRef.script = null;
+        scriptRef.func_name = null;
         return;
       }
-      shadow.script = script.dbo_id;
-      if (script.cls_shadow === 'any_func') {
-        $scope.shadows =  classMap[classId];
-        shadow.func_name = null;
-      } else {
-        $scope.shadows = classMap[classId].filter(function(s) {
-          return s.name === script.cls_shadow;
+      scriptRef.script = script.dbo_id;
+      $scope.refShadow = null;
+      if (script.builder === 'shadow') {
+        $scope.refShadow = script;
+        $scope.shadows = classMap[classId].filter(function (s) {
+          return s.name === script.metadata.cls_shadow;
         });
-        shadow.func_name = script.cls_shadow;
+        scriptRef.func_name = script.metadata.cls_shadow;
+        scriptRef.build_args.priority = scriptRef.build_args.priority || 0;
       }
     };
 
@@ -104,24 +107,24 @@ angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'l
 
     function initialize() {
       if (lpEditor.addObj) {
-        shadow = lpEditor.addObj;
+        scriptRef = lpEditor.addObj;
       } else {
-        shadow = {priority: 0, func_name: ''};
+        scriptRef = {func_name: '', build_args: {}};
       }
-      $scope.addObj = shadow;
+      $scope.addObj = scriptRef;
     }
 
     $scope.validScript = function () {
-      return shadow.func_name && shadow.script
+      return scriptRef.func_name && scriptRef.script
     };
 
     $scope.addScriptRef = function () {
-      $scope.model.script_refs.push(shadow);
+      $scope.model.script_refs.push(scriptRef);
       $scope.closeAdd();
     };
 
     $scope.deleteScriptRef = function () {
-      $scope.model.script_refs.splice($scope.model.script_refs.indexOf(shadow), 1);
+      $scope.model.script_refs.splice($scope.model.script_refs.indexOf(scriptRef), 1);
       $scope.closeAdd();
     };
 

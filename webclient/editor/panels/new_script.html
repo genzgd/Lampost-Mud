@@ -1,6 +1,6 @@
 <div class="text-left panel panel-warning" ng-controller="ScriptRefCtrl">
   <div class="panel-heading panel-condensed">
-    <span class="h5">Add Shadow Script</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
+    <span class="h5">Add User Script</span> <span class="pull-right hand close" ng-click="closeAdd()">x</span>
   </div>
   <div class="panel-body">
     <div class="row" ng-controller="ChildSelectorCtrl" lp-child-select="scriptSelect">
@@ -27,11 +27,12 @@
       </div>
 
     </div>
-    <div class="row">
+
+    <div class="row" ng-if="refShadow">
       <div class="col-md-8">
-        <div class="form-group" ng-disabled="!addObj.script">
+        <div class="form-group">
           <label class="control-label">Function</label>
-          <select class="form-control input.sm" ng-model="addObj.func_name" required="true"
+          <select class="form-control input.sm" ng-model="addObj.func_name" required
                   ng-options="func.name as func.name for func in shadows">
             <option value="">Select Function</option>
           </select>
@@ -40,7 +41,7 @@
       <div class="col-md-4">
         <div class="form-group">
           <label class="control-label">Priority</label>
-          <input class="form-control input-sm" type="number" ng-model="addObj.priority" required="true"/>
+          <input class="form-control input-sm" type="number" ng-model="addObj.build_args.priority" required/>
         </div>
       </div>
     </div>
@@ -54,5 +55,3 @@
     </div>
   </div>
 </div>
-
-

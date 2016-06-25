@@ -6,7 +6,7 @@
 
     <div class="row">
       <div class="col-md-8">
-        <div class="form-group" ng-disabled="!addObj.script">
+        <div class="form-group">
           <label class="control-label">Function</label>
           <div disabled class="form-control input-sm uneditable-input">{{addObj.func_name}}</div>
         </div>
@@ -14,7 +14,7 @@
       <div class="col-md-4">
         <div class="form-group">
           <label class="control-label">Priority</label>
-          <input class="form-control input-sm" type="number" ng-model="addObj.priority" required="true"/>
+          <input class="form-control input-sm" type="number" ng-model="addObj.build_args.priority" required/>
         </div>
       </div>
     </div>

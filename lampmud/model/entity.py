@@ -47,8 +47,9 @@ class Entity(DBOFacet, Attachable):
         del self._soul_objects
 
     def _on_reload(self):
-        self.inven_actions.refresh(self.inven)
-        self.soul_actions.refresh(self._soul_objects)
+        if self.attached:
+            self.inven_actions.refresh(self.inven)
+            self.soul_actions.refresh(self._soul_objects)
 
     @property
     def current_actions(self):
