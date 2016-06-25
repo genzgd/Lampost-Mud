@@ -73,6 +73,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
     }
 
     function parentList(model) {
+      var entry;
       if (model.dbo_parent_type) {
         entry = remoteCache[model.dbo_parent_type];
         if (entry && !entry.promise) {
@@ -84,18 +85,17 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
       }
     }
 
-    function deleteChildren(model) {
+    function deleteChildren(model, outside) {
       angular.forEach(model.dbo_children_types, function (cType) {
-        var ix, childList, key, ic;
-        childList = model[cType + "_list"];
-        for (ix = 0; ix < childList.length; ix++) {
-          key = childList[ix];
-          if (childModels = remoteCache[key]) {
-            for (ic = 0; ic < childModels.length; ic++) {
-              lpEvent.dispatch('modelDelete', childModels[ic], outside);
-            }
+        var ix, childList, entry, listKey;
+        listKey = cType + ':' + model.dbo_id;
+        entry = remoteCache[listKey];
+        if (entry && entry.data) {
+          childList = entry.data.slice();
+          for (ix = 0; ix < childList.length; ix++) {
+            lpEvent.dispatch('modelDelete', childList[ix], outside);
           }
-          deleteEntry(key);
+          deleteEntry(listKey);
         }
       });
     }
@@ -190,7 +190,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
       if (entry && !entry.promise) {
         modelDelete(entry, model, outside);
       }
-      deleteChildren(model);
+      deleteChildren(model, outside);
       if (plist = parentList(model)) {
         ix = plist.indexOf(model.dbo_id);
         if (ix > -1) {
