@@ -246,17 +246,18 @@ def log_level(args, **_):
 
 
 @imm_action(('promote', 'demote'), 'is_player', prep='to', obj_target_class='args', imm_level='admin')
-def promote(source, verb, target, obj, obj_key, **_):
+def promote(source, verb, target, obj, **_):
     if source == target:
         return "Let someone else do that."
     perm.check_perm(source, target)
     if not obj:
         return "Promote {0} to what?".format(target.name)
-    imm_level = perm.perm_to_level(obj_key[0])
+    level_name = obj[0]
+    imm_level = perm.perm_to_level(level_name)
     if imm_level is None:
         return "That is not a valid level."
     if imm_level == target.imm_level:
-        return "{} is already a(n) {}".format(target.name, obj_key[0])
+        return "{} is already a(n) {}".format(target.name, level_name)
     old_level = target.imm_level
     target.imm_level = imm_level
     perm.update_immortal_list(target)
@@ -264,7 +265,7 @@ def promote(source, verb, target, obj, obj_key, **_):
     ev.dispatch('imm_attach', target, old_level)
     target.session.append({'player_update': {'imm_level': imm_level}})
     source.broadcast(s="You {vb} {N} to {lvl}.", t="{n} {vb}s you to {lvl}!", e="{N} gets {vb}d!",
-                     target=target, ext_fmt={'vb': verb[0], 'lvl': obj_key[0]})
+                     target=target, ext_fmt={'vb': verb, 'lvl': level_name})
 
 
 @imm_action('run update', imm_level='supreme')

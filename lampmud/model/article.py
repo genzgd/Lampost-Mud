@@ -1,7 +1,4 @@
-import itertools
-
 from lampost.gameops.script import Shadow
-from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import TemplateField
 from lampost.db.dbo import CoreDBO, ChildDBO
 from lampost.db.dbofield import DBOField, DBOTField
