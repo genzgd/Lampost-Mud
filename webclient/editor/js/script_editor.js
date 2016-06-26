@@ -98,6 +98,8 @@ angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'l
         });
         scriptRef.func_name = script.metadata.cls_shadow;
         scriptRef.build_args.priority = scriptRef.build_args.priority || 0;
+      } else if (script_builder === 'action') {
+
       }
     };
 
