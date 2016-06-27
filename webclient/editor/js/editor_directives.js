@@ -110,6 +110,20 @@ angular.module('lampost_editor').directive('lpValueSet', [function () {
 }]);
 
 
+angular.module('lampost_editor').directive('lpInputList', [function() {
+  return {
+    restrict: 'A',
+    scope: {},
+    templateUrl: 'editor/view/input_list.html',
+    controller: 'InputListCtrl',
+    link: function (scope, element, attrs, controller) {
+      scope.valueSet = scope.$parent.$eval(attrs.lpValueSet);
+      controller.startEdit(scope.$parent.model);
+      scope.$parent.$emit('lpDirectiveLoaded');
+    }
+  }
+}]);
+
 angular.module('lampost_editor').directive('lpOptionsList', [function () {
   return {
     restrict: 'A',
@@ -123,7 +137,6 @@ angular.module('lampost_editor').directive('lpOptionsList', [function () {
     }
   }
 }]);
-
 
 angular.module('lampost_editor').directive('lpDisabled', ['$timeout', function($timeout) {
   return {
