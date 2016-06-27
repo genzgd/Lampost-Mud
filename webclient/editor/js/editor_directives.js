@@ -109,15 +109,14 @@ angular.module('lampost_editor').directive('lpValueSet', [function () {
   }
 }]);
 
-
 angular.module('lampost_editor').directive('lpInputList', [function() {
   return {
     restrict: 'A',
     scope: {},
     templateUrl: 'editor/view/input_list.html',
-    controller: 'InputListCtrl',
+    controller: 'ValueSetCtrl',
     link: function (scope, element, attrs, controller) {
-      scope.valueSet = scope.$parent.$eval(attrs.lpValueSet);
+      scope.valueSet = scope.$parent.$eval(attrs.lpInputList);
       controller.startEdit(scope.$parent.model);
       scope.$parent.$emit('lpDirectiveLoaded');
     }
@@ -132,6 +131,20 @@ angular.module('lampost_editor').directive('lpOptionsList', [function () {
     controller: 'ValueSetCtrl',
     link: function (scope, element, attrs, controller) {
       scope.valueSet = scope.$parent.$eval(attrs.lpOptionsList);
+      controller.startEdit(scope.$parent.model);
+      scope.$parent.$emit('lpDirectiveLoaded');
+    }
+  }
+}]);
+
+angular.module('lampost_editor').directive('lpStringOptionsList', [function() {
+  return {
+    restrict: 'A',
+    scope: {},
+    templateUrl: 'editor/view/string_opt_list.html',
+    controller: 'ValueSetCtrl',
+    link: function (scope, element, attrs, controller) {
+      scope.valueSet = scope.$parent.$eval(attrs.lpStringOptionsList);
       controller.startEdit(scope.$parent.model);
       scope.$parent.$emit('lpDirectiveLoaded');
     }

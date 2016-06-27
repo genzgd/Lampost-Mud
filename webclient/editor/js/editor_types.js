@@ -68,7 +68,7 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
       var key = this.newValue[this.optionKey];
       this.sourceMap[key] = this.default;
       this.rows.push(this.transform(key, this.default));
-      this.rowSort(this.rows)
+      this.rowSort(this.rows);
       this.updateUnused();
     };
   ValueMap.prototype.remove = function(row, rowIx) {
@@ -161,6 +161,42 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   };
 
 
+  function StringOptions(sourceProp, name, options) {
+    this.sourceProp = sourceProp;
+    this.name = name;
+    this.options = options;
+
+    this.setSource = function(model) {
+      var ix;
+      this.sourceList = model[sourceProp];
+      this.selectedList = [];
+      for (ix = 0; ix < options.length; ix++) {
+        this.selectedList.push(this.sourceList.indexOf(options[ix] > -1));
+      }
+    };
+
+    this.remove = function(rowIx) {
+      this.selectedList[rowIx] = false;
+      this.update();
+    };
+
+    this.insert = function(rowIx) {
+      this.selectedList[rowIx] = false;
+      this.update();
+    };
+
+    this.update = function() {
+      var ix;
+      this.sourceList.splice(0, this.sourceList.length);
+      for (ix = 0; ix < this.options.length; ix++) {
+        if (this.selectedList[ix]) {
+          this.sourceList.push(this.options[ix]);
+        }
+      }
+    }
+  }
+
+
   function ChildSelect(sourceProp, type) {
     this.sourceProp = sourceProp;
     this.type = type;
@@ -183,7 +219,8 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
     ValueMap: ValueMap,
     ValueObjList: ValueObjList,
     OptionsList: OptionsList,
-    ChildSelect: ChildSelect
+    ChildSelect: ChildSelect,
+    StringOptions: StringOptions
   }
 
 }]);

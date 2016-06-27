@@ -1,7 +1,7 @@
 <div class="panel panel-warning">
   <div class="panel-heading panel-condensed" title="{{inputList.desc}}">{{inputList.name}}</div>
   <div class="panel-body">
-    <div class="input-group" ng-class="groupClass" ng-repeat="value in inputList.values track-by $index">
+    <div class="input-group" ng-class="groupClass" ng-repeat="value in inputList.values track by $index">
         <span ng-if="can_write" class="input-group-btn">
        <div disabled class="form-control input-sm uneditable-input">{{value}}</div>
               <button class="btn btn-default" type="button" ng-click="remove($index)"><i

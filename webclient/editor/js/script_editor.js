@@ -1,10 +1,12 @@
-angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUtil', 'lpEvent', 'lpEditor',
-  function ($scope, lpUtil, lpEvent, lpEditor) {
+angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUtil', 'lpEvent', 'lpEditor', 'lpEditorTypes',
+  function ($scope, lpUtil, lpEvent, lpEditor, lpEditorTypes) {
 
-    var classMap, classList, activeClass;
+    var classMap, classList, activeClass, actionArgs;
     classMap = lpEditor.constants['shadow_types'];
     classList = lpUtil.toArray(classMap, 'name');
     lpUtil.stringSort(classList, 'name');
+
+    $scope.actionArgs = new lpEditorTypes.StringOptions('action_args', "Arguments", lpEditor.constants['action_args']);
 
     $scope.updateShadowClass = function (forceUpdate) {
       if ($scope.model.builder != 'shadow') {
@@ -22,6 +24,8 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
         $scope.updateArgs()
       }
     };
+
+
 
     $scope.updateArgs = function () {
       var activeShadow, i, lines, firstLine;
@@ -45,7 +49,14 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
     $scope.updateBuilder = function() {
       if ($scope.model.builder) {
         $scope.builderPanel = "editor/panels/" + $scope.model.builder + "_script.html";
-        $scope.updateShadowClass(true);
+        if ($scope.model.builder === 'shadow') {
+          $scope.updateShadowClass(true);
+        } else if ($scope.model.builder === 'action') {
+          if (!$scope.model.action_args) {
+            $scope.model.action_args = $scope.model.metadata.action_args || ['source'];
+          }
+        }
+
       } else {
         $scope.builderPanel = null;
       }
