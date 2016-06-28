@@ -1,0 +1,17 @@
+<div class="panel panel-warning">
+  <div class="panel-heading panel-condensed" title="{{valueSet.desc}}">{{valueSet.name}}</div>
+  <div class="panel-body">
+    <div class="input-group" ng-class="groupClass" ng-repeat="row in valueSet.rows track by $index" title="{{valueSet.rowDesc(row)}}">
+      <span ng-if="valueSet.rowLabel" class="input-group-addon">{{valueSet.rowLabel(row)}}</span>
+       <div class="form-control input-sm uneditable-input" ng-style="rowColor(row, $index)">{{valueSet.value(row)}}</div>
+           <span class="input-group-btn">
+              <button ng-if="can_write && valueSet.selected($index)" class="btn btn-default" type="button" ng-click="change(row, $index)">
+                <i class="fa fa-minus-square" style="color: #b00;"></i></button>
+              <button ng-if="can_write && !valueSet.selected($index)" class="btn btn-default" type="button" ng-click="change(row, $index)">
+                <i class="fa fa-plus-square" style="color: #0b0;"></i></button>
+            </span>
+    </div>
+    <div class="sm-spacer"></div>
+
+  </div>
+</div>

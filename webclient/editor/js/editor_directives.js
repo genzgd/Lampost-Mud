@@ -85,6 +85,10 @@ angular.module('lampost_editor').controller('ValueSetCtrl', ['$scope', 'lpEvent'
     lpEvent.dispatch('childUpdate');
   };
 
+   $scope.rowColor = function(row, rowIx) {
+     return {backgroundColor: $scope.valueSet.selected(rowIx) ? "#d9edf7" : "#eee"};
+   };
+
   this.startEdit = function(model) {
       $scope.can_write = model.can_write;
       $scope.valueSet.setSource(model);
@@ -137,14 +141,14 @@ angular.module('lampost_editor').directive('lpOptionsList', [function () {
   }
 }]);
 
-angular.module('lampost_editor').directive('lpStringOptionsList', [function() {
+angular.module('lampost_editor').directive('lpOptionList', [function() {
   return {
     restrict: 'A',
     scope: {},
-    templateUrl: 'editor/view/string_opt_list.html',
+    templateUrl: 'editor/view/option_list.html',
     controller: 'ValueSetCtrl',
     link: function (scope, element, attrs, controller) {
-      scope.valueSet = scope.$parent.$eval(attrs.lpStringOptionsList);
+      scope.valueSet = scope.$parent.$eval(attrs.lpOptionList);
       controller.startEdit(scope.$parent.model);
       scope.$parent.$emit('lpDirectiveLoaded');
     }

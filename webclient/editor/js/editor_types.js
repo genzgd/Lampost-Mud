@@ -164,33 +164,36 @@ angular.module('lampost_editor').factory('lpEditorTypes', ['lpUtil', function(lp
   function StringOptions(sourceProp, name, options) {
     this.sourceProp = sourceProp;
     this.name = name;
-    this.options = options;
+    this.rows = options;
 
     this.setSource = function(model) {
       var ix;
       this.sourceList = model[sourceProp];
       this.selectedList = [];
-      for (ix = 0; ix < options.length; ix++) {
-        this.selectedList.push(this.sourceList.indexOf(options[ix] > -1));
+      for (ix = 0; ix < this.rows.length; ix++) {
+        this.selectedList.push(this.sourceList.indexOf(this.rows[ix]) > -1);
       }
     };
 
-    this.remove = function(rowIx) {
-      this.selectedList[rowIx] = false;
+    this.onChange = function(row, rowIx) {
+      this.selectedList[rowIx] = !this.selectedList[rowIx];
       this.update();
     };
 
-    this.insert = function(rowIx) {
-      this.selectedList[rowIx] = false;
-      this.update();
+    this.selected = function(rowIx) {
+      return this.selectedList[rowIx];
+    };
+
+    this.value = function(row) {
+      return row;
     };
 
     this.update = function() {
       var ix;
       this.sourceList.splice(0, this.sourceList.length);
-      for (ix = 0; ix < this.options.length; ix++) {
+      for (ix = 0; ix < this.rows.length; ix++) {
         if (this.selectedList[ix]) {
-          this.sourceList.push(this.options[ix]);
+          this.sourceList.push(this.rows[ix]);
         }
       }
     }

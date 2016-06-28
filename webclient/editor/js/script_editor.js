@@ -7,6 +7,7 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
     lpUtil.stringSort(classList, 'name');
 
     $scope.actionArgs = new lpEditorTypes.StringOptions('action_args', "Arguments", lpEditor.constants['action_args']);
+    $scope.actionArgs.size = 'sm';
 
     $scope.updateShadowClass = function (forceUpdate) {
       if ($scope.model.builder != 'shadow') {
@@ -24,8 +25,6 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
         $scope.updateArgs()
       }
     };
-
-
 
     $scope.updateArgs = function () {
       var activeShadow, i, lines, firstLine;
@@ -56,7 +55,6 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
             $scope.model.action_args = $scope.model.metadata.action_args || ['source'];
           }
         }
-
       } else {
         $scope.builderPanel = null;
       }

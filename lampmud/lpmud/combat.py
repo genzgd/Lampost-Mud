@@ -2,7 +2,7 @@ from lampost.db.dbofield import DBOTField
 from lampost.di.app import on_app_start
 from lampost.di.config import config_value, on_config_change
 from lampost.di.resource import Injected, module_inject
-from lampost.gameops import target_gen
+from lampost.gameops import target
 from lampost.gameops.action import ActionError
 from lampost.meta.auto import TemplateField
 from lampost.meta.core import CoreMeta
@@ -114,7 +114,7 @@ class AttackTemplate(SkillTemplate):
 class AttackSkill(BaseSkill):
     template_id = 'attack'
 
-    target_class = target_gen.make('env_living')
+    target_class = target.make_gen('env_living')
 
     display = 'combat'
     msg_class = 'attacked'
@@ -175,7 +175,7 @@ class DefenseTemplate(SkillTemplate):
 class DefenseSkill(BaseSkill):
     template_id = 'defense'
 
-    target_class = target_gen.make('env_living')
+    target_class = target.make_gen('env_living')
     damage_type = DBOTField(['physical'])
     delivery = DBOTField(['melee', 'ranged'])
     weapon_type = DBOTField('unused')
