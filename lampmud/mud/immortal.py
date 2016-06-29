@@ -119,7 +119,7 @@ def start_trace(**_):
     pdb.set_trace()
 
 
-@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_target_class="args")
+@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="args")
 def patch(target, verb, args, command, **_):
     try:
         split_ix = args.index(":")
@@ -166,7 +166,7 @@ def set_home(source, **_):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="living", prep="to", obj_target_class="args")
+@imm_action('force', msg_class="living", prep="to", obj_class="args")
 def force(source, target, obj, **_):
     force_cmd = ' '.join(obj)
     if not force_cmd:
@@ -190,7 +190,7 @@ def unmake(source, target, **_):
         target.detach()
 
 
-@imm_action('toggle mortal', 'immortal',  self_target=True)
+@imm_action('toggle mortal', 'immortal', target_class="living")
 def toggle_mortal(target, **_):
     target.can_die = not target.can_die
     target.display_line("You can {} die.".format('now' if target.can_die else 'no longer'))
@@ -245,7 +245,7 @@ def log_level(args, **_):
     return "Log level at {}".format(log.level_desc)
 
 
-@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_target_class='args', imm_level='admin')
+@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='args', imm_level='admin')
 def promote(source, verb, target, obj, **_):
     if source == target:
         return "Let someone else do that."
@@ -300,7 +300,7 @@ def combat_log(source, **_):
         return "Combat logging added to {}.".format(source.env.name)
 
 
-@imm_action('status', 'combat_status', self_target=True)
+@imm_action('status', 'combat_status', target_class="living")
 def combat_status(target, **_):
     return substitute(target.combat_status(), target=target)
 

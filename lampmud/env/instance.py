@@ -1,7 +1,7 @@
 from lampost.db.dbofield import DBOField, DBOLField
 
 from lampost.di.resource import Injected, module_inject
-from lampost.gameops import target_gen
+from lampost.gameops import target
 from lampost.gameops.action import ActionError
 
 from lampmud.comm.broadcast import BroadcastMap
@@ -78,7 +78,7 @@ class Entrance(ItemDBO):
         else:
             self._dir = None
             self.verbs = self.verb
-            self.target_class = [target_gen.action]
+            self.target_class = target.make_gen('action')
         if not self.title and self.verb:
             self.title = self.verb
 

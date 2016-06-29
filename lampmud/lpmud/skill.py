@@ -98,7 +98,7 @@ class BaseSkill(TemplateInstance):
         self.use(source, **kwargs)
 
 
-@mud_action("skills", "skills", self_target=True)
+@mud_action("skills", "skills", target_class="living")
 def skills(source, target, **_):
     source.display_line("{}'s Skills:".format(target.name))
 
@@ -107,7 +107,7 @@ def skills(source, target, **_):
         source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 
 
-@imm_action("add skill", target_class="args", prep="to", obj_msg_class="skills", self_object=True)
+@imm_action("add skill", target_class="args", prep="to", obj_msg_class="skills", obj_class="living", self_object=True)
 def add_skill_action(target, obj, **_):
     try:
         skill_name = target[0]

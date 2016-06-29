@@ -110,7 +110,7 @@ class Room(ChildDBO, Attachable, Scriptable):
         for mobile_list in self.mobiles.values():
             for mobile in mobile_list:
                 if mobile.env != self:
-                    mobile.enter_env(self)
+                    mobile.change_env(self)
         call_each(self.contents, 'detach')
 
     @property
