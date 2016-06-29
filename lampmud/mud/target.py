@@ -57,4 +57,4 @@ make_gen('self feature env_living env_items equip inven env_default', 'default')
 
 make_gen('self env_living self_default', 'living')
 
-make_gen('feature env_living env_items inven equip', 'invalid')
+make_gen('feature env_living env_items inven equip', '__invalid__')
