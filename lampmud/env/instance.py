@@ -83,12 +83,8 @@ class Entrance(ItemDBO):
             self.title = self.verb
 
     @property
-    def name(self):
-        return self.verb or self._dir.desc
-
-    @property
     def from_name(self):
-        return self.verb if self.verb else Direction.ref_map.get(self._dir.rev_key).desc
+        return Direction.ref_map.get(self._dir.rev_key).desc if self.direction else self.title
 
     @property
     def entry_msg(self):

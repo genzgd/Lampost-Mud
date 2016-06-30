@@ -21,7 +21,7 @@ class Touchstone(ItemDBO):
     aliases = DBOField(["obelisk"])
     inscription = DBOField(inscription, 'inscription')
 
-    @obj_action(target_class="func_owner")
+    @obj_action()
     def touch(self, source, **_):
         source.display_line("You feel a shock coursing through you.  It lasts a few seconds")
         source.touchstone = self.dbo_owner.dbo_id

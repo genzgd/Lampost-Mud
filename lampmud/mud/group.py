@@ -91,21 +91,20 @@ class Invitation(ItemDBO):
     def long_desc(self, *_):
         return "An invitation to {}'s group.".format(self.group.leader.name)
 
-    @obj_action(self_target=True)
+    @obj_action(target_class="action_owner action_default")
     def accept(self, **_):
         self.invitee.display_line("You have joined {}'s group.".format(self.group.leader.name))
         self.group.join(self.invitee)
         self.detach()
 
-    @obj_action(self_target=True)
+    @obj_action(target_class="action_owner action_default")
     def decline(self, **_):
         self.invitee.display_line("You decline {}'s invitation.".format(self.group.leader.name))
         self.group.decline(self.invitee)
         self.detach()
 
-    def detach(self):
+    def _on_detach(self):
         self.invitee.remove_inven(self)
-        super().detach()
 
 
 @mud_action(('group', 'invite'), target_class='logged_in')
