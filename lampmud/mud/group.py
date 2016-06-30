@@ -4,7 +4,7 @@ from lampost.gameops.action import obj_action, ActionProvider
 from lampost.gameops.target import TargetKeys
 from lampost.server.channel import Channel
 
-from lampmud.model.item import ItemDBO
+from lampmud.model.item import ItemAspect
 from lampmud.mud.action import mud_action
 
 ev = Injected('dispatcher')
@@ -76,11 +76,13 @@ class Group(ActionProvider, Attachable):
         self.leave(member)
 
 
-class Invitation(ItemDBO):
+class Invitation(ItemAspect):
     title = "A group invitation"
     target_keys = TargetKeys(title)
+    resolved = False
 
     def __init__(self, group, invitee):
+        self.attach()
         self.group = group
         self.invitee = invitee
         ev.register_once(self.decline, seconds=60)
@@ -95,15 +97,18 @@ class Invitation(ItemDBO):
     def accept(self, **_):
         self.invitee.display_line("You have joined {}'s group.".format(self.group.leader.name))
         self.group.join(self.invitee)
+        self.resolved = True
         self.detach()
 
     @obj_action(target_class="action_owner action_default")
     def decline(self, **_):
-        self.invitee.display_line("You decline {}'s invitation.".format(self.group.leader.name))
-        self.group.decline(self.invitee)
         self.detach()
 
     def _on_detach(self):
+        if not self.resolved:
+            self.invitee.display_line("You decline {}'s invitation.".format(self.group.leader.name))
+            self.group.decline(self.invitee)
+            self.resolved = True
         self.invitee.remove_inven(self)
 
 

@@ -1,6 +1,6 @@
 import itertools
 
-from lampost.db.dbo import DBOFacet
+from lampost.db.dbo import DBOAspect
 from lampost.db.dbofield import DBOField
 from lampost.event.zone import Attachable
 from lampost.gameops.action import action_handler, ActionCache
@@ -14,7 +14,7 @@ mud_actions = Injected('mud_actions')
 module_inject(__name__)
 
 
-class Entity(DBOFacet, Attachable):
+class Entity(DBOAspect, Attachable):
     inven = DBOField([], 'untyped')
 
     status = 'ok'
@@ -69,7 +69,10 @@ class Entity(DBOFacet, Attachable):
         self.inven_actions.add(article)
 
     def remove_inven(self, article):
-        self.inven.remove(article)
+        try:
+            self.inven.remove(article)
+        except ValueError:
+            pass
         self.inven_actions.remove(article)
 
     def entity_enter_env(self, *_):

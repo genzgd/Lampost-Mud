@@ -1,4 +1,4 @@
-from lampost.db.dbo import DBOFacet
+from lampost.db.dbo import DBOAspect
 from lampost.db.dbofield import DBOField
 from lampost.di.app import on_app_start
 from lampost.di.resource import Injected, module_inject
@@ -279,7 +279,7 @@ class EntityLP(Entity):
                                                  for pool_id, _ in attributes.pool_keys])])
 
 
-class Skilled(DBOFacet):
+class Skilled(DBOAspect):
     skills = DBOField({}, 'untyped')
 
     def _on_attach(self):

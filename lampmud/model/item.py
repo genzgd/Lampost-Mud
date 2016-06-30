@@ -1,7 +1,7 @@
 from lampost.event.zone import Attachable
 from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import TemplateField
-from lampost.db.dbo import CoreDBO, DBOFacet
+from lampost.db.dbo import CoreDBO, DBOAspect
 from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import TemplateInstance
 from lampost.gameops.action import obj_action, ActionProvider
@@ -14,7 +14,7 @@ def target_keys(item):
     return t_keys
 
 
-class ItemFacet(DBOFacet, ActionProvider, Attachable):
+class ItemAspect(DBOAspect, ActionProvider, Attachable):
     sex = DBOField('none')
     flags = DBOField({})
 
@@ -58,7 +58,7 @@ class ItemFacet(DBOFacet, ActionProvider, Attachable):
         pass
 
 
-class ItemDBO(CoreDBO, ItemFacet):
+class ItemDBO(CoreDBO, ItemAspect):
     class_id = 'base_item'
 
     desc = DBOField('')
@@ -68,7 +68,7 @@ class ItemDBO(CoreDBO, ItemFacet):
     target_keys = None
 
 
-class ItemInstance(TemplateInstance, ItemFacet):
+class ItemInstance(TemplateInstance, ItemAspect):
     desc = DBOTField('')
     title = DBOTField('')
     aliases = DBOTField([])
@@ -76,7 +76,7 @@ class ItemInstance(TemplateInstance, ItemFacet):
     target_keys = TemplateField()
 
 
-class Readable(DBOFacet, ActionProvider):
+class Readable(DBOAspect, ActionProvider):
     class_id = 'readable'
 
     text = DBOField('')
