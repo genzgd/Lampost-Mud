@@ -19,7 +19,7 @@ def inven(source, **_):
     if source.inven:
         source.display_line("You are carrying:")
         for article in source.inven:
-            source.display_line("&nbsp;&nbsp;{}".format(article.short_desc()), 'exit')
+            source.display_line("&nbsp;&nbsp;{}".format(article.short_desc(source)))
     else:
         source.display_line("You aren't carrying anything.")
 

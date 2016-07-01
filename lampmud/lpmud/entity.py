@@ -46,7 +46,7 @@ class EntityLP(Entity):
         self.defenses = set()
         self.equip_slots = {}
         for article in self.inven:
-            if article.current_slot:
+            if getattr(article, 'current_slot', None):
                 self._do_equip(article, article.current_slot)
         self.fight.update_skills()
 
@@ -190,6 +190,10 @@ class EntityLP(Entity):
 
     def considered(self, **_):
         return calc_consider(self)
+
+    def check_drop(self, article):
+        if getattr(article, 'current_slot', None):
+            raise ActionError("You must unequip the item before dropping it.")
 
     def _do_equip(self, article, equip_slot):
         self.equip_slots[equip_slot] = article

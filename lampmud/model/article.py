@@ -93,8 +93,6 @@ class Article(ItemInstance):
     @Shadow
     def drop(self, source, quantity=None, **_):
         source.check_drop(self, quantity)
-        if self.current_slot:
-            raise ActionError("You must unequip the item before dropping it.")
         drop = self.take_from(source, quantity)
         drop.enter_env(source.env)
         source.broadcast(s="You drop {N}", e="{n} drops {N}", target=drop)

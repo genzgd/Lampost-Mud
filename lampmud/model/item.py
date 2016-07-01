@@ -34,7 +34,7 @@ class ItemAspect(DBOAspect, ActionProvider, Attachable):
     def name(self):
         return self.title
 
-    def short_desc(self, observer):
+    def short_desc(self, observer=None):
         return self.title
 
     def long_desc(self, observer):

@@ -176,18 +176,24 @@ def force(source, target, obj, **_):
     target.parse(force_cmd)
 
 
-@imm_action('unmake', 'general', target_class="env_living env_items")
+@imm_action('unmake', 'general', target_class="env_living env_items inven")
 def unmake(source, target, **_):
     if hasattr(target, 'is_player'):
         raise ActionError("You can't unmake players")
     if target in source.env.inven:
         source.broadcast(s="{N} is no more.", target=target)
         source.env.remove_inven(target)
-        target.detach()
     elif target in source.env.denizens:
         source.broadcast(s="{N} is unmade", target=target)
         target.leave_env()
+    elif target in source.inven:
+        source.check_drop(target)
+        source.inven.remove(target)
+        source.display_line("You unmake {}".format(target.name))
+    try:
         target.detach()
+    except AttributeError:
+        pass
 
 
 @imm_action('toggle mortal', 'immortal', target_class="living")
