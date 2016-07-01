@@ -1,8 +1,9 @@
 angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUtil', 'lpEvent', 'lpEditor', 'lpEditorTypes',
   function ($scope, lpUtil, lpEvent, lpEditor, lpEditorTypes) {
 
-    var classMap, classList, activeClass, actionArgs;
+    var classMap, classList, activeClass, builderMap, lastBuilder;
     classMap = lpEditor.constants['shadow_types'];
+    builderMap = lpEditor.constants['script_builders'];
     classList = lpUtil.toArray(classMap, 'name');
     lpUtil.stringSort(classList, 'name');
 
@@ -47,17 +48,22 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
 
     $scope.updateBuilder = function() {
       if ($scope.model.builder) {
-        $scope.builderPanel = "editor/panels/" + $scope.model.builder + "_script.html";
-        if ($scope.model.builder === 'shadow') {
-          $scope.updateShadowClass(true);
-        } else if ($scope.model.builder === 'action') {
-          if (!$scope.model.action_args) {
-            $scope.model.action_args = $scope.model.metadata.action_args || ['source'];
+        $scope.builder = builderMap[$scope.model.builder];
+        if ($scope.model.builder != lastBuilder) {
+          angular.copy($scope.builder.meta_default, $scope.model.metadata);
+          $scope.builderPanel = "editor/panels/" + $scope.model.builder + "_script.html";
+          if ($scope.model.builder === 'shadow') {
+            $scope.updateShadowClass(true);
+          } else if ($scope.model.builder === 'action') {
+            if (!$scope.model.action_args) {
+              $scope.model.action_args = $scope.model.metadata.action_args || ['source'];
+            }
           }
-        }
       } else {
         $scope.builderPanel = null;
+        $scope.model.metadata = {};
       }
+      lastBuilder = $scope.model.builder;
     };
 
     $scope.noApprove = lpEditor.immLevel < lpEditor.constants.imm_levels.admin;
@@ -73,7 +79,7 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
 angular.module('lampost_editor').controller('ScriptRefCtrl', ['$q', '$scope', 'lpRemote', 'lpEditFilters',
   'lpEditorTypes', 'lpEditor', function ($q, $scope, lpRemote, lpEditFilters, lpEditorTypes, lpEditor) {
 
-    var classMap, classId, scriptRef;
+    var classMap, builderMap, classId, scriptRef;
     classId = $scope.model.class_id;
     classMap = lpEditor.constants['shadow_types'];
 

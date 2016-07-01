@@ -32,5 +32,5 @@ class Constants(SessionHandler):
             if shadows:
                 shadow_types[class_id] = shadows
         constants['shadow_types'] = shadow_types
-        constants['script_builders'] = list(builders.keys())
+        constants['script_builders'] = sorted((builder.dto for builder in builders), key=lambda dto: dto['name'])
         self._return(constants)

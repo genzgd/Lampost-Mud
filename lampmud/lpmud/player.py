@@ -47,7 +47,6 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
                     add_skill(default_skill.skill_template, self, default_skill.skill_level, 'race')
 
         base_pools(self)
-        self.status_change()
         self.start_refresh()
 
     def check_logout(self):

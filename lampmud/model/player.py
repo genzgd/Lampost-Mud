@@ -41,6 +41,13 @@ class Player(KeyDBO, SystemDBO, Attachable):
     def name(self):
         return self.dbo_id.capitalize()
 
+    @property
+    def location(self):
+        try:
+            return getattr(self.env, "title")
+        except AttributeError:
+            return "Unknown"
+
     def _on_loaded(self):
         if not self.desc:
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."

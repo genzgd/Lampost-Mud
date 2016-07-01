@@ -25,6 +25,7 @@ def _start():
     imm_channel = Channel('imm')
     ev.register('player_create', _player_create)
     ev.register('player_attach', _player_attach, priority=-100)
+    ev.register('player_connect', _player_connect)
     ev.register('missing_env', _start_env)
     ev.register('imm_attach', _imm_attach, priority=-50)
 
@@ -42,6 +43,10 @@ def _player_attach(player):
     shout_channel.add_sub(player)
     ev.dispatch('imm_attach', player, 0)
     player.change_env(_start_env(player))
+
+
+def _player_connect(player, *_):
+    player.status_change()
 
 
 def _imm_attach(player, old_level):
