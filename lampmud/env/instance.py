@@ -102,7 +102,7 @@ class Entrance(ItemDBO):
 
     def __call__(self, source, **_):
         if self.instanced:
-            if source.group:
+            if getattr(source, 'group', None):
                 if source.group.instance:
                     instance = source.group.instance
                     if self.destination not in instance.rooms:

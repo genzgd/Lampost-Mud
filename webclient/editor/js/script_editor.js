@@ -59,6 +59,7 @@ angular.module('lampost_editor').controller('ScriptEditorCtrl', ['$scope', 'lpUt
               $scope.model.action_args = $scope.model.metadata.action_args || ['source'];
             }
           }
+        }
       } else {
         $scope.builderPanel = null;
         $scope.model.metadata = {};

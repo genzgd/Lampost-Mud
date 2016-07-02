@@ -21,8 +21,8 @@ def tell(source, verb, args, command, **_):
     session = sm.player_session(um.name_to_id(args[0]))
     if not session:
         raise ActionError("{} not found.".format(args[0]))
-    ix = len(verb[0]) + len(args[0]) + 2
-    tell_message(source, session.player, command[ix:])
+    ix = len(verb) + len(args[0]) + 2
+    tell_message(source, session.player, command.strip()[ix:])
 
 
 def tell_message(source, player, statement):

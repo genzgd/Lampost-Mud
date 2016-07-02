@@ -190,3 +190,7 @@ def abandon(source, **_):
         source.resurrect()
     else:
         source.display_line("You're not dead yet!")
+
+
+#@mud_action('mark', 'mark', prep='as', obj_class=)
+#def mark(source, target, )

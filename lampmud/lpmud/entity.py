@@ -76,16 +76,22 @@ class EntityLP(Entity):
 
     @action_handler
     def start_action(self, action, act_args):
+        self._current_action = action, act_args
         if hasattr(action, 'prepare_action'):
-            if self.dead:
-                raise ActionError("Ah, would that you could.  Was it so long ago that you had such freedom of movement?")
-            action.prepare_action(**act_args)
+            try:
+                if self.dead:
+                    raise ActionError("Ah, would that you could.  Was it so long ago that you had such freedom of movement?")
+                action.prepare_action(**act_args)
+            except ActionError as act_err:
+                del self._current_action
+                raise act_err
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
         if prep_time:
-            self._current_action = action, act_args, ev.register_once(self._finish_action, prep_time, priority=priority)
+            self._action_pulse = ev.register_once(self._finish_action, prep_time, priority=priority)
             self._action_target = act_args.get('target', None)
         else:
+            del self._current_action
             super().process_action(action, act_args)
         self.check_follow(action, act_args)
 
@@ -100,8 +106,9 @@ class EntityLP(Entity):
 
     @action_handler
     def _finish_action(self):
-        action, action_args, action_pulse = self._current_action
+        action, action_args = self._current_action
         del self._current_action
+        del self._action_pulse
         if self._action_target:
             del self._action_target
         super().process_action(action, action_args)
@@ -247,8 +254,9 @@ class EntityLP(Entity):
 
     def _cancel_actions(self):
         if self._current_action:
-            ev.unregister(self._current_action[2])
+            ev.unregister(self._action_pulse)
             del self._current_action
+            del self._action_pulse
             try:
                 del self._action_target
             except AttributeError:

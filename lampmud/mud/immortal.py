@@ -119,7 +119,7 @@ def start_trace(**_):
     pdb.set_trace()
 
 
-@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="args")
+@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="obj_args")
 def patch(target, verb, args, command, **_):
     try:
         split_ix = args.index(":")
@@ -166,7 +166,7 @@ def set_home(source, **_):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="living", prep="to", obj_class="args")
+@imm_action('force', msg_class="living", prep="_implicit_", obj_class="obj_args")
 def force(source, target, obj, **_):
     force_cmd = ' '.join(obj)
     if not force_cmd:
@@ -251,7 +251,7 @@ def log_level(args, **_):
     return "Log level at {}".format(log.level_desc)
 
 
-@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='args', imm_level='admin')
+@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='obj_args', imm_level='admin')
 def promote(source, verb, target, obj, **_):
     if source == target:
         return "Let someone else do that."

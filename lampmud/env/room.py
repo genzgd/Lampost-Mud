@@ -32,7 +32,6 @@ def _config():
 class Exit(CoreDBO):
     class_id = 'exit'
 
-    target_class = None
     destination = DBOLField(dbo_class_id='room', required=True)
     direction = DBOField()
     desc = DBOField()
