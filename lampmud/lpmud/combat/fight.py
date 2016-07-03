@@ -1,7 +1,7 @@
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import ActionError
 
-from lampmud.lpmud.combat import consider_level
+from lampmud.lpmud.combat.core import consider_level
 
 log = Injected('log')
 ev = Injected('dispatcher')
@@ -70,6 +70,8 @@ class Fight():
             del self.hunt_timer
 
     def select_action(self):
+        if not self.opponents:
+            return
         self.clear_hunt_timer()
         local_opponents = [opponent for opponent in self.opponents.keys() if opponent.env == self.me.env]
         if local_opponents:

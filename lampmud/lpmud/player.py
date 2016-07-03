@@ -47,7 +47,7 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
                     add_skill(default_skill.skill_template, self, default_skill.skill_level, 'race')
 
         base_pools(self)
-        self.start_refresh()
+        self.check_status()
 
     def check_logout(self):
         if self.last_opponent:
@@ -77,8 +77,6 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         else:
             self.broadcast(s="You die.  Fortunately, you're immortal.", e="{n} examines {s} otherwise fatal wounds and shrugs.")
             self.health = 1
-            self.start_refresh()
-        self.status_change()
 
     def resurrect(self, auto=True):
         ev.unregister(self._bind_pulse)
@@ -92,4 +90,4 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         self.display_line("With a sick feeling, you return to consciousness")
         self.status = 'ok'
         self.health = 1
-        self.start_refresh()
+        self.check_status()

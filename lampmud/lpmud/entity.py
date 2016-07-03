@@ -1,18 +1,20 @@
 from lampost.db.dbo import DBOAspect
 from lampost.db.dbofield import DBOField
 from lampost.di.app import on_app_start
+from lampost.di.config import on_config_change, config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import action_handler, ActionError
-from lampost.di.config import on_config_change, config_value
+from lampost.meta.auto import AutoField
 
-from lampmud.lpmud.fight import Fight
 from lampmud.lpmud import attributes
-from lampmud.lpmud.combat import calc_consider
+from lampmud.lpmud.combat.core import calc_consider
+from lampmud.lpmud.combat.fight import Fight
 from lampmud.model.entity import Entity
 from lampmud.mud.tools import combat_log
 
 log = Injected('log')
 ev = Injected('dispatcher')
+acs = Injected('action_system')
 module_inject(__name__)
 
 
@@ -35,11 +37,11 @@ class EntityLP(Entity):
     weapon = None
     last_opponent = None
 
-    _refresh_pulse = None
-    _current_action = None
-    _action_target = None
-    _next_command = None
-    _action_pulse = None
+    _refreshing = AutoField(False)
+
+    _current_action = AutoField()
+    _next_command = AutoField()
+    _action_target = AutoField()
 
     def _on_attach(self):
         self.effects = set()
@@ -52,8 +54,6 @@ class EntityLP(Entity):
 
     def _on_detach(self):
         self._cancel_actions()
-        if self._refresh_pulse:
-            del self._refresh_pulse
         del self.effects
         del self.defenses
         del self.equip_slots
@@ -67,7 +67,6 @@ class EntityLP(Entity):
         self.check_costs(costs)
         for pool, cost in costs.items():
             setattr(self, pool, getattr(self, pool) - cost)
-        self.check_status()
 
     def filter_actions(self, matches):
         if not self._current_action:
@@ -83,15 +82,15 @@ class EntityLP(Entity):
                     raise ActionError("Ah, would that you could.  Was it so long ago that you had such freedom of movement?")
                 action.prepare_action(**act_args)
             except ActionError as act_err:
-                del self._current_action
+                self._current_action = None
                 raise act_err
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
         if prep_time:
-            self._action_pulse = ev.register_once(self._finish_action, prep_time, priority=priority)
             self._action_target = act_args.get('target', None)
+            acs.add_action(self, self._current_action, prep_time, self.finish_action, priority)
         else:
-            del self._current_action
+            self._current_action = None
             super().process_action(action, act_args)
         self.check_follow(action, act_args)
 
@@ -105,16 +104,21 @@ class EntityLP(Entity):
             super().handle_parse_error(error, command)
 
     @action_handler
-    def _finish_action(self):
+    def finish_action(self, system_action, affected):
+        if system_action != self._current_action:
+            if self._current_action:
+                log.warn("Action mismatch")
+            return
         action, action_args = self._current_action
-        del self._current_action
-        del self._action_pulse
-        if self._action_target:
-            del self._action_target
+        affected.add(self._action_target)
+        self._current_action = self._action_target = None
         super().process_action(action, action_args)
         if self._next_command:
             self.parse(self._next_command)
-            del self._next_command
+            self._next_command = None
+
+    def resolve_actions(self):
+        self.check_status()
         self.check_fight()
 
     def entity_leave_env(self, entity, exit_action):
@@ -122,20 +126,11 @@ class EntityLP(Entity):
         if self._current_action and self._action_target == entity:
             self._cancel_actions()
 
-    def start_refresh(self):
-        if not self._refresh_pulse and attributes.need_refresh(self):
-            self._refresh_pulse = ev.register_p(self._refresh, pulses=refresh_interval)
-
-    def _refresh(self):
-        if self.dead or not attributes.need_refresh(self):
-            ev.unregister(self._refresh_pulse)
-            del self._refresh_pulse
-            return
+    def _refresh(self, *_):
         for pool_id, base_pool_id in attributes.pool_keys:
             new_value = getattr(self, pool_id) + refresh_rates[pool_id]
             setattr(self, pool_id, min(new_value, getattr(self, base_pool_id)))
-        self.status_change()
-        self.check_fight()
+        self._refreshing = False
 
     @property
     def weapon_type(self):
@@ -158,7 +153,6 @@ class EntityLP(Entity):
                    lambda: ''.join(['{N} result -- ', attack.damage_pool, ' old: ',
                                     str(current_pool), ' new: ', str(current_pool - attack.adj_damage)]),
                    self)
-        self.check_status()
 
     def start_combat(self, source):
         self.last_opponent = source
@@ -240,23 +234,20 @@ class EntityLP(Entity):
             self.remove_article(article)
 
     def check_status(self):
-        if self.health <= 0:
+        if self.status == 'dead':
+            pass
+        elif self.health <= 0:
             self._cancel_actions()
             self.fight.end_all()
             self.die()
-        else:
-            self.start_refresh()
+        elif not self._refreshing and attributes.need_refresh(self):
+            acs.add_action(self, None, refresh_interval, self._refresh, -1000)
+            self._refreshing = True
         self.status_change()
-        try:
-            self.last_opponent.status_change()
-        except AttributeError:
-            pass
 
     def _cancel_actions(self):
         if self._current_action:
-            ev.unregister(self._action_pulse)
             del self._current_action
-            del self._action_pulse
             try:
                 del self._action_target
             except AttributeError:
