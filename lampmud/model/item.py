@@ -21,8 +21,6 @@ class ItemAspect(DBOAspect, ActionProvider, Attachable):
     living = False
     env = None
 
-    general = True
-
     def _on_loaded(self):
         if not self.target_keys:
             try:

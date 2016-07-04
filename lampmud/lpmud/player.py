@@ -77,6 +77,7 @@ class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
         else:
             self.broadcast(s="You die.  Fortunately, you're immortal.", e="{n} examines {s} otherwise fatal wounds and shrugs.")
             self.health = 1
+        self.check_status()
 
     def resurrect(self, auto=True):
         ev.unregister(self._bind_pulse)

@@ -107,7 +107,7 @@ def skills(source, target, **_):
         source.display_line("--{}".format(skill.desc if skill.desc else 'No Description'))
 
 
-@imm_action("add skill", target_class="args", prep="to", obj_msg_class="skills", obj_class="living", self_object=True)
+@imm_action("add skill", target_class="target_str", prep="to", obj_msg_class="skills", obj_class="living", self_object=True)
 def add_skill_action(target, obj, **_):
     try:
         skill_name = target[0]
@@ -135,7 +135,7 @@ def add_skill_action(target, obj, **_):
     return "Skill {} not found ".format(skill_name)
 
 
-@imm_action("remove skill", target_class="args", prep="from", obj_msg_class="skills", obj_class="living", self_object=True)
+@imm_action("remove skill", target_class="target_str", prep="from", obj_msg_class="skills", obj_class="living", self_object=True)
 def remove_skill(target, obj, **_):
     try:
         skill_name = target[0]

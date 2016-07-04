@@ -44,7 +44,7 @@ def timeit(source, command, **_):
     source.display_line("Time: {} ms".format(round(ms, 1)))
 
 
-@imm_action('set flag', target_class='args', prep='on', obj_msg_class="flags", self_object=True)
+@imm_action('set flag', target_class='target_str', prep='on', obj_msg_class="flags", self_object=True)
 def add_flag(source, target, obj, **_):
     try:
         flag_id = target[0]
@@ -62,7 +62,7 @@ def add_flag(source, target, obj, **_):
     source.display_line("Flag {} set to {} on {}.".format(flag_id, flag_value, obj.name))
 
 
-@imm_action('clear flag', target_class='args', prep='from', obj_msg_class="flags", self_object=True)
+@imm_action('clear flag', target_class='target_str', prep='from', obj_msg_class="flags", self_object=True)
 def add_flag(source, target, obj, **_):
     try:
         flag_id = target[0]
@@ -75,11 +75,10 @@ def add_flag(source, target, obj, **_):
     source.display_line("Flag {} ({}) cleared {}.".format(flag_id, old_value, obj.name))
 
 
-@imm_action('goto')
-def goto(source, args, **_):
-    if not args:
-        raise ActionError("Go to whom? or to where?")
-    dest = args[0].lower()
+@imm_action('goto', target_class='extra')
+def goto(source, target, **_):
+    args = target.lower().split(' ')
+    dest = args[0]
     session = sm.player_session(dest)
     if session:
         new_env = session.player.env
@@ -90,7 +89,7 @@ def goto(source, args, **_):
             if dest_rooms:
                 new_env = db.load_object(dest_rooms[0], 'room', True)
             else:
-                raise ActionError("No rooms in area {}.".format(args[0]))
+                raise ActionError("No rooms in area {}.".format(dest))
         else:
             if ":" not in dest:
                 dest = ":".join([source.env.parent_id, dest])
@@ -119,7 +118,7 @@ def start_trace(**_):
     pdb.set_trace()
 
 
-@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="obj_args")
+@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="extra")
 def patch(target, verb, args, command, **_):
     try:
         split_ix = args.index(":")
@@ -166,7 +165,7 @@ def set_home(source, **_):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="living", prep="_implicit_", obj_class="obj_args")
+@imm_action('force', msg_class="living", prep="_implicit_", obj_class="extra")
 def force(source, target, obj, **_):
     force_cmd = ' '.join(obj)
     if not force_cmd:
@@ -176,7 +175,7 @@ def force(source, target, obj, **_):
     target.parse(force_cmd)
 
 
-@imm_action('unmake', 'general', target_class="env_living env_items inven")
+@imm_action('unmake', target_class="env_living env_items inven")
 def unmake(source, target, **_):
     if hasattr(target, 'is_player'):
         raise ActionError("You can't unmake players")
@@ -206,7 +205,7 @@ def toggle_mortal(target, **_):
 def home(source, **_):
     if not getattr(source, 'home_room', None):
         return "Please set your home room first!"
-    return goto(source=source, args=(source.home_room,))
+    return goto(source=source, target=source.home_room)
 
 
 @imm_action('register display')
@@ -251,7 +250,7 @@ def log_level(args, **_):
     return "Log level at {}".format(log.level_desc)
 
 
-@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='obj_args', imm_level='admin')
+@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='extra', imm_level='admin')
 def promote(source, verb, target, obj, **_):
     if source == target:
         return "Let someone else do that."

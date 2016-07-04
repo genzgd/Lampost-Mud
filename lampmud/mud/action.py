@@ -27,13 +27,17 @@ def imm_action(verbs, msg_class=None, imm_level='builder', **kwargs):
     return dec_wrapper
 
 
-@mud_action('help')
-def help_action(source, args, **_):
-    if not args:
+@mud_action('help', target_class='opt_extra')
+def help_action(source, target, **_):
+    if not target:
         source.display_line('Available actions:')
         verb_lists = ["/".join(verbs) for verbs in _mud_actions.all_actions().values()]
         return source.display_line(", ".join(sorted(verb_lists)))
-    action = _mud_actions.get(args, None)
-    if not action:
+    actions = _mud_actions.primary(target)
+    if not actions:
+        actions = _mud_actions.abbrev(target)
+    if not actions:
         raise ActionError("No matching command found")
-    return getattr(action, "help_text", "No help available.")
+    if len(actions) > 1:
+        raise ActionError("Multiple matching actions")
+    return getattr(actions[0], "help_text", "No help available.")

@@ -129,7 +129,7 @@ def unfriend(source, args, **_):
         raise ActionError("{} is not your friend".format(args[0]))
 
 
-@mud_action('message')
+@mud_action('message', )
 def message(source, args, command, **_):
     if not args:
         raise ActionError("Message who?")
@@ -142,25 +142,21 @@ def message(source, args, command, **_):
     return "Message Sent"
 
 
-@mud_action('block')
-def block(source, args, **_):
-    if not args or len(args) > 1:
-        raise ActionError("Who do you want to block?")
-    block_id = um.name_to_id(args[0])
+@mud_action('block', target_class='target_str')
+def block(source, target, **_):
+    block_id = um.name_to_id(target)
     block_name = um.id_to_name(block_id)
     if not um.player_exists(block_id):
-        raise ActionError("No player named {}".format(block_name))
+        raise ActionError("No player named {}".format(target))
     if message_service.is_blocked(source, block_id):
         return "You have already blocked {}.".format(block_name)
     message_service.block_messages(source.dbo_id, block_id)
     return "You have blocked messages from {}.".format(block_name)
 
 
-@mud_action('unblock')
-def unblock(source, args, **_):
-    if not args or len(args) > 1:
-        raise ActionError("Who do you want to unblock?")
-    block_id = um.name_to_id(args[0])
+@mud_action('unblock', target_class='target_str')
+def unblock(source, target, **_):
+    block_id = um.name_to_id(target)
     if message_service.is_blocked(source.dbo_id, block_id):
         message_service.unblock_messages(source.dbo_id, block_id)
         return "You unblock messages from {}".format(block_id)
@@ -175,12 +171,12 @@ def follow(source, target, target_method, **_):
     source.following = target
 
 
-@mud_action('unfollow')
-def unfollow(source, args,  **_):
+@mud_action('unfollow', target_class="opt_extra")
+def unfollow(source, target,  **_):
     if not hasattr(source, 'following'):
         return "You aren't following anyone."
-    if args and args[0].lower() != source.following.name.lower():
-        return "You aren't following {}.".format(args[0])
+    if target and target.lower() != source.following.name.lower():
+        return "You aren't following {}.".format(target)
     source.unfollow()
 
 
