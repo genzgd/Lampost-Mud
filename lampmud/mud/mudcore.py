@@ -115,30 +115,20 @@ def friend(source, target, **_):
     return "Friend request sent"
 
 
-@mud_action('unfriend')
-def unfriend(source, args, **_):
-    if not args or len(args) > 1:
-        raise ActionError("Who do you want to unfriend?")
-    unfriend_id = um.name_to_id(args[0])
-    friend_name = um.id_to_name(unfriend_id)
-    if friend_service.is_friend(source.dbo_id, unfriend_id):
-        friend_service.del_friend(source.dbo_id, unfriend_id)
+@mud_action('unfriend', target_class='player_id')
+def unfriend(source, target, **_):
+    friend_name = um.id_to_name(target)
+    if friend_service.is_friend(source.dbo_id, target):
+        friend_service.del_friend(source.dbo_id, target)
         message_service.add_message('system', "You unfriended {}.".format(friend_name), source.dbo_id)
-        message_service.add_message('system', "{} unfriended you!".format(source.name), unfriend_id)
+        message_service.add_message('system', "{} unfriended you!".format(source.name), target)
     else:
-        raise ActionError("{} is not your friend".format(args[0]))
+        raise ActionError("{} is not your friend".format(friend_name))
 
 
-@mud_action('message', )
-def message(source, args, command, **_):
-    if not args:
-        raise ActionError("Message who?")
-    if len(args) == 1:
-        raise ActionError("Message what?")
-    target_id = um.name_to_id(args[0])
-    if not um.player_exists(target_id):
-        raise ActionError("{} not found.".format(args[0]))
-    message_service.add_message('player', command.partition(args[0])[2][1:], target_id, source.dbo_id)
+@mud_action('message', target_class='player_id', obj_class='extra')
+def message(source, target, obj, **_):
+    message_service.add_message('player', obj, target, source.dbo_id)
     return "Message Sent"
 
 

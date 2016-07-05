@@ -165,7 +165,7 @@ def set_home(source, **_):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="living", prep="_implicit_", obj_class="extra")
+@imm_action('force', msg_class="living", obj_class="extra")
 def force(source, target, obj, **_):
     force_cmd = ' '.join(obj)
     if not force_cmd:
