@@ -36,9 +36,9 @@ class Exit(CoreDBO):
     direction = DBOField()
     desc = DBOField()
     aliases = DBOField([])
+    match_args = 'source',
 
     can_follow = True
-    msg_class = 'no_args'
 
     @property
     def verbs(self):
@@ -55,10 +55,10 @@ class Exit(CoreDBO):
     def _on_loaded(self):
         self._dir = Direction.ref_map.get(self.direction)
 
-    def examine(self, source, **_):
+    def examine(self, source):
         source.display_line('Exit: {}  {}'.format(self._dir.desc, self.destination.title), 'exit')
 
-    def __call__(self, source, **_):
+    def __call__(self, source):
         source.env.allow_leave(source, self)
         self._move_user(source)
 
@@ -175,7 +175,7 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.examine(source)
 
     @Shadow
-    def examine(self, source, **_):
+    def examine(self, source):
         source.display_line(self.name, 'room_title')
         source.display_line('HRT', 'room')
         source.display_line(self.long_desc(), 'room')

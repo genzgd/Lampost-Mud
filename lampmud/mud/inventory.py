@@ -5,17 +5,17 @@ from lampmud.mud.action import mud_action
 
 
 @mud_action(('get', 'pick up'), 'get', target_class="env_items", quantity=True)
-def get(source, target_method, quantity=None,  **_):
-    target_method(source, quantity)
+def get(source, target, quantity=None):
+    target.get(source, quantity)
 
 
 @mud_action(('drop', 'put down'), 'drop', target_class="inven", quantity=True)
-def drop(source, target_method, quantity=None, **_):
-    return target_method(source, quantity)
+def drop(source, target, quantity=None):
+    target.drop(source, quantity)
 
 
 @mud_action(('i', 'inventory'))
-def inven(source, **_):
+def inven(source):
     if source.inven:
         source.display_line("You are carrying:")
         for article in source.inven:

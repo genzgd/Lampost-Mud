@@ -1,28 +1,19 @@
 from lampost.gameops.action import ActionError
 from lampost.di.resource import Injected, module_inject
-from lampost.gameops.parser import parse_chat
 from lampmud.mud.action import mud_action
 
 sm = Injected('session_manager')
-um = Injected('user_manager')
 module_inject(__name__)
 
 
-@mud_action('emote')
-def emote(source, verb, command, **_):
-    statement = parse_chat(verb, command)
-    source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, statement))
+@mud_action('emote', target_class='extra')
+def emote(source, target):
+    source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, target))
 
 
-@mud_action('tell')
-def tell(source, verb, args, command, **_):
-    if not args:
-        raise ActionError("Tell who?")
-    session = sm.player_session(um.name_to_id(args[0]))
-    if not session:
-        raise ActionError("{} not found.".format(args[0]))
-    ix = len(verb) + len(args[0]) + 2
-    tell_message(source, session.player, command.strip()[ix:])
+@mud_action('tell', target_class="logged_in", obj_class="extra")
+def tell(source, target, obj):
+    tell_message(source, target, obj)
 
 
 def tell_message(source, player, statement):
@@ -33,23 +24,20 @@ def tell_message(source, player, statement):
     source.display_line("You tell " + player.name + ", `" + statement + "'", 'tell_to')
 
 
-@mud_action('reply')
-def reply(source, verb, command, **_):
+@mud_action('reply', target_class='extra')
+def reply(source, target):
     if not source.last_tell:
         raise ActionError("You have not received a tell recently.")
     session = sm.player_session(source.last_tell)
     if session:
-        tell_message(source, session.player, parse_chat(verb, command))
+        tell_message(source, session.player, target)
     else:
         source.last_tell = None
         return source.display_line("{} is no longer logged in".format(source.last_tell))
 
 
-@mud_action('say')
-def say(source, verb, command, **_):
-    statement = parse_chat(verb, command)
-    if not statement:
-        raise ActionError("Say what?")
-    source.display_line("You say, `{}'".format(statement), display='say')
-    source.broadcast(raw="{} says, `{}'".format(source.name, statement),
+@mud_action('say', target_class='extra')
+def say(source, target):
+    source.display_line("You say, `{}'".format(target), display='say')
+    source.broadcast(raw="{} says, `{}'".format(source.name, target),
                      display='say', silent=True)

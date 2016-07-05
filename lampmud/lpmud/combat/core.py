@@ -118,6 +118,7 @@ class AttackSkill(BaseSkill):
 
     display = 'combat'
     msg_class = 'attacked'
+    match_args = 'source', 'target'
     damage_type = DBOTField('weapon')
     delivery = DBOTField('melee')
     damage_calc = DBOTField({})
@@ -141,16 +142,16 @@ class AttackSkill(BaseSkill):
         if 'dual_wield' in self.pre_reqs:
             validate_weapon(self, source.second_type)
 
-    def prepare_action(self, source, target, **kwargs):
-        self.validate(source, target, **kwargs)
+    def prepare_action(self, source, target):
+        self.validate(source, target)
         source.start_combat(target)
         target.start_combat(source)
-        super().prepare_action(source, target, **kwargs)
+        super().prepare_action(source, target)
 
-    def invoke(self, source, target_method, **_):
+    def invoke(self, source, target):
         attack = Attack().from_skill(self, source)
         combat_log(source, attack)
-        target_method(source, attack)
+        target.attacked(source, attack)
 
     def points_per_pulse(self, owner):
         effect = avg_calc(owner, self.accuracy_calc, self.skill_level) + avg_calc(owner, self.damage_calc,
@@ -185,7 +186,9 @@ class DefenseSkill(BaseSkill):
         {'s': 'You avoid {N}\'s attack.', 't': '{n} avoids your attack.', 'e': '{n} avoids {N}\'s attack.'})
     calc_damage_types = TemplateField([])
 
-    def invoke(self, source, **_):
+    match_args = 'source',
+
+    def invoke(self, source):
         source.defenses.add(self)
 
     def revoke(self, source):
@@ -217,8 +220,8 @@ class DefenseSkill(BaseSkill):
 
 
 @mud_action('consider', 'considered', target_class='env_living')
-def consider(target_method, source, target, **_):
-    target_con = target_method()
+def consider(source, target, **_):
+    target_con = target.considered()
     source_con = source.considered()
     con_string = CON_LEVELS[consider_level(source_con, target_con) + CON_RANGE]
     saved_last = source.last_opponent
@@ -229,7 +232,7 @@ def consider(target_method, source, target, **_):
 
 
 @mud_action('peace')
-def peace(source, **_):
+def peace(source):
     if source.fight.opponents:
         source.fight.end_all()
         return "You use your great calming power to end the fight."

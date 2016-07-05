@@ -93,7 +93,7 @@ class Fight():
             except ActionError:
                 continue
             self.me.last_opponent = opponent
-            self.me.start_action(attack, {'target': opponent, 'source': self.me, 'target_method': opponent.attacked})
+            self.me.start_action(attack, {'target': opponent, 'source': self.me})
             return
             # Try again when another skill because available
         if next_available < 10000:

@@ -38,11 +38,11 @@ class ItemAspect(DBOAspect, ActionProvider, Attachable):
     def long_desc(self, observer):
         return self.desc if self.desc else self.title
 
-    def examine(self, source, **_):
+    def examine(self, source):
         if source.can_see(self):
             source.display_line(self.long_desc(source))
 
-    def glance(self, source, **_):
+    def glance(self, source):
         if source.can_see(self):
             source.display_line(self.short_desc(source))
 

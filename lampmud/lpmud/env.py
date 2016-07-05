@@ -40,7 +40,7 @@ class ExitLP(Exit):
     def prep_time(self):
         return prep_multiplier * self.dbo_owner.size // 10
 
-    def prepare_action(self, source, **_):
+    def prepare_action(self, source):
         if self.guarded:
             guards = [guard for guard in source.env.denizens if guard.affinity != source.affinity]
             if guards:

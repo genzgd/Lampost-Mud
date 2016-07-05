@@ -69,10 +69,10 @@ class BaseSkill(TemplateInstance):
     last_used = DBOField(0)
     verbs = TemplateField()
 
-    def prepare_action(self, source, target, **kwargs):
+    def prepare_action(self, source, target):
         if self.available > 0:
             raise ActionError("You cannot {} yet.".format(self.verb))
-        self.validate(source, target, **kwargs)
+        self.validate(source, target)
         if self.prep_map and self.prep_time:
             source.broadcast(verb=self.verb, display=self.display, target=target, **self.prep_map)
 
@@ -84,7 +84,7 @@ class BaseSkill(TemplateInstance):
         self.invoke(source, **kwargs)
         self.last_used = ev.current_pulse
 
-    def invoke(self, source, **_):
+    def invoke(self, source, **kwargs):
         pass
 
     def revoke(self, source):
@@ -99,7 +99,7 @@ class BaseSkill(TemplateInstance):
 
 
 @mud_action("skills", "skills", target_class="living")
-def skills(source, target, **_):
+def skills(source, target):
     source.display_line("{}'s Skills:".format(target.name))
 
     for skill_id, skill in target.skills.items():
@@ -108,13 +108,14 @@ def skills(source, target, **_):
 
 
 @imm_action("add skill", target_class="target_str", prep="to", obj_msg_class="skills", obj_class="living", self_object=True)
-def add_skill_action(target, obj, **_):
+def add_skill_action(target, obj):
+    skill_args = target.split(' ')
     try:
-        skill_name = target[0]
+        skill_name = skill_args[0]
     except IndexError:
         raise ActionError("Skill name required")
     try:
-        skill_level = int(target[1])
+        skill_level = int(skill_args[1])
     except (IndexError, ValueError):
         skill_level = 1
     if ':' in skill_name:
@@ -136,16 +137,13 @@ def add_skill_action(target, obj, **_):
 
 
 @imm_action("remove skill", target_class="target_str", prep="from", obj_msg_class="skills", obj_class="living", self_object=True)
-def remove_skill(target, obj, **_):
-    try:
-        skill_name = target[0]
-    except IndexError:
-        raise ActionError("Skill name required")
-    if ':' in skill_name:
-        skill_id = skill_name
+def remove_skill(target, obj):
+    if ':' in target:
+        skill_id = target
     else:
+        skill_id = None
         for skill_type in dbo_types(SkillTemplate):
-            skill_id = '{}:{}'.format(skill_type.dbo_key_type, skill_name)
+            skill_id = '{}:{}'.format(skill_type.dbo_key_type, target)
             if skill_id in obj.skills:
                 break
             else:
@@ -153,4 +151,4 @@ def remove_skill(target, obj, **_):
     obj.remove_skill(skill_id)
     if getattr(obj, 'dbo_id', None):
         db.save_object(obj)
-    return "Removed {} from {}".format(skill_name, obj.name)
+    return "Removed {} from {}".format(target, obj.name)

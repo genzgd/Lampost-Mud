@@ -78,7 +78,7 @@ class Article(ItemInstance):
         return long_desc
 
     @Shadow
-    def get(self, source, quantity=None, **_):
+    def get(self, source, quantity=None):
         source.check_inven(self, quantity)
         gotten = self
         if quantity and quantity < self.quantity:
@@ -91,7 +91,7 @@ class Article(ItemInstance):
         gotten.enter_env(source)
 
     @Shadow
-    def drop(self, source, quantity=None, **_):
+    def drop(self, source, quantity=None):
         source.check_drop(self, quantity)
         drop = self.take_from(source, quantity)
         drop.enter_env(source.env)

@@ -88,24 +88,24 @@ def _start_env(player):
 
 
 @mud_action(('quit', 'log out'))
-def quit_action(source, **_):
+def quit_action(source):
     source.check_logout()
     ev.dispatch('player_logout', source.session)
 
 
 @mud_action(("l", "look", "examine", "look at"), "examine")
-def look(target_method, **kwargs):
-    return target_method(**kwargs)
+def look(source, target):
+    return target.examine(source)
 
 
 @mud_action('friends')
-def friends(source, **_):
+def friends(source):
     friend_list = friend_service.friend_list(source.dbo_id)
     return "Your friends are:<br/>&nbsp&nbsp{}".format(friend_list) if friend_list else "Alas, you are friendless."
 
 
 @mud_action('friend', 'is_player')
-def friend(source, target, **_):
+def friend(source, target):
     if source == target or friend_service.is_friend(source.dbo_id, target.dbo_id):
         return "{} is already your friend.".format(target.name)
     try:
@@ -116,7 +116,7 @@ def friend(source, target, **_):
 
 
 @mud_action('unfriend', target_class='player_id')
-def unfriend(source, target, **_):
+def unfriend(source, target):
     friend_name = um.id_to_name(target)
     if friend_service.is_friend(source.dbo_id, target):
         friend_service.del_friend(source.dbo_id, target)
@@ -132,37 +132,34 @@ def message(source, target, obj, **_):
     return "Message Sent"
 
 
-@mud_action('block', target_class='target_str')
-def block(source, target, **_):
-    block_id = um.name_to_id(target)
-    block_name = um.id_to_name(block_id)
-    if not um.player_exists(block_id):
-        raise ActionError("No player named {}".format(target))
-    if message_service.is_blocked(source, block_id):
+@mud_action('block', target_class='player_id')
+def block(source, target):
+    block_name = um.id_to_name(target)
+    if message_service.is_blocked(source, target):
         return "You have already blocked {}.".format(block_name)
-    message_service.block_messages(source.dbo_id, block_id)
+    message_service.block_messages(source.dbo_id, target)
     return "You have blocked messages from {}.".format(block_name)
 
 
-@mud_action('unblock', target_class='target_str')
-def unblock(source, target, **_):
-    block_id = um.name_to_id(target)
-    if message_service.is_blocked(source.dbo_id, block_id):
-        message_service.unblock_messages(source.dbo_id, block_id)
-        return "You unblock messages from {}".format(block_id)
-    return "You are not blocking messages from {}".format(block_id)
+@mud_action('unblock', target_class='player_id')
+def unblock(source, target):
+    block_name = um.id_to_name(target)
+    if message_service.is_blocked(source.dbo_id, target):
+        message_service.unblock_messages(source.dbo_id, target)
+        return "You unblock messages from {}".format(block_name)
+    return "You are not blocking messages from {}".format(block_name)
 
 
-@mud_action('follow', 'follow')
-def follow(source, target, target_method, **_):
+@mud_action('follow', 'followers')
+def follow(source, target):
     if hasattr(source, 'following'):
         return "You are already following {}.".format(source.following.name)
-    target_method(source)
+    source.follow(target)
     source.following = target
 
 
 @mud_action('unfollow', target_class="opt_extra")
-def unfollow(source, target,  **_):
+def unfollow(source, target):
     if not hasattr(source, 'following'):
         return "You aren't following anyone."
     if target and target.lower() != source.following.name.lower():
@@ -171,7 +168,7 @@ def unfollow(source, target,  **_):
 
 
 @mud_action('abandon')
-def abandon(source, **_):
+def abandon(source):
     if source.dead:
         source.resurrect()
     else:

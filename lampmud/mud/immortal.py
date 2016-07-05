@@ -3,6 +3,7 @@ import time
 
 from lampost.di.resource import Injected, module_inject, get_resource
 from lampost.gameops.action import ActionError
+from lampost.gameops.parser import next_word
 from lampost.server.user import User
 
 import lampmud.setup.update
@@ -27,32 +28,26 @@ def edit(source, **_):
     return {'start_room_edit': source.env.dbo_id}
 
 
-@imm_action('commands')
+@imm_action(['commands', 'cmds'])
 def commands(source, **_):
     verb_lists = ["/".join(list(verb)) for verb in source.soul_actions.all_actions().values()]
     return ", ".join(sorted(verb_lists))
 
 
-@imm_action('timeit')
-def timeit(source, command, **_):
-    timed_command = command[command.find(' ') + 1:].strip()
-    if timed_command.startswith('timeit'):
+@imm_action('timeit', 'extra')
+def timeit(source, target, **_):
+    if target.startswith('timeit'):
         return "Can't time timeit"
     start = time.time()
-    source.parse(timed_command)
+    source.parse(target)
     ms = (time.time() - start) * 1000
     source.display_line("Time: {} ms".format(round(ms, 1)))
 
 
 @imm_action('set flag', target_class='target_str', prep='on', obj_msg_class="flags", self_object=True)
 def add_flag(source, target, obj, **_):
-    try:
-        flag_id = target[0]
-    except IndexError:
-        raise ActionError("Flag id required.")
-    try:
-        flag_value = target[1]
-    except IndexError:
+    flag_id, flag_value = next_word(target)
+    if not flag_value:
         flag_value = 'None'
     try:
         flag_value = str_to_primitive(flag_value)
@@ -63,22 +58,17 @@ def add_flag(source, target, obj, **_):
 
 
 @imm_action('clear flag', target_class='target_str', prep='from', obj_msg_class="flags", self_object=True)
-def add_flag(source, target, obj, **_):
+def clear_flag(source, target, obj, **_):
     try:
-        flag_id = target[0]
-    except IndexError:
-        raise ActionError("Flag id required.")
-    try:
-        old_value = obj.flags.pop(flag_id)
+        old_value = obj.flags.pop(target)
     except KeyError:
-        raise ActionError("Flag {} not set.".format(flag_id))
-    source.display_line("Flag {} ({}) cleared {}.".format(flag_id, old_value, obj.name))
+        raise ActionError("Flag {} not set.".format(target))
+    source.display_line("Flag {} ({}) cleared {}.".format(target, old_value, obj.name))
 
 
 @imm_action('goto', target_class='extra')
 def goto(source, target, **_):
-    args = target.lower().split(' ')
-    dest = args[0]
+    dest = target.lower()
     session = sm.player_session(dest)
     if session:
         new_env = session.player.env
@@ -167,12 +157,9 @@ def set_home(source, **_):
 
 @imm_action('force', msg_class="living", obj_class="extra")
 def force(source, target, obj, **_):
-    force_cmd = ' '.join(obj)
-    if not force_cmd:
-        return "Force {} to do what?".format(target.name)
     perm.check_perm(source, target)
-    target.display_line("{} forces you to {}.".format(source.name, force_cmd))
-    target.parse(force_cmd)
+    target.display_line("{} forces you to {}.".format(source.name, obj))
+    target.parse(obj)
 
 
 @imm_action('unmake', target_class="env_living env_items inven")

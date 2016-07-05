@@ -68,7 +68,7 @@ class Entrance(ItemDBO):
     instanced = DBOField(True)
     edit_required = DBOField(True)
 
-    msg_class = "__call__"
+    match_args = 'source',
 
     def _on_loaded(self):
         if self.direction:
@@ -94,13 +94,13 @@ class Entrance(ItemDBO):
     def exit_msg(self):
         return verb_exit if self.verb else dir_exit
 
-    def glance(self, source, **_):
+    def glance(self, source):
         if self._dir:
             source.display_line('Exit: {0}  {1}'.format(self._dir.desc, self.destination.title), 'exit')
         else:
             source.display_line(self.title, 'exit')
 
-    def __call__(self, source, **_):
+    def __call__(self, source):
         if self.instanced:
             if getattr(source, 'group', None):
                 if source.group.instance:

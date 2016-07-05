@@ -92,7 +92,7 @@ class Store(ItemDBO):
         article.enter_env(source)
         source.broadcast(s=self_msg, e="{n) recovers {N}", target=article)
 
-    def examine(self, source, **_):
+    def examine(self, source):
         super().examine(source)
         if self.perm_items or self.inven:
             source.display_line("It currently contains:")

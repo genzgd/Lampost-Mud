@@ -83,13 +83,11 @@ class Entity(DBOAspect, Attachable):
 
     def parse(self, command):
         if command.startswith("'"):
-            command = 'say ' + command[1:].strip()
+            command = 'say ' + command[1:]
         elif command.startswith(':'):
-            command = 'emote ' + command[1:].strip()
+            command = 'emote ' + command[1:]
         try:
             action, act_args = parse_actions(self, command)
-            act_args['command'] = command
-            act_args['source'] = self
             self.start_action(action, act_args)
         except ParseError as error:
             self.handle_parse_error(error, command)
@@ -126,9 +124,9 @@ class Entity(DBOAspect, Attachable):
     def social(self, **_):
         pass
 
-    def follow(self, source, **_):
-        self.followers.add(source)
-        source.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=self)
+    def follow(self, leader):
+        leader.followers.add(self)
+        self.broadcast(s="You start following {N}.", t="{n} starts following you.", e="{n} starts following {N}.", target=leader)
 
     def unfollow(self):
         following = getattr(self, 'following', None)
@@ -138,8 +136,8 @@ class Entity(DBOAspect, Attachable):
             following.followers.remove(self)
             del self.following
 
-    def examine(self, source, **_):
-        super().examine(source, **_)
+    def examine(self, source):
+        super().examine(source)
         source.display_line("{0} is carrying:".format(self.name))
         if self.inven:
             for article in self.inven:
