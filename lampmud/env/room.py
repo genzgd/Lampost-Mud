@@ -86,6 +86,7 @@ class Room(ChildDBO, Attachable, Scriptable):
     article_resets = DBOCField([], 'article_reset')
     features = DBOCField([], 'untyped')
     title = DBOCField()
+    flags = DBOField({})
     instance_providers = AutoField([])
 
     instance = None

@@ -28,27 +28,27 @@ def edit(source):
     return {'start_room_edit': source.env.dbo_id}
 
 
-@imm_action(['commands', 'cmds'])
+@imm_action(('commands', 'cmds'))
 def commands(source):
     verb_lists = ["/".join(list(verb)) for verb in source.soul_actions.all_actions().values()]
     return ", ".join(sorted(verb_lists))
 
 
-@imm_action('timeit', 'target_str')
+@imm_action('timeit', target_class='target_str')
 def timeit(source, target):
     if target.startswith('timeit'):
         return "Can't time timeit"
     start = time.time()
     source.parse(target)
     ms = (time.time() - start) * 1000
-    source.display_line("Time: {} ms".format(round(ms, 1)))
+    source.display_line("Time: {} ms".format(round(ms, 3)))
 
 
 @imm_action('set flag', target_class='target_str', prep='on', obj_msg_class="flags", self_object=True)
 def add_flag(source, target, obj):
     flag_id, flag_value = next_word(target)
     if not flag_value:
-        flag_value = 'None'
+        raise ActionError("Value for flag {} required.".format(flag_id))
     try:
         flag_value = str_to_primitive(flag_value)
     except ValueError:
@@ -63,7 +63,7 @@ def clear_flag(source, target, obj):
         old_value = obj.flags.pop(target)
     except KeyError:
         raise ActionError("Flag {} not set.".format(target))
-    source.display_line("Flag {} ({}) cleared {}.".format(target, old_value, obj.name))
+    source.display_line("Flag {} ({}) cleared from {}.".format(target, old_value, obj.name))
 
 
 @imm_action('goto', target_class='target_str')
@@ -116,16 +116,14 @@ def patch(target, obj):
 
 
 @imm_action('patch_db', imm_level='supreme', target_class='target_str')
-def patch_db(verb, target):
-    args = target.split(' ')
-    obj_type = args[0]
-    if len(args) == 1:
+def patch_db(target):
+    obj_type, remaining = next_word(target)
+    obj_id, remaining = next_word(remaining)
+    if not obj_id:
         return "Object id required."
-    obj_id = args[1]
-    if len(args) == 2:
+    prop, new_value = next_word(remaining)
+    if not prop:
         return "Property name required."
-    prop = args[2]
-    new_value = find_extra(verb, 3, command)
     if not new_value:
         return "Value required."
     if new_value == "None":
@@ -140,20 +138,20 @@ def patch_db(verb, target):
 
 
 @imm_action('set home')
-def set_home(source, **_):
+def set_home(source):
     source.home_room = source.env.dbo_id
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
 @imm_action('force', msg_class="living", obj_class="obj_str")
-def force(source, target, obj, **_):
+def force(source, target, obj):
     perm.check_perm(source, target)
     target.display_line("{} forces you to {}.".format(source.name, obj))
     target.parse(obj)
 
 
 @imm_action('unmake', target_class="env_living env_items inven")
-def unmake(source, target, **_):
+def unmake(source, target):
     if hasattr(target, 'is_player'):
         raise ActionError("You can't unmake players")
     if target in source.env.inven:
@@ -173,20 +171,20 @@ def unmake(source, target, **_):
 
 
 @imm_action('toggle mortal', 'immortal', target_class="living")
-def toggle_mortal(target, **_):
+def toggle_mortal(target):
     target.can_die = not target.can_die
     target.display_line("You can {} die.".format('now' if target.can_die else 'no longer'))
 
 
 @imm_action('home')
-def home(source, **_):
+def home(source):
     if not getattr(source, 'home_room', None):
         return "Please set your home room first!"
     return goto(source=source, target=source.home_room)
 
 
 @imm_action('register display')
-def register_display(source, args, **_):
+def register_display(source, args):
     if not args:
         return "No event specified"
     ev.register(args[0], source.display_line)
@@ -194,36 +192,35 @@ def register_display(source, args, **_):
 
 
 @imm_action('unregister display')
-def unregister_display(source, args, **_):
+def unregister_display(source, args):
     ev.unregister_type(source, args[0])
     source.display_line("Events of type {0} will no longer be displayed".format(args[0]))
 
 
 @imm_action('describe', 'describe')
-def describe(source, target, **_):
+def describe(source, target):
     source.display_line('&nbsp;&nbsp;')
     for line in target.describe():
         source.display_line(line, 'tell_to')
 
 
 @imm_action('reset')
-def reset(source, **_):
+def reset(source):
     source.env.reset()
     return "Room reset"
 
 
 @imm_action('reload')
-def reload_room(source, **_):
+def reload_room(source):
     if source.env.instance:
         raise ActionError("Don't reload instanced rooms")
     source.env.reload()
 
 
-@imm_action("log level", imm_level='supreme')
-def log_level(args, **_):
+@imm_action("log level", target_class='target_str', imm_level='supreme')
+def log_level(target):
     log = get_resource("log")
-    if args:
-        log.set_level(args[0])
+    log.set_level(target)
     return "Log level at {}".format(log.level_desc)
 
 
@@ -250,30 +247,26 @@ def promote(source, verb, target, obj, **_):
                      target=target, ext_fmt={'vb': verb, 'lvl': level_name})
 
 
-@imm_action('run update', imm_level='supreme')
-def run_update(source, args, **_):
-    if not args:
-        return "Update name required."
+@imm_action('run update', target_class='target_str', imm_level='supreme')
+def run_update(source, target):
+    args = target.split(' ')
     try:
         return lampmud.setup.update.__dict__[args[0]](source, *args[1:])
     except KeyError:
         return "No such update."
 
 
-@imm_action('email', imm_level='admin')
-def email(verb, args, command, **_):
-    if len(args) < 2:
-        return "Player and message required"
-    player = um.find_player(args[0])
+@imm_action('email', target_class='player_id', obj_class='obj_str', imm_level='admin')
+def email(target, obj):
+    player = um.find_player(target)
     if not player:
         return "Player not found"
     user = db.load_object(player.user_id, User)
-    message = find_extra(verb, 1, command)
-    return email.send_targeted_email('Lampost Message', message, [user])
+    return email.send_targeted_email('Lampost Message', obj, [user])
 
 
 @imm_action('combat log')
-def combat_log(source, **_):
+def combat_log(source):
     try:
         delattr(source.env, 'combat_log')
         return "Combat logging removed from {}".format(source.env.name)
