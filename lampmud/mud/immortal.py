@@ -11,7 +11,7 @@ import lampmud.setup.update
 from lampmud.comm.broadcast import substitute
 
 from lampmud.mud.action import imm_action
-from lampost.util.lputil import find_extra, patch_object, str_to_primitive
+from lampost.util.lputil import patch_object, str_to_primitive
 
 sm = Injected('session_manager')
 db = Injected('datastore')
@@ -23,19 +23,19 @@ module_inject(__name__)
 
 
 @imm_action('edit')
-def edit(source, **_):
+def edit(source):
     perm.check_perm(source, db.load_object(source.env.parent_id, 'area'))
     return {'start_room_edit': source.env.dbo_id}
 
 
 @imm_action(['commands', 'cmds'])
-def commands(source, **_):
+def commands(source):
     verb_lists = ["/".join(list(verb)) for verb in source.soul_actions.all_actions().values()]
     return ", ".join(sorted(verb_lists))
 
 
-@imm_action('timeit', 'extra')
-def timeit(source, target, **_):
+@imm_action('timeit', 'target_str')
+def timeit(source, target):
     if target.startswith('timeit'):
         return "Can't time timeit"
     start = time.time()
@@ -45,7 +45,7 @@ def timeit(source, target, **_):
 
 
 @imm_action('set flag', target_class='target_str', prep='on', obj_msg_class="flags", self_object=True)
-def add_flag(source, target, obj, **_):
+def add_flag(source, target, obj):
     flag_id, flag_value = next_word(target)
     if not flag_value:
         flag_value = 'None'
@@ -58,7 +58,7 @@ def add_flag(source, target, obj, **_):
 
 
 @imm_action('clear flag', target_class='target_str', prep='from', obj_msg_class="flags", self_object=True)
-def clear_flag(source, target, obj, **_):
+def clear_flag(source, target, obj):
     try:
         old_value = obj.flags.pop(target)
     except KeyError:
@@ -66,8 +66,8 @@ def clear_flag(source, target, obj, **_):
     source.display_line("Flag {} ({}) cleared {}.".format(target, old_value, obj.name))
 
 
-@imm_action('goto', target_class='extra')
-def goto(source, target, **_):
+@imm_action('goto', target_class='target_str')
+def goto(source, target):
     dest = target.lower()
     session = sm.player_session(dest)
     if session:
@@ -90,32 +90,23 @@ def goto(source, target, **_):
         raise ActionError("Cannot find " + dest)
 
 
-@imm_action('summon')
-def summon(source, args, **_):
-    if not args:
-        return "Summon whom?"
-    session = sm.player_session(args[0].lower())
-    if not session:
-        return "Player is not logged in"
-    player = session.player
-    perm.check_perm(source, player)
-    player.change_env(source.env)
-    source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=player)
+@imm_action('summon', target_class='logged_in')
+def summon(source, target):
+    if source == target:
+        return "That hardly seems necessary"
+    perm.check_perm(source, target)
+    target.change_env(source.env)
+    source.broadcast(s="You summon {N} into your presence.", e="{n} summons {N}!", t="You have been summoned!", target=target)
 
 
 @imm_action('trace', imm_level='supreme')
-def start_trace(**_):
+def start_trace():
     pdb.set_trace()
 
 
-@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="extra")
-def patch(target, verb, args, command, **_):
-    try:
-        split_ix = args.index(":")
-        prop = args[split_ix + 1]
-        new_value = find_extra(verb, split_ix + 2, command)
-    except (ValueError, IndexError):
-        return "Syntax -- 'patch [target] [:] [prop_name] [new_value]'"
+@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="obj_str")
+def patch(target, obj):
+    prop, new_value = next_word(obj)
     if not new_value:
         return "New value required"
     if new_value == "None":
@@ -124,10 +115,9 @@ def patch(target, verb, args, command, **_):
     return "Object successfully patched"
 
 
-@imm_action('patch_db', imm_level='supreme')
-def patch_db(verb, args, command, **_):
-    if len(args) == 0:
-        return "Type required."
+@imm_action('patch_db', imm_level='supreme', target_class='target_str')
+def patch_db(verb, target):
+    args = target.split(' ')
     obj_type = args[0]
     if len(args) == 1:
         return "Object id required."
@@ -155,7 +145,7 @@ def set_home(source, **_):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="living", obj_class="extra")
+@imm_action('force', msg_class="living", obj_class="obj_str")
 def force(source, target, obj, **_):
     perm.check_perm(source, target)
     target.display_line("{} forces you to {}.".format(source.name, obj))
@@ -237,7 +227,7 @@ def log_level(args, **_):
     return "Log level at {}".format(log.level_desc)
 
 
-@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='extra', imm_level='admin')
+@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='obj_str', imm_level='admin')
 def promote(source, verb, target, obj, **_):
     if source == target:
         return "Let someone else do that."

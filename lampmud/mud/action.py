@@ -27,8 +27,8 @@ def imm_action(verbs, msg_class=None, imm_level='builder', **kwargs):
     return dec_wrapper
 
 
-@mud_action('help', target_class='opt_extra')
-def help_action(source, target, **_):
+@mud_action('help', target_class='target_str_opt')
+def help_action(source, target):
     if not target:
         source.display_line('Available actions:')
         verb_lists = ["/".join(verbs) for verbs in _mud_actions.all_actions().values()]
