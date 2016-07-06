@@ -16,7 +16,7 @@ from lampost.server import pages
 from lampost.server import display
 from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
 from lampost.server.session import SessionManager
-from lampost.server.user import UserManager
+from lampost.server import user
 from lampost.server.channel import ChannelService
 from lampost.server import message
 
@@ -40,7 +40,7 @@ def start(args):
     app_setup.start_engine(args)
 
     resource.register('display', display)
-    resource.register('user_manager', UserManager())
+    resource.register('user_manager', user)
     resource.register('session_manager', SessionManager())
     resource.register('instance_manager', instancemgr)
     resource.register('email_sender', email_sender)
