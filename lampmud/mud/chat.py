@@ -6,12 +6,12 @@ sm = Injected('session_manager')
 module_inject(__name__)
 
 
-@mud_action('emote', target_class='target_str')
+@mud_action('emote', target_class='cmd_str')
 def emote(source, target):
     source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, target))
 
 
-@mud_action('tell', target_class="logged_in", obj_class="obj_str")
+@mud_action('tell', target_class="logged_in", obj_class="cmd_str")
 def tell(source, target, obj):
     tell_message(source, target, obj)
 
@@ -24,7 +24,7 @@ def tell_message(source, player, statement):
     source.display_line("You tell " + player.name + ", `" + statement + "'", 'tell_to')
 
 
-@mud_action('reply', target_class='target_str')
+@mud_action('reply', target_class='cmd_str')
 def reply(source, target):
     if not source.last_tell:
         raise ActionError("You have not received a tell recently.")
@@ -36,7 +36,7 @@ def reply(source, target):
         return source.display_line("{} is no longer logged in".format(source.last_tell))
 
 
-@mud_action('say', target_class='target_str')
+@mud_action('say', target_class='cmd_str')
 def say(source, target):
     source.display_line("You say, `{}'".format(target), display='say')
     source.broadcast(raw="{} says, `{}'".format(source.name, target),

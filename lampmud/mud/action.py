@@ -27,7 +27,7 @@ def imm_action(verbs, msg_class=None, imm_level='builder', **kwargs):
     return dec_wrapper
 
 
-@mud_action('help', target_class='target_str_opt')
+@mud_action('help', target_class='cmd_str_opt')
 def help_action(source, target):
     if not target:
         source.display_line('Available actions:')

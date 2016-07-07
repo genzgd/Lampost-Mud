@@ -126,7 +126,7 @@ def unfriend(source, target):
         raise ActionError("{} is not your friend".format(friend_name))
 
 
-@mud_action('message', target_class='player_id', obj_class='obj_str')
+@mud_action('message', target_class='player_id', obj_class='cmd_str')
 def message(source, target, obj, **_):
     message_service.add_message('player', obj, target, source.dbo_id)
     return "Message Sent"
@@ -158,7 +158,7 @@ def follow(source, target):
     source.following = target
 
 
-@mud_action('unfollow', target_class="target_str_opt")
+@mud_action('unfollow', target_class="cmd_str_opt")
 def unfollow(source, target):
     if not hasattr(source, 'following'):
         return "You aren't following anyone."

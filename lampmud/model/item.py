@@ -80,5 +80,5 @@ class Readable(DBOAspect, ActionProvider):
     text = DBOField('')
 
     @obj_action()
-    def read(self, source, **_):
+    def read(self, source):
         source.display_line(self.text, "tell_to")

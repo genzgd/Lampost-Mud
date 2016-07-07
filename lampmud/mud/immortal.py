@@ -34,7 +34,7 @@ def commands(source):
     return ", ".join(sorted(verb_lists))
 
 
-@imm_action('timeit', target_class='target_str')
+@imm_action('timeit', target_class='cmd_str')
 def timeit(source, target):
     if target.startswith('timeit'):
         return "Can't time timeit"
@@ -44,7 +44,7 @@ def timeit(source, target):
     source.display_line("Time: {} ms".format(round(ms, 3)))
 
 
-@imm_action('set flag', target_class='target_str', prep='on', obj_msg_class="flags", self_object=True)
+@imm_action('set flag', target_class='cmd_str', prep='on', obj_msg_class="flags", self_object=True)
 def add_flag(source, target, obj):
     flag_id, flag_value = next_word(target)
     if not flag_value:
@@ -57,7 +57,7 @@ def add_flag(source, target, obj):
     source.display_line("Flag {} set to {} on {}.".format(flag_id, flag_value, obj.name))
 
 
-@imm_action('clear flag', target_class='target_str', prep='from', obj_msg_class="flags", self_object=True)
+@imm_action('clear flag', target_class='cmd_str', prep='from', obj_msg_class="flags", self_object=True)
 def clear_flag(source, target, obj):
     try:
         old_value = obj.flags.pop(target)
@@ -66,7 +66,7 @@ def clear_flag(source, target, obj):
     source.display_line("Flag {} ({}) cleared from {}.".format(target, old_value, obj.name))
 
 
-@imm_action('goto', target_class='target_str')
+@imm_action('goto', target_class='cmd_str')
 def goto(source, target):
     dest = target.lower()
     session = sm.player_session(dest)
@@ -104,7 +104,7 @@ def start_trace():
     pdb.set_trace()
 
 
-@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="obj_str")
+@imm_action('patch', '__dict__', imm_level='supreme', prep=":", obj_class="cmd_str")
 def patch(target, obj):
     prop, new_value = next_word(obj)
     if not new_value:
@@ -115,7 +115,7 @@ def patch(target, obj):
     return "Object successfully patched"
 
 
-@imm_action('patch_db', imm_level='supreme', target_class='target_str')
+@imm_action('patch_db', imm_level='supreme', target_class='cmd_str')
 def patch_db(target):
     obj_type, remaining = next_word(target)
     obj_id, remaining = next_word(remaining)
@@ -143,7 +143,7 @@ def set_home(source):
     source.display_line("{0} is now your home room".format(source.env.title))
 
 
-@imm_action('force', msg_class="living", obj_class="obj_str")
+@imm_action('force', msg_class="living", obj_class="cmd_str")
 def force(source, target, obj):
     perm.check_perm(source, target)
     target.display_line("{} forces you to {}.".format(source.name, obj))
@@ -183,18 +183,16 @@ def home(source):
     return goto(source=source, target=source.home_room)
 
 
-@imm_action('register display')
-def register_display(source, args):
-    if not args:
-        return "No event specified"
-    ev.register(args[0], source.display_line)
-    source.display_line("Events of type {0} will now be displayed".format(args[0]))
+@imm_action('register display', target_class='cmd_str')
+def register_display(source, target):
+    ev.register(target, source.display_line)
+    source.display_line("Events of type {0} will now be displayed".format(target))
 
 
-@imm_action('unregister display')
-def unregister_display(source, args):
-    ev.unregister_type(source, args[0])
-    source.display_line("Events of type {0} will no longer be displayed".format(args[0]))
+@imm_action('unregister display', target_class='cmd_str')
+def unregister_display(source, target):
+    ev.unregister_type(source, target)
+    source.display_line("Events of type {0} will no longer be displayed".format(target))
 
 
 @imm_action('describe', 'describe')
@@ -217,14 +215,14 @@ def reload_room(source):
     source.env.reload()
 
 
-@imm_action("log level", target_class='target_str', imm_level='supreme')
+@imm_action("log level", target_class='cmd_str', imm_level='supreme')
 def log_level(target):
     log = get_resource("log")
     log.set_level(target)
     return "Log level at {}".format(log.level_desc)
 
 
-@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='obj_str', imm_level='admin')
+@imm_action(('promote', 'demote'), 'is_player', prep='to', obj_class='cmd_str', imm_level='admin')
 def promote(source, verb, target, obj, **_):
     if source == target:
         return "Let someone else do that."
@@ -247,7 +245,7 @@ def promote(source, verb, target, obj, **_):
                      target=target, ext_fmt={'vb': verb, 'lvl': level_name})
 
 
-@imm_action('run update', target_class='target_str', imm_level='supreme')
+@imm_action('run update', target_class='cmd_str', imm_level='supreme')
 def run_update(source, target):
     args = target.split(' ')
     try:
@@ -256,7 +254,7 @@ def run_update(source, target):
         return "No such update."
 
 
-@imm_action('email', target_class='player_id', obj_class='obj_str', imm_level='admin')
+@imm_action('email', target_class='player_id', obj_class='cmd_str', imm_level='admin')
 def email(target, obj):
     player = um.find_player(target)
     if not player:
