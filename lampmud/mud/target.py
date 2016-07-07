@@ -28,12 +28,17 @@ def env(key_type, target_key, entity, *_):
 
 @target_gen
 def feature(key_type, target_key, entity, *_):
-    return recursive_targets(key_type, [feature for feature in entity.env.features], target_key)
+    return recursive_targets(key_type, (feature for feature in entity.env.features), target_key)
 
 
 @target_gen
 def env_living(key_type, target_key, entity, *_):
-    return recursive_targets(key_type, [living for living in entity.env.denizens],  target_key)
+    return recursive_targets(key_type, (living for living in entity.env.denizens),  target_key)
+
+
+@target_gen
+def player_env(key_type, target_key, entity, *_):
+    return recursive_targets(key_type, (denizen for denizen in entity.env.denizens if getattr(denizen, 'is_player', False) and denizen != entity), target_key)
 
 
 @target_gen

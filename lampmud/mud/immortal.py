@@ -90,7 +90,7 @@ def goto(source, target):
         raise ActionError("Cannot find " + dest)
 
 
-@imm_action('summon', target_class='logged_in')
+@imm_action('summon', target_class='player_online')
 def summon(source, target):
     if source == target:
         return "That hardly seems necessary"
@@ -254,7 +254,7 @@ def run_update(source, target):
         return "No such update."
 
 
-@imm_action('email', target_class='player_id', obj_class='cmd_str', imm_level='admin')
+@imm_action('email', target_class='player_env player_db', obj_class='cmd_str', imm_level='admin')
 def email(target, obj):
     player = um.find_player(target)
     if not player:

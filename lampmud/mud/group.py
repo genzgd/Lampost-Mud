@@ -112,7 +112,7 @@ class Invitation(ItemAspect):
         self.invitee.remove_inven(self)
 
 
-@mud_action(('group', 'invite'), target_class='logged_in')
+@mud_action(('group', 'invite'), target_class='player_online')
 def invite(source, target, **_):
     if target == source:
         return "Not really necessary.  You're pretty much stuck with yourself anyway."

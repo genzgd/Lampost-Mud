@@ -104,9 +104,11 @@ def friends(source):
     return "Your friends are:<br/>&nbsp&nbsp{}".format(friend_list) if friend_list else "Alas, you are friendless."
 
 
-@mud_action('friend', 'is_player')
+@mud_action('friend', target_class='player_online')
 def friend(source, target):
-    if source == target or friend_service.is_friend(source.dbo_id, target.dbo_id):
+    if message_service.is_blocked(source.dbo_id, target.dbo_id):
+        raise ActionError("You are blocked from sending messages to {}.".format(target.name), 'system')
+    if friend_service.is_friend(source.dbo_id, target.dbo_id):
         return "{} is already your friend.".format(target.name)
     try:
         friend_service.friend_request(source, target)
@@ -115,39 +117,36 @@ def friend(source, target):
     return "Friend request sent"
 
 
-@mud_action('unfriend', target_class='player_id')
+@mud_action('unfriend', target_class='player_env player_db')
 def unfriend(source, target):
-    friend_name = um.id_to_name(target)
-    if friend_service.is_friend(source.dbo_id, target):
-        friend_service.del_friend(source.dbo_id, target)
-        message_service.add_message('system', "You unfriended {}.".format(friend_name), source.dbo_id)
+    if friend_service.is_friend(source.dbo_id, target.dbo_id):
+        friend_service.del_friend(source.dbo_id, target.dbo_id)
+        message_service.add_message('system', "You unfriended {}.".format(target.name), source.dbo_id)
         message_service.add_message('system', "{} unfriended you!".format(source.name), target)
     else:
-        raise ActionError("{} is not your friend".format(friend_name))
+        raise ActionError("{} is not your friend".format(target.name))
 
 
-@mud_action('message', target_class='player_id', obj_class='cmd_str')
+@mud_action('message', target_class='player_env player_db self', obj_class='cmd_str')
 def message(source, target, obj, **_):
-    message_service.add_message('player', obj, target, source.dbo_id)
+    message_service.add_message('player', obj, target.dbo_id, source.dbo_id)
     return "Message Sent"
 
 
-@mud_action('block', target_class='player_id')
+@mud_action('block', target_class='player_env player_db')
 def block(source, target):
-    block_name = um.id_to_name(target)
-    if message_service.is_blocked(source, target):
-        return "You have already blocked {}.".format(block_name)
-    message_service.block_messages(source.dbo_id, target)
-    return "You have blocked messages from {}.".format(block_name)
+    if message_service.is_blocked(source, target.dbo_id):
+        return "You have already blocked {}.".format(target.name)
+    message_service.block_messages(source.dbo_id, target.dbo_id)
+    return "You have blocked messages from {}.".format(target.name)
 
 
-@mud_action('unblock', target_class='player_id')
+@mud_action('unblock', target_class='player_env player_db')
 def unblock(source, target):
-    block_name = um.id_to_name(target)
-    if message_service.is_blocked(source.dbo_id, target):
-        message_service.unblock_messages(source.dbo_id, target)
-        return "You unblock messages from {}".format(block_name)
-    return "You are not blocking messages from {}".format(block_name)
+    if message_service.is_blocked(source.dbo_id, target.dbo_id):
+        message_service.unblock_messages(source.dbo_id, target.dbo_id)
+        return "You unblock messages from {}".format(target.name)
+    return "You are not blocking messages from {}".format(target.name)
 
 
 @mud_action('follow', 'followers')

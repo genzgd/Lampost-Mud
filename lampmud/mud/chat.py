@@ -11,7 +11,7 @@ def emote(source, target):
     source.broadcast(raw="{}{} {}".format('' if source.imm_level else ':', source.name, target))
 
 
-@mud_action('tell', target_class="logged_in", obj_class="cmd_str")
+@mud_action('tell', target_class="player_online", obj_class="cmd_str")
 def tell(source, target, obj):
     tell_message(source, target, obj)
 
