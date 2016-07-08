@@ -60,6 +60,7 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
 
     lpEvent.register('login', updateTabs, $scope);
     lpEvent.register('logout', updateTabs, $scope);
+    lpEvent.register('message_update', updateMsgCount, $scope);
 
     lpEvent.register('new_message', function () {
       updateMsgCount();
@@ -133,12 +134,15 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
     })
   }]);
 
-angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lpData', 'lpRemote', function ($scope, lpData, lpRemote) {
+
+angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lpEvent', 'lpData', 'lpRemote',
+  function ($scope, lpEvent, lpData, lpRemote) {
   $scope.respond = function (response) {
     lpRemote.asyncRequest("messages/friend_response", {action: response, player_id: lpData.playerId,
       source_id: $scope.msg.content.friend_id, msg_id: $scope.msg.msg_id}).then(function () {
         var msg_ix = lpData.messages.indexOf($scope.msg);
         lpData.messages.splice(msg_ix, 1);
+        lpEvent.dispatch('message_update');
       })
   }
 }]);

@@ -17,16 +17,15 @@ def target_keys(item):
 class ItemAspect(DBOAspect, ActionProvider, Attachable):
     sex = DBOField('none')
     flags = DBOField({})
+    title = ''
+    aliases = []
 
     living = False
     env = None
 
     def _on_loaded(self):
         if not self.target_keys:
-            try:
-                self.target_keys = target_keys(self)
-            except AttributeError:
-                pass
+            self.target_keys = target_keys(self)
 
     @property
     def name(self):

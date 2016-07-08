@@ -8,6 +8,7 @@ from lampmud.model.item import ItemAspect
 from lampmud.mud.action import mud_action
 
 ev = Injected('dispatcher')
+message_service = Injected('message_service')
 module_inject(__name__)
 
 
@@ -20,7 +21,7 @@ class Group(ActionProvider, Attachable):
         self.members = []
         self.invites = set()
         self.instance = None
-        self.channel = Channel('gchat', 'next', aliases=('g', 'gc', 'gt', 'gtell', 'gsay', 'gs'))
+        self.channel = Channel('gchat', 'next', aliases=('g', 'gc', 'gt', 'gtell', 'gsay', 'gs'), tag='[g] ')
         ev.register('player_connect', self._player_connect)
 
     def join(self, member):
@@ -42,7 +43,7 @@ class Group(ActionProvider, Attachable):
         self._check_empty()
 
     @obj_action()
-    def leave(self, source, **_):
+    def leave(self, source):
         self._remove_member(source)
         if len(self.members) > 1 and source == self.leader:
             self.leader = self.members[0]
@@ -94,14 +95,14 @@ class Invitation(ItemAspect):
         return "An invitation to {}'s group.".format(self.group.leader.name)
 
     @obj_action(target_class="action_owner action_default")
-    def accept(self, **_):
+    def accept(self):
         self.invitee.display_line("You have joined {}'s group.".format(self.group.leader.name))
         self.group.join(self.invitee)
         self.resolved = True
         self.detach()
 
     @obj_action(target_class="action_owner action_default")
-    def decline(self, **_):
+    def decline(self):
         self.detach()
 
     def _on_detach(self):
@@ -112,13 +113,15 @@ class Invitation(ItemAspect):
         self.invitee.remove_inven(self)
 
 
-@mud_action(('group', 'invite'), target_class='player_online')
-def invite(source, target, **_):
+@mud_action(('group', 'invite'), target_class='player_env player_online')
+def invite(source, target):
     if target == source:
         return "Not really necessary.  You're pretty much stuck with yourself anyway."
+    if message_service.is_blocked(target.dbo_id, source.dbo_id):
+        return "{} has blocked requests from you.".format(target.name)
     if target.group:
         if target.group == source.group:
-            return "{} is already in your group!"
+            return "{} is already in your group!".format(target.name)
         target.display_line("{} attempted to invite you to a different group.".format(source.name))
         return "{} is already in a group.".format(target.name)
     if source.group:
