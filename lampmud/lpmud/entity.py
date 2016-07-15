@@ -192,7 +192,7 @@ class EntityLP(Entity):
     def considered(self, **_):
         return calc_consider(self)
 
-    def check_drop(self, article, quantity):
+    def check_drop(self, article, quantity=None):
         if getattr(article, 'current_slot', None):
             raise ActionError("You must unequip the item before dropping it.")
 

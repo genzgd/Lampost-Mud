@@ -192,10 +192,10 @@ class Entity(DBOAspect, Attachable):
     def can_see(self, target):
         return True
 
-    def check_inven(self, article, quantity):
+    def check_inven(self, article, quantity=None):
         pass
 
-    def check_drop(self, article, quantity):
+    def check_drop(self, article, quantity=None):
         pass
 
     def die(self):

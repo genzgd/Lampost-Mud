@@ -64,7 +64,7 @@ class Store(ItemDBO):
             sell_msg = "You deposit {N}."
             self.add_inven(target)
 
-        source.check_drop(target, None)
+        source.check_drop(target)
         source.remove_inven(target)
         source.broadcast(s=sell_msg, e="{n} sells {N}.", target=target)
 

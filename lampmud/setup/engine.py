@@ -58,7 +58,7 @@ def start(args):
 
     web.add_route(r"/", RedirectHandler, url="/webclient/lampost.html")
     web.add_route("/lsp/(.*)", pages.LspHandler)
-    web.add_route(r"/webclient/(.*)", StaticFileHandler, path="webclient")
+    web.add_route(r"/webclient/(.*)", StaticFileHandler, path=args.web_files)
     web.add_routes(main_router.routes)
     web.add_routes(edit_router.routes)
     web.add_routes(app_setup.app_routes())
