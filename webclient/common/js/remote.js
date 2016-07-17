@@ -8,7 +8,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     var waitCount = 0;
     var waitDialogId = null;
     var services = {};
-    var resourceRoot = '../';
+    var resourceRoot = '/';
     var reconnectTemplate = '<div class="modal"><div class="modal-dialog"><div class="modal-content">' +
       '<div class="modal-header"> <h3>Reconnecting To Server</h3></div><div class="modal-body">' +
       '<p>Reconnecting in {{time}} seconds.</p></div><div class="modal-footer">' +

@@ -30,7 +30,6 @@ from lampmud.editor import router as edit_router
 def start(args):
     json.select_json()
 
-    # Load and activate the database configuration
     datastore = resource.register('datastore', RedisStore(args.db_host, args.db_port, args.db_num, args.db_pw))
     db_config = datastore.load_object(args.config_id, dbconfig.Config)
     config_values = config.activate(db_config.section_values)
@@ -58,9 +57,11 @@ def start(args):
     pages.add_page(pages.LspPage('config.js', "var lampost_config = {{title:'{0}', description:'{1}'}};"
                                  .format(config_values['lampost_title'], config_values['lampost_description'])))
 
-    web.add_route(r"/", RedirectHandler, url="/webclient/lampost.html")
-    web.add_route("/lsp/(.*)", pages.LspHandler)
-    web.add_route(r"/webclient/(.*)", StaticFileHandler, path=os.path.abspath(args.web_files))
+    web.service_root = args.service_root
+    if args.web_files:
+        web.add_raw_route("/", RedirectHandler, url="/webclient/lampost.html")
+        web.add_raw_route("/webclient/(.*)", StaticFileHandler, path=os.path.abspath(args.web_files))
+    web.add_raw_route("/lsp/(.*)", pages.LspHandler)
     web.add_routes(main_router.routes)
     web.add_routes(edit_router.routes)
     web.add_routes(app_setup.app_routes())
