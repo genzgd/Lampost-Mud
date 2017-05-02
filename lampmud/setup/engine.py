@@ -12,7 +12,7 @@ from lampost.util import json
 from lampost.db import permissions
 from lampost.event.system import dispatcher
 from lampost.gameops import friend
-from lampost.server.email import email_sender
+from lampost.server import email as email_sender
 from lampost.server import web
 from lampost.server import pages
 from lampost.server import display

@@ -254,13 +254,19 @@ def run_update(source, target):
         return "No such update."
 
 
-@imm_action('email', target_class='player_env player_db', obj_class='cmd_str', imm_level='admin')
-def email(target, obj):
-    player = um.find_player(target)
+@imm_action('email', target_class='cmd_str', imm_level='admin')
+def email(target):
+    pieces = target.split(' ')
+    if len(pieces) < 2:
+        return "Usage:  email [player] [message]"
+    player_name = pieces[0]
+    player = um.find_player(player_name.lower())
     if not player:
-        return "Player not found"
+        return "Player {} not found".format(player_name)
     user = db.load_object(player.user_id, User)
-    return email.send_targeted_email('Lampost Message', obj, [user])
+    if user.email:
+        return email.send_targeted_email('Lampost Message', ' '.join(pieces[1:]), [user])
+    return "Player {} has no email on file.".format(player.name)
 
 
 @imm_action('combat log')
