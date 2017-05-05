@@ -12,19 +12,18 @@ from lampost.util import json
 from lampost.db import permissions
 from lampost.event.system import dispatcher
 from lampost.gameops import friend
-from lampost.server import email as email_sender
 from lampost.server import web
+from lampost.server.link import LinkHandler
 from lampost.server import pages
+from lampost.server import email as email_sender
 from lampost.server import display
 from lampost.server.services import AnyLoginService, PlayerListService, EditUpdateService
-from lampost.server.session import SessionManager
+from lampost.server import session as session_manager
 from lampost.server import user
 from lampost.server.channel import ChannelService
 from lampost.server import message
 
-from lampmud.server import router as main_router
 from lampmud.env import instancemgr
-from lampmud.editor import router as edit_router
 
 
 def start(args):
@@ -42,7 +41,7 @@ def start(args):
 
     resource.register('display', display)
     resource.register('user_manager', user)
-    resource.register('session_manager', SessionManager())
+    resource.register('session_manager', session_manager)
     resource.register('instance_manager', instancemgr)
     resource.register('email_sender', email_sender)
     resource.register('channel_service', ChannelService())
@@ -62,9 +61,7 @@ def start(args):
         web.add_raw_route("/", RedirectHandler, url="/webclient/lampost.html")
         web.add_raw_route("/webclient/(.*)", StaticFileHandler, path=os.path.abspath(args.web_files))
     web.add_raw_route("/lsp/(.*)", pages.LspHandler)
-    web.add_routes(main_router.routes)
-    web.add_routes(edit_router.routes)
-    web.add_routes(app_setup.app_routes())
+    web.add_raw_route("/link", LinkHandler)
     web.start_service(args.port, args.server_interface)
 
     IOLoop.instance().start()
