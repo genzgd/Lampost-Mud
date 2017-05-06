@@ -3,7 +3,6 @@ from importlib import import_module
 from lampost.server.route import Route
 
 from lampost.editor.players import PlayerEditor, UserEditor, ImmortalsList
-from lampost.editor.admin import AdminHandler
 from lampost.editor.editor import ChildrenEditor, Editor, ChildList
 from lampost.editor.session import EditConnect, EditLogin, EditLogout
 
@@ -37,5 +36,4 @@ routes = [
     ('editor/script/(.*)', ScriptEditor),
     ('editor/imports/(.*)', ImportsEditor),
     ('editor/user/(.*)', UserEditor),
-    ('editor/admin/(.*)', AdminHandler)
 ]

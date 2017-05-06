@@ -1,8 +1,11 @@
+import html
+
 from lampost.di.app import on_app_start
 from lampost.server.channel import Channel
 from lampost.di.config import config_value
 from lampost.di.resource import Injected, module_inject
 from lampost.gameops.action import ActionError
+from lampost.server.link import LinkListener
 from lampost.util.lputil import ClientError
 
 from lampmud.mud.action import mud_action, imm_actions
@@ -28,6 +31,7 @@ def _start():
     ev.register('player_connect', _player_connect)
     ev.register('missing_env', _start_env)
     ev.register('imm_attach', _imm_attach, priority=-50)
+    LinkListener('action', _action)
 
 
 def _player_create(player, user):
@@ -85,6 +89,10 @@ def _start_env(player):
         return player_room
 
     return db.load_object(config_value('default_start_room'), 'room')
+
+
+def _action(player, action, **_):
+    player.parse(html.escape(action.strip(), False))
 
 
 @mud_action(('quit', 'log out'))

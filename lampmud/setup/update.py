@@ -23,7 +23,6 @@ def assign_race(race_id):
 
 
 def test_memory(*_):
-
     for area_ix in range(1000):
         area_id = 'perf_test{}'.format(area_ix)
         old_area = db.load_object(area_id, 'area')
