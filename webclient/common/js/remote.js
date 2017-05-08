@@ -2,6 +2,9 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
   function ($timeout, $http, $templateCache, $q, $log, lpEvent, lpDialog) {
 
     var sessionId = '';
+    var current_req_id = 0;
+    var req_map = {};
+    var socket;
     var connectEndpoint = '';
     var connected = false;
     var loadingTemplate;
@@ -14,70 +17,87 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       '<p>Reconnecting in {{time}} seconds.</p></div><div class="modal-footer">' +
       '<button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div></div></div></div>';
 
-    function serverRequest(resource, data) {
-      return $http({method: 'POST',
-        url: resourceRoot + resource,
-        data: data || {},
-        headers: sessionId ? {'X-Lampost-Session': sessionId} : null}).success(lpEvent.dispatchMap).error(linkFailure);
-    }
 
-    function resourceRequest(resource, data) {
-      if (waitCount == 0) {
+    function request(cmdId, data) {
+      if (!connected) {
+        $log.warn("Attempt to send " + cmdId + " before socket connected");
+        return $q.reject({id: 'Error', text: 'Socket not connected'});
+      }
+      if (waitCount++ == 0) {
         waitDialogId = lpDialog.show({template: loadingTemplate, noEscape: true});
       }
-      waitCount++;
+      data = data || {};
+      data.cmd_id = cmdId;
+      data.req_id = current_req_id++;
 
-      function checkWait() {
-        waitCount--;
-        if (waitCount == 0) {
+      var deferred = $q.defer();
+      req_map[data.req_id] = deferred;
+      socket.send(JSON.stringify(data));
+      return deferred.promise;
+    }
+
+    function dispatch(cmdId, data) {
+      if (connected) {
+        data = data || {};
+        data.cmd_id = cmdId;
+        socket.send(JSON.stringify(data))
+      } else {
+        $log.warn("Attempt to send " + cmdId + " before socket connected");
+      }
+    }
+
+    function onMessage(message) {
+      var response = JSON.parse(message);
+      var req_id = response.req_id;
+      if (req_id !== undefined) {
+        var deferred = req_map[req_id];
+        if (!deferred) {
+          $log.error("Received response for missing req_id " + req_id);
+          return;
+        }
+        delete req_map[req_id];
+        if (--waitCount === 0) {
           lpDialog.close(waitDialogId);
           waitDialogId = null;
         }
-      }
-
-      return rawRequest(resource, data, checkWait);
-    }
-
-    function rawRequest(resource, data, checkWait) {
-      var deferred = $q.defer();
-      $http({method: 'POST', url: resourceRoot + resource, data: data || {}, headers: {'X-Lampost-Session': sessionId}})
-        .success(function (data) {
-          checkWait && checkWait();
-          deferred.resolve(data);
-        }).error(function (data, status) {
-          checkWait && checkWait();
-          if (status === 409 || status === 400) {
+        switch (response.http_status) {
+          case 0:
+          case undefined:
+          case null:
+            deferred.resolve(response);
+            break;
+          case 401:
+            lpDialog.showOk("Denied", "You do not have permission for that action");
+            break;
+          case 400:
+          case 409:
             var errorResult = {id: 'Error', raw: data, text: data};
-            var colon_ix = data.indexOf(':');
-            if (colon_ix > 0) {
-              var space_ix = data.indexOf(' ');
-              if (space_ix == -1 || colon_ix < space_ix) {
+              var colon_ix = data.indexOf(':');
+              if (colon_ix > 0) {
+                var space_ix = data.indexOf(' ');
+                if (space_ix == -1 || colon_ix < space_ix) {
                 errorResult.id = data.substring(0, colon_ix);
                 errorResult.text = $.trim(data.substring(colon_ix + 1));
               }
             }
             deferred.reject(errorResult);
-          } else if (status === 403) {
-            lpDialog.showOk("Denied", "You do not have permission for that action");
-          } else if (status) {
-            lpDialog.showOk("Server Error: " + status, data);
-          }
-        });
-
-      return deferred.promise;
+            break;
+          default:
+            lpDialog.showOk("Server Error: " + response.http_status, response);
+            break;
+        }
+      } else {
+        lpEvent.dispatchMap(response);
+      }
     }
 
-    function linkFailure(data, status) {
-      if (!connected) {
-        return;
-      }
-      if (status >= 500 && status < 600) {
-        lpEvent.dispatch('server_error');
-        serverRequest('link');
-        return;
-      }
+    function onError(e) {
+      $log.log("Web socket error" + e);
+    }
+
+    function onClose(e) {
       connected = false;
-      $log.log("Link stopped: " + status);
+      $log.log("Web socket close" + e);
       $timeout(function () {
         if (!connected && !window.windowClosing) {
           lpDialog.show({template: reconnectTemplate, controller: ReconnectCtrl, noEscape: true});
@@ -85,37 +105,15 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }, 50);
     }
 
-    function onLinkStatus(status) {
-      connected = true;
-      if (status == "good") {
-        serverRequest('link');
-      } else if (status == "session_not_found") {
-        sessionId = '';
-        connected = false;
-        angular.forEach(services, function(service) {
-          service.registered = false;
-        });
-        lpEvent.dispatch("logout", "invalid_session");
-        serverRequest(connectEndpoint);
-      } else if (status == "no_login") {
-        lpEvent.dispatch("logout", "invalid_session");
-      } else if (status == "cancel") {
-        $log.log("Outstanding request cancelled");
-      }
-    }
-
     function onConnect(data) {
       connected = true;
-      sessionId = data;
+      sessionId = data.session_id;
       angular.forEach(services, validateService);
-      serverRequest('link');
     }
 
     function reconnect() {
       if (!sessionId) {
         serverRequest(endpoint);
-      } else {
-        serverRequest("link");
       }
     }
 
@@ -144,28 +142,29 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }
     }
 
-    this.connect = function(endpoint, oldSessionId, data) {
-      if (oldSessionId) {
-        sessionId = oldSessionId;
-      }
+    this.connect = function(endpoint, data) {
+      var socket_url = (window.location.protocol === "https:" ? "wss://" : "ws://") +
+        window.location.host + resourceRoot + 'link';
+      socket = new WebSocket(socket_url);
+      socket.onclose = onClose;
+      socket.onerror = onError;
+      socket.onmessage = onMessage;
       connectEndpoint = endpoint;
-      serverRequest(endpoint, data);
+      dispatch(endpoint, data);
     };
 
-    this.request = function (resource, args) {
+    this.request = function (cmdId, args) {
       return $http.get('common/dialogs/loading.html', {cache: $templateCache}).then(function (template) {
         loadingTemplate = template.data;
       }).then(function () {
-        return resourceRequest(resource, args)
+        return request(cmdId, args)
       });
     };
 
-    this.log = function (logMessage) {
-      rawRequest("remote_log", logMessage)
-    };
+    this.dispatch = dispatch;
 
-    this.asyncRequest = function (resource, args) {
-      return rawRequest(resource, args);
+    this.log = function (logMessage) {
+      dispatch("remote_log", logMessage)
     };
 
     this.registerService = function (serviceId, data) {
@@ -190,8 +189,6 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     };
 
     lpEvent.register("connect", onConnect);
-    lpEvent.register("link_status", onLinkStatus);
-    lpEvent.register("server_request", serverRequest);
 
 
     function ReconnectCtrl($scope, $timeout) {

@@ -25,11 +25,7 @@ angular.module('lampost_mud').run(
     jQuery('title').text(lampost_config.title);
 
     var lastSession = lpStorage.lastSession();
-    if (lastSession) {
-      lpRemote.connect('game_connect', lastSession.sessionId, {player_id: lastSession.playerId});
-    } else {
-      lpRemote.connect('game_connect');
-    }
+    lpRemote.connect('app_connect', lastSession ? {sessionId: lastSession.sessionId, player_id: lastSession.playerId} : {});
     $injector.get('lpData');
     $injector.get('lpDialog');
     $injector.get('lmComm');
@@ -190,13 +186,13 @@ angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEven
   }]);
 
 
-angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lpEvent',
-  function ($scope, lpDialog, lpEvent) {
+angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lpEvent', 'lpRemote',
+  function ($scope, lpDialog, lpEvent, lpRemote) {
 
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
-      lpEvent.dispatch("server_request", "login", {user_id: this.userId,
+      lpRemote.dispatch("login", {user_id: this.userId,
         password: this.password})
     };
 
