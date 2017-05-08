@@ -129,9 +129,9 @@ server:
     desc: 'Maintenance Pulse interval (in minutes).'
     value: 60
   -
-    name: 'refresh_link_interval'
+    name: 'check_link_interval'
     desc: 'Internal link status check (in seconds).'
-    value: 5
+    value: 60
   -
     name: 'broadcast_interval'
     desc: 'Broadcast to all clients of application status (such as a player list) in seconds.'
@@ -140,10 +140,6 @@ server:
     name: 'link_dead_interval'
     desc: 'Time without a connection before a client is considered link dead (in seconds).'
     value: 15
-  -
-    name : 'link_idle_refresh'
-    desc: 'Time that a link will be refreshed by the server if no other activity (in seconds).'
-    value: 45
   -
     name: 'link_dead_prune'
     desc: 'Time before a link dead player will be automatically logged out (in seconds).'

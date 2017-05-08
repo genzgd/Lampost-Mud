@@ -47,7 +47,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     }
 
     function onMessage(message) {
-      var response = JSON.parse(message);
+      var response = JSON.parse(message.data);
       var req_id = response.req_id;
       if (req_id !== undefined) {
         var deferred = req_map[req_id];
@@ -106,15 +106,26 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     }
 
     function onConnect(data) {
-      connected = true;
       sessionId = data.session_id;
       angular.forEach(services, validateService);
     }
 
+    function connect(endpoint, sessionId, playerId) {
+      connectEndpoint = endpoint;
+      var socket_url = (window.location.protocol === "https:" ? "wss://" : "ws://") +
+        window.location.host + resourceRoot + 'link';
+      socket = new WebSocket(socket_url);
+      socket.onclose = onClose;
+      socket.onerror = onError;
+      socket.onmessage = onMessage;
+      socket.onopen = function() {
+        connected = true;
+        dispatch(endpoint, {session_id: sessionId, player_id: playerId});
+      };
+    }
+
     function reconnect() {
-      if (!sessionId) {
-        serverRequest(endpoint);
-      }
+      connect(connectEndpoint, sessionId);
     }
 
     function validateService(service) {
@@ -127,31 +138,20 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }
       if (service.refCount == 0 && service.registered && !service.inFlight) {
         service.inFlight = true;
-        serverRequest('unregister', {service_id: service.serviceId}).then(function () {
+        request('unregister', {service_id: service.serviceId}).then(function () {
           service.inFlight = false;
           service.registered = false;
           validateService(service);
         })
       } else if (service.refCount > 0 && !service.registered && !service.inFlight) {
         service.inFlight = true;
-        serverRequest('register', {service_id: service.serviceId, data: service.data}).then(function () {
+        request('register', {service_id: service.serviceId, data: service.data}).then(function () {
           service.inFlight = false;
           service.registered = true;
           validateService(service);
         })
       }
     }
-
-    this.connect = function(endpoint, data) {
-      var socket_url = (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.location.host + resourceRoot + 'link';
-      socket = new WebSocket(socket_url);
-      socket.onclose = onClose;
-      socket.onerror = onError;
-      socket.onmessage = onMessage;
-      connectEndpoint = endpoint;
-      dispatch(endpoint, data);
-    };
 
     this.request = function (cmdId, args) {
       return $http.get('common/dialogs/loading.html', {cache: $templateCache}).then(function (template) {
@@ -162,6 +162,8 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     };
 
     this.dispatch = dispatch;
+
+    this.connect = connect;
 
     this.log = function (logMessage) {
       dispatch("remote_log", logMessage)
@@ -194,10 +196,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     function ReconnectCtrl($scope, $timeout) {
       var tickPromise;
       var time = 16;
-      lpEvent.register("link_status", function (link_status) {
-        if (link_status == 'cancel') {
-          return;
-        }
+      lpEvent.register("connect", function () {
         $scope.dismiss();
         $timeout.cancel(tickPromise);
       }, $scope, -500);

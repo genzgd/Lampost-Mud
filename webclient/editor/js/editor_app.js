@@ -44,8 +44,8 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
   }]);
 
 angular.module('lampost_editor').controller('EditorNavController',
-  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpUtil', 'lpEditor', 'lpEditorLayout',
-  function ($q, $rootScope,  $scope, lpEvent, lpUtil, lpEditor, lpEditorLayout) {
+  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpRemote', 'lpUtil', 'lpEditor', 'lpEditorLayout',
+  function ($q, $rootScope,  $scope, lpEvent, lpRemote, lpUtil, lpEditor, lpEditorLayout) {
 
     var sessionId;
     var editNav = [
@@ -124,7 +124,7 @@ angular.module('lampost_editor').controller('EditorNavController',
     }, $scope);
 
     $scope.editorLogout = function () {
-      lpEvent.dispatch('server_request', 'editor/edit_logout');
+      lpRemote.dispatch('editor/edit_logout');
     };
 
     $scope.changeNav = function (newNav) {
@@ -154,13 +154,14 @@ angular.module('lampost_editor').controller('EditorNavController',
   }]);
 
 
-angular.module('lampost_editor').controller('EditLoginController', ['$scope', 'lpEvent',
-  function ($scope, lpEvent) {
+angular.module('lampost_editor').controller('EditLoginController', ['$scope', 'lpRemote',
+  function ($scope, lpRemote) {
 
     $scope.login = {};
 
     $scope.editorLogin = function () {
-      lpEvent.dispatch('server_request', 'editor/edit_login', $scope.login);
+      lpRemote.dispatch('editor/edit_login', $scope.login);
+
     };
 
     lpEvent.register('login_failure', function (failure) {

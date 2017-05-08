@@ -25,11 +25,10 @@ angular.module('lampost_mud').run(
     jQuery('title').text(lampost_config.title);
 
     var lastSession = lpStorage.lastSession();
-    lpRemote.connect('app_connect', lastSession ? {sessionId: lastSession.sessionId, player_id: lastSession.playerId} : {});
+    lpRemote.connect('app_connect', lastSession ? lastSession.sessionId : null, lastSession ? lastSession.playerId : null);
     $injector.get('lpData');
     $injector.get('lpDialog');
     $injector.get('lmComm');
-
   }]);
 
 angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData', 'lpDialog',
@@ -57,8 +56,8 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData',
 
 
 angular.module('lampost_mud').controller('NavCtrl',
-  ['$rootScope', '$scope', '$location', '$log', 'lpEvent', 'lpData', 'lpUtil', 'lpDialog',
-  function ($rootScope, $scope, $location, $log, lpEvent, lpData, lpUtil, lpDialog) {
+  ['$rootScope', '$scope', '$location', '$log', 'lpEvent', 'lpRemote', 'lpData', 'lpUtil', 'lpDialog',
+  function ($rootScope, $scope, $location, $log, lpEvent, lpRemote, lpData, lpUtil, lpDialog) {
 
     var baseLinks = [new Link("game", "Mud", "fa fa-tree", 0)];
     var settingsLink = new Link("settings", "Settings", "fa fa-sliders", 50);
@@ -134,7 +133,7 @@ angular.module('lampost_mud').controller('NavCtrl',
     };
 
     $scope.logout = function () {
-      lpEvent.dispatch("server_request", "action", {action: "quit"});
+      lpRemote.dispatch("action", {action: "quit"});
     };
 
     lpEvent.register("login", function () {
@@ -154,8 +153,6 @@ angular.module('lampost_mud').controller('NavCtrl',
     }, $scope, -500);
 
     validatePath();
-
-
   }]);
 
 
@@ -192,8 +189,7 @@ angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lp
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
-      lpRemote.dispatch("login", {user_id: this.userId,
-        password: this.password})
+      lpRemote.dispatch("login", {user_id: this.userId, password: this.password})
     };
 
     $scope.newAccountDialog = function () {
@@ -285,8 +281,8 @@ angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lpRemo
   }
 }]);
 
-angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lpData',
-  function ($scope, $timeout, lpEvent, lpData) {
+angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lpRmote', 'lpData',
+  function ($scope, $timeout, lpEvent, lpRemote, lpData) {
   var curAction;
 
   $scope.update = 0;
@@ -309,7 +305,7 @@ angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'l
 
   $scope.sendAction = function () {
     if ($scope.action) {
-      lpEvent.dispatch("server_request", "action", {action: $scope.action});
+      lpRemote.dispatch("action", {action: $scope.action});
       lpData.history.push($scope.action);
       lpData.historyIx = lpData.history.length;
       updateAction('');
