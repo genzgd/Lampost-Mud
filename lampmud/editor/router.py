@@ -4,7 +4,6 @@ from lampost.server.route import Route
 
 from lampost.editor.players import PlayerEditor, UserEditor, ImmortalsList
 from lampost.editor.editor import ChildrenEditor, Editor, ChildList
-from lampost.editor.session import EditConnect, EditLogin, EditLogout
 
 from lampmud.editor.areas import AreaEditor, RoomEditor
 from lampmud.editor.config import Constants
@@ -15,9 +14,6 @@ from lampmud.editor.shared import SocialsEditor, SkillEditor
 import_module('lampost.editor.dbops')
 
 routes = [
-    ('editor/edit_connect', EditConnect),
-    ('editor/edit_login', EditLogin),
-    ('editor/edit_logout', EditLogout),
     ('editor/constants', Constants),
     ('editor/immortal/list', ImmortalsList),
     ('editor/area/(.*)', AreaEditor),
