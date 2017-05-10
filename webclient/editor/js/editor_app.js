@@ -124,7 +124,7 @@ angular.module('lampost_editor').controller('EditorNavController',
     }, $scope);
 
     $scope.editorLogout = function () {
-      lpRemote.dispatch('editor/edit_logout');
+      lpRemote.send('editor/edit_logout');
     };
 
     $scope.changeNav = function (newNav) {
@@ -160,7 +160,7 @@ angular.module('lampost_editor').controller('EditLoginController', ['$scope', 'l
     $scope.login = {};
 
     $scope.editorLogin = function () {
-      lpRemote.dispatch('editor/edit_login', $scope.login);
+      lpRemote.send('editor/edit_login', $scope.login);
 
     };
 

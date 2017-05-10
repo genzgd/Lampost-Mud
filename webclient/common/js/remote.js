@@ -18,31 +18,31 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       '<button class="btn btn-primary" ng-click="reconnectNow()">Reconnect Now</button></div></div></div></div>';
 
 
-    function request(cmdId, data) {
+    function request(path, data, withWait) {
       if (!connected) {
-        $log.warn("Attempt to send " + cmdId + " before socket connected");
+        $log.warn("Attempting request " + path + " before socket connected");
         return $q.reject({id: 'Error', text: 'Socket not connected'});
       }
-      if (waitCount++ == 0) {
+      if (withWait && waitCount++ == 0) {
         waitDialogId = lpDialog.show({template: loadingTemplate, noEscape: true});
       }
       data = data || {};
-      data.cmd_id = cmdId;
+      data.path = path;
       data.req_id = current_req_id++;
 
       var deferred = $q.defer();
-      req_map[data.req_id] = deferred;
+      req_map[data.req_id] = {deferred: deferred, withWait: withWait};
       socket.send(JSON.stringify(data));
       return deferred.promise;
     }
 
-    function dispatch(cmdId, data) {
+    function send(path, data) {
       if (connected) {
         data = data || {};
-        data.cmd_id = cmdId;
+        data.path = path;
         socket.send(JSON.stringify(data))
       } else {
-        $log.warn("Attempt to send " + cmdId + " before socket connected");
+        $log.warn("Attempt to send " + path + " before socket connected");
       }
     }
 
@@ -50,24 +50,28 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       var response = JSON.parse(message.data);
       var req_id = response.req_id;
       if (req_id !== undefined) {
-        var deferred = req_map[req_id];
-        if (!deferred) {
+        var req_data = req_map[req_id];
+        if (!req_data) {
           $log.error("Received response for missing req_id " + req_id);
           return;
         }
         delete req_map[req_id];
-        if (--waitCount === 0) {
+        if (req_data.withWait && --waitCount === 0) {
           lpDialog.close(waitDialogId);
           waitDialogId = null;
         }
+        var deferred = req_data.deferred;
         switch (response.http_status) {
           case 0:
+          case 200:
+          case 204:
           case undefined:
           case null:
-            deferred.resolve(response);
+            deferred.resolve(response.data);
             break;
           case 401:
             lpDialog.showOk("Denied", "You do not have permission for that action");
+            deferred.reject(response);
             break;
           case 400:
           case 409:
@@ -83,7 +87,8 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
             deferred.reject(errorResult);
             break;
           default:
-            lpDialog.showOk("Server Error: " + response.http_status, response);
+            lpDialog.showOk("Server Error: " + response.http_status, response.client_message);
+            deferred.reject(response);
             break;
         }
       } else {
@@ -120,7 +125,7 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       socket.onmessage = onMessage;
       socket.onopen = function() {
         connected = true;
-        dispatch(endpoint, {session_id: sessionId, player_id: playerId});
+        send(endpoint, {session_id: sessionId, player_id: playerId});
       };
     }
 
@@ -138,14 +143,14 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }
       if (service.refCount == 0 && service.registered && !service.inFlight) {
         service.inFlight = true;
-        request('unregister', {service_id: service.serviceId}).then(function () {
+        request('unregister_service', {service_id: service.serviceId}).then(function () {
           service.inFlight = false;
           service.registered = false;
           validateService(service);
         })
       } else if (service.refCount > 0 && !service.registered && !service.inFlight) {
         service.inFlight = true;
-        request('register', {service_id: service.serviceId, data: service.data}).then(function () {
+        request('register_service', {service_id: service.serviceId, data: service.data}).then(function () {
           service.inFlight = false;
           service.registered = true;
           validateService(service);
@@ -153,20 +158,20 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }
     }
 
-    this.request = function (cmdId, args) {
+    this.request = function(path, args) {
       return $http.get('common/dialogs/loading.html', {cache: $templateCache}).then(function (template) {
         loadingTemplate = template.data;
       }).then(function () {
-        return request(cmdId, args)
+        return request(path, args, true)
       });
     };
 
-    this.dispatch = dispatch;
+    this.send = send;
 
     this.connect = connect;
 
     this.log = function (logMessage) {
-      dispatch("remote_log", logMessage)
+      send("remote_log", logMessage)
     };
 
     this.registerService = function (serviceId, data) {
@@ -191,7 +196,6 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
     };
 
     lpEvent.register("connect", onConnect);
-
 
     function ReconnectCtrl($scope, $timeout) {
       var tickPromise;

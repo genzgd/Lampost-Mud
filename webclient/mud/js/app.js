@@ -133,7 +133,7 @@ angular.module('lampost_mud').controller('NavCtrl',
     };
 
     $scope.logout = function () {
-      lpRemote.dispatch("action", {action: "quit"});
+      lpRemote.send("action", {action: "quit"});
     };
 
     lpEvent.register("login", function () {
@@ -189,7 +189,7 @@ angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lp
     $scope.loginError = false;
     $scope.siteDescription = lampost_config.description;
     $scope.login = function () {
-      lpRemote.dispatch("login", {user_id: this.userId, password: this.password})
+      lpRemote.send("player_login", {user_name: this.userId, password: this.password})
     };
 
     $scope.newAccountDialog = function () {
@@ -204,8 +204,8 @@ angular.module('lampost_mud').controller('LoginCtrl', ['$scope', 'lpDialog', 'lp
       lpDialog.show({templateUrl: "mud/dialogs/forgot_password.html", controller: "ForgotPasswordCtrl"})
     };
 
-    lpEvent.register("login_failure", function () {
-      $scope.loginError = true
+    lpEvent.register("login_failure", function (loginFailure) {
+      $scope.loginError = loginFailure
     }, $scope);
 
   }]);
@@ -281,7 +281,7 @@ angular.module('lampost_mud').controller('PasswordResetCtrl', ['$scope', 'lpRemo
   }
 }]);
 
-angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lpRmote', 'lpData',
+angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'lpEvent', 'lpRemote', 'lpData',
   function ($scope, $timeout, lpEvent, lpRemote, lpData) {
   var curAction;
 
@@ -305,7 +305,7 @@ angular.module('lampost_mud').controller('ActionCtrl', ['$scope', '$timeout', 'l
 
   $scope.sendAction = function () {
     if ($scope.action) {
-      lpRemote.dispatch("action", {action: $scope.action});
+      lpRemote.send("action", {action: $scope.action});
       lpData.history.push($scope.action);
       lpData.historyIx = lpData.history.length;
       updateAction('');

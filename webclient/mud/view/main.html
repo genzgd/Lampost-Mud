@@ -33,7 +33,7 @@
             </div>
             <div class="alert alert-danger" ng-show="loginError">
               <button type="button" class="close" ng-click="loginError = false">×</button>
-              Invalid user name or password
+              {{loginError}}
             </div>
             <button class="btn btn-sm btn-primary"
                     style="margin-top: 4px;" type="submit">Enter {{siteTitle}}
