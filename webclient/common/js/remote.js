@@ -110,8 +110,8 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }, 50);
     }
 
-    function onConnect(data) {
-      sessionId = data.session_id;
+    function onConnect(session_id) {
+      sessionId = session_id;
       angular.forEach(services, validateService);
     }
 

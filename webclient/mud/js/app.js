@@ -52,6 +52,20 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData',
              ]});
     });
 
+    lpEvent.register("invalid_session", function() {
+      lpDialog.removeAll();
+      if (lpData.playerId) {
+        lpDialog.showOk("Session Lost", "Your session has been disconnected.");
+        lpEvent.dispatch("logout");
+      }
+    });
+
+    lpEvent.register("other_location", function() {
+      var playerName = lpData.playerName ? lpData.playerName : "Unknown";
+      lpDialog.showOk("Logged Out", playerName + " logged in from another location.")
+      lpEvent.dispatch("logout");
+    });
+
   }]);
 
 
@@ -143,11 +157,7 @@ angular.module('lampost_mud').controller('NavCtrl',
 
     lpEvent.register('player_update', validatePath);
 
-    lpEvent.register("logout", function (reason) {
-      if (reason == "other_location") {
-        var playerName = lpData.playerName ? lpData.playerName : "Unknown";
-        lpDialog.showOk("Logged Out", playerName + " logged in from another location.");
-      }
+    lpEvent.register("logout", function () {
       $scope.loggedIn = false;
       validatePath();
     }, $scope, -500);
@@ -159,19 +169,15 @@ angular.module('lampost_mud').controller('NavCtrl',
 angular.module('lampost_mud').controller('GameCtrl', ['$scope', 'lmApp', 'lpEvent', 'lpData', 'lpDialog',
   function ($scope, lmApp, lpEvent, lpData, lpDialog) {
 
-     update();
+    update();
 
     lpEvent.register("login", function () {
       update();
     }, $scope);
 
-    lpEvent.register("logout", function (reason) {
-      if (reason === "invalid_session") {
-        lpDialog.removeAll();
-        lpDialog.showOk("Session Lost", "Your session has been disconnected.");
-      }
-      update();
-    }, $scope);
+    lpEvent.register("logout", update, $scope);
+
+
 
     function update() {
       if (lpData.playerId) {

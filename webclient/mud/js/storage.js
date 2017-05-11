@@ -27,9 +27,9 @@ angular.module('lampost_mud').service('lpStorage', ['$window', 'lpEvent', functi
     readSessions();
     if (sessions.hasOwnProperty(playerId)) {
       delete sessions[playerId];
-      writeSessions();
     }
     playerId = null;
+    writeSessions();
     if (immSession) {
       localStorage.removeItem(immKey);
       immSession = null;
