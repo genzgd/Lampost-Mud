@@ -170,10 +170,6 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
 
     this.connect = connect;
 
-    this.log = function (logMessage) {
-      send("remote_log", logMessage)
-    };
-
     this.registerService = function (serviceId, data) {
       var service = services[serviceId];
       if (!service) {

@@ -104,7 +104,7 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
 
 
     $scope.deleteMessage = function (msg) {
-      lpRemote.asyncRequest("messages/delete", {msg_id: msg.msg_id, player_id: lpData.playerId}).then(function () {
+      lpRemote.request("messages/delete", {msg_id: msg.msg_id, player_id: lpData.playerId}).then(function () {
         var msg_ix = lpData.messages.indexOf(msg);
         lpData.messages.splice(msg_ix, 1);
         updateMsgCount();
@@ -138,7 +138,7 @@ angular.module('lampost_mud').controller('DataTabsCtrl', ['$scope', '$timeout',
 angular.module('lampost_mud').controller('FriendReqCtrl', ['$scope', 'lpEvent', 'lpData', 'lpRemote',
   function ($scope, lpEvent, lpData, lpRemote) {
   $scope.respond = function (response) {
-    lpRemote.asyncRequest("messages/friend_response", {action: response, player_id: lpData.playerId,
+    lpRemote.request("messages/friend_response", {action: response, player_id: lpData.playerId,
       source_id: $scope.msg.content.friend_id, msg_id: $scope.msg.msg_id}).then(function () {
         var msg_ix = lpData.messages.indexOf($scope.msg);
         lpData.messages.splice(msg_ix, 1);

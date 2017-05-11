@@ -6,7 +6,7 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lpData'
     $scope.activeScreen = 'race';
     $scope.playerData = {};
 
-    lpRemote.request("client_data/new_char").then(function (newCharData) {
+    lpRemote.request("new_char_data").then(function (newCharData) {
       $scope.races = newCharData.races;
       $scope.ready = true;
     });
