@@ -10,9 +10,11 @@ module_inject(__name__)
 
 copy_dbs = {}
 
+
 @on_app_start
 def _start():
     ev.register('session_disconnect', _remove_db)
+
 
 def _remove_db(session):
     if session in copy_dbs:

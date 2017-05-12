@@ -31,8 +31,8 @@ angular.module('lampost_mud').run(
     $injector.get('lmComm');
   }]);
 
-angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData', 'lpDialog',
-  function ($timeout, lpEvent, lpData, lpDialog) {
+angular.module('lampost_mud').service('lmApp', ['$timeout', '$interval', 'lpEvent', 'lpData', 'lpDialog',
+  function ($timeout, $interval, lpEvent, lpData, lpDialog) {
 
     lpEvent.register("user_login", function () {
       if (lpData.playerIds.length == 0) {
@@ -65,6 +65,8 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', 'lpEvent', 'lpData',
       lpDialog.showOk("Logged Out", playerName + " logged in from another location.")
       lpEvent.dispatch("logout");
     });
+
+    $interval(lpEvent.dispatch, 60 * 1000, 0, false, 'heartbeat');
 
   }]);
 

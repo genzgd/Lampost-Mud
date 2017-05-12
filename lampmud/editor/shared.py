@@ -8,26 +8,28 @@ module_inject(__name__)
 
 
 class SocialsEditor(Editor):
-    def initialize(self):
-        super().initialize('social')
+    def __init__(self):
+        super().__init__('social')
 
-    def preview(self):
-        content = self._content()
-        broadcast = Broadcast(BroadcastMap(**content.b_map), content.source, content.source if content.self_source else content.target)
+    @staticmethod
+    def preview(source, target, b_map, self_source, **_):
+        broadcast = Broadcast(BroadcastMap(**b_map), source, source if self_source else target)
         return {broadcast_type['id']: broadcast.substitute(broadcast_type['id']) for broadcast_type in broadcast_types}
 
-    def _pre_create(self):
-        if mud_actions.primary(self.raw['dbo_id']):
+    def _pre_create(self, obj_def, *_):
+        if mud_actions.primary(obj_def['dbo_id']):
             raise DataError("Verb already in use")
 
 
+def _ensure_name(obj_def):
+        name = obj_def['name'] or obj_def['verb'] or obj_def['dbo_id']
+        obj_def['name'] = name.capitalize
+
+
 class SkillEditor(Editor):
-    def _pre_create(self):
-        self._ensure_name()
+    def _pre_create(self, obj_def, *_):
+        _ensure_name(obj_def)
 
-    def _pre_update(self, _):
-        self._ensure_name()
+    def _pre_update(self, obj_def, *_):
+        _ensure_name(obj_def)
 
-    def _ensure_name(self):
-        name = self.raw['name'] or self.raw['verb'] or self.raw['dbo_id']
-        self.raw['name'] = name.capitalize()

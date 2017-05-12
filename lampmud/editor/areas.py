@@ -3,6 +3,7 @@ from lampost.di.resource import Injected, module_inject
 from lampost.db.registry import get_dbo_class
 from lampost.db.exceptions import DataError
 from lampost.editor.editor import Editor, ChildrenEditor
+
 from lampmud.env.movement import Direction
 
 log = Injected('log')
@@ -18,58 +19,58 @@ default_start_room = ConfigVal('default_start_room')
 
 
 class AreaEditor(Editor):
-    def initialize(self):
-        super().initialize('area')
+    def __init__(self):
+        super().__init__('area')
 
-    def _pre_create(self):
-        if db.object_exists('player', self.raw['dbo_id']):
+    def _pre_create(self, obj_def, *_):
+        if db.object_exists('player', obj_def['dbo_id']):
             raise DataError("Area name should not match any player name.")
 
-    def _pre_delete(self, del_obj):
+    def _pre_delete(self, del_obj, session):
         if del_obj.dbo_id == root_area_id:
             raise DataError("Cannot delete root area.")
         for room in db.load_object_set('room', 'area_rooms:{}'.format(del_obj.dbo_id)):
-            room_clean_up(room, self.session, del_obj.dbo_id)
+            room_clean_up(room, session, del_obj.dbo_id)
 
 
 class RoomEditor(ChildrenEditor):
-    def initialize(self):
-        super().initialize('room')
+    def __init__(self):
+        super().__init__('room')
 
-    def visit(self):
-        if not self.session.player.session:
+    @staticmethod
+    def visit(player, room_id,  **_):
+        if not player.session:
             raise DataError("You are not logged in")
-        room = db.load_object(self.raw['room_id'], 'room')
+        room = db.load_object(room_id, 'room')
         if not room:
             raise DataError("ROOM_MISSING")
         room.reload()
-        self.session.player.change_env(room)
+        player.change_env(room)
 
-    def create_exit(self):
-        content = self._content()
-        area, room = find_area_room(content.start_room, self.player)
-        new_dir = content.direction
-        if room.find_exit(content.direction):
-            raise DataError("Room already has " + new_dir + " exit.")
-        rev_dir = Direction.ref_map[new_dir].rev_key
-        other_id = content.dest_id
-        if content.is_new:
-            other_room = db.create_object('room', {'dbo_id': other_id, 'title': content.dest_title}, False)
-            edit_update.publish_edit('create', other_room, self.session, True)
-            update_next_room_id(area, self.session)
+    @staticmethod
+    def create_exit(session, player, start_room, direction, dest_id, is_new, one_way, dest_title=None, **_):
+        area, room = find_area_room(start_room, player)
+        if room.find_exit(direction):
+            raise DataError("Room already has " + direction + " exit.")
+        rev_dir = Direction.ref_map[direction].rev_key
+        other_id = dest_id
+        if is_new:
+            other_room = db.create_object('room', {'dbo_id': other_id, 'title': dest_title}, False)
+            edit_update.publish_edit('create', other_room, session, True)
+            update_next_room_id(area, session)
         else:
-            other_area, other_room = find_area_room(other_id, self.player)
-            if not content.one_way and other_room.find_exit(rev_dir):
+            other_area, other_room = find_area_room(other_id, player)
+            if not one_way and other_room.find_exit(rev_dir):
                 raise DataError("Room " + other_id + " already has a " + rev_dir + " exit.")
         this_exit = get_dbo_class('exit')()
         this_exit.dbo_owner = room
-        this_exit.direction = new_dir
+        this_exit.direction = direction
         this_exit.destination = other_room
         this_exit.on_loaded()
         room.exits.append(this_exit)
         db.save_object(room)
-        edit_update.publish_edit('update', room, self.session)
-        if not content.one_way:
+        edit_update.publish_edit('update', room, session)
+        if not one_way:
             other_exit = get_dbo_class('exit')()
             other_exit.dbo_owner = room
             other_exit.direction = rev_dir
@@ -77,39 +78,38 @@ class RoomEditor(ChildrenEditor):
             other_exit.on_loaded()
             other_room.exits.append(other_exit)
             db.save_object(other_room)
-            edit_update.publish_edit('update', other_room, self.session, True)
+            edit_update.publish_edit('update', other_room, session, True)
         return this_exit.dto_value
 
-    def delete_exit(self):
-        content = self._content()
-        area, room = find_area_room(content.start_room, self.player)
-        local_exit = room.find_exit(content.dir)
+    @staticmethod
+    def delete_exit(session, player, start_room, direction, both_sides, **_):
+        area, room = find_area_room(start_room, player)
+        local_exit = room.find_exit(dir)
         if not local_exit:
             raise DataError('Exit does not exist')
         room.exits.remove(local_exit)
         db.save_object(room)
 
-        if content.both_sides:
+        if both_sides:
             other_room = local_exit.destination
-            other_exit = other_room.find_exit(Direction.ref_map[content.dir].rev_key)
+            other_exit = other_room.find_exit(Direction.ref_map[direction].rev_key)
             if other_exit:
                 other_room.exits.remove(other_exit)
                 if other_room.dbo_ts or other_room.exits:
                     db.save_object(other_room)
-                    edit_update.publish_edit('update', other_room, self.session, True)
+                    edit_update.publish_edit('update', other_room, session, True)
                 else:
                     db.delete_object(other_room)
-                    room_clean_up(room, self.session)
-                    edit_update.publish_edit('delete', other_room, self.session, True)
+                    room_clean_up(room, session)
+                    edit_update.publish_edit('delete', other_room, session, True)
 
+    def _post_create(self, room, session):
+        update_next_room_id(room.parent_dbo, session)
 
-    def _post_create(self, room):
-        update_next_room_id(room.parent_dbo, self.session)
+    def _post_delete(self, room, session):
+        room_clean_up(room, session)
 
-    def _post_delete(self, room):
-        room_clean_up(room, self.session)
-
-    def _post_update(self, room):
+    def _post_update(self, room, *_):
         room.reload()
 
 

@@ -11,28 +11,29 @@ perm = Injected('perm')
 module_inject(__name__)
 
 
+def _validate(obj_def):
+    hasher = hashlib.md5()
+    hasher.update(obj_def['text'].encode())
+    obj_def['script_hash'] = hasher.hexdigest()
+    _, err_str = compile_script(obj_def['script_hash'], obj_def['text'], obj_def['title'])
+    if err_str:
+        raise DataError(err_str)
+
+
 class ScriptEditor(ChildrenEditor):
-    def initialize(self):
-        super().initialize('script')
+    def __init__(self):
+        super().__init__('script')
 
-    def _validate(self):
-        hasher = hashlib.md5()
-        hasher.update(self.raw['text'].encode())
-        self.raw['script_hash'] = hasher.hexdigest()
-        _, err_str = compile_script(self.raw['script_hash'], self.raw['text'], self.raw['title'])
-        if err_str:
-            raise DataError(err_str)
+    def _pre_create(self, obj_def, session):
+        _validate(obj_def)
+        obj_def['approved'] = perm.has_perm(session.player, 'admin') and obj_def['approved']
 
-    def _pre_create(self):
-        self._validate()
-        self.raw['approved'] = perm.has_perm(self.player, 'admin') and self.raw['approved']
-
-    def _pre_update(self, existing):
-        self._validate()
+    def _pre_update(self, obj_def, existing, session):
+        _validate(obj_def)
         holder_keys = db.fetch_set_keys('{}:holders'.format(existing.dbo_key))
-        if self.raw['builder'] == 'shadow':
-            cls_type = self.raw['metadata']['cls_type']
-            cls_shadow = self.raw['metadata']['cls_shadow']
+        if obj_def['builder'] == 'shadow':
+            cls_type = obj_def['metadata']['cls_type']
+            cls_shadow = obj_def['metadata']['cls_shadow']
             errors = []
             for dbo_key in holder_keys:
                 holder = db.load_object(dbo_key)
@@ -44,6 +45,6 @@ class ScriptEditor(ChildrenEditor):
                             errors.append("{} wrong function {}".format(holder.dbo_id, script_ref.func_name))
             if errors:
                 raise DataError("Incompatible usages must be removed first:  {}".format("  ".join(errors)))
-        if self.raw['script_hash'] != existing.script_hash:
-            self.raw['approved'] = perm.has_perm(self.player, 'admin') and self.raw['approved']
+        if obj_def['script_hash'] != existing.script_hash:
+            obj_def['approved'] = perm.has_perm(session.player, 'admin') and obj_def['approved']
 
