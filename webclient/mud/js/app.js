@@ -43,7 +43,7 @@ angular.module('lampost_mud').service('lmApp', ['$timeout', '$interval', 'lpEven
     });
 
     lpEvent.register("password_reset", function () {
-      lpDialog.show({templateUrl: 'dialogs/password_reset.html', controller: 'PasswordResetCtrl', noEscape: true});
+      lpDialog.show({templateUrl: 'mud/dialogs/password_reset.html', controller: 'PasswordResetCtrl', noEscape: true});
     });
 
     lpEvent.register('server_error', function() {
