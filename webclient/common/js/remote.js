@@ -1,11 +1,11 @@
 angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '$templateCache', '$q', '$log', 'lpEvent', 'lpDialog',
   function ($timeout, $http, $templateCache, $q, $log, lpEvent, lpDialog) {
 
-    var sessionId = '';
     var current_req_id = 0;
     var req_map = {};
     var socket;
     var connectEndpoint = '';
+    var connectOptions = {};
     var connected = false;
     var loadingTemplate;
     var waitCount = 0;
@@ -110,13 +110,14 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       }, 50);
     }
 
-    function onConnect(session_id) {
-      sessionId = session_id;
+    lpEvent.register('connect', function(session_id) {
+      connectOptions.session_id = session_id;
       angular.forEach(services, validateService);
-    }
+    });
 
-    function connect(endpoint, sessionId, playerId) {
+    function connect(endpoint, options) {
       connectEndpoint = endpoint;
+      connectOptions = options || {};
       var socket_url = (window.location.protocol === "https:" ? "wss://" : "ws://") +
         window.location.host + resourceRoot + 'link';
       socket = new WebSocket(socket_url);
@@ -125,12 +126,12 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       socket.onmessage = onMessage;
       socket.onopen = function() {
         connected = true;
-        send(endpoint, {session_id: sessionId, player_id: playerId});
+        send(endpoint, connectOptions);
       };
     }
 
     function reconnect() {
-      connect(connectEndpoint, sessionId);
+      connect(connectEndpoint, connectOptions);
     }
 
     function validateService(service) {
@@ -190,8 +191,6 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
       service.refCount--;
       validateService(service);
     };
-
-    lpEvent.register("connect", onConnect);
 
     function ReconnectCtrl($scope, $timeout) {
       var tickPromise;

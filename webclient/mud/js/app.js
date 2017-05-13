@@ -25,7 +25,7 @@ angular.module('lampost_mud').run(
     jQuery('title').text(lampost_config.title);
 
     var lastSession = lpStorage.lastSession();
-    lpRemote.connect('app_connect', lastSession ? lastSession.sessionId : null, lastSession ? lastSession.playerId : null);
+    lpRemote.connect('app_connect', lastSession && {player_id: lastSession.playerId, session_id: lastSession.sessionId});
     $injector.get('lpData');
     $injector.get('lpDialog');
     $injector.get('lmComm');

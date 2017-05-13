@@ -1,7 +1,7 @@
 import inspect
 import itertools
+from importlib import import_module
 
-from lampost.di.app import on_app_start
 from lampost.di.config import config_value
 from lampost.editor.editor import ChildrenEditor, Editor
 from lampost.editor.players import PlayerEditor, UserEditor
@@ -10,25 +10,27 @@ from lampost.gameops.script import Scriptable, Shadow, builders
 from lampost.db.registry import get_dbo_class, dbo_types, implementors, instance_implementors
 from lampost.server.link import link_route
 
+
 from lampmud.editor.areas import AreaEditor, RoomEditor
+from lampmud.editor.scripts import ScriptEditor
 from lampmud.editor.shared import SocialsEditor, SkillEditor
 from lampmud.env.movement import Direction
 from lampmud.comm.broadcast import broadcast_types, broadcast_tokens
 from lampmud.lpmud.skill import SkillTemplate
 
+import_module('lampost.editor.session')
 
-@on_app_start
-def _create_editor_handlers():
-    AreaEditor()
-    RoomEditor()
-    ChildrenEditor('mobile')
-    ChildrenEditor('article')
-    PlayerEditor()
-    UserEditor()
-    SocialsEditor()
-    Editor('race', 'founder')
-    SkillEditor('attack')
-    SkillEditor('defense')
+AreaEditor()
+RoomEditor()
+ChildrenEditor('mobile')
+ChildrenEditor('article')
+PlayerEditor()
+UserEditor()
+SocialsEditor()
+Editor('race', 'founder')
+SkillEditor('attack')
+SkillEditor('defense')
+ScriptEditor()
 
 
 @link_route('editor/constants', 'creator')
