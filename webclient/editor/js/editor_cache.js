@@ -13,11 +13,14 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
     };
 
     function cacheEntry(key) {
-      var keyParts, keyType, url, entry;
+      var keyParts, keyType, path, entry;
       keyParts = key.split(':');
       keyType = keyParts[0];
-      url = keyType + '/list' + (keyParts[1] ? '/' + keyParts[1] : '');
-      entry = {ref: 0, sort: cacheSorts[keyType] || idSort, url: url};
+      path = keyType + (keyParts[1] ? '/child_list' : '/list');
+      entry = {ref: 0,
+        sort: cacheSorts[keyType] || idSort,
+        path: path,
+        params: keyParts[1] ? {parent_id: keyParts[1]} : {}};
       remoteCache[key] = entry;
       return entry;
     }
@@ -214,7 +217,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
         entry.ref++;
         return entry.promise;
       }
-      entry.promise = lpRemote.request('editor/' + entry.url).then(function (data) {
+      entry.promise = lpRemote.request('editor/' + entry.path, entry.params).then(function (data) {
         delete entry.promise;
         entry.ref++;
         entry.data = data;

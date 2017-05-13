@@ -10,7 +10,7 @@ angular.module('lampost_mud').controller('StatusTabCtrl', ['$scope', 'lpData', '
 
     updateStatus(lpData.status);
 
-    lpEvent.register('status', updateStatus);
+    lpEvent.register('status', updateStatus, $scope);
 
     function updateStatus(status) {
       $scope.status = status;

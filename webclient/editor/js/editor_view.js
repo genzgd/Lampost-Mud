@@ -86,10 +86,10 @@ angular.module('lampost_editor').controller('MainEditorCtrl',
         if (!originalModel.dbo_id) {
           var modelDto = angular.copy(activeModel);
           return context.newDto(modelDto).then(function () {
-            lpRemote.request(baseUrl + 'create', modelDto).then(onCreated, dataError);
+            lpRemote.request(baseUrl + 'create', {obj_def: modelDto}).then(onCreated, dataError);
           }, dataError);
         }
-        return lpRemote.request(baseUrl + 'update', activeModel).then(onSaved, dataError);
+        return lpRemote.request(baseUrl + 'update', {obj_def: activeModel}).then(onSaved, dataError);
       }, dataError);
     }
 
