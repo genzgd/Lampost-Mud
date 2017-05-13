@@ -27,9 +27,9 @@ angular.module('lampost_mud').service('lpStorage', ['$window', 'lpEvent', functi
     readSessions();
     if (sessions.hasOwnProperty(playerId)) {
       delete sessions[playerId];
-      writeSessions();
     }
     playerId = null;
+    writeSessions();
     if (immSession) {
       localStorage.removeItem(immKey);
       immSession = null;
@@ -38,7 +38,9 @@ angular.module('lampost_mud').service('lpStorage', ['$window', 'lpEvent', functi
 
   function updateTimestamp() {
     readSessions();
-    sessions[playerId] = {playerId: playerId, sessionId: sessionId, timestamp: new Date().getTime()};
+    if (playerId) {
+      sessions[playerId] = {playerId: playerId, sessionId: sessionId, timestamp: new Date().getTime()};
+    }
     writeSessions();
   }
 
@@ -68,16 +70,12 @@ angular.module('lampost_mud').service('lpStorage', ['$window', 'lpEvent', functi
     sessionId = data;
   });
 
-  lpEvent.register("link_status", function (status) {
-    if (playerId && status === 'good') {
-      updateTimestamp();
-    }
-  });
+  lpEvent.register("heartbeat", updateTimestamp);
 
   lpEvent.register("login", function (data) {
     playerId = data.name.toLowerCase();
     if (data.imm_level) {
-      immSession = {userId: data.user_id, gameSessionId: sessionId};
+      immSession = {user_id: data.user_id, app_session_id: sessionId};
       localStorage.setItem(immKey, JSON.stringify(immSession));
     }
     updateTimestamp();

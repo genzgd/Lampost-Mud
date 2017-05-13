@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from lampost.di.resource import Injected, module_inject, register
 from lampost.gameops.action import make_action, ActionError, ActionCache
 

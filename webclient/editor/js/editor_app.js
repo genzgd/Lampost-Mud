@@ -28,24 +28,12 @@ angular.module('lampost_editor').run(['$window', '$rootScope', 'lpRemote', 'lpEv
     $rootScope.errors = {};
     $rootScope.siteTitle = lampost_config.title;
     $rootScope.appState = 'connecting';
-    var previousSession = sessionStorage.getItem('editSessionId');
-    if (previousSession) {
-      lpRemote.connect('editor/edit_connect', previousSession);
-    } else {
-      var gameSession = localStorage.getItem('activeImm');
-      if (gameSession) {
-        gameSession = JSON.parse(gameSession);
-        lpRemote.connect('editor/edit_connect', null, gameSession);
-      } else {
-        lpRemote.connect('editor/edit_connect');
-      }
-    }
 
   }]);
 
 angular.module('lampost_editor').controller('EditorNavController',
-  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpUtil', 'lpEditor', 'lpEditorLayout',
-  function ($q, $rootScope,  $scope, lpEvent, lpUtil, lpEditor, lpEditorLayout) {
+  ['$q', '$rootScope', '$scope', 'lpEvent', 'lpRemote', 'lpUtil', 'lpEditor', 'lpEditorLayout',
+  function ($q, $rootScope,  $scope, lpEvent, lpRemote, lpUtil, lpEditor, lpEditorLayout) {
 
     var sessionId;
     var editNav = [
@@ -60,13 +48,13 @@ angular.module('lampost_editor').controller('EditorNavController',
 
     lpEvent.register('connect', function (data) {
       sessionId = data;
-    });
+    }, $scope);
 
     lpEvent.register('connect_only', function() {
       $rootScope.appState = 'connected';
       $rootScope.mainTemplate = null;
       $scope.welcome = 'Please log in.';
-    });
+    }, $scope);
 
     lpEvent.register('editor_login', function (data) {
       activeNav = undefined;
@@ -124,7 +112,7 @@ angular.module('lampost_editor').controller('EditorNavController',
     }, $scope);
 
     $scope.editorLogout = function () {
-      lpEvent.dispatch('server_request', 'editor/edit_logout');
+      lpRemote.send('editor/edit_logout');
     };
 
     $scope.changeNav = function (newNav) {
@@ -151,16 +139,29 @@ angular.module('lampost_editor').controller('EditorNavController',
 
     $scope.mudWindow = lpEditorLayout.mudWindow;
 
+    var connectOptions;
+    var previousSession = sessionStorage.getItem('editSessionId');
+    if (previousSession) {
+      connectOptions = {session_id: previousSession};
+    } else {
+      var appSession = localStorage.getItem('activeImm');
+      if (appSession) {
+        connectOptions = JSON.parse(appSession);
+      }
+    }
+    lpRemote.connect('editor/edit_connect', connectOptions);
+
   }]);
 
 
-angular.module('lampost_editor').controller('EditLoginController', ['$scope', 'lpEvent',
-  function ($scope, lpEvent) {
+angular.module('lampost_editor').controller('EditLoginController', ['$scope', 'lpEvent', 'lpRemote',
+  function ($scope, lpEvent, lpRemote) {
 
     $scope.login = {};
 
     $scope.editorLogin = function () {
-      lpEvent.dispatch('server_request', 'editor/edit_login', $scope.login);
+      lpRemote.send('editor/edit_login', $scope.login);
+
     };
 
     lpEvent.register('login_failure', function (failure) {

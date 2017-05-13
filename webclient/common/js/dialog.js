@@ -108,7 +108,7 @@ angular.module('lampost_dlg', []).service('lpDialog', ['$q', '$rootScope', '$com
         var modalOptions = {show: true, keyboard: !args.noEscape,
           backdrop: args.noBackdrop ? false : (args.noEscape ? "static" : true)};
         element.modal(modalOptions);
-      });
+      }, 20);
     }
 
     function closeDialog(dialogId) {

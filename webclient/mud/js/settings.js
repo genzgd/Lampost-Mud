@@ -57,7 +57,7 @@ angular.module('lampost_mud').controller('SettingsCtrl', ['$scope', '$timeout', 
         return;
       }
       lpRemote.request("settings/update_account", {user_id: lpData.userId,
-        user: $scope.user}).then(function () {
+        user_update: $scope.user}).then(function () {
         $scope.showSuccess = true;
         $scope.user.password = "";
         $scope.user.confirm = "";

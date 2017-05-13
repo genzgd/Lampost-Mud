@@ -6,7 +6,7 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lpData'
     $scope.activeScreen = 'race';
     $scope.playerData = {};
 
-    lpRemote.request("client_data/new_char").then(function (newCharData) {
+    lpRemote.request("new_char_data").then(function (newCharData) {
       $scope.races = newCharData.races;
       $scope.ready = true;
     });
@@ -33,7 +33,7 @@ angular.module('lampost_mud').controller('NewCharacterCtrl', ['$scope', 'lpData'
       lpRemote.request("settings/create_player", {user_id: lpData.userId, player_name: $scope.playerName, player_data: $scope.playerData})
         .then(function () {
           if (!lpData.playerId) {
-            lpEvent.dispatch('server_request', 'login', {player_id: $scope.playerName.toLowerCase()});
+            lpRemote.send('player_login', {player_id: $scope.playerName.toLowerCase()});
           }
           lpEvent.dispatch('players_updated');
           $scope.dismiss();
@@ -50,7 +50,7 @@ angular.module('lampost_mud').controller('SelectCharacterCtrl', ['$scope', 'lpRe
     $scope.players = [];
 
     $scope.selectCharacter = function (playerId) {
-      lpEvent.dispatch('server_request', 'login', {player_id: playerId});
+      lpRemote.send('player_login', {player_id: playerId});
     };
 
     lpEvent.register('login', $scope.dismiss, $scope);
