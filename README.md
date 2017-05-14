@@ -5,8 +5,8 @@ Lampost is a multi-user virtual world building platform inspired by the thriving
 
 ### Quickstart
 
-* Install Python 3.2.5+
-* Install redis-py 2.10.3+, Tornado 4.0.2+ and PyYAML 3.10+ (for configuration) using pip
+* Install Python 3.4+
+* Install redis-py 2.10.3+, Tornado 4.5+ and PyYAML 3.10+ (for configuration) using pip
 * Install Redis 2.4+ 
 * Start Redis with the redis-server script
 * Clone this Github repository
@@ -18,7 +18,7 @@ Lampost is a multi-user virtual world building platform inspired by the thriving
 
 #### Application Server
 
-The Lampost application server manages user/player sessions, client communication (via HTTP requests and Comet/long polling), and
+The Lampost application server manages user/player sessions, client communication (via Web Sockets), and
 the game engine via asynchronous, event driven atomic operations.
   
 #### Web Client
@@ -54,15 +54,15 @@ The context aware algorithm results in extremely fast parsing performance.
 Lampost has experimental support for user supplied scripts, allowing users to dynamically attach Python code to in-game objects
 to dramatically expand the ability to customize the game experience without modifying source code.
 
-#### REST API
+#### Websocket API
 
-Lampost has a full featured REST/json API for creating, modifying, and deleting in game objects.  This API supports the
+Lampost has a full featured JSON/Websocket API for creating, modifying, and deleting in game objects.  This API supports the
 Lampost editor.
 
   
 ### Requirements
 
-The Lampost application server requires Python 3.2 or later.  Lampost has been run successfully on Linux, Windows, and OS X (CPython),
+The Lampost application server requires Python 3.4 or later.  Lampost has been run successfully on Linux, Windows, and OS X (CPython),
 and smoke tested on [Pypy3 2.4.0](http://pypy.org) (Ubuntu).   
 
 The Lampost web server is built on the [Tornado](http://www.tornadoweb.org) web server.  Lampost has been tested on Tornado 4.0.2.   
