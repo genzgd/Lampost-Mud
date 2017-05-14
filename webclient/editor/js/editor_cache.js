@@ -236,7 +236,7 @@ angular.module('lampost_editor').service('lpCache', ['$q', '$log', 'lpEvent', 'l
       if (!entry || entry.promise) {
         return lpCache.cache(key);
       }
-      entry.promise = lpRemote.request('editor/' + entry.url).then(function(data) {
+      entry.promise = lpRemote.request('editor/' + entry.path, entry.params).then(function(data) {
         delete entry.promise;
         var model, dataKeys, delModels, ix;
         dataKeys = {};

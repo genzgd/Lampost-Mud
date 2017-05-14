@@ -18,7 +18,9 @@ from lampmud.env.movement import Direction
 from lampmud.comm.broadcast import broadcast_types, broadcast_tokens
 from lampmud.lpmud.skill import SkillTemplate
 
+import_module('lampost.editor.admin')
 import_module('lampost.editor.session')
+import_module('lampost.editor.dbops')
 
 AreaEditor()
 RoomEditor()

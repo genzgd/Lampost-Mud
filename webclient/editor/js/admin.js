@@ -1,7 +1,7 @@
 angular.module('lampost_editor').controller('MainAdminCtrl', ['$scope', 'lpRemote', 'lpUtil',
   function($scope, lpRemote, lpUtil) {
 
-  lpRemote.request('editor/admin/operations').then(function(operations) {
+  lpRemote.request('admin/operations', {name: 'list'}).then(function(operations) {
     lpUtil.stringSort(operations, 'name');
     $scope.operations = operations;
   });
@@ -15,7 +15,7 @@ angular.module('lampost_editor').controller('MainAdminCtrl', ['$scope', 'lpRemot
   };
 
   $scope.executeOp = function(op) {
-    lpRemote.request('editor/admin/execute', op).then(function(result) {
+    lpRemote.request('admin/operations', op).then(function(result) {
       $scope.operationResult = result ? result : 'No Content';
     })
   };
