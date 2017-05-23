@@ -5,6 +5,7 @@ from importlib import import_module
 from tornado.ioloop import IOLoop
 from tornado.web import RedirectHandler, StaticFileHandler
 
+from lampost.util.logging import get_logger
 from lampost.di import resource, config, app
 from lampost.db.redisstore import RedisStore
 from lampost.db import dbconfig
@@ -56,6 +57,10 @@ def start(args):
     pages.add_page(pages.LspPage('config.js', "var lampost_config = {{title:'{0}', description:'{1}'}};"
                                  .format(config_values['lampost_title'], config_values['lampost_description'])))
 
+    tornado_logger = get_logger('tornado.general')
+    tornado_logger.setLevel(args.log_level.upper())
+    tornado_logger = get_logger('tornado.access')
+    tornado_logger.setLevel(args.log_level.upper())
     web.service_root = args.service_root
     if args.web_files:
         web.add_raw_route("/", RedirectHandler, url="/webclient/lampost.html")
