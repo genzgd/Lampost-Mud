@@ -1,3 +1,19 @@
+# Development Suspended
+
+This project is no longer updated.  The active version of Lampost is now on Gitlab:
+
+[lampost_lib](https://gitlab.com/avezel/lampost_lib)
+[lampost_mud](https://gitlab.com/avezel/lampost_mud)
+[lampost_ui](https://gitlab.com/avezel/lampost-ui)
+
+These "current" versions do not have full support for the angular.js client.  Instead they use a React.js/mobx based client.
+My development efforts are now focused on building a non-MUD game using the Lampost framework, so there will not be a React.js MUD
+client/editor in the near future.  Accordingly if you need a MUD UI you are limited to using these Github versions of the code, or
+of course, I would welcome someone else expanding the lampost_ui project to include full MUD support.
+
+As always, please contact me at <geoffrey@avezel.com> with any questions or ideas.
+
+
 ## Lampost
 
 Lampost is a multi-user virtual world building platform inspired by the thriving community of multi-user dungeons (MUDs) of the 1990s.
@@ -72,23 +88,6 @@ Redis 2.4 and later versions.  Lampost requires the awesome [redis-py](https://g
 Redis connectivity.
 
 Finally Lampost requires PyYAML 3.x for initial configuration.
-
-
-
-
-
-### Roadmap and Contributing
-
-In the works:
-
-* An expanded demo world showcasing user scripts and instanced areas
-* ~~An upgrade in the web client and editor to Bootstrap 3.3~~ Done!
-* ~~A reworked, more flexible configuration framework~~ Done!
-* The ability to export and import areas between Lampost instances
-* Some super secret projects
-
-If you'd like to contribute or are interested in using Lampost but need a particular feature, please contact the author,
-Geoff Genz (<genzgd@gmail.com>).
 
 
 ### License
