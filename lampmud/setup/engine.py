@@ -58,9 +58,9 @@ def start(args):
                                  .format(config_values['lampost_title'], config_values['lampost_description'])))
 
     tornado_logger = get_logger('tornado.general')
-    tornado_logger.setLevel(args.log_level.upper())
+    tornado_logger.setLevel(config_values.get('tornado.log','WARN'))
     tornado_logger = get_logger('tornado.access')
-    tornado_logger.setLevel(args.log_level.upper())
+    tornado_logger.setLevel(config_values.get('tornado.log', 'WARN'))
     web.service_root = args.service_root
     if args.web_files:
         web.add_raw_route("/", RedirectHandler, url="/webclient/lampost.html")

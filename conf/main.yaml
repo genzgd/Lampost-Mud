@@ -53,6 +53,10 @@ general:
     name: 'system_level'
     desc: 'Default level for a system account'
     value: 49999
+  - name: 'tornado.log'
+    desc: 'Default tornado log level'
+    value: 'WARN'
+
 
 
 client:
