@@ -1,6 +1,7 @@
 from lampost.di.config import config_value
 
 from lampmud.lpmud.archetype import PlayerRace
+from lampmud.lpmud import attributes
 
 
 def first_time_setup(args, db):
@@ -10,6 +11,8 @@ def first_time_setup(args, db):
 
     db.create_object('area', {'dbo_id': root_area, 'name': root_area, 'next_room_id': 1})
     db.create_object('room', {'dbo_id': room_id, 'title': "Immortal Start Room", 'desc': "A brand new start room for immortals."})
+
+    attributes.init()
 
     race_dto = PlayerRace.new_dto()
     race_dto.update(config_value('default_player_race'))

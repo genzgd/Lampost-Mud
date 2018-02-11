@@ -11,7 +11,7 @@ resource_pools = []
 
 
 @on_app_start(priority=200)
-def _init():
+def init():
     global attributes
     global resource_pools
     global pool_keys
