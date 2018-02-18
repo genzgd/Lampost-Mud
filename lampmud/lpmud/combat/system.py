@@ -9,7 +9,9 @@ _pulse_map = {}
 
 
 def add_action(source, action, pulse, callback, priority=0):
-
+    if not pulse:
+        process_immediate(source, action, callback)
+        return
     pulse_key = ev.current_pulse + pulse
     current_diff = pulse
     sys_action = SystemAction(source, action, priority, callback)
@@ -29,6 +31,16 @@ def process_actions(pulse_key):
         affected.add(sys_action.source)
         sys_action.callback(sys_action.action, affected)
     del _pulse_map[pulse_key]
+    for entity in affected:
+        try:
+            entity.resolve_actions()
+        except AttributeError:
+            pass
+
+
+def process_immediate(source, action, callback):
+    affected = {source}
+    callback(action, affected)
     for entity in affected:
         try:
             entity.resolve_actions()

@@ -78,13 +78,14 @@ class RoomEditor(ChildrenEditor):
             other_exit.on_loaded()
             other_room.exits.append(other_exit)
             db.save_object(other_room)
+            other_room.reload()
             edit_update.publish_edit('update', other_room, session, True)
         return this_exit.dto_value
 
     @staticmethod
     def delete_exit(session, player, start_room, direction, both_sides, **_):
         area, room = find_area_room(start_room, player)
-        local_exit = room.find_exit(dir)
+        local_exit = room.find_exit(direction)
         if not local_exit:
             raise DataError('Exit does not exist')
         room.exits.remove(local_exit)
@@ -97,10 +98,11 @@ class RoomEditor(ChildrenEditor):
                 other_room.exits.remove(other_exit)
                 if other_room.dbo_ts or other_room.exits:
                     db.save_object(other_room)
+                    other_room.reload()
                     edit_update.publish_edit('update', other_room, session, True)
                 else:
                     db.delete_object(other_room)
-                    room_clean_up(room, session)
+                    room_clean_up(other_room, session)
                     edit_update.publish_edit('delete', other_room, session, True)
 
     def _post_create(self, room, session):

@@ -71,20 +71,11 @@ angular.module('lampost_remote', []).service('lpRemote', ['$timeout', '$http', '
             break;
           case 401:
             lpDialog.showOk("Denied", "You do not have permission for that action");
-            deferred.reject(response);
+            deferred.reject(response.client_message);
             break;
           case 400:
           case 409:
-            var errorResult = {id: 'Error', raw: data, text: data};
-              var colon_ix = data.indexOf(':');
-              if (colon_ix > 0) {
-                var space_ix = data.indexOf(' ');
-                if (space_ix == -1 || colon_ix < space_ix) {
-                errorResult.id = data.substring(0, colon_ix);
-                errorResult.text = $.trim(data.substring(colon_ix + 1));
-              }
-            }
-            deferred.reject(errorResult);
+            deferred.reject(response.client_message);
             break;
           default:
             lpDialog.showOk("Server Error: " + response.http_status, response.client_message);

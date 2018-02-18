@@ -262,6 +262,7 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     def _on_reload(self):
         if hasattr(self, 'limbo_players'):
+            self.attach()
             for player in self.limbo_players:
                 player.enter_env(self)
             del self.limbo_players

@@ -25,6 +25,7 @@ angular.module('lampost_dlg', []).service('lpDialog', ['$q', '$rootScope', '$com
       prevElement = $(document.activeElement);
       enabledElements = $('button:enabled, selector:enabled, input:enabled, textarea:enabled');
       enabledLinks = $('a[href]');
+      enabledElements = enabledElements.filter(':not([ng-disabled])');
       enabledElements.attr('disabled', true);
       enabledLinks.each(function () {
         $(this).attr("data-oldhref", $(this).attr("href"));

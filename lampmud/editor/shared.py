@@ -23,7 +23,7 @@ class SocialsEditor(Editor):
 
 def _ensure_name(obj_def):
         name = obj_def['name'] or obj_def['verb'] or obj_def['dbo_id']
-        obj_def['name'] = name.capitalize
+        obj_def['name'] = name.capitalize()
 
 
 class SkillEditor(Editor):

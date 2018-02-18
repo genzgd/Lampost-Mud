@@ -137,7 +137,7 @@ angular.module('lampost_editor').controller('RoomEditorCtrl',
       $scope.deleteExit = function (exit) {
         lpDialog.showConfirm("Delete Exit", "Are you sure you want to delete this exit").then(function () {
           lpRemote.request("editor/room/delete_exit",
-            {start_room: $scope.model.dbo_id, both_sides: true, dir: exit.direction}).then(function () {
+            {start_room: $scope.model.dbo_id, both_sides: true, direction: exit.direction}).then(function () {
               $scope.closeAdd();
 
               var exitLoc = $scope.model.exits.indexOf(exit);

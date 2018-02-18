@@ -86,12 +86,8 @@ class EntityLP(Entity):
                 raise act_err
         priority = -len(self.followers)
         prep_time = getattr(action, 'prep_time', None)
-        if prep_time:
-            self._action_target = act_args.get('target', None)
-            acs.add_action(self, self._current_action, prep_time, self.finish_action, priority)
-        else:
-            self._current_action = None
-            super().process_action(action, act_args)
+        self._action_target = act_args.get('target', None)
+        acs.add_action(self, self._current_action, prep_time, self.finish_action, priority)
         self.check_follow(action, act_args)
 
     def handle_parse_error(self, error, command):
