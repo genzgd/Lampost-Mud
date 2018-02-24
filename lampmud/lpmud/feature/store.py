@@ -54,7 +54,7 @@ class Store(ItemDBO):
         if self.currency:
             if not target.value:
                 raise ActionError("That's not worth anything.")
-            offer = self.currency.create_instance()
+            offer = self.currency.create_instance(source)
             offer.quantity = self._offer(target)
             offer.enter_env(source)
             sell_msg = ''.join(("You sell {N} for ", offer.name, '.'))
@@ -76,7 +76,7 @@ class Store(ItemDBO):
         else:
             self_msg = "You withdraw {N}."
         if target in self.perm_items:
-            target = target.template.create_instance()
+            target = target.template.create_instance(source)
         else:
             self.inven.remove(target)
             self.dbo_owner.dirty = True
@@ -145,7 +145,7 @@ class Store(ItemDBO):
         self.dbo_owner.dirty = True
 
     def _on_loaded(self):
-        self.perm_items = [template.create_instance() for template in self.perm_inven]
+        self.perm_items = [template.create_instance(self) for template in self.perm_inven]
 
     @property
     def target_providers(self):

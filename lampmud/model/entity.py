@@ -8,6 +8,7 @@ from lampost.gameops.parser import ParseError, parse_actions, has_action
 from lampost.di.resource import Injected, module_inject
 
 from lampmud.comm.broadcast import Broadcast, BroadcastMap
+from lampost.meta.auto import AutoField
 
 log = Injected('log')
 mud_actions = Injected('mud_actions')
@@ -16,6 +17,7 @@ module_inject(__name__)
 
 class Entity(DBOAspect, Attachable):
     inven = DBOField([], 'untyped')
+    _soul_objects = AutoField(set())
 
     status = 'ok'
     living = True
@@ -24,12 +26,13 @@ class Entity(DBOAspect, Attachable):
     entry_msg = BroadcastMap(e='{n} materializes.', ea="{n} arrives from the {N}.")
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
+    def _on_loaded(self):
+        if self.attached:
+            self._refresh_actions()
+
     def _on_attach(self):
-        self._soul_objects = set()
-        self.inven_actions = ActionCache()
-        self.inven_actions.add(self.inven)
         self.followers = set()
-        self.soul_actions = ActionCache()
+        self._refresh_actions()
 
     def _on_detach(self):
         for follower in self.followers:
@@ -46,14 +49,13 @@ class Entity(DBOAspect, Attachable):
         del self.inven_actions
         del self._soul_objects
 
-    def _on_reload(self):
-        if self.attached:
-            self.inven_actions.refresh(self.inven)
-            self.soul_actions.refresh(self._soul_objects)
+    def _refresh_actions(self):
+        self.inven_actions = ActionCache().add(self.inven)
+        self.soul_actions = ActionCache().add(self._soul_objects)
 
     @property
     def current_actions(self):
-        return [self.env.current_actions, self.inven_actions, self.soul_actions, mud_actions]
+        return self.env.current_actions, self.inven_actions, self.soul_actions, mud_actions
 
     def enhance_soul(self, action):
         self._soul_objects.add(action)

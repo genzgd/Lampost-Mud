@@ -44,7 +44,6 @@ class RoomEditor(ChildrenEditor):
         room = db.load_object(room_id, 'room')
         if not room:
             raise DataError("ROOM_MISSING")
-        room.reload()
         player.change_env(room)
 
     @staticmethod
@@ -68,7 +67,7 @@ class RoomEditor(ChildrenEditor):
         this_exit.destination = other_room
         this_exit.on_loaded()
         room.exits.append(this_exit)
-        db.save_object(room)
+        room.update()
         edit_update.publish_edit('update', room, session)
         if not one_way:
             other_exit = get_dbo_class('exit')()
@@ -77,8 +76,7 @@ class RoomEditor(ChildrenEditor):
             other_exit.destination = room
             other_exit.on_loaded()
             other_room.exits.append(other_exit)
-            db.save_object(other_room)
-            other_room.reload()
+            other_room.update()
             edit_update.publish_edit('update', other_room, session, True)
         return this_exit.dto_value
 
@@ -89,30 +87,28 @@ class RoomEditor(ChildrenEditor):
         if not local_exit:
             raise DataError('Exit does not exist')
         room.exits.remove(local_exit)
-        db.save_object(room)
-
+        other_room = None
         if both_sides:
             other_room = local_exit.destination
             other_exit = other_room.find_exit(Direction.ref_map[direction].rev_key)
             if other_exit:
                 other_room.exits.remove(other_exit)
-                if other_room.dbo_ts or other_room.exits:
-                    db.save_object(other_room)
-                    other_room.reload()
-                    edit_update.publish_edit('update', other_room, session, True)
-                else:
+                if not other_room.dbo_ts and not other_room.exits:
                     db.delete_object(other_room)
                     room_clean_up(other_room, session)
                     edit_update.publish_edit('delete', other_room, session, True)
+                    other_room = None
+        room_reload(room)
+        edit_update.publish_edit('update', room, session)
+        if other_room and other_room != room:
+            room_reload(other_room)
+            edit_update.publish_edit('update', other_room, session, True)
 
     def _post_create(self, room, session):
         update_next_room_id(room.parent_dbo, session)
 
     def _post_delete(self, room, session):
         room_clean_up(room, session)
-
-    def _post_update(self, room, *_):
-        room.reload()
 
 
 def update_next_room_id(area, session):
@@ -136,6 +132,20 @@ def find_area_room(room_id, player):
     area = room.parent_dbo
     perm.check_perm(player, area)
     return area, room
+
+
+def room_reload(room, room_def=None):
+    limbo_players = [denizen for denizen in room.denizens if hasattr(denizen, 'is_player')]
+    for player in limbo_players:
+        player.leave_env(room)
+    attached = room.detach
+    if room_def:
+        room.hydrate(room_def)
+    db.save_object(room, bool(room_def))
+    if attached:
+        room.attach()
+    for player in limbo_players:
+        player.enter_env(room)
 
 
 def room_clean_up(room, session, area_delete=None):

@@ -28,7 +28,7 @@ class ArticleTemplate(ChildDBO, Template):
             self.plural_keys = target_keys(self)
             self.plural_keys.add(self.plural_title)
 
-    def config_instance(self, instance, owner):
+    def config_instance(self, instance):
         instance.attach()
 
 
@@ -82,7 +82,7 @@ class Article(ItemInstance):
         source.check_inven(self, quantity)
         gotten = self
         if quantity and quantity < self.quantity:
-            gotten = self.template.create_instance()
+            gotten = self.template.create_instance(source)
             gotten.quantity = quantity
             self.quantity -= quantity
         else:
@@ -101,7 +101,7 @@ class Article(ItemInstance):
     def take_from(self, source, quantity):
         if quantity and quantity < self.quantity:
             self.quantity -= quantity
-            drop = self.template.create_instance()
+            drop = self.template.create_instance(self.dbo_owner)
             drop.quantity = quantity
         else:
             drop = self

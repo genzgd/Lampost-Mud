@@ -88,30 +88,40 @@ class Room(ChildDBO, Attachable, Scriptable):
     title = DBOCField()
     flags = DBOField({})
     instance_providers = AutoField([])
+    denizens = AutoField(set())
+    current_actions = AutoField(ActionCache())
 
     instance = None
 
     _garbage_pulse = None
 
+    def _on_loaded(self):
+        if self.attached:
+            self._refresh_contents()
+            for denizen in self.denizens:
+                self.first_look(denizen)
+
     def _on_attach(self):
-        self.denizens = []
         self.inven = []
         self.mobiles = defaultdict(set)
+        call_each(list(self.contents), 'attach')
         self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
-        self.current_actions = ActionCache()
-        self.current_actions.add(self.instance_providers)
-        self.current_actions.add(self.features)
-        self.current_actions.add(self.exits)
-        self.reset()
-        call_each(self.contents, 'attach')
+        self._refresh_contents()
 
     def _on_detach(self):
-        del self._garbage_pulse
         for mobile_list in self.mobiles.values():
             for mobile in mobile_list:
                 if mobile.env != self:
                     mobile.change_env(self)
-        call_each(self.contents, 'detach')
+        call_each(list(self.contents), 'detach')
+        del self._garbage_pulse
+        del self.current_actions
+        del self.denizens
+
+    def _refresh_contents(self):
+        self.current_actions = ActionCache().add(self.instance_providers, self.features, self.exits,
+                                                 self.inven, self.denizens)
+        self.reset()
 
     @property
     def action_providers(self):
@@ -125,7 +135,7 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     @property
     def contents(self):
-        return itertools.chain(self.features, self.denizens, self.inven)
+        return itertools.chain(self.features, self.denizens, self.inven, self.exits)
 
     @Shadow
     def long_desc(self):
@@ -140,7 +150,7 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.attach()
         self.receive_broadcast(entry_msg)
         entity.env = self
-        self.denizens.append(entity)
+        self.denizens.add(entity)
         entity.pulse_stamp = ev.current_pulse
         self.current_actions.add(entity)
         call_each(self.contents, "entity_enter_env", entity, enter_action)
@@ -252,17 +262,3 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     def social(self):
         pass
-
-    def _pre_reload(self):
-        if self.attached:
-            self.limbo_players = [denizen for denizen in self.denizens if hasattr(denizen, 'is_player')]
-            for player in self.limbo_players:
-                player.leave_env(self)
-            self.detach()
-
-    def _on_reload(self):
-        if hasattr(self, 'limbo_players'):
-            self.attach()
-            for player in self.limbo_players:
-                player.enter_env(self)
-            del self.limbo_players

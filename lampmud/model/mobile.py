@@ -13,11 +13,11 @@ class MobileTemplate(ChildDBO, Template):
     def _on_loaded(self):
         self.target_keys = target_keys(self)
 
-    def config_instance(self, instance, room):
+    def config_instance(self, instance):
         instance.attach()
-        instance.original_env = room
-        room.mobiles[self].add(instance)
-        instance.enter_env(room)
+        instance.original_env = instance.dbo_owner
+        instance.dbo_owner.mobiles[self].add(instance)
+        instance.enter_env(instance.dbo_owner)
 
 
 class Mobile(Entity, ItemInstance):

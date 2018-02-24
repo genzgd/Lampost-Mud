@@ -210,8 +210,6 @@ def reset(source):
 
 @imm_action('reload')
 def reload_room(source):
-    if source.env.instance:
-        raise ActionError("Don't reload instanced rooms")
     source.env.reload()
 
 

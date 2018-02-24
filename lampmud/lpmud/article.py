@@ -1,7 +1,7 @@
 from lampost.gameops.script import Scriptable
 
 from lampmud.comm.broadcast import BroadcastMap
-from lampost.meta.auto import TemplateField
+from lampost.meta.auto import TemplateField, AutoField
 from lampost.db.dbofield import DBOField, DBOTField
 from lampmud.model.article import Article, ArticleTemplate
 from lampmud.mud.action import mud_action
@@ -10,9 +10,12 @@ from lampmud.mud.action import mud_action
 class ArticleTemplateLP(ArticleTemplate):
     class_id = 'article'
 
-    remove_msg = BroadcastMap(s="You unequip {N}", e="{n} unequips {N}")
-    equip_msg = BroadcastMap(s="You wear {N}", e="{n} wears {N}")
-    wield_msg = BroadcastMap(s="You wield {N}", e="{n} wields {N}")
+    remove_msg = AutoField(BroadcastMap(s="You unequip {N}", e="{n} unequips {N}"))
+    equip_msg = AutoField(BroadcastMap(s="You wear {N}", e="{n} wears {N}"))
+    wield_msg = AutoField(BroadcastMap(s="You wield {N}", e="{n} wields {N}"))
+
+    def _pre_update(self):
+        del self.equip_msg
 
     def _on_loaded(self):
         if self.art_type == 'weapon':
