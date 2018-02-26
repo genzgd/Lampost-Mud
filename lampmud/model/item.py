@@ -55,7 +55,7 @@ class ItemAspect(DBOAspect, ActionProvider, Attachable):
         pass
 
 
-class ItemDBO(CoreDBO, ItemAspect):
+class ItemDBO(CoreDBO, ItemAspect, Attachable):
     class_id = 'base_item'
 
     desc = DBOField('')

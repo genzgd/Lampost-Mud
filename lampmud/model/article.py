@@ -46,6 +46,9 @@ class Article(ItemInstance):
     plural_keys = TemplateField()
     plural_title = TemplateField()
 
+    def _pre_reload(self):
+        self.detach()
+
     @property
     def name(self):
         if self.quantity and self.quantity > 1:

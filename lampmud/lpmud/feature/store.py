@@ -1,6 +1,7 @@
 import itertools
 from collections import deque
 
+from lampost.db.dbo import CoreDBO
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import AutoField
 from lampost.db.dbofield import DBOField
@@ -10,14 +11,6 @@ from lampmud.model.item import ItemDBO
 
 ev = Injected('dispatcher')
 module_inject(__name__)
-
-
-class Buyback():
-    def __init__(self, owner, article, price, pulse):
-        self.owner = owner
-        self.article = article
-        self.price = price
-        self.pulse = pulse
 
 
 def buyback_gen(key_type, target_key, entity, action):
@@ -30,14 +23,15 @@ buyback_gen.abs_msg = "{target} is not available to buy back"
 class Store(ItemDBO):
     class_id = 'store'
 
-    currency = DBOField(None, 'article')
+    currency = DBOField(dbo_class_id='article')
     inven = DBOField([], 'untyped')
     perm_inven = DBOField([], 'article')
     title = DBOField('Vending Machine')
     desc = DBOField("A rickety vending machine.  It looks like you can both buy and sell pretty much anything here.")
     markup = DBOField(0)
     discount = DBOField(0)
-    buybacks = AutoField(deque())
+    pulse_stamp = DBOField(0)
+    buybacks = DBOField(deque(), 'buyback')
     buyback_reg = AutoField()
     buyback_seconds = DBOField(5 * 60)
 
@@ -58,7 +52,7 @@ class Store(ItemDBO):
             offer.quantity = self._offer(target)
             offer.enter_env(source)
             sell_msg = ''.join(("You sell {N} for ", offer.name, '.'))
-            self.buybacks.appendleft(Buyback(source.dbo_id, target, offer.quantity, ev.current_pulse))
+            self.buybacks.appendleft(Buyback.build(source.dbo_id, target, offer.quantity, ev.current_pulse))
             self._start_buyback()
         else:
             sell_msg = "You deposit {N}."
@@ -134,8 +128,9 @@ class Store(ItemDBO):
                 last = self.buybacks[-1]
             self.pulse_stamp = ev.current_pulse
         except IndexError:
-            ev.unregister(self.buyback_reg)
-            self.buyback_reg = None
+            if self.buyback_reg:
+                ev.unregister(self.buyback_reg)
+                self.buyback_reg = None
 
     def add_inven(self, article):
         for perm_article in self.perm_items:
@@ -146,7 +141,34 @@ class Store(ItemDBO):
 
     def _on_loaded(self):
         self.perm_items = [template.create_instance(self) for template in self.perm_inven]
+        self._trim_buybacks()
+        if self.buybacks:
+            self.dbo_owner.dirty = True
+            self._start_buyback()
+
 
     @property
     def target_providers(self):
         return itertools.chain(self.inven, self.perm_items)
+
+
+class Buyback(CoreDBO):
+    class_id = 'buyback'
+
+    owner = DBOField()
+    article = DBOField(dbo_class_id='article')
+    price = DBOField(0)
+    pulse = DBOField(0)
+
+    @classmethod
+    def build(cls, owner, article, price, pulse):
+        buyback = Buyback()
+        buyback.owner = owner
+        buyback.article = article
+        buyback.price = price
+        buyback.pulse = pulse
+        return buyback
+
+
+
+

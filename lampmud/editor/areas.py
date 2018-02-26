@@ -98,10 +98,10 @@ class RoomEditor(ChildrenEditor):
                     room_clean_up(other_room, session)
                     edit_update.publish_edit('delete', other_room, session, True)
                     other_room = None
-        room_reload(room)
+        room.update(room)
         edit_update.publish_edit('update', room, session)
         if other_room and other_room != room:
-            room_reload(other_room)
+            other_room.update()
             edit_update.publish_edit('update', other_room, session, True)
 
     def _post_create(self, room, session):
@@ -132,20 +132,6 @@ def find_area_room(room_id, player):
     area = room.parent_dbo
     perm.check_perm(player, area)
     return area, room
-
-
-def room_reload(room, room_def=None):
-    limbo_players = [denizen for denizen in room.denizens if hasattr(denizen, 'is_player')]
-    for player in limbo_players:
-        player.leave_env(room)
-    attached = room.detach
-    if room_def:
-        room.hydrate(room_def)
-    db.save_object(room, bool(room_def))
-    if attached:
-        room.attach()
-    for player in limbo_players:
-        player.enter_env(room)
 
 
 def room_clean_up(room, session, area_delete=None):
