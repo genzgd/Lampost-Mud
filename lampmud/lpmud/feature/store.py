@@ -156,7 +156,7 @@ class Buyback(CoreDBO):
     class_id = 'buyback'
 
     owner = DBOField()
-    article = DBOField(dbo_class_id='article')
+    article = DBOField(dbo_class_id='untyped')
     price = DBOField(0)
     pulse = DBOField(0)
 
@@ -168,7 +168,3 @@ class Buyback(CoreDBO):
         buyback.price = price
         buyback.pulse = pulse
         return buyback
-
-
-
-
