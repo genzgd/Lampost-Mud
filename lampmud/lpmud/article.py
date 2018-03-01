@@ -14,7 +14,7 @@ class ArticleTemplateLP(ArticleTemplate):
     equip_msg = AutoField(BroadcastMap(s="You wear {N}", e="{n} wears {N}"))
     wield_msg = AutoField(BroadcastMap(s="You wield {N}", e="{n} wields {N}"))
 
-    def _pre_update(self):
+    def _pre_reload(self):
         del self.equip_msg
 
     def _on_loaded(self):

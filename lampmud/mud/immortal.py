@@ -210,7 +210,7 @@ def reset(source):
 
 @imm_action('reload')
 def reload_room(source):
-    source.env.reload()
+    source.env.update()
 
 
 @imm_action("log level", target_class='cmd_str', imm_level='supreme')

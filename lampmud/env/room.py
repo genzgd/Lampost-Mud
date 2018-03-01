@@ -95,11 +95,13 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     _garbage_pulse = None
 
+    def _pre_reload(self):
+        if self.attached:
+            call_each(itertools.chain(self.features, self.inven, self.exits), 'detach')
+
     def _on_loaded(self):
         if self.attached:
-            self._refresh_contents()
-            for denizen in self.denizens:
-                self.first_look(denizen)
+            call_each(list(self.contents), 'attach')
 
     def _on_attach(self):
         self.inven = []
