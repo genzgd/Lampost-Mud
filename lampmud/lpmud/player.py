@@ -6,7 +6,7 @@ from lampost.di.config import config_value
 from lampmud.lpmud.attributes import base_pools, fill_pools
 from lampmud.lpmud.entity import EntityLP, Skilled
 from lampmud.lpmud.skill import add_skill
-from lampmud.model.item import ItemDBO
+from lampmud.model.item import ItemAspect
 
 from lampmud.model.player import Player
 
@@ -15,12 +15,15 @@ db = Injected('datastore')
 module_inject(__name__)
 
 
-class PlayerLP(Player, EntityLP, ItemDBO, Skilled):
+class PlayerLP(Player, EntityLP, ItemAspect, Skilled):
     dbo_key_type = 'player'
 
     race = DBOLField(dbo_class_id='race')
     touchstone = DBOField()
     size = DBOField('medium')
+    desc = DBOField('')
+    title = DBOField('')
+    target_keys = None
     affinity = 'player'
     can_die = True
 

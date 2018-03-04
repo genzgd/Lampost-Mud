@@ -2,7 +2,7 @@ from lampost.event.zone import Attachable
 from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import TemplateField
 from lampost.db.dbo import CoreDBO, DBOAspect
-from lampost.db.dbofield import DBOField, DBOTField
+from lampost.db.dbofield import DBOField, DBOTField, oid_class
 from lampost.db.template import TemplateInstance
 from lampost.gameops.action import obj_action, ActionProvider
 
@@ -55,6 +55,7 @@ class ItemAspect(DBOAspect, ActionProvider, Attachable):
         pass
 
 
+@oid_class
 class ItemDBO(CoreDBO, ItemAspect, Attachable):
     class_id = 'base_item'
 

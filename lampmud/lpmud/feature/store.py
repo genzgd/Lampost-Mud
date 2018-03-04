@@ -146,7 +146,6 @@ class Store(ItemDBO):
             self.dbo_owner.dirty = True
             self._start_buyback()
 
-
     @property
     def target_providers(self):
         return itertools.chain(self.inven, self.perm_items)
