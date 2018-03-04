@@ -2,7 +2,7 @@ from lampost.di.resource import Injected, module_inject
 from lampost.event.zone import Attachable
 from lampost.gameops.target import TargetKeys
 from lampost.meta.auto import AutoField
-from lampost.db.dbo import KeyDBO, SystemDBO
+from lampost.db.dbo import SystemDBO
 from lampost.db.dbofield import DBOField
 
 log = Injected('log')
@@ -10,7 +10,7 @@ ev = Injected('dispatcher')
 module_inject(__name__)
 
 
-class Player(KeyDBO, SystemDBO, Attachable):
+class Player(SystemDBO, Attachable):
     dbo_key_type = "player"
     dbo_set_key = "players"
 

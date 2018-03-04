@@ -8,8 +8,8 @@ from lampost.di.resource import Injected, module_inject
 from lampost.event.zone import Attachable
 from lampost.gameops.action import ActionCache
 from lampost.meta.auto import AutoField
-from lampost.db.dbo import ChildDBO, CoreDBO
-from lampost.db.dbofield import DBOField, DBOCField, DBOLField, oid_class
+from lampost.db.dbo import ChildDBO, PropertyDBO
+from lampost.db.dbofield import DBOField, DBOCField, DBOLField
 from lampost.gameops.script import Scriptable, Shadow
 from lampost.util.classes import call_each
 
@@ -29,8 +29,7 @@ def _config():
     room_reset_time = config_value('room_reset_time')
 
 
-@oid_class
-class Exit(CoreDBO):
+class Exit(PropertyDBO):
     class_id = 'exit'
 
     destination = DBOLField(dbo_class_id='room', required=True)

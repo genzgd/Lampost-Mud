@@ -24,14 +24,14 @@ class Store(ItemDBO):
     class_id = 'store'
 
     currency = DBOField(dbo_class_id='article')
-    inven = DBOField([], 'untyped')
+    inven = DBOField([], 'untyped', editable=False)
     perm_inven = DBOField([], 'article')
     title = DBOField('Vending Machine')
     desc = DBOField("A rickety vending machine.  It looks like you can both buy and sell pretty much anything here.")
     markup = DBOField(0)
     discount = DBOField(0)
     pulse_stamp = DBOField(0)
-    buybacks = DBOField(deque(), 'buyback')
+    buybacks = DBOField(deque(), 'buyback', editable=False)
     buyback_reg = AutoField()
     buyback_seconds = DBOField(5 * 60)
 

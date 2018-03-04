@@ -1,9 +1,9 @@
 from lampost.di.config import config_value
-from lampost.db.dbo import KeyDBO, OwnerDBO
+from lampost.db.dbo import OwnerDBO
 from lampost.db.dbofield import DBOField, DBOLField
 
 
-class Archetype(OwnerDBO, KeyDBO):
+class Archetype(OwnerDBO):
     dbo_key_type = 'archetype'
     dbo_set_key = 'archetypes'
 

@@ -1,10 +1,10 @@
-from lampost.db.dbo import KeyDBO, OwnerDBO
+from lampost.db.dbo import OwnerDBO
 from lampost.db.dbofield import DBOField, DBOLField
 
 base_attr_value = 5
 
 
-class PlayerRace(KeyDBO, OwnerDBO):
+class PlayerRace(OwnerDBO):
     dbo_key_type = "race"
     dbo_set_key = "races"
 

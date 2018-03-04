@@ -3,8 +3,8 @@ from random import randint
 from lampost.di.resource import Injected, module_inject
 from lampost.meta.auto import TemplateField
 from lampost.db.registry import dbo_types
-from lampost.db.dbo import CoreDBO, KeyDBO, OwnerDBO
-from lampost.db.dbofield import DBOField, DBOTField, oid_class
+from lampost.db.dbo import PropertyDBO, OwnerDBO
+from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import Template, TemplateInstance
 from lampost.gameops.action import ActionError
 
@@ -41,14 +41,13 @@ def avg_calc(source, calc, skill_level=0):
     return base_calc + 10 * calc.get('roll', 0) + skill_level * calc.get('skill', 0)
 
 
-class SkillTemplate(KeyDBO, OwnerDBO, Template):
+class SkillTemplate(OwnerDBO, Template):
     def _on_loaded(self):
         if not self.auto_start:
             self.verbs = self.verb
 
 
-@oid_class
-class DefaultSkill(CoreDBO):
+class DefaultSkill(PropertyDBO):
     class_id = 'default_skill'
     skill_template = DBOField(dbo_class_id='untyped', required=True)
     skill_level = DBOField(1)

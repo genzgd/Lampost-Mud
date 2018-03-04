@@ -2,7 +2,7 @@ from lampost.di.app import on_app_start
 
 from lampmud.comm.broadcast import BroadcastMap
 from lampost.di.resource import Injected, module_inject
-from lampost.db.dbo import KeyDBO, OwnerDBO
+from lampost.db.dbo import OwnerDBO
 from lampost.db.dbofield import DBOField
 from lampost.gameops.action import make_action
 from lampmud.mud.action import mud_action
@@ -34,7 +34,7 @@ def remove_social_action(social):
     mud_actions.remove(social)
 
 
-class Social(KeyDBO, OwnerDBO):
+class Social(OwnerDBO):
     dbo_key_type = 'social'
     dbo_set_key = 'socials'
 

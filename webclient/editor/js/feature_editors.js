@@ -1,4 +1,4 @@
-angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter', function($scope, $filter) {
+ angular.module('lampost_editor').controller('EditStoreCtrl', ['$scope', '$filter', function($scope, $filter) {
 
   var noCurrency = {dbo_id: ':--None--'};
   var noItems = {dbo_id: ':--No Items--'};
