@@ -23,7 +23,7 @@ class ItemAspect(DBOAspect, ActionProvider, Attachable):
     living = False
     env = None
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         if not self.target_keys:
             self.target_keys = target_keys(self)
 

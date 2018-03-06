@@ -26,7 +26,7 @@ class Entity(DBOAspect, Attachable):
     entry_msg = BroadcastMap(e='{n} materializes.', ea="{n} arrives from the {N}.")
     exit_msg = BroadcastMap(e='{n} dematerializes.', ea="{n} leaves to the {N}.")
 
-    def _on_loaded(self):
+    def _on_updated(self):
         if self.attached:
             self._refresh_actions()
 

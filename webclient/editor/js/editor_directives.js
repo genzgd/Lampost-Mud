@@ -365,8 +365,8 @@ angular.module('lampost_editor').controller('ChildSelectorCtrl', ['$scope', '$at
 
 
 angular.module('lampost_editor').controller('ChildSelectCtrl',
-  ['$scope', '$attrs', '$filter', 'lpCache', 'lpEvent', 'lpEditor',
-  function ($scope, $attrs, $filter, lpCache, lpEvent, lpEditor) {
+  ['$scope', '$attrs', '$filter', '$parse', 'lpCache', 'lpEvent', 'lpEditor',
+  function ($scope, $attrs, $filter, $parse, lpCache, lpEvent, lpEditor) {
 
     var parentKey;
     var parentFilter;
@@ -383,7 +383,7 @@ angular.module('lampost_editor').controller('ChildSelectCtrl',
 
     function initialize() {
       $scope.vars = {};
-      parentId = $scope[$attrs.lpListParent] || context.parent.dbo_id;
+      parentId = $scope.$eval($attrs.lpListParent) || context.parent.dbo_id;
       parentFilter = $scope[$attrs.lpParentFilter] || $scope.parentFilter;
       listChange = $scope[$attrs.lpListChange] || $scope.listChange || angular.noop;
       lpCache.deref(parentKey);

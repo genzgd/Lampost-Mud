@@ -65,7 +65,6 @@ class RoomEditor(ChildrenEditor):
         this_exit.dbo_owner = room
         this_exit.direction = direction
         this_exit.destination = other_room
-        this_exit.on_loaded()
         room.exits.append(this_exit)
         room.update()
         edit_update.publish_edit('update', room, session)
@@ -74,7 +73,6 @@ class RoomEditor(ChildrenEditor):
             other_exit.dbo_owner = room
             other_exit.direction = rev_dir
             other_exit.destination = room
-            other_exit.on_loaded()
             other_room.exits.append(other_exit)
             other_room.update()
             edit_update.publish_edit('update', other_room, session, True)

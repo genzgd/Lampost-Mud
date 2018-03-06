@@ -70,7 +70,7 @@ class Entrance(ItemDBO):
 
     match_args = 'source',
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         if self.direction:
             self._dir = Direction.ref_map[self.direction]
             self.verbs = self._dir.obj_id, self._dir.desc

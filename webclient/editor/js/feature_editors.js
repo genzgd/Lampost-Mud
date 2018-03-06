@@ -3,53 +3,55 @@
   var noCurrency = {dbo_id: ':--None--'};
   var noItems = {dbo_id: ':--No Items--'};
 
-  $scope.store = $scope.activeFeature;
-  $scope.currencyParent = $scope.store.currency ? $scope.store.currency.split(":")[0] : undefined;
-  $scope.newPerm = noItems.dbo_id;
+  var store_edit = {};
+  $scope.store_edit = store_edit;
+  store_edit.store = $scope.activeFeature;
+  store_edit.currencyParent = store_edit.store.currency ? store_edit.store.currency.split(":")[0] : undefined;
+  store_edit.newPerm = noItems.dbo_id;
 
   $scope.setCurrencyList = function(objects) {
-    $scope.currencyList = $filter('filter')(objects, {divisible: true});
-    $scope.currencyList.unshift(noCurrency);
+    store_edit.currencyList = $filter('filter')(objects, {divisible: true});
+    store_edit.currencyList.unshift(noCurrency);
 
-    for (var ix = 0; ix < $scope.currencyList.length; ix++) {
-      if ($scope.store.currency == $scope.currencyList[ix].dbo_id) {
-        $scope.newCurrency = $scope.store.currency;
+    for (var ix = 0; ix < store_edit.currencyList.length; ix++) {
+      if (store_edit.store.currency == store_edit.currencyList[ix].dbo_id) {
+        store_edit.newCurrency = store_edit.store.currency;
         return;
       }
     }
-    $scope.newCurrency = noCurrency.dbo_id;
-    $scope.store.currency = null;
+    store_edit.newCurrency = noCurrency.dbo_id;
+    store_edit.store.currency = null;
   };
 
 
   $scope.setPermList = function (objects) {
-    $scope.permList = $filter('filter')(objects, {divisible: false});
-    if ($scope.permList.length === 0) {
-      $scope.permList = [noItems];
+    store_edit.permList = $filter('filter')(objects, {divisible: false});
+    if (store_edit.permList.length === 0) {
+      store_edit.permList = [noItems];
     }
-    $scope.newPerm = $scope.permList[0].dbo_id;
+    store_edit.newPerm = store_edit.permList[0].dbo_id;
   };
 
   $scope.updateCurrency = function() {
-    if ($scope.newCurrency == noCurrency.dbo_id) {
-      $scope.store.currency = null;
+    if (store_edit.newCurrency == noCurrency.dbo_id) {
+      store_edit.store.currency = null;
     } else {
-      $scope.store.currency = $scope.newCurrency;
+      store_edit.store.currency = store_edit.newCurrency;
     }
   };
 
   $scope.addPerm = function() {
-    $scope.store.perm_inven.push($scope.newPerm);
+    store_edit.store.perm_inven.push(store_edit.newPerm);
   };
 
   $scope.permExists = function() {
-    return $scope.newPerm === noItems.dbo_id || $scope.store.perm_inven.indexOf($scope.newPerm) > -1;
+    return store_edit.newPerm === noItems.dbo_id || store_edit.store.perm_inven.indexOf(store_edit.newPerm) > -1;
   };
 
   $scope.removePerm = function(perm) {
-    var ix = $scope.store.perm_inven.indexOf(perm);
+    var ix = store_edit.store.perm_inven.indexOf(perm);
     if (ix > -1) {
-      $scope.store.perm_inven.splice(ix, 1);
+      store_edit.store.perm_inven.splice(ix, 1);
     }
   };
 

@@ -164,7 +164,10 @@ class DefenseTemplate(SkillTemplate):
     dbo_key_type = 'defense'
     dbo_set_key = 'defenses'
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
+        self._calc_damage_types()
+
+    def _calc_damage_types(self):
         self.calc_damage_types = set()
         for damage_type in self.damage_type:
             try:

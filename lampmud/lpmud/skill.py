@@ -42,7 +42,8 @@ def avg_calc(source, calc, skill_level=0):
 
 
 class SkillTemplate(OwnerDBO, Template):
-    def _on_loaded(self):
+
+    def _on_hydrated(self):
         if not self.auto_start:
             self.verbs = self.verb
 

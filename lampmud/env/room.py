@@ -52,7 +52,7 @@ class Exit(PropertyDBO):
     def from_name(self):
         return Direction.ref_map.get(self._dir.rev_key).desc
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         self._dir = Direction.ref_map.get(self.direction)
 
     def examine(self, source):
@@ -95,11 +95,7 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     _garbage_pulse = None
 
-    def _pre_reload(self):
-        if self.attached:
-            call_each(itertools.chain(self.features, self.inven, self.exits), 'detach')
-
-    def _on_loaded(self):
+    def _on_updated(self):
         if self.attached:
             call_each(list(self.contents), 'attach')
 

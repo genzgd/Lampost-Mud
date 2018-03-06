@@ -10,7 +10,7 @@
           <div class="col-md-8">
             <div class="form-group">
               <label class="control-label">Title</label>
-              <input class="form-control input-sm" ng-model="store.title">
+              <input class="form-control input-sm" ng-model="store_edit.store.title">
             </div>
           </div>
         </div>
@@ -18,7 +18,7 @@
           <div class="col-md-12">
             <div class="form-group">
               <label class="control-label">Description</label>
-              <textarea class="form-control" rows="4" ng-model="store.desc"></textarea>
+              <textarea class="form-control" rows="4" ng-model="store_edit.store.desc"></textarea>
             </div>
           </div>
         </div>
@@ -29,13 +29,13 @@
           <div class="col-md-4" title="Percent markup for standard value">
             <div class="form-group">
               <label class="control-label">Markup</label>
-              <input class="form-control input-sm" type="number" ng-model="store.markup" required="true" min="0"/>
+              <input class="form-control input-sm" type="number" ng-model="store_edit.store.markup" required="true" min="0"/>
             </div>
           </div>
           <div class="col-md-4" title="Percent discount paid for items below standard value">
             <div class="form-group">
               <label class="control-label">Discount</label>
-              <input class="form-control input-sm" type="number" ng-model="store.discount" required="true" min="0"/>
+              <input class="form-control input-sm" type="number" ng-model="store_edit.store.discount" required="true" min="0"/>
             </div>
           </div>
         </div>
@@ -43,12 +43,12 @@
           <div class="col-md-6">
             <div class="form-group">
               <label class="control-label">Currency</label>
-              <select class="form-control input.sm" ng-model="newCurrency" ng-change="updateCurrency()"
-                ng-options="article.dbo_id as idOnly(article) for article in currencyList"></select>
+              <select class="form-control input.sm" ng-model="store_edit.newCurrency" ng-change="updateCurrency()"
+                ng-options="article.dbo_id as idOnly(article) for article in store_edit.currencyList"></select>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="form-group" ng-controller="ChildSelectCtrl" lp-list-parent="currencyParent" lp-child-type="article" lp-list-change="setCurrencyList">
+            <div class="form-group" ng-controller="ChildSelectCtrl" lp-list-parent="store_edit.currencyParent" lp-child-type="article" lp-list-change="setCurrencyList">
               <label class="control-label">Currency Area</label>
               <select class="form-control input.sm" ng-model="vars.parent" ng-change="selectParent()"
                 ng-options="parent as parent.dbo_id for parent in sourceList" required></select>
@@ -68,7 +68,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr ng-repeat="perm in store.perm_inven track by $index">
+          <tr ng-repeat="perm in store_edit.store.perm_inven track by $index">
             <td class="col-md-11">{{perm}}</td>
             <td class="col-md-1"><a ng-show="model.can_write" ng-click="removePerm(perm)"> <i class="fa fa-minus-square"
               style="color: #b00;"></i></a></td>
@@ -91,8 +91,8 @@
               <div class="col-md-6">
                 <div class="form-group">
                   <label class="control-label">Article Id</label>
-                  <select class="form-control input.sm" ng-model="newPerm" ng-change="updateCurrency()"
-                    ng-options="article.dbo_id as idOnly(article) for article in permList"></select>
+                  <select class="form-control input.sm" ng-model="store_edit.newPerm"
+                    ng-options="article.dbo_id as idOnly(article) for article in store_edit.permList"></select>
                 </div>
               </div>
             </div>

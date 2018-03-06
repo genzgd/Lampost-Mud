@@ -42,7 +42,7 @@ class Social(OwnerDBO):
 
     msg_class = 'social'
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         self.broadcast_map = BroadcastMap(**self.b_map)
 
     def _on_db_created(self):

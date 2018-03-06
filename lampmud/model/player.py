@@ -48,7 +48,7 @@ class Player(SystemDBO, Attachable):
         except AttributeError:
             return "Unknown"
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         if not self.desc:
             self.desc = "An unimaginably powerful immortal." if self.imm_level else "A raceless, classless, sexless player."
 

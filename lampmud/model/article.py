@@ -19,7 +19,7 @@ class ArticleTemplate(ChildDBO, Template):
             return self.title
         return self.plural_title
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         self.single_keys = target_keys(self)
 
         if self.divisible:
@@ -44,9 +44,6 @@ class Article(ItemInstance):
     single_keys = TemplateField()
     plural_keys = TemplateField()
     plural_title = TemplateField()
-
-    def _pre_reload(self):
-        self.detach()
 
     @property
     def name(self):

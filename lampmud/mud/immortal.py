@@ -284,6 +284,8 @@ def combat_status(target, **_):
 
 @imm_action('save', 'save_value')
 def save(target, **_):
+    if getattr(target, 'instance', None) or getattr(target, 'template', None) or not getattr(target, 'dbo_id', None):
+        return "Not a valid save target!  Must be an uncloned KeyDBO."
     db.save_object(target)
     return '{} saved.'.format(target.name)
 

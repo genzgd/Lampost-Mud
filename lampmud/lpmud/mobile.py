@@ -29,7 +29,7 @@ def _config():
 class MobileTemplateLP(MobileTemplate):
     class_id = 'mobile'
 
-    def _on_loaded(self):
+    def _on_hydrate(self):
         if self.archetype:
             arch = db.load_object(self.archetype, 'archetype')
             for attr_name, start_value in arch.base_attrs.items():
@@ -51,14 +51,18 @@ class MobileLP(EntityLP, Mobile, Skilled):
     enemies = TemplateField('enemies')
     guard_msg = DBOField("{source} stops you from moving {exit}.")
 
+    def _on_updated(self):
+        if self.attached():
+            self._refresh_skills()
+
     def _on_attach(self):
+        self._refresh_skills()
+
+    def _refresh_skills(self):
         self.skills = {}
         for default_skill in self.default_skills:
             add_skill(default_skill.skill_template, self, default_skill.skill_level, 'mobile')
         fill_pools(self)
-
-    def _on_detach(self):
-        self.original_env.mobiles[self.template].remove(self)
 
     def entity_enter_env(self, entity, *_):
         self._react_entity(entity)

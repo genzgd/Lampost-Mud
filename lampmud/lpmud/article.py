@@ -14,12 +14,12 @@ class ArticleTemplateLP(ArticleTemplate):
     equip_msg = AutoField(BroadcastMap(s="You wear {N}", e="{n} wears {N}"))
     wield_msg = AutoField(BroadcastMap(s="You wield {N}", e="{n} wields {N}"))
 
-    def _pre_reload(self):
-        del self.equip_msg
-
-    def _on_loaded(self):
+    def _on_hydrated(self):
         if self.art_type == 'weapon':
             self.equip_msg = self.wield_msg
+
+    def _on_updated(self):
+        del self.equip_msg
 
 
 class ArticleLP(Article, Scriptable):

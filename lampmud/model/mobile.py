@@ -10,7 +10,7 @@ class MobileTemplate(ChildDBO, Template):
     dbo_key_type = 'mobile'
     dbo_parent_type = 'area'
 
-    def _on_loaded(self):
+    def _on_hydrated(self):
         self.target_keys = target_keys(self)
 
     def config_instance(self, instance):
