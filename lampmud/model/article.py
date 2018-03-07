@@ -1,6 +1,6 @@
 from lampost.gameops.script import Shadow
 from lampost.meta.auto import TemplateField
-from lampost.db.dbo import ChildDBO, CoreDBO
+from lampost.db.dbo import ChildDBO, PropertyDBO
 from lampost.db.dbofield import DBOField, DBOTField
 from lampost.db.template import Template
 from lampost.util.lputil import plural
@@ -119,7 +119,7 @@ class Article(ItemInstance):
         new_env.add_inven(self)
 
 
-class ArticleReset(CoreDBO):
+class ArticleReset(PropertyDBO):
     class_id = 'article_reset'
     article = DBOField(dbo_class_id='article', required=True)
     reset_count = DBOField(1)

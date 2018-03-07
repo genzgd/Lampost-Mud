@@ -80,50 +80,47 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     desc = DBOCField()
     size = DBOCField(10)
-    exits = DBOCField([], 'exit')
-    extras = DBOCField([], 'base_item')
-    mobile_resets = DBOCField([], 'mobile_reset')
-    article_resets = DBOCField([], 'article_reset')
-    features = DBOCField([], 'untyped')
     title = DBOCField()
     flags = DBOField({})
+    exits = DBOCField([], 'exit')
+    extras = DBOCField([], 'base_item')
+    features = DBOCField([], 'untyped')
+    mobile_resets = DBOCField([], 'mobile_reset')
+    article_resets = DBOCField([], 'article_reset')
+
+    inven = DBOField([], 'untyped', editable=False)
+    mobiles = DBOField([], 'untyped', editable=False)
+    generated_mobiles = DBOField(set(), editable=False)
     instance_providers = AutoField([])
-    denizens = AutoField(set())
+    players = AutoField([])
     current_actions = AutoField(ActionCache())
 
     instance = None
 
     _garbage_pulse = None
 
-    def _on_updated(self):
-        if self.attached:
-            call_each(list(self.contents), 'attach')
-
     def _on_attach(self):
-        self.inven = []
-        self.mobiles = defaultdict(set)
         call_each(list(self.contents), 'attach')
         self._garbage_pulse = ev.register_p(self.check_garbage, seconds=room_reset_time + 1)
-        self._refresh_contents()
+        self._refresh_actions()
 
     def _on_detach(self):
-        for mobile_list in self.mobiles.values():
-            for mobile in mobile_list:
-                if mobile.env != self:
-                    mobile.change_env(self)
         call_each(list(self.contents), 'detach')
         del self._garbage_pulse
         del self.current_actions
-        del self.denizens
 
-    def _refresh_contents(self):
+    def _on_updated(self):
+        if self.attached:
+            self._refresh_actions()
+
+    def _refresh_actions(self):
         self.current_actions = ActionCache().add(self.instance_providers, self.features, self.exits,
-                                                 self.inven, self.denizens)
+                                                 self.players, self.mobiles, self.inven)
         self.reset()
 
     @property
     def action_providers(self):
-        return itertools.chain(self.features, self.exits, self.denizens, self.inven, self.instance_providers)
+        return itertools.chain(self.features, self.exits, self.players, self.mobiles, self.inven, self.instance_providers)
 
     @property
     def name(self):
@@ -133,7 +130,11 @@ class Room(ChildDBO, Attachable, Scriptable):
 
     @property
     def contents(self):
-        return itertools.chain(self.features, self.denizens, self.inven, self.exits)
+        return itertools.chain(self.features, self.inven, self.exits, self.mobiles)
+
+    @property
+    def denizens(self):
+        return itertools.chain(self.players, self.mobiles)
 
     @Shadow
     def long_desc(self):
@@ -148,14 +149,20 @@ class Room(ChildDBO, Attachable, Scriptable):
         self.attach()
         self.receive_broadcast(entry_msg)
         entity.env = self
-        self.denizens.add(entity)
+        if hasattr(entity, 'is_player'):
+            self.players.append(entity)
+        else:
+            self.mobiles.append(entity)
         entity.pulse_stamp = ev.current_pulse
         self.current_actions.add(entity)
         call_each(self.contents, "entity_enter_env", entity, enter_action)
 
     def entity_leaves(self, entity, exit_action, exit_msg=None):
         self.receive_broadcast(exit_msg)
-        self.denizens.remove(entity)
+        if hasattr(entity, 'is_player'):
+            self.players.remove(entity)
+        else:
+            self.mobiles.remove(entity)
         self.current_actions.remove(entity)
         call_each(self.contents, "entity_leave_env", entity, exit_action)
 
@@ -224,9 +231,9 @@ class Room(ChildDBO, Attachable, Scriptable):
     def reset(self):
         new_mobiles = defaultdict(list)
         for m_reset in self.mobile_resets:
-            curr_count = len(self.mobiles[m_reset.mobile])
+            curr_count = [mobile for mobile in self.generated_mobiles if mobile.reset_ref == m_reset._oid]
             for _ in range(m_reset.reset_count - curr_count):
-                new_mobiles[m_reset.reset_key].append(m_reset.mobile.create_instance(self))
+                new_mobiles[m_reset].append(m_reset.mobile.create_instance(self))
             if m_reset.reset_count <= curr_count < m_reset.reset_max:
                 new_mobiles[m_reset.reset_key].append(m_reset.mobile.create_instance(self))
 

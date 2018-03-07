@@ -1,4 +1,4 @@
-from lampost.db.dbo import CoreDBO, ChildDBO
+from lampost.db.dbo import PropertyDBO, ChildDBO
 from lampost.db.dbofield import DBOField
 from lampost.db.template import Template
 
@@ -27,9 +27,8 @@ class Mobile(Entity, ItemInstance):
         self.original_env.mobiles[self.template].remove(self)
 
 
-class MobileReset(CoreDBO):
+class MobileReset(PropertyDBO):
     class_id = 'mobile_reset'
     mobile = DBOField(dbo_class_id='mobile', required=True)
-    reset_key = DBOField(0)
     reset_count = DBOField(1)
     reset_max = DBOField(1)
